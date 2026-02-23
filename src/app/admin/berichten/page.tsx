@@ -1,20 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
   Mail,
   Phone,
-  Clock,
   CheckCircle2,
-  Eye,
   ChevronDown,
   ChevronUp,
   MessageSquare,
+  Loader2,
+  Send,
 } from 'lucide-react';
 import {
-  mockContacts,
   getContactStatusColor,
   formatDateTime,
   type ContactSubmission,
@@ -23,7 +22,49 @@ import {
 
 const STATUS_OPTIONS: ContactStatus[] = ['NIEUW', 'GELEZEN', 'BEANTWOORD'];
 
-function ContactDetail({ contact }: { contact: ContactSubmission }) {
+function ContactDetail({
+  contact,
+  onUpdate,
+}: {
+  contact: ContactSubmission;
+  onUpdate: (updated: ContactSubmission) => void;
+}) {
+  const [reply, setReply] = useState('');
+  const [sending, setSending] = useState(false);
+  const [markingRead, setMarkingRead] = useState(false);
+
+  const handleReply = async () => {
+    if (!reply.trim()) return;
+    setSending(true);
+    try {
+      await fetch('/api/contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id, reply }),
+      });
+      onUpdate({ ...contact, status: 'BEANTWOORD', admin_reply: reply });
+      setReply('');
+    } catch {
+      // silent
+    }
+    setSending(false);
+  };
+
+  const handleMarkRead = async () => {
+    setMarkingRead(true);
+    try {
+      await fetch('/api/contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id, status: 'GELEZEN' }),
+      });
+      onUpdate({ ...contact, status: 'GELEZEN' });
+    } catch {
+      // silent
+    }
+    setMarkingRead(false);
+  };
+
   return (
     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] mt-2 space-y-4">
       {/* Contact info */}
@@ -46,40 +87,57 @@ function ContactDetail({ contact }: { contact: ContactSubmission }) {
 
       {/* Message */}
       <div className="bg-white rounded-xl p-4">
-        <p className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">Bericht</p>
+        <p className="text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">
+          Bericht
+        </p>
         <p className="text-sm text-[#1a1a2e] leading-relaxed whitespace-pre-wrap">
           {contact.message}
         </p>
       </div>
 
       {/* Admin reply */}
-      {contact.adminReply && (
+      {contact.admin_reply && (
         <div className="bg-green-50 rounded-xl p-4 border border-green-200">
           <p className="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Antwoord
           </p>
           <p className="text-sm text-green-800 leading-relaxed whitespace-pre-wrap">
-            {contact.adminReply}
+            {contact.admin_reply}
           </p>
         </div>
       )}
 
-      {/* Reply box (mock) */}
+      {/* Reply box */}
       {contact.status !== 'BEANTWOORD' && (
         <div>
           <textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
             placeholder="Typ je antwoord..."
             rows={3}
             className="w-full px-4 py-3 bg-white border border-[#e2e8f0] rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
           />
           <div className="flex items-center gap-3 mt-2">
-            <button className="px-4 py-2 bg-[#1a3c6e] text-white rounded-xl text-sm font-medium hover:bg-[#15325c] transition-colors cursor-pointer">
+            <button
+              onClick={handleReply}
+              disabled={sending || !reply.trim()}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a3c6e] text-white rounded-xl text-sm font-medium hover:bg-[#15325c] transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {sending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
               Verstuur antwoord
             </button>
             {contact.status === 'NIEUW' && (
-              <button className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-xl text-sm font-medium hover:bg-yellow-200 transition-colors cursor-pointer">
-                Markeer als gelezen
+              <button
+                onClick={handleMarkRead}
+                disabled={markingRead}
+                className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-xl text-sm font-medium hover:bg-yellow-200 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {markingRead ? 'Bezig...' : 'Markeer als gelezen'}
               </button>
             )}
           </div>
@@ -87,18 +145,32 @@ function ContactDetail({ contact }: { contact: ContactSubmission }) {
       )}
 
       <p className="text-xs text-[#94a3b8]">
-        Ontvangen op {formatDateTime(contact.createdAt)}
+        Ontvangen op {formatDateTime(contact.created_at)}
       </p>
     </div>
   );
 }
 
 export default function BerichtenPage() {
+  const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ContactStatus | 'ALLE'>('ALLE');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const filtered = mockContacts
+  useEffect(() => {
+    fetch('/api/contacts')
+      .then((res) => res.json())
+      .then((data) => setContacts(data.contacts || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleUpdate = (updated: ContactSubmission) => {
+    setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  };
+
+  const filtered = contacts
     .filter((c) => {
       if (statusFilter !== 'ALLE' && c.status !== statusFilter) return false;
       if (search) {
@@ -112,11 +184,22 @@ export default function BerichtenPage() {
       }
       return true;
     })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
-  const newCount = mockContacts.filter((c) => c.status === 'NIEUW').length;
-  const readCount = mockContacts.filter((c) => c.status === 'GELEZEN').length;
-  const answeredCount = mockContacts.filter((c) => c.status === 'BEANTWOORD').length;
+  const newCount = contacts.filter((c) => c.status === 'NIEUW').length;
+  const readCount = contacts.filter((c) => c.status === 'GELEZEN').length;
+  const answeredCount = contacts.filter((c) => c.status === 'BEANTWOORD').length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1a3c6e]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -152,12 +235,16 @@ export default function BerichtenPage() {
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ContactStatus | 'ALLE')}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as ContactStatus | 'ALLE')
+            }
             className="pl-10 pr-8 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
           >
             <option value="ALLE">Alle statussen</option>
             {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </div>
@@ -173,11 +260,18 @@ export default function BerichtenPage() {
           const isExpanded = expandedId === contact.id;
 
           return (
-            <div key={contact.id} className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
+            <div
+              key={contact.id}
+              className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden"
+            >
               <button
-                onClick={() => setExpandedId(isExpanded ? null : contact.id)}
+                onClick={() =>
+                  setExpandedId(isExpanded ? null : contact.id)
+                }
                 className={`w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-[#f8fafc] transition-colors cursor-pointer ${
-                  contact.status === 'NIEUW' ? 'border-l-4 border-l-blue-500' : ''
+                  contact.status === 'NIEUW'
+                    ? 'border-l-4 border-l-blue-500'
+                    : ''
                 }`}
               >
                 <div className="p-2 rounded-xl bg-[#f8fafc] shrink-0">
@@ -186,14 +280,24 @@ export default function BerichtenPage() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className={`text-sm ${contact.status === 'NIEUW' ? 'font-bold' : 'font-medium'} text-[#1a1a2e]`}>
+                    <p
+                      className={`text-sm ${
+                        contact.status === 'NIEUW'
+                          ? 'font-bold'
+                          : 'font-medium'
+                      } text-[#1a1a2e]`}
+                    >
                       {contact.name}
                     </p>
                     <span className="text-xs text-[#94a3b8]">
-                      {formatDateTime(contact.createdAt)}
+                      {formatDateTime(contact.created_at)}
                     </span>
                   </div>
-                  <p className={`text-sm ${contact.status === 'NIEUW' ? 'font-semibold' : ''} text-[#1a1a2e] mt-0.5`}>
+                  <p
+                    className={`text-sm ${
+                      contact.status === 'NIEUW' ? 'font-semibold' : ''
+                    } text-[#1a1a2e] mt-0.5`}
+                  >
                     {contact.subject}
                   </p>
                   <p className="text-xs text-[#64748b] line-clamp-1 mt-0.5">
@@ -203,7 +307,9 @@ export default function BerichtenPage() {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${getContactStatusColor(contact.status)}`}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${getContactStatusColor(
+                      contact.status as 'NIEUW' | 'GELEZEN' | 'BEANTWOORD'
+                    )}`}
                   >
                     {contact.status}
                   </span>
@@ -217,7 +323,7 @@ export default function BerichtenPage() {
 
               {isExpanded && (
                 <div className="px-5 pb-5">
-                  <ContactDetail contact={contact} />
+                  <ContactDetail contact={contact} onUpdate={handleUpdate} />
                 </div>
               )}
             </div>

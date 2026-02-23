@@ -62,6 +62,9 @@ function BoekenContent() {
   const [specialRequests, setSpecialRequests] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingRef, setBookingRef] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   const filteredCampings = useMemo(() => {
     if (!campingSearch.trim()) return campings;
@@ -108,8 +111,41 @@ function BoekenContent() {
     }
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: name,
+          guestEmail: email,
+          guestPhone: phone,
+          adults,
+          children,
+          specialRequests: specialRequests || undefined,
+          caravanId: selectedCaravan,
+          campingId,
+          checkIn,
+          checkOut,
+          nights,
+          totalPrice,
+          depositAmount: deposit,
+          remainingAmount: totalPrice - deposit,
+          borgAmount: chosenCaravan?.deposit || 0,
+        }),
+      });
+      if (!res.ok) throw new Error('Booking failed');
+      const data = await res.json();
+      setBookingRef(data.reference);
+      setSubmitted(true);
+    } catch {
+      setSubmitError('Er ging iets mis. Probeer het opnieuw of neem contact met ons op.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const slideVariants = {
@@ -132,9 +168,10 @@ function BoekenContent() {
               <CheckCircle className="text-green-500" size={40} />
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-4">Boekingsaanvraag ontvangen!</h1>
-            <p className="text-muted text-lg mb-6">
+            <p className="text-muted text-lg mb-2">
               Bedankt, {name}! We hebben je aanvraag ontvangen en nemen zo snel mogelijk contact met je op via <strong>{email}</strong>.
             </p>
+            {bookingRef && <p className="text-primary font-semibold mb-6">Referentienummer: {bookingRef}</p>}
             <div className="bg-surface rounded-2xl p-6 mb-8 text-left border border-border">
               <h3 className="font-semibold mb-4">Samenvatting</h3>
               <div className="space-y-2 text-sm">
@@ -530,14 +567,26 @@ function BoekenContent() {
                 <ArrowRight size={18} />
               </button>
             ) : step === 5 ? (
-              <button
-                onClick={handleSubmit}
-                disabled={!canNext()}
-                className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
-              >
-                <CreditCard size={18} />
-                Boekingsaanvraag versturen
-              </button>
+              <>
+                {submitError && <p className="text-red-500 text-sm mr-4">{submitError}</p>}
+                <button
+                  onClick={handleSubmit}
+                  disabled={!canNext() || submitting}
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Verwerken...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={18} />
+                      Boekingsaanvraag versturen
+                    </>
+                  )}
+                </button>
+              </>
             ) : null}
           </div>
         </div>

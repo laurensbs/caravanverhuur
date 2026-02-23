@@ -1,58 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Search,
   Users,
   Calendar,
-  Euro,
-  Shield,
-  Wrench,
   CheckCircle2,
+  Wrench,
   CalendarCheck,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from 'lucide-react';
 import { caravans, type Caravan } from '@/data/caravans';
-import { mockBookings, formatCurrency, formatDate, getStatusColor } from '@/data/admin';
+import {
+  formatCurrency,
+  formatDate,
+  getStatusColor,
+  type Booking,
+} from '@/data/admin';
 
 function getCaravanStatusColor(status: string) {
   switch (status) {
-    case 'BESCHIKBAAR':
-      return 'bg-green-100 text-green-700';
-    case 'ONDERHOUD':
-      return 'bg-yellow-100 text-yellow-700';
-    case 'GEBOEKT':
-      return 'bg-blue-100 text-blue-700';
-    default:
-      return 'bg-gray-100 text-gray-600';
+    case 'BESCHIKBAAR': return 'bg-green-100 text-green-700';
+    case 'ONDERHOUD': return 'bg-yellow-100 text-yellow-700';
+    case 'GEBOEKT': return 'bg-blue-100 text-blue-700';
+    default: return 'bg-gray-100 text-gray-600';
   }
 }
 
 function getCaravanStatusIcon(status: string) {
   switch (status) {
-    case 'BESCHIKBAAR':
-      return CheckCircle2;
-    case 'ONDERHOUD':
-      return Wrench;
-    case 'GEBOEKT':
-      return CalendarCheck;
-    default:
-      return CheckCircle2;
+    case 'BESCHIKBAAR': return CheckCircle2;
+    case 'ONDERHOUD': return Wrench;
+    case 'GEBOEKT': return CalendarCheck;
+    default: return CheckCircle2;
   }
 }
 
 function CaravanDetail({ caravan }: { caravan: Caravan }) {
-  const bookings = mockBookings.filter(
-    (b) => b.caravanId === caravan.id && b.status !== 'GEANNULEERD'
-  );
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalRevenue = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
+  useEffect(() => {
+    fetch(`/api/admin/caravan-bookings?caravanId=${caravan.id}`)
+      .then(res => res.json())
+      .then(data => setBookings(data.bookings || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [caravan.id]);
+
+  const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
 
   return (
     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] mt-2 space-y-5">
-      {/* Photos */}
       {caravan.photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
           {caravan.photos.slice(0, 4).map((photo, i) => (
@@ -69,7 +71,6 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
         </div>
       )}
 
-      {/* Details grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2">Specificaties</h4>
@@ -112,7 +113,6 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
         </div>
       </div>
 
-      {/* Amenities */}
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2">Voorzieningen</h4>
         <div className="flex flex-wrap gap-1.5">
@@ -127,12 +127,15 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
         </div>
       </div>
 
-      {/* Revenue & bookings */}
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2">
-          Boekingen ({bookings.length})
+          Boekingen {!loading && `(${bookings.length})`}
         </h4>
-        {bookings.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-[#94a3b8]">
+            <Loader2 className="w-4 h-4 animate-spin" /> Laden...
+          </div>
+        ) : bookings.length > 0 ? (
           <div className="space-y-2">
             <div className="bg-white rounded-xl p-3 flex items-center justify-between">
               <span className="text-sm text-[#64748b]">Totale omzet</span>
@@ -141,13 +144,13 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
             {bookings.map((b) => (
               <div key={b.id} className="bg-white rounded-xl p-3 flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium text-[#1a1a2e]">{b.guestName}</p>
+                  <p className="font-medium text-[#1a1a2e]">{b.guest_name}</p>
                   <p className="text-xs text-[#64748b]">
-                    {formatDate(b.checkIn)} – {formatDate(b.checkOut)}
+                    {formatDate(b.check_in)} – {formatDate(b.check_out)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-[#1a1a2e]">{formatCurrency(b.totalPrice)}</span>
+                  <span className="font-medium text-[#1a1a2e]">{formatCurrency(Number(b.total_price))}</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`}>
                     {b.status.replace('_', ' ')}
                   </span>
@@ -166,6 +169,22 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
 export default function CaravansAdminPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    Promise.all(
+      caravans.map(c =>
+        fetch(`/api/admin/caravan-bookings?caravanId=${c.id}`)
+          .then(res => res.json())
+          .then(data => ({ id: c.id, count: (data.bookings || []).length }))
+          .catch(() => ({ id: c.id, count: 0 }))
+      )
+    ).then(results => {
+      const counts: Record<string, number> = {};
+      results.forEach(r => { counts[r.id] = r.count; });
+      setBookingCounts(counts);
+    });
+  }, []);
 
   const filtered = caravans.filter((c) => {
     if (!search) return true;
@@ -178,7 +197,6 @@ export default function CaravansAdminPage() {
     );
   });
 
-  // Aggregate stats
   const totalCaravans = caravans.length;
   const beschikbaar = caravans.filter((c) => c.status === 'BESCHIKBAAR').length;
   const onderhoud = caravans.filter((c) => c.status === 'ONDERHOUD').length;
@@ -186,7 +204,6 @@ export default function CaravansAdminPage() {
 
   return (
     <div className="space-y-4">
-      {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white rounded-xl border border-[#e2e8f0] p-3 text-center">
           <p className="text-2xl font-bold text-[#1a1a2e]">{totalCaravans}</p>
@@ -206,7 +223,6 @@ export default function CaravansAdminPage() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
         <input
@@ -218,14 +234,11 @@ export default function CaravansAdminPage() {
         />
       </div>
 
-      {/* Caravans list */}
       <div className="space-y-2">
         {filtered.map((caravan) => {
           const isExpanded = expandedId === caravan.id;
           const StatusIcon = getCaravanStatusIcon(caravan.status);
-          const bookingCount = mockBookings.filter(
-            (b) => b.caravanId === caravan.id && b.status !== 'GEANNULEERD'
-          ).length;
+          const bookingCount = bookingCounts[caravan.id] || 0;
 
           return (
             <div key={caravan.id} className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
@@ -233,7 +246,6 @@ export default function CaravansAdminPage() {
                 onClick={() => setExpandedId(isExpanded ? null : caravan.id)}
                 className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-[#f8fafc] transition-colors cursor-pointer"
               >
-                {/* Photo thumb */}
                 {caravan.photos[0] && (
                   <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0 hidden sm:block">
                     <Image

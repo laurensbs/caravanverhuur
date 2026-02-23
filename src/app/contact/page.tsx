@@ -14,9 +14,27 @@ export default function ContactPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Submit failed');
+      setSubmitted(true);
+    } catch {
+      setSubmitError('Er ging iets mis. Probeer het opnieuw.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -192,12 +210,23 @@ export default function ContactPage() {
                       className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                     />
                   </div>
+                  {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                    disabled={submitting}
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
                   >
-                    <Send size={18} />
-                    Bericht versturen
+                    {submitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Verzenden...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Bericht versturen
+                      </>
+                    )}
                   </button>
                 </form>
               </div>

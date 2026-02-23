@@ -1,75 +1,101 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
   CheckCircle2,
   Clock,
-  AlertCircle,
   RotateCcw,
   ArrowUpDown,
+  Loader2,
 } from 'lucide-react';
 import {
-  mockBookings,
-  getBookingCaravan,
   getPaymentStatusColor,
-  formatDate,
   formatDateTime,
   formatCurrency,
   type Payment,
   type PaymentStatus,
   type PaymentType,
 } from '@/data/admin';
+import { caravans } from '@/data/caravans';
 
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUGBETAALD', 'MISLUKT'];
 const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'BORG', 'BORG_RETOUR'];
 
-interface PaymentWithBooking extends Payment {
-  guestName: string;
-  bookingRef: string;
-  caravanName: string;
-}
-
 export default function BetalingenPage() {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'ALLE'>('ALLE');
   const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // Flatten all payments with booking context
-  const allPayments: PaymentWithBooking[] = mockBookings.flatMap((b) =>
-    b.payments.map((p) => ({
-      ...p,
-      guestName: b.guestName,
-      bookingRef: b.reference,
-      caravanName: getBookingCaravan(b)?.name || b.caravanId,
-    }))
-  );
+  useEffect(() => {
+    fetch('/api/payments')
+      .then(res => res.json())
+      .then(data => setPayments(data.payments || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  const filtered = allPayments
+  const handleMarkPaid = async (paymentId: string) => {
+    setUpdatingId(paymentId);
+    try {
+      await fetch('/api/payments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentId, status: 'BETAALD', paidAt: new Date().toISOString() }),
+      });
+      setPayments(prev =>
+        prev.map(p =>
+          p.id === paymentId
+            ? { ...p, status: 'BETAALD' as PaymentStatus, paid_at: new Date().toISOString() }
+            : p
+        )
+      );
+    } catch {
+      // silent
+    }
+    setUpdatingId(null);
+  };
+
+  const getCaravanName = (caravanId?: string) => {
+    if (!caravanId) return '';
+    return caravans.find(c => c.id === caravanId)?.name || caravanId;
+  };
+
+  const filtered = payments
     .filter((p) => {
       if (statusFilter !== 'ALLE' && p.status !== statusFilter) return false;
       if (typeFilter !== 'ALLE' && p.type !== typeFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          p.guestName.toLowerCase().includes(q) ||
-          p.bookingRef.toLowerCase().includes(q) ||
-          p.caravanName.toLowerCase().includes(q) ||
-          (p.stripeId && p.stripeId.toLowerCase().includes(q))
+          (p.guest_name && p.guest_name.toLowerCase().includes(q)) ||
+          (p.booking_ref && p.booking_ref.toLowerCase().includes(q)) ||
+          (p.stripe_id && p.stripe_id.toLowerCase().includes(q)) ||
+          getCaravanName(p.caravan_id).toLowerCase().includes(q)
         );
       }
       return true;
     })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  // Summary stats
-  const paid = allPayments.filter((p) => p.status === 'BETAALD');
-  const open = allPayments.filter((p) => p.status === 'OPENSTAAND');
-  const refunded = allPayments.filter((p) => p.status === 'TERUGBETAALD');
-  const totalPaid = paid.reduce((s, p) => s + p.amount, 0);
-  const totalOpen = open.reduce((s, p) => s + p.amount, 0);
-  const totalRefunded = refunded.reduce((s, p) => s + p.amount, 0);
+  const paid = payments.filter((p) => p.status === 'BETAALD');
+  const open = payments.filter((p) => p.status === 'OPENSTAAND');
+  const refunded = payments.filter((p) => p.status === 'TERUGBETAALD');
+  const totalPaid = paid.reduce((s, p) => s + Number(p.amount), 0);
+  const totalOpen = open.reduce((s, p) => s + Number(p.amount), 0);
+  const totalRefunded = refunded.reduce((s, p) => s + Number(p.amount), 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1a3c6e]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -153,7 +179,6 @@ export default function BetalingenPage() {
 
       {/* Payments list */}
       <div className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
-        {/* Desktop header */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-[#f8fafc] text-xs font-semibold text-[#64748b] uppercase tracking-wider border-b border-[#e2e8f0]">
           <div className="col-span-3">Gast / Boeking</div>
           <div className="col-span-2">Type</div>
@@ -169,45 +194,48 @@ export default function BetalingenPage() {
               key={payment.id}
               className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-[#f8fafc] transition-colors"
             >
-              {/* Guest */}
               <div className="col-span-3">
-                <p className="text-sm font-medium text-[#1a1a2e]">{payment.guestName}</p>
-                <p className="text-xs text-[#94a3b8]">{payment.bookingRef}</p>
+                <p className="text-sm font-medium text-[#1a1a2e]">{payment.guest_name}</p>
+                <p className="text-xs text-[#94a3b8]">{payment.booking_ref}</p>
               </div>
 
-              {/* Type */}
               <div className="col-span-2">
                 <span className="text-sm text-[#1a1a2e]">{payment.type.replace('_', ' ')}</span>
               </div>
 
-              {/* Amount */}
               <div className="col-span-2">
                 <span className="text-sm font-semibold text-[#1a1a2e]">
-                  {formatCurrency(payment.amount)}
+                  {formatCurrency(Number(payment.amount))}
                 </span>
               </div>
 
-              {/* Status */}
-              <div className="col-span-2">
+              <div className="col-span-2 flex items-center gap-2">
                 <span
                   className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(payment.status)}`}
                 >
                   {payment.status}
                 </span>
+                {payment.status === 'OPENSTAAND' && (
+                  <button
+                    onClick={() => handleMarkPaid(payment.id)}
+                    disabled={updatingId === payment.id}
+                    className="text-xs text-green-700 bg-green-50 hover:bg-green-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {updatingId === payment.id ? '...' : 'Markeer betaald'}
+                  </button>
+                )}
               </div>
 
-              {/* Method */}
               <div className="col-span-1">
                 <span className="text-xs text-[#64748b]">
                   {payment.method === 'stripe' ? 'Stripe' : payment.method === 'bank' ? 'Bank' : 'Contant'}
                 </span>
               </div>
 
-              {/* Date */}
               <div className="col-span-2">
-                <p className="text-xs text-[#64748b]">{formatDateTime(payment.createdAt)}</p>
-                {payment.paidAt && (
-                  <p className="text-xs text-green-600">✓ {formatDateTime(payment.paidAt)}</p>
+                <p className="text-xs text-[#64748b]">{formatDateTime(payment.created_at)}</p>
+                {payment.paid_at && (
+                  <p className="text-xs text-green-600">✓ {formatDateTime(payment.paid_at)}</p>
                 )}
               </div>
             </div>
