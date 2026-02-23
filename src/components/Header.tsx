@@ -117,96 +117,106 @@ export default function Header() {
           </button>
         </div>
 
-        {/* ===== FULLSCREEN MOBILE/TABLET MENU ===== */}
+        {/* ===== SLIDE-IN SIDE PANEL MOBILE MENU ===== */}
         <AnimatePresence>
           {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 top-0 z-50 lg:hidden"
-            >
-              {/* Backdrop */}
+            <>
+              {/* Backdrop overlay */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-primary-dark/95 backdrop-blur-xl"
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden"
                 onClick={() => setMenuOpen(false)}
               />
 
-              {/* Menu content */}
-              <div className="relative z-10 flex flex-col h-full pt-24 sm:pt-28 pb-8 px-6 sm:px-10">
+              {/* Side panel */}
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white z-50 lg:hidden shadow-2xl flex flex-col"
+              >
+                {/* Panel header */}
+                <div className="flex items-center justify-between p-5 border-b border-border">
+                  <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3">
+                    <Image
+                      src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+                      alt="Logo"
+                      width={40}
+                      height={40}
+                      className="rounded-xl shadow-sm"
+                      unoptimized
+                    />
+                    <span className="font-bold text-sm text-foreground">Costa Brava</span>
+                  </Link>
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center hover:bg-border transition-colors cursor-pointer"
+                  >
+                    <X size={20} className="text-foreground" />
+                  </button>
+                </div>
+
                 {/* Nav links */}
-                <nav className="flex-1 flex flex-col justify-center -mt-16">
+                <nav className="flex-1 overflow-y-auto py-4 px-3">
                   {navLinks.map((link, i) => (
                     <motion.div
                       key={link.href}
-                      initial={{ opacity: 0, x: -30 }}
+                      initial={{ opacity: 0, x: 30 }}
                       animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -30 }}
-                      transition={{ delay: i * 0.05, duration: 0.25 }}
+                      exit={{ opacity: 0, x: 30 }}
+                      transition={{ delay: i * 0.04, duration: 0.2 }}
                     >
                       <Link
                         href={link.href}
                         onClick={() => setMenuOpen(false)}
-                        className="group flex items-center justify-between py-3.5 sm:py-4 border-b border-white/10 text-white hover:text-accent-light transition-colors"
+                        className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-foreground hover:bg-surface transition-colors"
                       >
-                        <span className="text-2xl sm:text-3xl font-semibold tracking-tight">{link.label}</span>
-                        <ChevronRight size={20} className="text-white/30 group-hover:text-accent-light group-hover:translate-x-1 transition-all" />
+                        <span className="text-base font-semibold">{link.label}</span>
+                        <ChevronRight size={18} className="text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
                       </Link>
                     </motion.div>
                   ))}
-
-                  {/* CTA */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ delay: 0.3, duration: 0.25 }}
-                    className="mt-8"
-                  >
-                    <Link
-                      href="/boeken"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-center gap-2 w-full py-4 bg-accent hover:bg-accent-dark text-white font-bold rounded-2xl text-lg transition-all active:scale-95 shadow-lg"
-                    >
-                      Direct boeken
-                      <ArrowRight size={20} />
-                    </Link>
-                  </motion.div>
                 </nav>
 
-                {/* Bottom contact info */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: 0.35, duration: 0.2 }}
-                  className="space-y-3 pt-6 border-t border-white/10"
-                >
-                  <a href="tel:+34600000000" className="flex items-center gap-3 text-white/80 hover:text-white transition-colors">
-                    <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center">
-                      <Phone size={16} />
-                    </div>
-                    <span className="text-sm font-medium">+34 600 000 000</span>
-                  </a>
-                  <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-3 text-white/80 hover:text-white transition-colors">
-                    <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center">
-                      <Mail size={16} />
-                    </div>
-                    <span className="text-sm font-medium">info@caravanverhuurcostabrava.com</span>
-                  </a>
-                  <div className="pt-2 text-white/40 text-xs">
-                    Onderdeel van{' '}
-                    <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-white/60 underline">
-                      Caravanstalling-Spanje
+                {/* CTA + contact */}
+                <div className="p-5 border-t border-border space-y-4">
+                  <Link
+                    href="/boeken"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-accent hover:bg-accent-dark text-white font-bold rounded-2xl text-base transition-all active:scale-95 shadow-lg"
+                  >
+                    Direct boeken
+                    <ArrowRight size={18} />
+                  </Link>
+
+                  <div className="space-y-2">
+                    <a href="tel:+34600000000" className="flex items-center gap-3 text-muted hover:text-foreground transition-colors">
+                      <div className="w-8 h-8 bg-surface rounded-lg flex items-center justify-center">
+                        <Phone size={14} />
+                      </div>
+                      <span className="text-sm">+34 600 000 000</span>
+                    </a>
+                    <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-3 text-muted hover:text-foreground transition-colors">
+                      <div className="w-8 h-8 bg-surface rounded-lg flex items-center justify-center">
+                        <Mail size={14} />
+                      </div>
+                      <span className="text-sm">info@caravanverhuurcostabrava.com</span>
                     </a>
                   </div>
-                </motion.div>
-              </div>
-            </motion.div>
+
+                  <p className="text-xs text-muted pt-2">
+                    Onderdeel van{' '}
+                    <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
+                      Caravanstalling-Spanje
+                    </a>
+                  </p>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </header>

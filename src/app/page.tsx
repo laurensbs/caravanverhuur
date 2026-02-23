@@ -61,7 +61,6 @@ export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
     <>
@@ -80,7 +79,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/80 via-primary/60 to-primary-dark/90 sm:bg-gradient-to-r sm:from-primary-dark/90 sm:via-primary/70 sm:to-primary-dark/50" />
         </motion.div>
 
-        <motion.div className="relative z-10 max-w-7xl mx-auto px-4 py-16 sm:py-20 w-full" style={{ opacity: heroOpacity }}>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 sm:py-20 w-full">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -153,7 +152,7 @@ export default function HomePage() {
               </div>
             ))}
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Scroll indicator */}
         <motion.div
@@ -540,12 +539,12 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">Waarom bij ons huren?</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
-              { icon: <Clock size={24} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.' },
-              { icon: <ThumbsUp size={24} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.' },
-              { icon: <Wallet size={24} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris. Geen verborgen kosten.' },
-              { icon: <Shield size={24} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.' },
+              { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.' },
+              { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.' },
+              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.' },
+              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.' },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -553,16 +552,33 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 sm:p-6 border border-white/10 hover:bg-white/15 hover:border-white/20 transition-all duration-300 group"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 hover:border-white/20 transition-all duration-300 group"
               >
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/10 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
                   {item.icon}
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">{item.title}</h3>
-                <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">{item.desc}</p>
+                <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.title}</h3>
+                <p className="text-blue-100 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
+
+          {/* 20+ jaar ervaring banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/10 text-center"
+          >
+            <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
+              <span className="text-white font-bold">Meer dan 20 jaar actief</span> in de caravansbranche in de Costa Brava.
+              Onderdeel van{' '}
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-accent-light underline underline-offset-2 hover:text-white transition-colors">
+                caravanstalling-spanje.com
+              </a>
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -664,15 +680,16 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="mt-10 sm:mt-14 flex flex-wrap items-center justify-center gap-4 sm:gap-8"
+            className="mt-10 sm:mt-14 flex overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:justify-center sm:overflow-visible scrollbar-hide"
           >
             {[
-              { icon: <Shield size={20} className="text-primary" />, text: 'Veilig betalen via Stripe' },
-              { icon: <CheckCircle size={20} className="text-green-500" />, text: 'Volledige inventaris' },
-              { icon: <Star size={20} className="text-yellow-500 fill-yellow-500" />, text: '5/5 beoordeling' },
-              { icon: <Users size={20} className="text-primary" />, text: '100+ tevreden gasten' },
+              { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via Stripe' },
+              { icon: <CheckCircle size={18} className="text-green-500" />, text: 'Volledige inventaris' },
+              { icon: <Star size={18} className="text-yellow-500 fill-yellow-500" />, text: '5/5 beoordeling' },
+              { icon: <Users size={18} className="text-primary" />, text: '100+ tevreden gasten' },
+              { icon: <Clock size={18} className="text-primary" />, text: '20+ jaar ervaring' },
             ].map(badge => (
-              <div key={badge.text} className="flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm border border-border text-xs sm:text-sm font-medium text-foreground">
+              <div key={badge.text} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm border border-border text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
                 {badge.icon}
                 {badge.text}
               </div>

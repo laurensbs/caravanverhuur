@@ -116,11 +116,11 @@ export default function BookingWidget() {
           >
             <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Camping</span>
             <button
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 w-full text-left min-w-0"
             >
               <MapPin size={16} className="text-primary shrink-0" />
-              <span className={`text-sm font-medium truncate flex-1 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
-                {selectedCamping ? selectedCamping.name : 'Kies camping'}
+              <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
+                <span className="block truncate">{selectedCamping ? selectedCamping.name : 'Kies camping'}</span>
               </span>
               <ChevronDown size={14} className={`text-muted transition-transform ${campingOpen ? 'rotate-180' : ''}`} />
             </button>
