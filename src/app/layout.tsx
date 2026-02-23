@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import ScrollToTop from "@/components/ScrollToTop";
+import { LayoutWrapper } from "@/components/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,8 +50,8 @@ const jsonLd = {
   name: "Caravanverhuur Costa Brava",
   description: "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava.",
   url: "https://caravanverhuurcostabrava.com",
-  logo: "https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg",
-  image: "https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg",
+  logo: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
+  image: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
   address: {
     "@type": "PostalAddress",
     addressRegion: "Costa Brava",
@@ -94,11 +95,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <ScrollToTop />
-        <CookieConsent />
+        <LayoutWrapper
+          header={<Header />}
+          footer={<Footer />}
+          scrollToTop={<ScrollToTop />}
+          cookieConsent={<CookieConsent />}
+        >
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );

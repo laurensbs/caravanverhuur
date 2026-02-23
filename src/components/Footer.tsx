@@ -26,7 +26,7 @@ export default function Footer() {
         {/* Mobile: logo centered + stacked columns */}
         <div className="flex flex-col items-center text-center lg:hidden mb-8">
           <Image
-            src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+            src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
             alt="Caravanverhuur Costa Brava"
             width={96}
             height={96}
@@ -48,7 +48,7 @@ export default function Footer() {
           {/* Brand - desktop only */}
           <div className="hidden lg:block space-y-4">
             <Image
-              src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravanverhuur Costa Brava"
               width={96}
               height={96}

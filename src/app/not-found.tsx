@@ -16,7 +16,7 @@ export default function NotFound() {
       >
         <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-6">
           <Image
-            src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+            src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
             alt="Caravanverhuur Costa Brava"
             fill
             className="object-contain rounded-2xl opacity-30"

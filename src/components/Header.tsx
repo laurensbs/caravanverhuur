@@ -62,7 +62,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="shrink-0 relative z-[60]">
             <Image
-              src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravanverhuur Costa Brava"
               width={112}
               height={112}
@@ -143,7 +143,7 @@ export default function Header() {
                 <div className="flex items-center justify-between p-5 border-b border-border">
                   <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3">
                     <Image
-                      src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
+                      src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
                       alt="Logo"
                       width={40}
                       height={40}

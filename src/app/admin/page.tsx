@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   CalendarCheck,
   CreditCard,
@@ -42,6 +43,7 @@ function StatCard({
   icon: Icon,
   color,
   href,
+  index = 0,
 }: {
   label: string;
   value: string;
@@ -49,23 +51,30 @@ function StatCard({
   icon: React.ElementType;
   color: string;
   href: string;
+  index?: number;
 }) {
   return (
-    <Link
-      href={href}
-      className="bg-white rounded-2xl p-5 border border-[#e2e8f0] hover:shadow-lg transition-shadow group"
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4, ease: 'easeOut' }}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-[#64748b] font-medium">{label}</p>
-          <p className="text-2xl font-bold text-[#1a1a2e] mt-1">{value}</p>
-          {sub && <p className="text-xs text-[#64748b] mt-1">{sub}</p>}
+      <Link
+        href={href}
+        className="block bg-white rounded-2xl p-5 border border-[#e2e8f0] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-[#64748b] font-medium">{label}</p>
+            <p className="text-2xl font-bold text-[#1a1a2e] mt-1">{value}</p>
+            {sub && <p className="text-xs text-[#64748b] mt-1">{sub}</p>}
+          </div>
+          <div className={`p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
+            <Icon className="w-5 h-5" />
+          </div>
         </div>
-        <div className={`p-3 rounded-xl ${color}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -136,6 +145,7 @@ export default function AdminDashboard() {
           icon={CalendarCheck}
           color="bg-blue-100 text-blue-600"
           href="/admin/boekingen"
+          index={0}
         />
         <StatCard
           label="Ontvangen"
@@ -144,6 +154,7 @@ export default function AdminDashboard() {
           icon={TrendingUp}
           color="bg-green-100 text-green-600"
           href="/admin/betalingen"
+          index={1}
         />
         <StatCard
           label="Openstaand"
@@ -152,6 +163,7 @@ export default function AdminDashboard() {
           icon={CreditCard}
           color="bg-orange-100 text-orange-600"
           href="/admin/betalingen"
+          index={2}
         />
         <StatCard
           label="Berichten"
@@ -160,12 +172,18 @@ export default function AdminDashboard() {
           icon={Mail}
           color="bg-purple-100 text-purple-600"
           href="/admin/berichten"
+          index={3}
         />
       </div>
 
       {/* Action items */}
       {(newBookings > 0 || openCount > 0 || newMessages > 0) && (
-        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="bg-white rounded-2xl border border-[#e2e8f0] p-5"
+        >
           <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider mb-3">
             Actiepunten
           </h3>
@@ -207,10 +225,15 @@ export default function AdminDashboard() {
               </Link>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.4 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         {/* Recent bookings */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-[#e2e8f0] p-5">
           <div className="flex items-center justify-between mb-4">
@@ -301,10 +324,15 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Upcoming stays */}
-      <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55, duration: 0.4 }}
+        className="bg-white rounded-2xl border border-[#e2e8f0] p-5"
+      >
         <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider mb-4">
           Aankomende Verblijven
         </h3>
@@ -349,7 +377,7 @@ export default function AdminDashboard() {
             })}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

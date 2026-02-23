@@ -2,7 +2,9 @@
 
 import { useState, useEffect, ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -12,6 +14,9 @@ import {
   LogOut,
   Menu,
   X,
+  Lock,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
@@ -28,6 +33,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -55,41 +61,104 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f2847] to-[#1a3c6e] flex items-center justify-center p-4">
-        <form
-          onSubmit={handleLogin}
-          className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl"
+      <div className="min-h-screen bg-gradient-to-br from-[#0f2847] via-[#1a3c6e] to-[#0f2847] flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-[#1a3c6e] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <LayoutDashboard className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-[#1a1a2e]">Admin Panel</h1>
-            <p className="text-sm text-[#64748b] mt-1">Caravanverhuur Costa Brava</p>
-          </div>
-          <label className="block text-sm font-medium text-[#1a1a2e] mb-1">Wachtwoord</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1a3c6e] mb-1"
-            placeholder="••••••••"
-            autoFocus
-          />
-          {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-          <button
-            type="submit"
-            className="w-full mt-4 py-3 bg-[#1a3c6e] text-white rounded-xl font-semibold hover:bg-[#15325c] transition-colors cursor-pointer"
+          <form
+            onSubmit={handleLogin}
+            className="bg-white rounded-3xl p-8 sm:p-10 w-full max-w-md shadow-2xl relative"
           >
-            Inloggen
-          </button>
-          <Link
-            href="/"
-            className="block text-center text-sm text-[#64748b] mt-4 hover:text-[#1a3c6e] transition-colors"
-          >
-            ← Terug naar website
-          </Link>
-        </form>
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
+              className="text-center mb-8"
+            >
+              <div className="mx-auto mb-5 relative">
+                <Image
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+                  alt="Caravanverhuur Costa Brava"
+                  width={120}
+                  height={120}
+                  className="mx-auto rounded-2xl shadow-lg"
+                  unoptimized
+                />
+              </div>
+              <h1 className="text-2xl font-bold text-[#1a1a2e]">Admin Panel</h1>
+              <p className="text-sm text-[#64748b] mt-1">Log in om het dashboard te beheren</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+            >
+              <label className="block text-sm font-semibold text-[#1a1a2e] mb-2">
+                <Lock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                Wachtwoord
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                  className="w-full px-4 py-3.5 border-2 border-[#e2e8f0] rounded-xl focus:outline-none focus:border-[#1a3c6e] focus:ring-4 focus:ring-[#1a3c6e]/10 transition-all text-base"
+                  placeholder="Voer wachtwoord in..."
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#94a3b8] hover:text-[#64748b] cursor-pointer transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="text-red-500 text-sm mt-2 font-medium"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
+              <button
+                type="submit"
+                className="w-full mt-5 py-3.5 bg-[#1a3c6e] text-white rounded-xl font-semibold hover:bg-[#15325c] active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-[#1a3c6e]/25"
+              >
+                Inloggen
+              </button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Link
+                href="/"
+                className="block text-center text-sm text-[#64748b] mt-5 hover:text-[#1a3c6e] transition-colors"
+              >
+                ← Terug naar website
+              </Link>
+            </motion.div>
+          </form>
+        </motion.div>
       </div>
     );
   }
@@ -97,12 +166,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f1f5f9] flex">
       {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
       <aside
@@ -111,26 +185,50 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="p-5 border-b border-white/10">
-          <h2 className="text-lg font-bold tracking-tight">Admin Panel</h2>
-          <p className="text-xs text-white/50 mt-0.5">Caravanverhuur Costa Brava</p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+              alt="Logo"
+              width={40}
+              height={40}
+              className="rounded-xl"
+              unoptimized
+            />
+            <div>
+              <h2 className="text-base font-bold tracking-tight">Admin Panel</h2>
+              <p className="text-[10px] text-white/50">Caravanverhuur Costa Brava</p>
+            </div>
+          </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item) => {
+          {navItems.map((item, i) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-white/15 text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
               >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </Link>
+                <Link
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-white/15 text-white shadow-sm'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className="ml-auto w-1.5 h-1.5 bg-[#e8632b] rounded-full"
+                    />
+                  )}
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -166,8 +264,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </h1>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
+        {/* Page content with fade-in */}
+        <motion.main
+          key={pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="flex-1 p-4 lg:p-6 overflow-auto"
+        >
+          {children}
+        </motion.main>
       </div>
     </div>
   );
