@@ -75,7 +75,18 @@ export async function setupDatabase() {
     )
   `;
 
-  return { success: true };
+  // Caravan settings table (availability, notes)
+  await sql`
+    CREATE TABLE IF NOT EXISTS caravan_settings (
+      caravan_id TEXT PRIMARY KEY,
+      available BOOLEAN NOT NULL DEFAULT true,
+      status TEXT NOT NULL DEFAULT 'BESCHIKBAAR',
+      admin_notes TEXT,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  return { success: true, message: 'Database tables created successfully' };
 }
 
 // ===== HELPERS =====
@@ -242,7 +253,11 @@ export async function replyToContact(id: string, reply: string) {
 // ===== DASHBOARD STATS =====
 
 export async function getDashboardStats() {
-  const [bookingsResult, paymentsResult, contactsResult] = await Promise.all([
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+
+  const [bookingsResult, paymentsResult, contactsResult, monthlyResult] = await Promise.all([
     sql`SELECT 
       COUNT(*) as total,
       COUNT(*) FILTER (WHERE status NOT IN ('GEANNULEERD', 'AFGEROND')) as active,
@@ -258,12 +273,18 @@ export async function getDashboardStats() {
       COUNT(*) as total,
       COUNT(*) FILTER (WHERE status = 'NIEUW') as new
     FROM contacts`,
+    sql`SELECT
+      COUNT(*) as bookings_this_month,
+      COALESCE(SUM(total_price), 0) as revenue_this_month
+    FROM bookings
+    WHERE created_at >= ${monthStart} AND created_at <= ${monthEnd}`,
   ]);
 
   return {
     bookings: bookingsResult.rows[0],
     payments: paymentsResult.rows[0],
     contacts: contactsResult.rows[0],
+    monthly: monthlyResult.rows[0],
   };
 }
 
@@ -297,4 +318,40 @@ export async function getBookingsByCaravanId(caravanId: string) {
     ORDER BY check_in ASC
   `;
   return result.rows;
+}
+
+// ===== CARAVAN SETTINGS =====
+
+export async function getCaravanSettings() {
+  const result = await sql`
+    SELECT * FROM caravan_settings
+  `;
+  return result.rows;
+}
+
+export async function getCaravanSetting(caravanId: string) {
+  const result = await sql`
+    SELECT * FROM caravan_settings WHERE caravan_id = ${caravanId}
+  `;
+  return result.rows[0] || null;
+}
+
+export async function upsertCaravanSetting(caravanId: string, available: boolean, status: string, adminNotes?: string) {
+  await sql`
+    INSERT INTO caravan_settings (caravan_id, available, status, admin_notes, updated_at)
+    VALUES (${caravanId}, ${available}, ${status}, ${adminNotes || null}, NOW())
+    ON CONFLICT (caravan_id) DO UPDATE SET
+      available = ${available},
+      status = ${status},
+      admin_notes = ${adminNotes || null},
+      updated_at = NOW()
+  `;
+}
+
+export async function getAvailableCaravanIds() {
+  // Returns IDs of caravans that are NOT explicitly set to unavailable
+  const result = await sql`
+    SELECT caravan_id FROM caravan_settings WHERE available = false
+  `;
+  return result.rows.map(r => r.caravan_id);
 }

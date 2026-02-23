@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,6 +65,15 @@ function BoekenContent() {
   const [submitting, setSubmitting] = useState(false);
   const [bookingRef, setBookingRef] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
+
+  // Fetch unavailable caravans from database
+  useEffect(() => {
+    fetch('/api/admin/caravan-settings?unavailable=true')
+      .then(res => res.json())
+      .then(data => setUnavailableIds(data.unavailableIds || []))
+      .catch(() => {});
+  }, []);
 
   const filteredCampings = useMemo(() => {
     if (!campingSearch.trim()) return campings;
@@ -77,7 +86,7 @@ function BoekenContent() {
   const totalPersons = adults + children;
 
   const availableCaravans = caravans.filter(
-    c => c.status === 'BESCHIKBAAR' && c.maxPersons >= totalPersons
+    c => c.maxPersons >= totalPersons && !unavailableIds.includes(c.id)
   );
 
   const chosenCaravan = selectedCaravan ? getCaravanById(selectedCaravan) : null;

@@ -12,6 +12,8 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  XCircle,
+  Power,
 } from 'lucide-react';
 import { caravans, type Caravan } from '@/data/caravans';
 import {
@@ -21,11 +23,19 @@ import {
   type Booking,
 } from '@/data/admin';
 
+interface CaravanSettingData {
+  caravan_id: string;
+  available: boolean;
+  status: string;
+  admin_notes: string | null;
+}
+
 function getCaravanStatusColor(status: string) {
   switch (status) {
     case 'BESCHIKBAAR': return 'bg-green-100 text-green-700';
     case 'ONDERHOUD': return 'bg-yellow-100 text-yellow-700';
     case 'GEBOEKT': return 'bg-blue-100 text-blue-700';
+    case 'NIET_BESCHIKBAAR': return 'bg-red-100 text-red-700';
     default: return 'bg-gray-100 text-gray-600';
   }
 }
@@ -35,13 +45,27 @@ function getCaravanStatusIcon(status: string) {
     case 'BESCHIKBAAR': return CheckCircle2;
     case 'ONDERHOUD': return Wrench;
     case 'GEBOEKT': return CalendarCheck;
+    case 'NIET_BESCHIKBAAR': return XCircle;
     default: return CheckCircle2;
   }
 }
 
-function CaravanDetail({ caravan }: { caravan: Caravan }) {
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'BESCHIKBAAR': return 'Beschikbaar';
+    case 'ONDERHOUD': return 'Onderhoud';
+    case 'GEBOEKT': return 'Geboekt';
+    case 'NIET_BESCHIKBAAR': return 'Niet beschikbaar';
+    default: return status;
+  }
+}
+
+function CaravanDetail({ caravan, setting, onSettingChange }: { caravan: Caravan; setting: CaravanSettingData | null; onSettingChange: (s: CaravanSettingData) => void }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const currentStatus = setting?.status || 'BESCHIKBAAR';
+  const isAvailable = setting?.available !== false;
 
   useEffect(() => {
     fetch(`/api/admin/caravan-bookings?caravanId=${caravan.id}`)
@@ -50,6 +74,29 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [caravan.id]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    setSaving(true);
+    const newAvailable = newStatus === 'BESCHIKBAAR';
+    try {
+      await fetch('/api/admin/caravan-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caravanId: caravan.id,
+          available: newAvailable,
+          status: newStatus,
+        }),
+      });
+      onSettingChange({
+        caravan_id: caravan.id,
+        available: newAvailable,
+        status: newStatus,
+        admin_notes: setting?.admin_notes || null,
+      });
+    } catch { /* silent */ }
+    setSaving(false);
+  };
 
   const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
 
@@ -70,6 +117,40 @@ function CaravanDetail({ caravan }: { caravan: Caravan }) {
           ))}
         </div>
       )}
+
+      {/* Availability control */}
+      <div className="bg-white rounded-xl p-4 border border-[#e2e8f0]">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-3 flex items-center gap-1.5">
+          <Power className="w-3.5 h-3.5" />
+          Beschikbaarheid beheren
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {(['BESCHIKBAAR', 'ONDERHOUD', 'NIET_BESCHIKBAAR'] as const).map((s) => {
+            const isActive = currentStatus === s;
+            const StatusIcon = getCaravanStatusIcon(s);
+            return (
+              <button
+                key={s}
+                onClick={() => handleStatusChange(s)}
+                disabled={saving || isActive}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer disabled:opacity-60 ${
+                  isActive
+                    ? `${getCaravanStatusColor(s)} ring-2 ring-offset-1 ring-current`
+                    : 'bg-[#f8fafc] text-[#64748b] hover:bg-[#f1f5f9]'
+                }`}
+              >
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <StatusIcon className="w-3.5 h-3.5" />}
+                {getStatusLabel(s)}
+              </button>
+            );
+          })}
+        </div>
+        {!isAvailable && (
+          <p className="text-xs text-red-600 mt-2 font-medium">
+            Deze caravan is niet zichtbaar voor klanten op de boekingspagina
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -170,8 +251,22 @@ export default function CaravansAdminPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
+  const [settings, setSettings] = useState<Record<string, CaravanSettingData>>({});
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
   useEffect(() => {
+    // Fetch caravan settings
+    fetch('/api/admin/caravan-settings')
+      .then(res => res.json())
+      .then(data => {
+        const map: Record<string, CaravanSettingData> = {};
+        (data.settings || []).forEach((s: CaravanSettingData) => { map[s.caravan_id] = s; });
+        setSettings(map);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSettings(false));
+
+    // Fetch booking counts
     Promise.all(
       caravans.map(c =>
         fetch(`/api/admin/caravan-bookings?caravanId=${c.id}`)
@@ -186,6 +281,14 @@ export default function CaravansAdminPage() {
     });
   }, []);
 
+  const handleSettingChange = (s: CaravanSettingData) => {
+    setSettings(prev => ({ ...prev, [s.caravan_id]: s }));
+  };
+
+  const getEffectiveStatus = (caravan: Caravan) => {
+    return settings[caravan.id]?.status || caravan.status;
+  };
+
   const filtered = caravans.filter((c) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -198,9 +301,9 @@ export default function CaravansAdminPage() {
   });
 
   const totalCaravans = caravans.length;
-  const beschikbaar = caravans.filter((c) => c.status === 'BESCHIKBAAR').length;
-  const onderhoud = caravans.filter((c) => c.status === 'ONDERHOUD').length;
-  const geboekt = caravans.filter((c) => c.status === 'GEBOEKT').length;
+  const beschikbaar = caravans.filter((c) => getEffectiveStatus(c) === 'BESCHIKBAAR').length;
+  const onderhoud = caravans.filter((c) => getEffectiveStatus(c) === 'ONDERHOUD').length;
+  const nietBeschikbaar = caravans.filter((c) => getEffectiveStatus(c) === 'NIET_BESCHIKBAAR').length;
 
   return (
     <div className="space-y-4">
@@ -214,12 +317,12 @@ export default function CaravansAdminPage() {
           <p className="text-xs text-[#64748b]">Beschikbaar</p>
         </div>
         <div className="bg-white rounded-xl border border-[#e2e8f0] p-3 text-center">
-          <p className="text-2xl font-bold text-blue-600">{geboekt}</p>
-          <p className="text-xs text-[#64748b]">Geboekt</p>
-        </div>
-        <div className="bg-white rounded-xl border border-[#e2e8f0] p-3 text-center">
           <p className="text-2xl font-bold text-yellow-600">{onderhoud}</p>
           <p className="text-xs text-[#64748b]">Onderhoud</p>
+        </div>
+        <div className="bg-white rounded-xl border border-[#e2e8f0] p-3 text-center">
+          <p className="text-2xl font-bold text-red-600">{nietBeschikbaar}</p>
+          <p className="text-xs text-[#64748b]">Niet beschikbaar</p>
         </div>
       </div>
 
@@ -237,7 +340,8 @@ export default function CaravansAdminPage() {
       <div className="space-y-2">
         {filtered.map((caravan) => {
           const isExpanded = expandedId === caravan.id;
-          const StatusIcon = getCaravanStatusIcon(caravan.status);
+          const effectiveStatus = getEffectiveStatus(caravan);
+          const StatusIcon = getCaravanStatusIcon(effectiveStatus);
           const bookingCount = bookingCounts[caravan.id] || 0;
 
           return (
@@ -282,10 +386,10 @@ export default function CaravansAdminPage() {
                     <p className="text-sm font-semibold text-[#1a1a2e]">{formatCurrency(caravan.pricePerWeek)}/wk</p>
                   </div>
                   <span
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCaravanStatusColor(caravan.status)}`}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCaravanStatusColor(effectiveStatus)}`}
                   >
                     <StatusIcon className="w-3 h-3" />
-                    {caravan.status}
+                    {getStatusLabel(effectiveStatus)}
                   </span>
                   {isExpanded ? (
                     <ChevronUp className="w-4 h-4 text-[#94a3b8]" />
@@ -297,7 +401,7 @@ export default function CaravansAdminPage() {
 
               {isExpanded && (
                 <div className="px-5 pb-5">
-                  <CaravanDetail caravan={caravan} />
+                  <CaravanDetail caravan={caravan} setting={settings[caravan.id] || null} onSettingChange={handleSettingChange} />
                 </div>
               )}
             </div>

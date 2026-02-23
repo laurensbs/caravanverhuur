@@ -30,6 +30,7 @@ interface DashboardData {
     bookings: { total: string; active: string; new: string };
     payments: { total_paid: string; paid_count: string; total_open: string; open_count: string };
     contacts: { total: string; new: string };
+    monthly: { bookings_this_month: string; revenue_this_month: string };
   };
   recentBookings: Booking[];
   recentContacts: ContactSubmission[];
@@ -133,9 +134,39 @@ export default function AdminDashboard() {
   const openCount = parseInt(stats.payments.open_count);
   const totalMessages = parseInt(stats.contacts.total);
   const newMessages = parseInt(stats.contacts.new);
+  const bookingsThisMonth = parseInt(stats.monthly?.bookings_this_month || '0');
+  const revenueThisMonth = parseFloat(stats.monthly?.revenue_this_month || '0');
+
+  const monthName = new Date().toLocaleDateString('nl-NL', { month: 'long' });
 
   return (
     <div className="space-y-6">
+      {/* Monthly overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-gradient-to-r from-[#1a3c6e] to-[#2a5298] rounded-2xl p-5 text-white"
+      >
+        <p className="text-sm text-white/70 font-medium uppercase tracking-wider">
+          Overzicht {monthName} {new Date().getFullYear()}
+        </p>
+        <div className="flex flex-wrap gap-6 mt-3">
+          <div>
+            <p className="text-3xl font-bold">{bookingsThisMonth}</p>
+            <p className="text-sm text-white/60">boekingen deze maand</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold">{formatCurrency(revenueThisMonth)}</p>
+            <p className="text-sm text-white/60">omzet deze maand</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold">{formatCurrency(totalOpen)}</p>
+            <p className="text-sm text-white/60">openstaand</p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
