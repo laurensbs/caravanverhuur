@@ -13,9 +13,9 @@ export default function Footer() {
             <Image
               src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
               alt="Caravanverhuur Costa Brava"
-              width={56}
-              height={56}
-              className="rounded-xl mb-1"
+              width={128}
+              height={128}
+              className="rounded-2xl w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 mb-1 shadow-md"
               unoptimized
             />
             <p className="text-blue-200 text-sm leading-relaxed">

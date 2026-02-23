@@ -44,15 +44,15 @@ export default function Header() {
 
       {/* Main nav */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-24 sm:h-28">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
               src="https://u.cubeupload.com/laurensbos/8e603c0dabfd4df3a61f.jpeg"
               alt="Caravanverhuur Costa Brava"
-              width={52}
-              height={52}
-              className="rounded-xl w-11 h-11 sm:w-[52px] sm:h-[52px] hover:scale-105 transition-transform duration-200"
+              width={112}
+              height={112}
+              className="rounded-2xl w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 hover:scale-105 transition-transform duration-200 shadow-md"
               unoptimized
             />
           </Link>

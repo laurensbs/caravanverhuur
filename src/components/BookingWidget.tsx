@@ -59,11 +59,12 @@ export default function BookingWidget() {
       <div className="bg-white/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl border border-white/20 p-3 lg:p-2">
         <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0">
           {/* Check-in */}
-          <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border">
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Aankomst</label>
+          <label htmlFor="checkin-date" className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Aankomst</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
+                id="checkin-date"
                 type="date"
                 value={checkIn}
                 onChange={e => setCheckIn(e.target.value)}
@@ -72,14 +73,15 @@ export default function BookingWidget() {
                 placeholder="Datum"
               />
             </div>
-          </div>
+          </label>
 
           {/* Check-out */}
-          <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border">
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Vertrek</label>
+          <label htmlFor="checkout-date" className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Vertrek</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
+                id="checkout-date"
                 type="date"
                 value={checkOut}
                 onChange={e => setCheckOut(e.target.value)}
@@ -87,13 +89,16 @@ export default function BookingWidget() {
                 className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
               />
             </div>
-          </div>
+          </label>
 
           {/* Camping selector */}
-          <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border relative" ref={campingRef}>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Camping</label>
+          <div
+            className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border relative cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
+            ref={campingRef}
+            onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }}
+          >
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Camping</span>
             <button
-              onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }}
               className="flex items-center gap-2 w-full text-left"
             >
               <MapPin size={16} className="text-primary shrink-0" />
@@ -156,10 +161,13 @@ export default function BookingWidget() {
           </div>
 
           {/* Guests */}
-          <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 relative" ref={guestsRef}>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Gasten</label>
+          <div
+            className="flex-1 px-3 lg:px-5 py-2 lg:py-3 relative cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
+            ref={guestsRef}
+            onClick={() => { setGuestsOpen(!guestsOpen); setCampingOpen(false); }}
+          >
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Gasten</span>
             <button
-              onClick={() => { setGuestsOpen(!guestsOpen); setCampingOpen(false); }}
               className="flex items-center gap-2 w-full text-left"
             >
               <Users size={16} className="text-primary shrink-0" />

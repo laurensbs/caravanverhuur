@@ -21,6 +21,8 @@ import {
   ThumbsUp,
   Clock,
   Wallet,
+  Quote,
+  MessageCircle,
 } from 'lucide-react';
 import { caravans } from '@/data/caravans';
 import BookingWidget from '@/components/BookingWidget';
@@ -561,6 +563,118 @@ export default function HomePage() {
       {/* ===== WEATHER CHECKER ===== */}
       <WeatherChecker />
 
+      {/* ===== REVIEWS / SOCIAL PROOF ===== */}
+      <section className="py-12 sm:py-20 bg-surface overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-10 sm:mb-16"
+          >
+            <motion.span variants={fadeUp} custom={0} className="text-accent font-semibold text-xs sm:text-sm uppercase tracking-wider">
+              Ervaringen
+            </motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+              Wat onze gasten zeggen
+            </motion.h2>
+          </motion.div>
+
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
+            {[
+              {
+                name: 'Familie de Vries',
+                location: 'Utrecht',
+                rating: 5,
+                text: 'Fantastische ervaring! De caravan stond helemaal klaar met alles erop en eraan. De kinderen vonden het geweldig. Zeker een aanrader!',
+                date: 'Augustus 2025',
+              },
+              {
+                name: 'Mark & Lisa',
+                location: 'Amsterdam',
+                rating: 5,
+                text: 'Super makkelijk geboekt en alles was perfect geregeld. Geen stress met transport of opbouwen. Gewoon uitstappen en genieten van de zon.',
+                date: 'Juli 2025',
+              },
+              {
+                name: 'Familie Bakker',
+                location: 'Rotterdam',
+                rating: 5,
+                text: 'De camping was prachtig en de caravan was schoon en compleet ingericht. De communicatie verliep heel vlot. Volgend jaar boeken we weer!',
+                date: 'September 2025',
+              },
+              {
+                name: 'Jan & Petra',
+                location: 'Den Haag',
+                rating: 5,
+                text: 'Wat een service! Alles was tot in de puntjes geregeld. De inventaris was compleet en de locatie op de camping was top.',
+                date: 'Juni 2025',
+              },
+              {
+                name: 'Familie Jansen',
+                location: 'Eindhoven',
+                rating: 5,
+                text: 'Onze derde keer en weer helemaal tevreden. De kinderen vragen elk jaar opnieuw om een caravanvakantie aan de Costa Brava.',
+                date: 'Augustus 2025',
+              },
+              {
+                name: 'Sophie & Tom',
+                location: 'Groningen',
+                rating: 5,
+                text: 'Beste vakantie ooit! Geen gedoe met slepen, alles stond al klaar. Het voelde als thuiskomen. Absolute aanrader!',
+                date: 'Juli 2025',
+              },
+            ].map((review, i) => (
+              <motion.div
+                key={review.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-border hover:shadow-lg transition-all duration-300 relative"
+              >
+                <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: review.rating }).map((_, s) => (
+                    <Star key={s} size={16} className="fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-foreground leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold text-sm text-foreground">{review.name}</div>
+                    <div className="text-xs text-muted">{review.location}</div>
+                  </div>
+                  <span className="text-[10px] text-muted bg-surface px-2 py-1 rounded-full">{review.date}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mt-10 sm:mt-14 flex flex-wrap items-center justify-center gap-4 sm:gap-8"
+          >
+            {[
+              { icon: <Shield size={20} className="text-primary" />, text: 'Veilig betalen via Stripe' },
+              { icon: <CheckCircle size={20} className="text-green-500" />, text: 'Volledige inventaris' },
+              { icon: <Star size={20} className="text-yellow-500 fill-yellow-500" />, text: '5/5 beoordeling' },
+              { icon: <Users size={20} className="text-primary" />, text: '100+ tevreden gasten' },
+            ].map(badge => (
+              <div key={badge.text} className="flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm border border-border text-xs sm:text-sm font-medium text-foreground">
+                {badge.icon}
+                {badge.text}
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== CTA SECTION ===== */}
       <section className="py-12 sm:py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -603,6 +717,23 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ===== WHATSAPP FLOATING BUTTON ===== */}
+      <motion.a
+        href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20interesse%20in%20het%20huren%20van%20een%20caravan%20op%20de%20Costa%20Brava."
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 2, duration: 0.4, type: 'spring' }}
+        className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-[#25D366] hover:bg-[#20BD5A] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 group"
+        aria-label="Chat via WhatsApp"
+      >
+        <MessageCircle size={28} className="text-white" />
+        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+          WhatsApp ons!
+        </span>
+      </motion.a>
     </>
   );
 }
