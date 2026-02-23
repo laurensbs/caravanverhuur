@@ -31,14 +31,25 @@ export default function OverOnsPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-blue-400 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4">
-            Over Ons
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-blue-100 text-lg max-w-2xl mx-auto">
-            Wij zijn Caravanverhuur Costa Brava – jouw partner voor een zorgeloze caravanvakantie aan de Spaanse kust.
-          </motion.p>
+      <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1583946099379-25a3e4b29d8c?w=1920&q=80"
+          alt="Costa Brava kust"
+          fill
+          className="object-cover"
+          priority
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white px-4">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
+              Over Ons
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
+              Wij zijn Caravanverhuur Costa Brava – jouw partner voor een zorgeloze caravanvakantie aan de Spaanse kust.
+            </motion.p>
+          </div>
         </div>
       </section>
 

@@ -17,6 +17,8 @@ import {
   Phone,
   MessageSquare,
   Search,
+  Hash,
+  Filter,
 } from 'lucide-react';
 import { caravans, getCaravanById } from '@/data/caravans';
 import { campings } from '@/data/campings';
@@ -53,6 +55,8 @@ function BoekenContent() {
   const [checkOut, setCheckOut] = useState('');
   const [campingId, setCampingId] = useState('');
   const [campingSearch, setCampingSearch] = useState('');
+  const [spotNumber, setSpotNumber] = useState('');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [selectedCaravan, setSelectedCaravan] = useState(preselectedCaravan || '');
@@ -75,13 +79,24 @@ function BoekenContent() {
       .catch(() => {});
   }, []);
 
+  const locations = useMemo(() => {
+    const locs = [...new Set(campings.map(c => c.location))].sort();
+    return locs;
+  }, []);
+
   const filteredCampings = useMemo(() => {
-    if (!campingSearch.trim()) return campings;
-    const q = campingSearch.toLowerCase();
-    return campings.filter(
-      c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q)
-    );
-  }, [campingSearch]);
+    let result = campings;
+    if (locationFilter !== 'all') {
+      result = result.filter(c => c.location === locationFilter);
+    }
+    if (campingSearch.trim()) {
+      const q = campingSearch.toLowerCase();
+      result = result.filter(
+        c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [campingSearch, locationFilter]);
 
   const totalPersons = adults + children;
 
@@ -137,6 +152,7 @@ function BoekenContent() {
           specialRequests: specialRequests || undefined,
           caravanId: selectedCaravan,
           campingId,
+          spotNumber: spotNumber || undefined,
           checkIn,
           checkOut,
           nights,
@@ -186,6 +202,7 @@ function BoekenContent() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted">Caravan:</span><span className="font-medium">{chosenCaravan?.name}</span></div>
                 <div className="flex justify-between"><span className="text-muted">Camping:</span><span className="font-medium">{chosenCamping?.name}</span></div>
+                {spotNumber && <div className="flex justify-between"><span className="text-muted">Pleknummer:</span><span className="font-medium">{spotNumber}</span></div>}
                 <div className="flex justify-between"><span className="text-muted">Periode:</span><span className="font-medium">{checkIn} t/m {checkOut} ({nights} nachten)</span></div>
                 <div className="flex justify-between"><span className="text-muted">Personen:</span><span className="font-medium">{adults} volw. + {children} kind.</span></div>
                 <div className="border-t border-border my-3" />
@@ -206,14 +223,25 @@ function BoekenContent() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-blue-400 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl sm:text-4xl font-bold mb-3">
-            Boek jouw caravan
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-blue-100 text-lg">
-            Volg de stappen en boek jouw zorgeloze caravanvakantie
-          </motion.p>
+      <section className="relative h-[35vh] min-h-[240px] overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1526491109649-aa0bf9a186e6?w=1920&q=80"
+          alt="Camping aan de Costa Brava"
+          fill
+          className="object-cover"
+          priority
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white px-4">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl sm:text-4xl font-bold mb-3 drop-shadow-lg">
+              Boek jouw caravan
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg drop-shadow">
+              Volg de stappen en boek jouw zorgeloze caravanvakantie
+            </motion.p>
+          </div>
         </div>
       </section>
 
@@ -307,17 +335,45 @@ function BoekenContent() {
                     </h2>
                     <p className="text-muted">Zoek of selecteer een camping op de Costa Brava.</p>
                   </div>
-                  <div className="relative">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-                    <input
-                      type="text"
-                      value={campingSearch}
-                      onChange={e => setCampingSearch(e.target.value)}
-                      placeholder="Zoek op campingnaam of stad..."
-                      className="w-full pl-11 pr-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    />
+
+                  {/* Search + Location filter */}
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                      <input
+                        type="text"
+                        value={campingSearch}
+                        onChange={e => setCampingSearch(e.target.value)}
+                        placeholder="Zoek op campingnaam of stad..."
+                        className="w-full pl-11 pr-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                      <Filter size={14} className="text-muted shrink-0" />
+                      <button
+                        onClick={() => setLocationFilter('all')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                          locationFilter === 'all' ? 'bg-primary text-white' : 'bg-surface text-foreground hover:bg-surface-alt'
+                        }`}
+                      >
+                        Alle locaties
+                      </button>
+                      {locations.map(loc => (
+                        <button
+                          key={loc}
+                          onClick={() => setLocationFilter(loc)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                            locationFilter === loc ? 'bg-primary text-white' : 'bg-surface text-foreground hover:bg-surface-alt'
+                          }`}
+                        >
+                          {loc}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+
+                  {/* Camping list */}
+                  <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                     {filteredCampings.map(c => (
                       <button
                         key={c.id}
@@ -331,7 +387,7 @@ function BoekenContent() {
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="font-semibold text-foreground">{c.name}</div>
-                            <div className="text-sm text-muted">{c.location}</div>
+                            <div className="text-sm text-muted flex items-center gap-1"><MapPin size={12} /> {c.location}</div>
                             <div className="text-xs text-muted mt-1">{c.description}</div>
                           </div>
                           {campingId === c.id && (
@@ -344,6 +400,24 @@ function BoekenContent() {
                       <p className="text-center text-muted py-8">Geen campings gevonden. Probeer een andere zoekterm.</p>
                     )}
                   </div>
+
+                  {/* Spot number input */}
+                  {campingId && (
+                    <div className="bg-surface rounded-xl p-4 border border-border">
+                      <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                        <Hash size={14} className="text-primary" />
+                        Pleknummer (optioneel)
+                      </label>
+                      <input
+                        type="text"
+                        value={spotNumber}
+                        onChange={e => setSpotNumber(e.target.value)}
+                        placeholder="Bijv. 42, A12, of laat leeg voor geen voorkeur"
+                        className="w-full px-4 py-2.5 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
+                      />
+                      <p className="text-xs text-muted mt-1.5">Heb je een voorkeursplek? Wij doen ons best om deze te reserveren.</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -520,6 +594,7 @@ function BoekenContent() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between"><span className="text-muted">Caravan:</span><span className="font-medium">{chosenCaravan?.name}</span></div>
                       <div className="flex justify-between"><span className="text-muted">Camping:</span><span className="font-medium">{chosenCamping?.name}, {chosenCamping?.location}</span></div>
+                      {spotNumber && <div className="flex justify-between"><span className="text-muted">Pleknummer:</span><span className="font-medium">{spotNumber}</span></div>}
                       <div className="flex justify-between"><span className="text-muted">Periode:</span><span className="font-medium">{checkIn} t/m {checkOut}</span></div>
                       <div className="flex justify-between"><span className="text-muted">Nachten:</span><span className="font-medium">{nights}</span></div>
                       <div className="flex justify-between"><span className="text-muted">Personen:</span><span className="font-medium">{adults} volw. + {children} kind.</span></div>

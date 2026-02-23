@@ -30,7 +30,7 @@ export default function Header() {
   }, [menuOpen]);
 
   return (
-    <>
+    <div className="sticky top-0 z-50">
       {/* Weather bar */}
       <WeatherBar />
 
@@ -57,7 +57,7 @@ export default function Header() {
       </div>
 
       {/* Main nav */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border/50 shadow-sm">
+      <header className="bg-white/95 backdrop-blur-md border-b border-border/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20 sm:h-22 lg:h-24">
           {/* Logo */}
           <Link href="/" className="shrink-0 relative z-[60]">
@@ -219,6 +219,6 @@ export default function Header() {
           )}
         </AnimatePresence>
       </header>
-    </>
+    </div>
   );
 }

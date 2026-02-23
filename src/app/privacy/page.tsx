@@ -6,10 +6,15 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <section className="py-16">
+    <>
+      <section className="bg-gradient-to-b from-primary-dark to-primary text-white py-14">
+        <div className="max-w-3xl mx-auto px-4">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Privacybeleid</h1>
+          <p className="text-blue-100">Laatst bijgewerkt: 1 februari 2026</p>
+        </div>
+      </section>
+      <section className="py-16">
       <div className="max-w-3xl mx-auto px-4 prose prose-blue max-w-none">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Privacybeleid</h1>
-        <p className="text-muted mb-8">Laatst bijgewerkt: 1 februari 2026</p>
 
         <p className="text-muted leading-relaxed mb-6">
           Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens. 
@@ -107,5 +112,6 @@ export default function PrivacyPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }

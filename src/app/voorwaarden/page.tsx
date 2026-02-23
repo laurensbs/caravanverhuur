@@ -6,10 +6,15 @@ export const metadata = {
 
 export default function VoorwaardenPage() {
   return (
-    <section className="py-16">
+    <>
+      <section className="bg-gradient-to-b from-primary-dark to-primary text-white py-14">
+        <div className="max-w-3xl mx-auto px-4">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Algemene Voorwaarden</h1>
+          <p className="text-blue-100">Laatst bijgewerkt: 1 februari 2026</p>
+        </div>
+      </section>
+      <section className="py-16">
       <div className="max-w-3xl mx-auto px-4 prose prose-blue max-w-none">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Algemene Voorwaarden</h1>
-        <p className="text-muted mb-8">Laatst bijgewerkt: 1 februari 2026</p>
 
         <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">1. Definities</h2>
         <p className="text-muted leading-relaxed mb-4">
@@ -91,5 +96,6 @@ export default function VoorwaardenPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }
