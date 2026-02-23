@@ -34,31 +34,9 @@ export default function Header() {
       {/* Weather bar */}
       <WeatherBar />
 
-      {/* Top bar - desktop */}
-      <div className="bg-gradient-to-r from-primary-dark via-primary-dark to-primary text-white text-xs py-1.5 hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-1.5 hover:text-amber-300 transition-colors">
-              <Mail size={12} />
-              info@caravanverhuurcostabrava.com
-            </a>
-            <a href="tel:+34600000000" className="flex items-center gap-1.5 hover:text-amber-300 transition-colors">
-              <Phone size={12} />
-              +34 600 000 000
-            </a>
-          </div>
-          <div className="text-white/70">
-            Onderdeel van{' '}
-            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2 hover:text-amber-300 transition-colors">
-              Caravanstalling-Spanje
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main nav */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-border/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20 sm:h-22 lg:h-24">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-18 lg:h-20">
           {/* Logo */}
           <Link href="/" className="shrink-0 relative z-[60]">
             <Image
@@ -66,25 +44,25 @@ export default function Header() {
               alt="Caravanverhuur Costa Brava"
               width={200}
               height={60}
-              className="w-28 sm:w-36 lg:w-44 h-auto hover:scale-105 transition-transform duration-200"
+              className="w-28 sm:w-36 lg:w-44 h-auto"
               unoptimized
             />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3.5 py-2 text-sm font-medium text-foreground/80 hover:text-primary rounded-lg hover:bg-primary/5 transition-all duration-150"
+                className="px-3.5 py-2 text-sm font-medium text-gray-600 hover:text-primary rounded-lg hover:bg-gray-50 transition-all duration-150"
               >
                 {link.label}
               </Link>
             ))}
             <Link
               href="/boeken"
-              className="ml-3 px-5 py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full transition-all duration-150 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 flex items-center gap-1.5"
+              className="ml-3 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-150 shadow-sm hover:shadow-md flex items-center gap-1.5"
             >
               Boek Nu
               <ArrowRight size={14} />
@@ -94,24 +72,24 @@ export default function Header() {
           {/* Mobile/tablet menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden relative z-[60] w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface transition-colors"
+            className="lg:hidden relative z-[60] w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
             aria-label="Menu"
           >
             <div className="relative w-5 h-4">
               <motion.span
                 animate={menuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-0 left-0 w-full h-0.5 bg-foreground rounded-full origin-center"
+                className="absolute top-0 left-0 w-full h-0.5 bg-gray-800 rounded-full origin-center"
               />
               <motion.span
                 animate={menuOpen ? { opacity: 0, x: -8 } : { opacity: 1, x: 0 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-[6px] left-0 w-full h-0.5 bg-foreground rounded-full"
+                className="absolute top-[6px] left-0 w-full h-0.5 bg-gray-800 rounded-full"
               />
               <motion.span
                 animate={menuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-3 left-0 w-full h-0.5 bg-foreground rounded-full origin-center"
+                className="absolute top-3 left-0 w-full h-0.5 bg-gray-800 rounded-full origin-center"
               />
             </div>
           </button>
@@ -127,7 +105,7 @@ export default function Header() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden"
                 onClick={() => setMenuOpen(false)}
               />
 
@@ -137,11 +115,11 @@ export default function Header() {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white z-50 lg:hidden shadow-2xl flex flex-col"
+                className="fixed top-0 right-0 bottom-0 w-[80vw] max-w-sm bg-white z-50 lg:hidden shadow-2xl flex flex-col"
               >
                 {/* Panel header */}
-                <div className="flex items-center justify-between p-5 border-b border-border">
-                  <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3">
+                <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                  <Link href="/" onClick={() => setMenuOpen(false)}>
                     <Image
                       src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
                       alt="Logo"
@@ -153,9 +131,9 @@ export default function Header() {
                   </Link>
                   <button
                     onClick={() => setMenuOpen(false)}
-                    className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center hover:bg-border transition-colors cursor-pointer"
+                    className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    <X size={20} className="text-foreground" />
+                    <X size={20} className="text-gray-600" />
                   </button>
                 </div>
 
@@ -172,53 +150,57 @@ export default function Header() {
                       <Link
                         href={link.href}
                         onClick={() => setMenuOpen(false)}
-                        className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-foreground hover:bg-surface transition-colors"
+                        className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        <span className="text-base font-semibold">{link.label}</span>
-                        <ChevronRight size={18} className="text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        <span className="text-base font-medium">{link.label}</span>
+                        <ChevronRight size={18} className="text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                       </Link>
                     </motion.div>
                   ))}
                 </nav>
 
                 {/* CTA + contact */}
-                <div className="p-5 border-t border-border space-y-4">
+                <div className="p-5 border-t border-gray-100 space-y-4">
                   <Link
                     href="/boeken"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-bold rounded-2xl text-base transition-all active:scale-95 shadow-lg"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl text-base transition-all active:scale-95 shadow-md"
                   >
-                    Direct boeken
+                    Boek Nu
                     <ArrowRight size={18} />
                   </Link>
 
                   <div className="space-y-2">
-                    <a href="tel:+34600000000" className="flex items-center gap-3 text-muted hover:text-foreground transition-colors">
-                      <div className="w-8 h-8 bg-surface rounded-lg flex items-center justify-center">
+                    <a href="tel:+34600000000" className="flex items-center gap-3 text-gray-500 hover:text-gray-700 transition-colors">
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                         <Phone size={14} />
                       </div>
                       <span className="text-sm">+34 600 000 000</span>
                     </a>
-                    <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-3 text-muted hover:text-foreground transition-colors">
-                      <div className="w-8 h-8 bg-surface rounded-lg flex items-center justify-center">
+                    <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-3 text-gray-500 hover:text-gray-700 transition-colors">
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                         <Mail size={14} />
                       </div>
                       <span className="text-sm">info@caravanverhuurcostabrava.com</span>
                     </a>
                   </div>
-
-                  <p className="text-xs text-muted pt-2">
-                    Onderdeel van{' '}
-                    <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
-                      Caravanstalling-Spanje
-                    </a>
-                  </p>
                 </div>
               </motion.div>
             </>
           )}
         </AnimatePresence>
       </header>
+
+      {/* Mobile floating Boek Nu button */}
+      <div className="lg:hidden fixed bottom-5 left-4 right-4 z-40">
+        <Link
+          href="/boeken"
+          className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-full text-base transition-all active:scale-95 shadow-lg"
+        >
+          Boek Nu
+          <ArrowRight size={18} />
+        </Link>
+      </div>
     </div>
   );
 }
