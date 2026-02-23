@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CalendarDays, MapPin, Users, Minus, Plus, Search, ChevronDown, X } from 'lucide-react';
@@ -18,6 +18,18 @@ export default function BookingWidget() {
   const [children, setChildren] = useState(0);
   const campingRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
+  const checkInRef = useRef<HTMLInputElement>(null);
+  const checkOutRef = useRef<HTMLInputElement>(null);
+
+  const openCheckIn = useCallback(() => {
+    checkInRef.current?.showPicker?.();
+    checkInRef.current?.focus();
+  }, []);
+
+  const openCheckOut = useCallback(() => {
+    checkOutRef.current?.showPicker?.();
+    checkOutRef.current?.focus();
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -51,37 +63,42 @@ export default function BookingWidget() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.4 }}
+      transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' as const }}
       className="w-full"
     >
       <div className="bg-white/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl border border-white/20 p-3 lg:p-2">
         <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0">
           {/* Check-in */}
-          <label htmlFor="checkin-date" className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors">
+          <div
+            onClick={openCheckIn}
+            className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
+          >
             <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Aankomst</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
-                id="checkin-date"
+                ref={checkInRef}
                 type="date"
                 value={checkIn}
                 onChange={e => setCheckIn(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
                 className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
-                placeholder="Datum"
               />
             </div>
-          </label>
+          </div>
 
           {/* Check-out */}
-          <label htmlFor="checkout-date" className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors">
+          <div
+            onClick={openCheckOut}
+            className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
+          >
             <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Vertrek</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
-                id="checkout-date"
+                ref={checkOutRef}
                 type="date"
                 value={checkOut}
                 onChange={e => setCheckOut(e.target.value)}
@@ -89,7 +106,7 @@ export default function BookingWidget() {
                 className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
               />
             </div>
-          </label>
+          </div>
 
           {/* Camping selector */}
           <div
