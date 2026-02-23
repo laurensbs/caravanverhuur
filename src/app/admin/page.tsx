@@ -76,8 +76,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetch('/api/admin/dashboard')
-      .then(res => res.json())
-      .then(setData)
+      .then(async res => {
+        if (!res.ok) {
+          // Try to auto-setup database
+          await fetch('/api/setup');
+          const retry = await fetch('/api/admin/dashboard');
+          if (!retry.ok) throw new Error('API error');
+          return retry.json();
+        }
+        return res.json();
+      })
+      .then(d => {
+        if (d.error) throw new Error(d.error);
+        setData(d);
+      })
       .catch(() => setError('Kon dashboard data niet laden'))
       .finally(() => setLoading(false));
   }, []);
