@@ -133,7 +133,7 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
             >
               {[
-                { value: '6+', label: 'Caravans', color: 'text-cyan-300' },
+                { value: '6+', label: 'Caravans', color: 'text-blue-300' },
                 { value: '30+', label: 'Campings', color: 'text-amber-300' },
                 { value: '100%', label: 'Ontzorgd', color: 'text-emerald-300' },
               ].map(stat => (
@@ -156,7 +156,7 @@ export default function HomePage() {
             className="hidden lg:flex gap-8 mt-8 max-w-md"
           >
             {[
-              { value: '6+', label: 'Caravans beschikbaar', color: 'text-cyan-300' },
+              { value: '6+', label: 'Caravans beschikbaar', color: 'text-blue-300' },
               { value: '30+', label: 'Campings Costa Brava', color: 'text-amber-300' },
               { value: '100%', label: 'Volledig ontzorgd', color: 'text-emerald-300' },
             ].map(stat => (
@@ -250,7 +250,7 @@ export default function HomePage() {
                 title: 'Borg bescherming',
                 desc: 'Duidelijke borgvoorwaarden. Na controle krijg je je borg volledig retour.',
                 color: 'text-primary',
-                bg: 'bg-cyan-50',
+                bg: 'bg-blue-50',
               },
               {
                 icon: <Truck size={24} />,
@@ -308,8 +308,8 @@ export default function HomePage() {
               {[
                 { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={22} />, gradient: 'from-rose-400 to-pink-500' },
                 { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={22} />, gradient: 'from-amber-400 to-orange-500' },
-                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={22} />, gradient: 'from-cyan-400 to-primary' },
-                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={22} />, gradient: 'from-emerald-400 to-teal-500' },
+                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={22} />, gradient: 'from-blue-400 to-primary' },
+                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={22} />, gradient: 'from-emerald-400 to-green-500' },
                 { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar. Uitstappen en genieten!', icon: <Star size={22} />, gradient: 'from-yellow-400 to-amber-500' },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative">
@@ -332,8 +332,8 @@ export default function HomePage() {
             {[
               { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={18} />, gradient: 'from-rose-400 to-pink-500' },
               { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={18} />, gradient: 'from-amber-400 to-orange-500' },
-              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={18} />, gradient: 'from-cyan-400 to-primary' },
-              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={18} />, gradient: 'from-emerald-400 to-teal-500' },
+              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={18} />, gradient: 'from-blue-400 to-primary' },
+              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={18} />, gradient: 'from-emerald-400 to-green-500' },
               { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar!', icon: <Star size={18} />, gradient: 'from-yellow-400 to-amber-500' },
             ].map((item, i) => (
               <motion.div
@@ -407,7 +407,7 @@ export default function HomePage() {
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold text-white shadow-md ${
                       caravan.type === 'LUXE' ? 'bg-gradient-to-r from-amber-400 to-yellow-500' :
-                      caravan.type === 'FAMILIE' ? 'bg-gradient-to-r from-cyan-500 to-primary' : 'bg-gradient-to-r from-emerald-400 to-green-500'
+                      caravan.type === 'FAMILIE' ? 'bg-gradient-to-r from-blue-500 to-primary' : 'bg-gradient-to-r from-emerald-400 to-green-500'
                     }`}>
                       {caravan.type}
                     </span>
@@ -425,7 +425,7 @@ export default function HomePage() {
                   <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
-                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-cyan-50 text-primary-dark rounded-md">{a}</span>
+                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-50 text-primary-dark rounded-md">{a}</span>
                     ))}
                     {caravan.amenities.length > 3 && (
                       <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
@@ -487,14 +487,14 @@ export default function HomePage() {
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {[
-                  { item: 'Dekbedden & kussens', color: 'text-cyan-500' },
+                  { item: 'Dekbedden & kussens', color: 'text-blue-500' },
                   { item: 'Volledig servies', color: 'text-amber-500' },
                   { item: 'Kookgerei & pannen', color: 'text-emerald-500' },
                   { item: 'Handdoeken', color: 'text-sky-500' },
                   { item: 'Verwarming & gas', color: 'text-orange-500' },
                   { item: 'Elektra & accu', color: 'text-violet-500' },
                   { item: 'Rolgordijnen & horren', color: 'text-rose-500' },
-                  { item: 'Schoonmaakmiddelen', color: 'text-teal-500' },
+                  { item: 'Schoonmaakmiddelen', color: 'text-blue-500' },
                 ].map((entry, i) => (
                   <motion.div
                     key={entry.item}
@@ -560,7 +560,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== ADVANTAGES HIGHLIGHT ===== */}
-      <section className="py-12 sm:py-20 bg-gradient-to-br from-primary-dark via-primary to-cyan-400 text-white overflow-hidden relative">
+      <section className="py-12 sm:py-20 bg-gradient-to-br from-primary-dark via-primary to-blue-400 text-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -577,7 +577,7 @@ export default function HomePage() {
             {[
               { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.', accent: 'group-hover:bg-amber-400/30' },
               { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.', accent: 'group-hover:bg-emerald-400/30' },
-              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.', accent: 'group-hover:bg-cyan-400/30' },
+              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.', accent: 'group-hover:bg-blue-400/30' },
               { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.', accent: 'group-hover:bg-rose-400/30' },
             ].map((item, i) => (
               <motion.div
@@ -592,7 +592,7 @@ export default function HomePage() {
                   {item.icon}
                 </div>
                 <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-cyan-100 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-blue-100 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -605,7 +605,7 @@ export default function HomePage() {
             transition={{ delay: 0.4, duration: 0.5 }}
             className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 text-center"
           >
-            <p className="text-sm sm:text-base text-cyan-100 leading-relaxed">
+            <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
               <span className="text-white font-bold">Meer dan 20 jaar actief</span> in de caravansbranche in de Costa Brava.
               Onderdeel van{' '}
               <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-amber-300 underline underline-offset-2 hover:text-white transition-colors">

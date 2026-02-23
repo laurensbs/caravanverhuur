@@ -31,12 +31,12 @@ export default function OverOnsPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-cyan-500 text-white py-20">
+      <section className="bg-gradient-to-r from-primary-dark via-primary to-blue-400 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4">
             Over Ons
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-cyan-100 text-lg max-w-2xl mx-auto">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-blue-100 text-lg max-w-2xl mx-auto">
             Wij zijn Caravanverhuur Costa Brava – jouw partner voor een zorgeloze caravanvakantie aan de Spaanse kust.
           </motion.p>
         </div>
@@ -192,10 +192,10 @@ export default function OverOnsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-gradient-to-r from-primary-dark via-primary to-cyan-500 text-white">
+      <section className="py-20 bg-gradient-to-r from-primary-dark via-primary to-blue-400 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Overtuigd?</h2>
-          <p className="text-cyan-100 text-lg mb-8">Boek nu je zorgeloze caravanvakantie op de Costa Brava.</p>
+          <p className="text-blue-100 text-lg mb-8">Boek nu je zorgeloze caravanvakantie op de Costa Brava.</p>
           <Link
             href="/boeken"
             className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all text-lg"

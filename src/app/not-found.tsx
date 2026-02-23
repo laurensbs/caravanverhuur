@@ -14,12 +14,12 @@ export default function NotFound() {
         transition={{ duration: 0.6 }}
         className="text-center max-w-md"
       >
-        <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-6">
+        <div className="relative w-40 h-20 sm:w-48 sm:h-24 mx-auto mb-6">
           <Image
             src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
             alt="Caravanverhuur Costa Brava"
             fill
-            className="object-contain rounded-2xl opacity-30"
+            className="object-contain opacity-30"
             unoptimized
           />
         </div>

@@ -4,7 +4,7 @@ import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-primary-dark to-[#0c3a4d] text-white">
+    <footer className="bg-gradient-to-b from-primary-dark to-[#172554] text-white">
       {/* CTA strip */}
       <div className="bg-gradient-to-r from-accent to-accent-dark">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -28,9 +28,9 @@ export default function Footer() {
           <Image
             src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
             alt="Caravanverhuur Costa Brava"
-            width={96}
-            height={96}
-            className="rounded-2xl w-20 h-20 sm:w-24 sm:h-24 shadow-md mb-4"
+            width={160}
+            height={48}
+            className="w-32 sm:w-36 h-auto mb-4"
             unoptimized
           />
           <p className="text-white/70 text-sm leading-relaxed max-w-xs">
@@ -50,9 +50,9 @@ export default function Footer() {
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravanverhuur Costa Brava"
-              width={96}
-              height={96}
-              className="rounded-2xl w-20 h-20 shadow-md"
+              width={160}
+              height={48}
+              className="w-32 h-auto"
               unoptimized
             />
             <p className="text-white/70 text-sm leading-relaxed">

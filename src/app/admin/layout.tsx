@@ -11,6 +11,7 @@ import {
   CreditCard,
   Mail,
   CarFront,
+  ClipboardCheck,
   LogOut,
   Menu,
   X,
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/admin/betalingen', label: 'Betalingen', icon: CreditCard },
   { href: '/admin/berichten', label: 'Berichten', icon: Mail },
   { href: '/admin/caravans', label: 'Caravans', icon: CarFront },
+  { href: '/admin/borg', label: 'Borgchecklist', icon: ClipboardCheck },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -61,7 +63,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f2847] via-[#1a3c6e] to-[#0f2847] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#1e40af] to-[#111827] flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
@@ -87,9 +89,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
                   alt="Caravanverhuur Costa Brava"
-                  width={120}
-                  height={120}
-                  className="mx-auto rounded-2xl shadow-lg"
+                  width={160}
+                  height={48}
+                  className="mx-auto w-36 h-auto"
                   unoptimized
                 />
               </div>
@@ -111,7 +113,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                  className="w-full px-4 py-3.5 border-2 border-[#e2e8f0] rounded-xl focus:outline-none focus:border-[#1a3c6e] focus:ring-4 focus:ring-[#1a3c6e]/10 transition-all text-base"
+                  className="w-full px-4 py-3.5 border-2 border-[#e2e8f0] rounded-xl focus:outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all text-base"
                   placeholder="Voer wachtwoord in..."
                   autoFocus
                 />
@@ -139,7 +141,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
               <button
                 type="submit"
-                className="w-full mt-5 py-3.5 bg-[#1a3c6e] text-white rounded-xl font-semibold hover:bg-[#15325c] active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-[#1a3c6e]/25"
+                className="w-full mt-5 py-3.5 bg-[#2563eb] text-white rounded-xl font-semibold hover:bg-[#1d4ed8] active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-[#2563eb]/25"
               >
                 Inloggen
               </button>
@@ -152,7 +154,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             >
               <Link
                 href="/"
-                className="block text-center text-sm text-[#64748b] mt-5 hover:text-[#1a3c6e] transition-colors"
+                className="block text-center text-sm text-[#64748b] mt-5 hover:text-[#2563eb] transition-colors"
               >
                 ← Terug naar website
               </Link>
@@ -180,7 +182,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1a3c6e] text-white flex flex-col transform transition-transform duration-200 ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1e3a8a] text-white flex flex-col transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -189,9 +191,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Logo"
-              width={40}
-              height={40}
-              className="rounded-xl"
+              width={120}
+              height={36}
+              className="w-24 h-auto"
               unoptimized
             />
             <div>
@@ -224,7 +226,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   {isActive && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className="ml-auto w-1.5 h-1.5 bg-[#e8632b] rounded-full"
+                      className="ml-auto w-1.5 h-1.5 bg-[#f59e0b] rounded-full"
                     />
                   )}
                 </Link>

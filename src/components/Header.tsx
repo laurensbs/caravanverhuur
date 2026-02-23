@@ -64,9 +64,9 @@ export default function Header() {
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravanverhuur Costa Brava"
-              width={112}
-              height={112}
-              className="rounded-2xl w-14 h-14 sm:w-18 sm:h-18 lg:w-24 lg:h-24 hover:scale-105 transition-transform duration-200 shadow-md"
+              width={200}
+              height={60}
+              className="w-28 sm:w-36 lg:w-44 h-auto hover:scale-105 transition-transform duration-200"
               unoptimized
             />
           </Link>
@@ -145,12 +145,11 @@ export default function Header() {
                     <Image
                       src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
                       alt="Logo"
-                      width={40}
-                      height={40}
-                      className="rounded-xl shadow-sm"
+                      width={120}
+                      height={36}
+                      className="w-24 h-auto"
                       unoptimized
                     />
-                    <span className="font-bold text-sm text-foreground">Costa Brava</span>
                   </Link>
                   <button
                     onClick={() => setMenuOpen(false)}

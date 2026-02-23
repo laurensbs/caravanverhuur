@@ -18,8 +18,9 @@ export function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
+  const isBorg = pathname.startsWith('/borg');
 
-  if (isAdmin) {
+  if (isAdmin || isBorg) {
     return <>{children}</>;
   }
 

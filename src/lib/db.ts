@@ -86,6 +86,25 @@ export async function setupDatabase() {
     )
   `;
 
+  // Borg (deposit) checklists table
+  await sql`
+    CREATE TABLE IF NOT EXISTS borg_checklists (
+      id TEXT PRIMARY KEY,
+      booking_id TEXT NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+      type TEXT NOT NULL DEFAULT 'INCHECKEN',
+      status TEXT NOT NULL DEFAULT 'OPEN',
+      items JSONB DEFAULT '[]',
+      general_notes TEXT,
+      staff_name TEXT,
+      customer_agreed BOOLEAN DEFAULT false,
+      customer_agreed_at TIMESTAMP,
+      customer_notes TEXT,
+      token TEXT UNIQUE,
+      completed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -354,4 +373,137 @@ export async function getAvailableCaravanIds() {
     SELECT caravan_id FROM caravan_settings WHERE available = false
   `;
   return result.rows.map(r => r.caravan_id);
+}
+
+// ===== BORG CHECKLIST QUERIES =====
+
+const BORG_CHECKLIST_ITEMS = [
+  { category: 'Exterieur', item: 'Carrosserie (deuken, krassen)', status: 'nvt', notes: '' },
+  { category: 'Exterieur', item: 'Wielen & banden', status: 'nvt', notes: '' },
+  { category: 'Exterieur', item: 'Ramen & deuren', status: 'nvt', notes: '' },
+  { category: 'Exterieur', item: 'Luifel / zonwering', status: 'nvt', notes: '' },
+  { category: 'Exterieur', item: 'Koppeling & steunpoten', status: 'nvt', notes: '' },
+  { category: 'Exterieur', item: 'Verlichting (achter, rem, richting)', status: 'nvt', notes: '' },
+  { category: 'Interieur', item: 'Vloer & tapijt', status: 'nvt', notes: '' },
+  { category: 'Interieur', item: 'Zitbanken & kussens', status: 'nvt', notes: '' },
+  { category: 'Interieur', item: 'Gordijnen & rolgordijnen', status: 'nvt', notes: '' },
+  { category: 'Interieur', item: 'Verlichting interieur', status: 'nvt', notes: '' },
+  { category: 'Interieur', item: 'Verwarming / airco', status: 'nvt', notes: '' },
+  { category: 'Keuken', item: 'Fornuis / gasvuur', status: 'nvt', notes: '' },
+  { category: 'Keuken', item: 'Koelkast', status: 'nvt', notes: '' },
+  { category: 'Keuken', item: 'Servies & bestek (compleet)', status: 'nvt', notes: '' },
+  { category: 'Keuken', item: 'Pannen & kookgerei', status: 'nvt', notes: '' },
+  { category: 'Sanitair', item: 'Toilet', status: 'nvt', notes: '' },
+  { category: 'Sanitair', item: 'Waterpompen', status: 'nvt', notes: '' },
+  { category: 'Sanitair', item: 'Waterreservoirs (schoon/vuil)', status: 'nvt', notes: '' },
+  { category: 'Slaapplaatsen', item: 'Matrassen', status: 'nvt', notes: '' },
+  { category: 'Slaapplaatsen', item: 'Beddengoed & kussens', status: 'nvt', notes: '' },
+  { category: 'Technisch', item: 'Gasinstallatie', status: 'nvt', notes: '' },
+  { category: 'Technisch', item: 'Elektra & accu / 230V', status: 'nvt', notes: '' },
+  { category: 'Technisch', item: 'Waterleidingen', status: 'nvt', notes: '' },
+  { category: 'Inventaris', item: 'Handdoeken', status: 'nvt', notes: '' },
+  { category: 'Inventaris', item: 'Schoonmaakmiddelen', status: 'nvt', notes: '' },
+  { category: 'Inventaris', item: 'Gereedschap / EHBO', status: 'nvt', notes: '' },
+];
+
+export function getDefaultBorgItems() {
+  return JSON.parse(JSON.stringify(BORG_CHECKLIST_ITEMS));
+}
+
+function generateToken(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+export async function createBorgChecklist(data: {
+  bookingId: string;
+  type: string;
+  staffName?: string;
+}) {
+  const id = generateId('BC');
+  const token = generateToken();
+  const items = JSON.stringify(getDefaultBorgItems());
+
+  await sql`
+    INSERT INTO borg_checklists (id, booking_id, type, status, items, staff_name, token)
+    VALUES (${id}, ${data.bookingId}, ${data.type}, 'OPEN', ${items}::jsonb, ${data.staffName || null}, ${token})
+  `;
+
+  return { id, token };
+}
+
+export async function getAllBorgChecklists() {
+  const result = await sql`
+    SELECT bc.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.check_in, b.check_out
+    FROM borg_checklists bc
+    JOIN bookings b ON bc.booking_id = b.id
+    ORDER BY bc.created_at DESC
+  `;
+  return result.rows;
+}
+
+export async function getBorgChecklistsByBooking(bookingId: string) {
+  const result = await sql`
+    SELECT * FROM borg_checklists WHERE booking_id = ${bookingId} ORDER BY created_at ASC
+  `;
+  return result.rows;
+}
+
+export async function getBorgChecklistById(id: string) {
+  const result = await sql`
+    SELECT bc.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.check_in, b.check_out, b.borg_amount, b.guest_email
+    FROM borg_checklists bc
+    JOIN bookings b ON bc.booking_id = b.id
+    WHERE bc.id = ${id}
+  `;
+  return result.rows[0] || null;
+}
+
+export async function getBorgChecklistByToken(token: string) {
+  const result = await sql`
+    SELECT bc.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.check_in, b.check_out, b.borg_amount, b.guest_email
+    FROM borg_checklists bc
+    JOIN bookings b ON bc.booking_id = b.id
+    WHERE bc.token = ${token}
+  `;
+  return result.rows[0] || null;
+}
+
+export async function updateBorgChecklist(id: string, data: {
+  items?: string;
+  status?: string;
+  generalNotes?: string;
+  staffName?: string;
+  completedAt?: string;
+}) {
+  if (data.items) {
+    await sql`UPDATE borg_checklists SET items = ${data.items}::jsonb WHERE id = ${id}`;
+  }
+  if (data.status) {
+    await sql`UPDATE borg_checklists SET status = ${data.status} WHERE id = ${id}`;
+  }
+  if (data.generalNotes !== undefined) {
+    await sql`UPDATE borg_checklists SET general_notes = ${data.generalNotes} WHERE id = ${id}`;
+  }
+  if (data.staffName) {
+    await sql`UPDATE borg_checklists SET staff_name = ${data.staffName} WHERE id = ${id}`;
+  }
+  if (data.completedAt) {
+    await sql`UPDATE borg_checklists SET completed_at = ${data.completedAt} WHERE id = ${id}`;
+  }
+}
+
+export async function customerAgreeBorgChecklist(token: string, agreed: boolean, notes?: string) {
+  await sql`
+    UPDATE borg_checklists SET 
+      customer_agreed = ${agreed},
+      customer_agreed_at = NOW(),
+      customer_notes = ${notes || null},
+      status = CASE WHEN ${agreed} THEN 'KLANT_AKKOORD' ELSE 'KLANT_BEZWAAR' END
+    WHERE token = ${token}
+  `;
 }
