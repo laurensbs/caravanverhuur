@@ -1,4 +1,20 @@
-import { sql } from '@vercel/postgres';
+import { createPool, type VercelPool } from '@vercel/postgres';
+
+let _pool: VercelPool | null = null;
+
+function getPool() {
+  if (!_pool) {
+    _pool = createPool({
+      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+    });
+  }
+  return _pool;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sql(strings: TemplateStringsArray, ...values: any[]) {
+  return getPool().sql(strings, ...values);
+}
 
 // ===== DATABASE SETUP =====
 
