@@ -4,9 +4,9 @@ import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-dark text-white">
+    <footer className="bg-gradient-to-b from-primary-dark to-[#0c3a4d] text-white">
       {/* CTA strip */}
-      <div className="bg-accent">
+      <div className="bg-gradient-to-r from-accent to-accent-dark">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-white font-semibold text-sm sm:text-base text-center sm:text-left">
             Klaar om te boeken? Seizoen 2026 beschikbaar!
@@ -38,7 +38,7 @@ export default function Footer() {
           </p>
           <div className="mt-3 text-white/40 text-xs">
             Onderdeel van{' '}
-            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-accent-light underline">
+            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-amber-300 underline">
               Caravanstalling-Spanje.com
             </a>
           </div>
@@ -60,7 +60,7 @@ export default function Footer() {
             </p>
             <div className="text-white/40 text-xs">
               Onderdeel van{' '}
-              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-accent-light underline">
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-amber-300 underline">
                 Caravanstalling-Spanje.com
               </a>
             </div>
@@ -111,23 +111,23 @@ export default function Footer() {
             <ul className="space-y-2.5">
               <li>
                 <a href="mailto:info@caravanverhuurcostabrava.com" className="text-white/60 hover:text-white transition-colors text-sm flex items-start gap-2">
-                  <Mail size={14} className="text-accent-light shrink-0 mt-0.5" />
+                  <Mail size={14} className="text-amber-300 shrink-0 mt-0.5" />
                   <span className="break-all">info@caravanhuur<wbr />costabrava.com</span>
                 </a>
               </li>
               <li>
                 <a href="tel:+34600000000" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2">
-                  <Phone size={14} className="text-accent-light shrink-0" />
+                  <Phone size={14} className="text-amber-300 shrink-0" />
                   +34 600 000 000
                 </a>
               </li>
               <li className="text-white/60 text-sm flex items-center gap-2">
-                <MapPin size={14} className="text-accent-light shrink-0" />
+                <MapPin size={14} className="text-amber-300 shrink-0" />
                 Costa Brava, Spanje
               </li>
               <li>
                 <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2">
-                  <ExternalLink size={14} className="text-accent-light shrink-0" />
+                  <ExternalLink size={14} className="text-amber-300 shrink-0" />
                   Caravanstalling-Spanje
                 </a>
               </li>

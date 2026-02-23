@@ -65,7 +65,7 @@ export default function WeatherChecker() {
               <WeatherIcon
                 type={w.icon}
                 className={`mx-auto mb-2 ${
-                  w.icon === 'sun' ? 'text-yellow-500' : 'text-blue-400'
+                  w.icon === 'sun' ? 'text-yellow-500' : 'text-cyan-400'
                 }`}
               />
               <div className="flex items-center justify-center gap-1 mb-1">

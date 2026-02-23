@@ -194,7 +194,7 @@ function BoekenContent() {
                 <div className="flex justify-between"><span className="text-muted">Borg:</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
               </div>
             </div>
-            <div className="bg-blue-50 rounded-xl p-4 text-sm text-primary-dark mb-8">
+            <div className="bg-cyan-50 rounded-xl p-4 text-sm text-primary-dark mb-8">
               <strong>Volgende stap:</strong> Je ontvangt een e-mail met betaalinstructies voor de aanbetaling van &euro;{deposit}. Na ontvangst is je boeking definitief bevestigd.
             </div>
           </motion.div>
@@ -206,12 +206,12 @@ function BoekenContent() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-primary-dark text-white py-16">
+      <section className="bg-gradient-to-r from-primary-dark via-primary to-cyan-500 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4">
-            Boek je caravan
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl sm:text-4xl font-bold mb-3">
+            Boek jouw caravan
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-blue-100 text-lg">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-cyan-100 text-lg">
             Volg de stappen en boek jouw zorgeloze caravanvakantie
           </motion.p>
         </div>
@@ -581,7 +581,7 @@ function BoekenContent() {
                 <button
                   onClick={handleSubmit}
                   disabled={!canNext() || submitting}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
                 >
                   {submitting ? (
                     <>

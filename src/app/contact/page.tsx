@@ -58,12 +58,12 @@ export default function ContactPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-primary-dark text-white py-20">
+      <section className="bg-gradient-to-r from-primary-dark via-primary to-cyan-500 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4">
             Contact
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-blue-100 text-lg max-w-2xl mx-auto">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-cyan-100 text-lg max-w-2xl mx-auto">
             Heb je vragen over onze caravans, het boekingsproces of iets anders? Neem gerust contact met ons op!
           </motion.p>
         </div>
@@ -214,7 +214,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
                   >
                     {submitting ? (
                       <>

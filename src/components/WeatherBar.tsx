@@ -21,8 +21,8 @@ const weatherData: Record<number, { temp: number; icon: 'sun' | 'cloud' | 'rain'
 
 const icons = {
   sun: <Sun size={14} className="text-yellow-300" />,
-  cloud: <Cloud size={14} className="text-blue-200" />,
-  rain: <CloudRain size={14} className="text-blue-300" />,
+  cloud: <Cloud size={14} className="text-cyan-200" />,
+  rain: <CloudRain size={14} className="text-cyan-300" />,
 };
 
 export default function WeatherBar() {
@@ -33,7 +33,7 @@ export default function WeatherBar() {
   if (!visible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-sky-500 via-blue-500 to-blue-600 text-white text-xs sm:text-sm relative">
+    <div className="bg-gradient-to-r from-primary via-cyan-500 to-primary-light text-white text-xs sm:text-sm relative">
       <div className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2 flex items-center justify-center gap-2 sm:gap-4">
         <div className="flex items-center gap-1.5">
           {icons[weather.icon]}

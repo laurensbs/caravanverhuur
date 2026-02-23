@@ -131,7 +131,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex gap-4">
                 <Link
                   href={`/boeken?caravan=${caravan.id}`}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-accent hover:bg-accent-dark text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
                 >
                   Boek deze caravan
                   <ArrowRight size={20} />

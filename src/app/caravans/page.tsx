@@ -30,7 +30,7 @@ export default function CaravansPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary-dark via-primary to-primary-dark text-white py-20">
+      <section className="bg-gradient-to-r from-primary-dark via-primary to-cyan-500 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -43,7 +43,7 @@ export default function CaravansPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-blue-100 text-lg max-w-2xl mx-auto"
+            className="text-cyan-100 text-lg max-w-2xl mx-auto"
           >
             Bekijk ons volledige aanbod van goed onderhouden caravans. Allemaal volledig uitgerust en klaar op de camping van jouw keuze.
           </motion.p>
@@ -218,7 +218,7 @@ export default function CaravansPage() {
                       </Link>
                       <Link
                         href={`/boeken?caravan=${caravan.id}`}
-                        className="flex-1 text-center py-2.5 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition-colors text-sm"
+                        className="flex-1 text-center py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-xl transition-all text-sm shadow-md"
                       >
                         Boek Nu
                       </Link>

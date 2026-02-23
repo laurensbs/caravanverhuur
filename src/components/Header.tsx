@@ -35,21 +35,21 @@ export default function Header() {
       <WeatherBar />
 
       {/* Top bar - desktop */}
-      <div className="bg-primary-dark text-white text-xs py-1.5 hidden lg:block">
+      <div className="bg-gradient-to-r from-primary-dark via-primary-dark to-primary text-white text-xs py-1.5 hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-1.5 hover:text-accent-light transition-colors">
+            <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-center gap-1.5 hover:text-amber-300 transition-colors">
               <Mail size={12} />
               info@caravanverhuurcostabrava.com
             </a>
-            <a href="tel:+34600000000" className="flex items-center gap-1.5 hover:text-accent-light transition-colors">
+            <a href="tel:+34600000000" className="flex items-center gap-1.5 hover:text-amber-300 transition-colors">
               <Phone size={12} />
               +34 600 000 000
             </a>
           </div>
           <div className="text-white/70">
             Onderdeel van{' '}
-            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2 hover:text-accent-light transition-colors">
+            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2 hover:text-amber-300 transition-colors">
               Caravanstalling-Spanje
             </a>
           </div>
@@ -84,7 +84,7 @@ export default function Header() {
             ))}
             <Link
               href="/boeken"
-              className="ml-3 px-5 py-2.5 bg-accent hover:bg-accent-dark text-white font-semibold rounded-full transition-all duration-150 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 flex items-center gap-1.5"
+              className="ml-3 px-5 py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full transition-all duration-150 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 flex items-center gap-1.5"
             >
               Boek Nu
               <ArrowRight size={14} />
@@ -187,7 +187,7 @@ export default function Header() {
                   <Link
                     href="/boeken"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-accent hover:bg-accent-dark text-white font-bold rounded-2xl text-base transition-all active:scale-95 shadow-lg"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-bold rounded-2xl text-base transition-all active:scale-95 shadow-lg"
                   >
                     Direct boeken
                     <ArrowRight size={18} />

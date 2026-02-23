@@ -22,6 +22,8 @@ import {
   Clock,
   Wallet,
   Quote,
+  Sun,
+  MapPin,
 } from 'lucide-react';
 import { caravans } from '@/data/caravans';
 import BookingWidget from '@/components/BookingWidget';
@@ -56,6 +58,15 @@ const WhatsAppIcon = ({ size = 28 }: { size?: number }) => (
   </svg>
 );
 
+// Decorative wave SVG for section transitions
+const WaveDivider = ({ className = '', flip = false }: { className?: string; flip?: boolean }) => (
+  <div className={`absolute left-0 right-0 overflow-hidden leading-none ${flip ? 'top-0 rotate-180' : 'bottom-0'} ${className}`}>
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[60px] lg:h-[80px]">
+      <path d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,50 1440,40 L1440,80 L0,80 Z" fill="currentColor" />
+    </svg>
+  </div>
+);
+
 export default function HomePage() {
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -76,7 +87,10 @@ export default function HomePage() {
             priority
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/80 via-primary/60 to-primary-dark/90 sm:bg-gradient-to-r sm:from-primary-dark/90 sm:via-primary/70 sm:to-primary-dark/50" />
+          {/* Warmer, lighter overlay so the image shines through */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-primary-dark/40 to-black/70 sm:bg-gradient-to-r sm:from-black/70 sm:via-primary-dark/50 sm:to-transparent" />
+          {/* Warm color wash */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/10" />
         </motion.div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 sm:py-20 w-full">
@@ -85,9 +99,9 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/20"
+              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/25"
             >
-              <Sparkles size={14} className="text-accent-light" />
+              <Sun size={14} className="text-amber-300" />
               Seizoen 2026 – nu boeken!
             </motion.div>
 
@@ -98,7 +112,7 @@ export default function HomePage() {
               className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6"
             >
               Zorgeloze
-              <span className="text-accent-light"> caravanvakantie</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400"> caravanvakantie</span>
               <br className="hidden sm:block" /> op de Costa Brava
             </motion.h1>
 
@@ -106,7 +120,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.15 }}
-              className="text-sm sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0"
+              className="text-sm sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
               Jouw caravan staat klaar op de camping. Volledig ingericht met inventaris, beddengoed en kookgerei. Geen transport, geen gedoe – alleen genieten.
             </motion.p>
@@ -119,13 +133,13 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
             >
               {[
-                { value: '6+', label: 'Caravans' },
-                { value: '30+', label: 'Campings' },
-                { value: '100%', label: 'Ontzorgd' },
+                { value: '6+', label: 'Caravans', color: 'text-cyan-300' },
+                { value: '30+', label: 'Campings', color: 'text-amber-300' },
+                { value: '100%', label: 'Ontzorgd', color: 'text-emerald-300' },
               ].map(stat => (
                 <div key={stat.label} className="text-center">
-                  <div className="text-xl font-bold text-white">{stat.value}</div>
-                  <div className="text-blue-200 text-[11px]">{stat.label}</div>
+                  <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
+                  <div className="text-white/60 text-[11px]">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -142,13 +156,13 @@ export default function HomePage() {
             className="hidden lg:flex gap-8 mt-8 max-w-md"
           >
             {[
-              { value: '6+', label: 'Caravans beschikbaar' },
-              { value: '30+', label: 'Campings Costa Brava' },
-              { value: '100%', label: 'Volledig ontzorgd' },
+              { value: '6+', label: 'Caravans beschikbaar', color: 'text-cyan-300' },
+              { value: '30+', label: 'Campings Costa Brava', color: 'text-amber-300' },
+              { value: '100%', label: 'Volledig ontzorgd', color: 'text-emerald-300' },
             ].map(stat => (
               <div key={stat.label}>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-blue-200 text-xs">{stat.label}</div>
+                <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                <div className="text-white/60 text-xs">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -169,10 +183,13 @@ export default function HomePage() {
             <div className="w-1 h-2 bg-white/70 rounded-full" />
           </motion.div>
         </motion.div>
+
+        {/* Wave transition to next section */}
+        <WaveDivider className="text-warm z-10" />
       </section>
 
       {/* ===== VOORDELEN / USP ===== */}
-      <section className="py-12 sm:py-20 bg-surface">
+      <section className="py-12 sm:py-20 bg-warm relative">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -201,44 +218,56 @@ export default function HomePage() {
           >
             {[
               {
-                icon: <Tent className="text-primary" size={24} />,
+                icon: <Tent size={24} />,
                 title: 'Klaar op de camping',
                 desc: 'Je caravan staat al klaar op de camping van je keuze. Gewoon uitstappen en genieten.',
+                color: 'text-emerald-500',
+                bg: 'bg-emerald-50',
               },
               {
-                icon: <Package className="text-primary" size={24} />,
+                icon: <Package size={24} />,
                 title: 'Volledige inventaris',
                 desc: 'Beddengoed, kookgerei, servies, handdoeken – alles aanwezig. Niets meenemen.',
+                color: 'text-sky-500',
+                bg: 'bg-sky-50',
               },
               {
-                icon: <Camera className="text-primary" size={24} />,
+                icon: <Camera size={24} />,
                 title: "Foto's vooraf",
                 desc: "Foto's van exact jouw caravan of een vergelijkbare. Geen verrassingen.",
+                color: 'text-violet-500',
+                bg: 'bg-violet-50',
               },
               {
-                icon: <Wallet className="text-primary" size={24} />,
+                icon: <Wallet size={24} />,
                 title: 'Flexibel betalen',
                 desc: '30% aanbetaling, restbedrag vlak voor je vakantie. Veilig via Stripe.',
+                color: 'text-amber-500',
+                bg: 'bg-amber-50',
               },
               {
-                icon: <Shield className="text-primary" size={24} />,
+                icon: <Shield size={24} />,
                 title: 'Borg bescherming',
                 desc: 'Duidelijke borgvoorwaarden. Na controle krijg je je borg volledig retour.',
+                color: 'text-primary',
+                bg: 'bg-cyan-50',
               },
               {
-                icon: <Truck className="text-primary" size={24} />,
+                icon: <Truck size={24} />,
                 title: 'Transport mogelijk',
                 desc: 'Via Caravanstalling-Spanje kun je optioneel transport boeken.',
+                color: 'text-rose-500',
+                bg: 'bg-rose-50',
               },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
                 variants={scaleIn}
                 custom={i}
-                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-border group"
+                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-border/50 group"
               >
-                <div className="w-10 h-10 sm:w-14 sm:h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-3 sm:mb-5 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                  {item.icon}
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.bg} rounded-xl flex items-center justify-center mb-3 sm:mb-5 group-hover:scale-110 transition-all duration-300`}>
+                  <div className={item.color}>{item.icon}</div>
                 </div>
                 <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed">{item.desc}</p>
@@ -246,10 +275,11 @@ export default function HomePage() {
             ))}
           </motion.div>
         </div>
+        <WaveDivider className="text-white" />
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section className="py-12 sm:py-20 overflow-hidden">
+      <section className="py-12 sm:py-20 overflow-hidden bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -266,7 +296,7 @@ export default function HomePage() {
             </motion.h2>
           </motion.div>
 
-          {/* Mobile: vertical timeline / Desktop: horizontal */}
+          {/* Desktop: horizontal */}
           <div className="hidden md:block">
             <motion.div
               initial="hidden"
@@ -276,21 +306,21 @@ export default function HomePage() {
               className="grid grid-cols-5 gap-4 lg:gap-6"
             >
               {[
-                { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={22} /> },
-                { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={22} /> },
-                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={22} /> },
-                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={22} /> },
-                { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar. Uitstappen en genieten!', icon: <Star size={22} /> },
+                { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={22} />, gradient: 'from-rose-400 to-pink-500' },
+                { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={22} />, gradient: 'from-amber-400 to-orange-500' },
+                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={22} />, gradient: 'from-cyan-400 to-primary' },
+                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={22} />, gradient: 'from-emerald-400 to-teal-500' },
+                { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar. Uitstappen en genieten!', icon: <Star size={22} />, gradient: 'from-yellow-400 to-amber-500' },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative">
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                  <div className={`w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br ${item.gradient} rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg`}>
                     {item.icon}
                   </div>
                   <div className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">Stap {item.step}</div>
                   <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
                   <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
                   {i < 4 && (
-                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-primary/30 to-primary/10" />
+                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-border to-transparent" />
                   )}
                 </motion.div>
               ))}
@@ -300,11 +330,11 @@ export default function HomePage() {
           {/* Mobile: vertical timeline */}
           <div className="md:hidden space-y-0">
             {[
-              { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={18} /> },
-              { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={18} /> },
-              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={18} /> },
-              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={18} /> },
-              { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar!', icon: <Star size={18} /> },
+              { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={18} />, gradient: 'from-rose-400 to-pink-500' },
+              { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={18} />, gradient: 'from-amber-400 to-orange-500' },
+              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={18} />, gradient: 'from-cyan-400 to-primary' },
+              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={18} />, gradient: 'from-emerald-400 to-teal-500' },
+              { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar!', icon: <Star size={18} />, gradient: 'from-yellow-400 to-amber-500' },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
@@ -316,9 +346,9 @@ export default function HomePage() {
               >
                 {/* Line */}
                 {i < 4 && (
-                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-gradient-to-b from-primary/30 to-primary/10" />
+                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-gradient-to-b from-border to-transparent" />
                 )}
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10">
+                <div className={`w-10 h-10 bg-gradient-to-br ${item.gradient} rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10`}>
                   {item.icon}
                 </div>
                 <div className="pb-6">
@@ -333,7 +363,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== FEATURED CARAVANS ===== */}
-      <section className="py-12 sm:py-20 bg-surface">
+      <section className="py-12 sm:py-20 bg-gradient-to-b from-surface to-white relative">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -362,7 +392,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 sm:hover:-translate-y-2 border border-border group"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 sm:hover:-translate-y-2 border border-border/50 group"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
                   <Image
@@ -372,28 +402,30 @@ export default function HomePage() {
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                     unoptimized
                   />
+                  {/* Warm gradient overlay at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent" />
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold text-white ${
-                      caravan.type === 'LUXE' ? 'bg-yellow-500' :
-                      caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-green-500'
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold text-white shadow-md ${
+                      caravan.type === 'LUXE' ? 'bg-gradient-to-r from-amber-400 to-yellow-500' :
+                      caravan.type === 'FAMILIE' ? 'bg-gradient-to-r from-cyan-500 to-primary' : 'bg-gradient-to-r from-emerald-400 to-green-500'
                     }`}>
                       {caravan.type}
                     </span>
                   </div>
-                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                    <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}/week</span>
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md">
+                    <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
                   </div>
                 </div>
                 <div className="p-4 sm:p-6">
                   <h3 className="text-sm sm:text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
                   <div className="flex items-center gap-3 text-xs sm:text-sm text-muted mb-2 sm:mb-3">
-                    <span className="flex items-center gap-1"><Users size={12} /> Max {caravan.maxPersons}</span>
+                    <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
                     <span>{caravan.manufacturer}</span>
                   </div>
                   <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
-                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">{a}</span>
+                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-cyan-50 text-primary-dark rounded-md">{a}</span>
                     ))}
                     {caravan.amenities.length > 3 && (
                       <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
@@ -402,13 +434,13 @@ export default function HomePage() {
                   <div className="flex gap-2 sm:gap-3">
                     <Link
                       href={`/caravans/${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors text-xs sm:text-sm"
+                      className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary hover:text-white transition-all duration-200 text-xs sm:text-sm"
                     >
                       Details
                     </Link>
                     <Link
                       href={`/boeken?caravan=${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 bg-accent hover:bg-accent-dark text-white font-semibold rounded-xl transition-colors text-xs sm:text-sm active:scale-95"
+                      className="flex-1 text-center py-2 sm:py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm active:scale-95 shadow-md"
                     >
                       Boek Nu
                     </Link>
@@ -437,7 +469,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== INVENTORY SECTION ===== */}
-      <section className="py-12 sm:py-20">
+      <section className="py-12 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <motion.div
@@ -455,31 +487,31 @@ export default function HomePage() {
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {[
-                  'Dekbedden & kussens',
-                  'Volledig servies',
-                  'Kookgerei & pannen',
-                  'Handdoeken',
-                  'Verwarming & gas',
-                  'Elektra & accu',
-                  'Rolgordijnen & horren',
-                  'Schoonmaakmiddelen',
-                ].map((item, i) => (
+                  { item: 'Dekbedden & kussens', color: 'text-cyan-500' },
+                  { item: 'Volledig servies', color: 'text-amber-500' },
+                  { item: 'Kookgerei & pannen', color: 'text-emerald-500' },
+                  { item: 'Handdoeken', color: 'text-sky-500' },
+                  { item: 'Verwarming & gas', color: 'text-orange-500' },
+                  { item: 'Elektra & accu', color: 'text-violet-500' },
+                  { item: 'Rolgordijnen & horren', color: 'text-rose-500' },
+                  { item: 'Schoonmaakmiddelen', color: 'text-teal-500' },
+                ].map((entry, i) => (
                   <motion.div
-                    key={item}
+                    key={entry.item}
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.05, duration: 0.3 }}
                     className="flex items-center gap-1.5 sm:gap-2"
                   >
-                    <CheckCircle size={14} className="text-green-500 shrink-0 sm:w-[18px] sm:h-[18px]" />
-                    <span className="text-xs sm:text-sm text-foreground">{item}</span>
+                    <CheckCircle size={14} className={`${entry.color} shrink-0 sm:w-[18px] sm:h-[18px]`} />
+                    <span className="text-xs sm:text-sm text-foreground">{entry.item}</span>
                   </motion.div>
                 ))}
               </div>
               <Link
                 href="/caravans"
-                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95"
+                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95 shadow-lg"
               >
                 Bekijk onze caravans
                 <ArrowRight size={16} />
@@ -503,16 +535,18 @@ export default function HomePage() {
                   unoptimized
                 />
               </div>
+              {/* Decorative accent */}
+              <div className="absolute -z-10 -top-4 -right-4 w-full h-full rounded-2xl bg-gradient-to-br from-primary-light/20 to-accent/20" />
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5, duration: 0.4 }}
-                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl p-3 sm:p-4 shadow-lg border border-border"
+                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl p-3 sm:p-4 shadow-lg border border-border/50"
               >
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-9 h-9 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="text-green-500" size={18} />
+                  <div className="w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center">
+                    <CheckCircle className="text-white" size={18} />
                   </div>
                   <div>
                     <div className="font-semibold text-foreground text-xs sm:text-base">100% Compleet</div>
@@ -526,8 +560,8 @@ export default function HomePage() {
       </section>
 
       {/* ===== ADVANTAGES HIGHLIGHT ===== */}
-      <section className="py-12 sm:py-20 bg-gradient-to-br from-primary-dark via-primary to-primary-light text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-12 sm:py-20 bg-gradient-to-br from-primary-dark via-primary to-cyan-400 text-white overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -535,16 +569,16 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-10 sm:mb-14"
           >
-            <span className="text-accent-light font-semibold text-xs sm:text-sm uppercase tracking-wider">De voordelen</span>
+            <span className="text-amber-300 font-semibold text-xs sm:text-sm uppercase tracking-wider">De voordelen</span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">Waarom bij ons huren?</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
-              { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.' },
-              { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.' },
-              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.' },
-              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.' },
+              { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.', accent: 'group-hover:bg-amber-400/30' },
+              { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.', accent: 'group-hover:bg-emerald-400/30' },
+              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.', accent: 'group-hover:bg-cyan-400/30' },
+              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.', accent: 'group-hover:bg-rose-400/30' },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -552,13 +586,13 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 hover:border-white/20 transition-all duration-300 group"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 hover:bg-white/20 hover:border-white/30 transition-all duration-300 group hover:-translate-y-1"
               >
-                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/10 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
+                <div className={`w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 transition-all duration-300 ${item.accent}`}>
                   {item.icon}
                 </div>
                 <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-blue-100 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-cyan-100 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -569,24 +603,27 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/10 text-center"
+            className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 text-center"
           >
-            <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
+            <p className="text-sm sm:text-base text-cyan-100 leading-relaxed">
               <span className="text-white font-bold">Meer dan 20 jaar actief</span> in de caravansbranche in de Costa Brava.
               Onderdeel van{' '}
-              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-accent-light underline underline-offset-2 hover:text-white transition-colors">
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-amber-300 underline underline-offset-2 hover:text-white transition-colors">
                 caravanstalling-spanje.com
               </a>
             </p>
           </motion.div>
         </div>
+        {/* Decorative blurred circles */}
+        <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-48 h-48 bg-accent/10 rounded-full blur-3xl" />
       </section>
 
       {/* ===== WEATHER CHECKER ===== */}
       <WeatherChecker />
 
       {/* ===== REVIEWS / SOCIAL PROOF ===== */}
-      <section className="py-12 sm:py-20 bg-surface overflow-hidden">
+      <section className="py-12 sm:py-20 bg-gradient-to-b from-warm to-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -654,21 +691,22 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-border hover:shadow-lg transition-all duration-300 relative"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-md border border-border/50 hover:shadow-xl transition-all duration-300 relative group"
               >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary-light to-accent rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: review.rating }).map((_, s) => (
-                    <Star key={s} size={16} className="fill-yellow-400 text-yellow-400" />
+                    <Star key={s} size={16} className="fill-amber-400 text-amber-400" />
                   ))}
                 </div>
                 <p className="text-sm text-foreground leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-semibold text-sm text-foreground">{review.name}</div>
-                    <div className="text-xs text-muted">{review.location}</div>
+                    <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
                   </div>
-                  <span className="text-[10px] text-muted bg-surface px-2 py-1 rounded-full">{review.date}</span>
+                  <span className="text-[10px] text-muted bg-warm px-2 py-1 rounded-full">{review.date}</span>
                 </div>
               </motion.div>
             ))}
@@ -684,12 +722,12 @@ export default function HomePage() {
           >
             {[
               { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via Stripe' },
-              { icon: <CheckCircle size={18} className="text-green-500" />, text: 'Volledige inventaris' },
-              { icon: <Star size={18} className="text-yellow-500 fill-yellow-500" />, text: '5/5 beoordeling' },
+              { icon: <CheckCircle size={18} className="text-emerald-500" />, text: 'Volledige inventaris' },
+              { icon: <Star size={18} className="text-amber-500 fill-amber-500" />, text: '5/5 beoordeling' },
               { icon: <Users size={18} className="text-primary" />, text: '100+ tevreden gasten' },
-              { icon: <Clock size={18} className="text-primary" />, text: '20+ jaar ervaring' },
+              { icon: <Clock size={18} className="text-violet-500" />, text: '20+ jaar ervaring' },
             ].map(badge => (
-              <div key={badge.text} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm border border-border text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
+              <div key={badge.text} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm border border-border/50 text-xs sm:text-sm font-medium text-foreground whitespace-nowrap hover:shadow-md transition-shadow">
                 {badge.icon}
                 {badge.text}
               </div>
@@ -699,8 +737,12 @@ export default function HomePage() {
       </section>
 
       {/* ===== CTA SECTION ===== */}
-      <section className="py-12 sm:py-20 bg-surface">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="py-12 sm:py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -712,9 +754,9 @@ export default function HomePage() {
               whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="w-16 h-16 sm:w-20 sm:h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6"
+              className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-accent to-amber-400 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg"
             >
-              <Sparkles className="text-accent" size={28} />
+              <Sun className="text-white" size={28} />
             </motion.div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
               Klaar voor jouw zorgeloze vakantie?
@@ -725,7 +767,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/boeken"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-accent hover:bg-accent-dark text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 sm:hover:-translate-y-1 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 sm:hover:-translate-y-1 text-base sm:text-lg active:scale-95"
               >
                 Start met boeken
                 <ArrowRight size={18} />
@@ -753,7 +795,7 @@ export default function HomePage() {
         aria-label="Chat via WhatsApp"
       >
         <WhatsAppIcon size={26} />
-        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none border border-border">
+        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none border border-border/50">
           WhatsApp ons!
         </span>
       </motion.a>
