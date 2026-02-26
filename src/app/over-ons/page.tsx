@@ -12,6 +12,8 @@ import {
   Users,
   Target,
   Award,
+  Instagram,
+  Facebook,
 } from 'lucide-react';
 
 const fadeUp = {
@@ -199,6 +201,49 @@ export default function OverOnsPage() {
               <ArrowRight size={18} />
             </a>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Cijfers & Sociaal bewijs */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="text-accent font-semibold text-sm uppercase tracking-wider">In cijfers</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">Waarom gasten ons vertrouwen</h2>
+          </div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {[
+              { number: '30+', label: 'Campings', sub: 'Verspreid over de Costa Brava' },
+              { number: '6', label: 'Caravans', sub: 'Van compact tot luxe' },
+              { number: '100+', label: 'Tevreden gasten', sub: 'Sinds 2024' },
+              { number: '4.8/5', label: 'Beoordeling', sub: 'Gemiddelde score' },
+            ].map((stat, i) => (
+              <motion.div key={stat.label} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border border-border">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.number}</div>
+                <div className="font-semibold text-foreground text-sm">{stat.label}</div>
+                <div className="text-xs text-muted mt-1">{stat.sub}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Social media */}
+          <div className="mt-12 text-center">
+            <p className="text-muted text-sm mb-4">Volg ons voor updates, tips en foto&apos;s van de Costa Brava</p>
+            <div className="flex justify-center gap-4">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+                <Instagram size={22} />
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+                <Facebook size={22} />
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

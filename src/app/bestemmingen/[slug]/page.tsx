@@ -58,7 +58,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
         <section className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
           <Image
             src={dest.heroImage}
-            alt={dest.name}
+            alt={`${dest.name} – ${dest.region}, Costa Brava`}
             fill
             className="object-cover"
             priority
@@ -176,7 +176,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
                 </div>
 
                 <Link
-                  href="/boeken"
+                  href={`/boeken?bestemming=${encodeURIComponent(dest.name)}`}
                   className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors active:scale-[0.98]"
                 >
                   Boek bij {dest.name} <ArrowRight size={16} />
@@ -194,7 +194,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
                       className="flex items-center gap-3 py-2 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors"
                     >
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
-                        <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
+                        <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover" unoptimized />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-gray-800">{d.name}</div>

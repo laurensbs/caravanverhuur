@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, Mail, ArrowRight, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WeatherBar from './WeatherBar';
@@ -19,6 +20,7 @@ const navLinks = [
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -52,15 +54,22 @@ export default function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3.5 py-2 text-sm font-medium text-gray-600 hover:text-primary rounded-lg hover:bg-gray-50 transition-all duration-150"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map(link => {
+              const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+                    isActive
+                      ? 'text-primary bg-primary/5'
+                      : 'text-gray-600 hover:text-primary hover:bg-gray-50'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link
               href="/account"
               className="ml-1 w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-primary transition-colors"
@@ -147,24 +156,29 @@ export default function Header() {
 
                 {/* Nav links */}
                 <nav className="flex-1 overflow-y-auto py-4 px-3">
-                  {navLinks.map((link, i) => (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, x: 30 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 30 }}
-                      transition={{ delay: i * 0.04, duration: 0.2 }}
-                    >
-                      <Link
-                        href={link.href}
-                        onClick={() => setMenuOpen(false)}
-                        className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  {navLinks.map((link, i) => {
+                    const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+                    return (
+                      <motion.div
+                        key={link.href}
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 30 }}
+                        transition={{ delay: i * 0.04, duration: 0.2 }}
                       >
-                        <span className="text-base font-medium">{link.label}</span>
-                        <ChevronRight size={18} className="text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                      </Link>
-                    </motion.div>
-                  ))}
+                        <Link
+                          href={link.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={`group flex items-center justify-between px-4 py-3.5 rounded-xl transition-colors ${
+                            isActive ? 'bg-primary/5 text-primary' : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="text-base font-medium">{link.label}</span>
+                          <ChevronRight size={18} className={`group-hover:translate-x-1 transition-all ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`} />
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </nav>
 
                 {/* CTA + contact */}

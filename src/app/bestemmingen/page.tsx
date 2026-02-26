@@ -2,11 +2,15 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { destinations } from '@/data/destinations';
-import { MapPin, ArrowRight, Sun, Users, ChevronRight } from 'lucide-react';
+import { MapPin, ArrowRight, Sun, Users, ChevronRight, Compass } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Bestemmingen Costa Brava | Caravanverhuur Costa Brava',
   description: 'Ontdek de mooiste plaatsen aan de Costa Brava. Van Cadaqués tot Lloret de Mar — vind jouw perfecte vakantiebestemming.',
+  openGraph: {
+    title: 'Bestemmingen – Caravanverhuur Costa Brava',
+    description: 'Ontdek 8 prachtige bestemmingen aan de Costa Brava voor je caravanvakantie.',
+  },
 };
 
 export default function DestinationsPage() {
@@ -17,16 +21,18 @@ export default function DestinationsPage() {
         <div className="absolute inset-0 opacity-20">
           <Image
             src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1600&q=80"
-            alt="Costa Brava"
+            alt="Panoramisch uitzicht over de Costa Brava kustlijn"
             fill
             className="object-cover"
             unoptimized
           />
         </div>
         <div className="relative z-10 max-w-5xl mx-auto px-4 py-12 sm:py-20 text-center">
-          <span className="text-white/60 font-semibold text-xs uppercase tracking-wider">Ontdek de Costa Brava</span>
+          <span className="inline-flex items-center gap-1.5 text-white/60 font-semibold text-xs uppercase tracking-wider">
+            <Compass size={14} /> Ontdek de Costa Brava
+          </span>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mt-2 mb-3">
-            Bestemmingen
+            {destinations.length} Bestemmingen
           </h1>
           <p className="text-white/70 text-sm sm:text-base max-w-xl mx-auto">
             De Costa Brava strekt zich uit van Blanes tot de Franse grens. Ontdek de mooiste plaatsen voor jouw caravanvakantie.
@@ -47,7 +53,7 @@ export default function DestinationsPage() {
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src={dest.heroImage}
-                  alt={dest.name}
+                  alt={`Caravanvakantie in ${dest.name}, ${dest.region}`}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   unoptimized

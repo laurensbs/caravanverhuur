@@ -5,9 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ArrowLeft, CheckCircle, ArrowRight, X, ChevronLeft, ChevronRight, Wifi, Wind, Flame, Droplets, Tv, Star, Shield, Calendar, MapPin } from 'lucide-react';
+import { Users, ArrowLeft, CheckCircle, ArrowRight, X, ChevronLeft, ChevronRight, Wifi, Wind, Flame, Droplets, Tv, Star, Shield, Calendar, MapPin, Quote } from 'lucide-react';
 import { getCaravanById, caravans } from '@/data/caravans';
-import { useState } from 'react';
+import { useState, useRef, TouchEvent } from 'react';
 
 const amenityIcons: Record<string, React.ReactNode> = {
   'Airco': <Wind size={16} />,
@@ -23,6 +23,17 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
   const caravan = getCaravanById(id);
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const touchStartX = useRef(0);
+
+  const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!caravan) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && activePhoto < caravan.photos.length - 1) setActivePhoto(p => p + 1);
+      if (diff < 0 && activePhoto > 0) setActivePhoto(p => p - 1);
+    }
+  };
 
   if (!caravan) {
     notFound();
@@ -47,7 +58,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 <X size={20} />
               </button>
             </div>
-            <div className="flex-1 relative">
+            <div className="flex-1 relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <Image
                 src={caravan.photos[activePhoto]}
                 alt={caravan.name}
@@ -104,7 +115,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
         {/* Photo gallery - mobile swipe, desktop grid */}
         <div className="bg-white">
           {/* Mobile: full-width swipeable */}
-          <div className="sm:hidden relative">
+          <div className="sm:hidden relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
             <button onClick={() => setLightboxOpen(true)} className="block w-full">
               <div className="relative aspect-[4/3]">
                 <Image src={caravan.photos[activePhoto]} alt={caravan.name} fill className="object-cover" priority unoptimized />
@@ -169,7 +180,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   <span className="text-xs font-mono text-gray-400">{caravan.reference}</span>
                   <div className="flex items-center gap-1 text-amber-500">
                     <Star size={14} className="fill-amber-400" />
-                    <span className="text-xs font-semibold">Nieuw</span>
+                    <span className="text-xs font-semibold">{caravan.type}</span>
                   </div>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{caravan.name}</h1>
@@ -214,7 +225,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { icon: <Shield size={20} className="text-primary" />, label: 'Veilig betalen' },
-                  { icon: <Calendar size={20} className="text-primary" />, label: 'Gratis annuleren' },
+                  { icon: <Calendar size={20} className="text-primary" />, label: 'Flexibel annuleren' },
                   { icon: <MapPin size={20} className="text-primary" />, label: '30+ campings' },
                 ].map(t => (
                   <div key={t.label} className="bg-white rounded-xl p-3 text-center">
@@ -270,6 +281,31 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   <span>Veilig betalen via Stripe. Borg retour na controle.</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Guest reviews */}
+          <div className="mt-8 sm:mt-12">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Wat gasten zeggen</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { name: 'Linda & Peter', text: 'Fantastische caravan, alles was schoon en goed onderhouden. Precies zoals op de foto\'s.', rating: 5, date: 'Okt 2025' },
+                { name: 'Familie de Vries', text: 'De kinderen waren super blij! Ruime indeling en alles wat je nodig hebt was aanwezig.', rating: 5, date: 'Sep 2025' },
+              ].map(review => (
+                <div key={review.name} className="bg-white rounded-2xl p-5 relative">
+                  <Quote size={28} className="absolute top-4 right-4 text-primary/10" />
+                  <div className="flex gap-0.5 mb-2">
+                    {Array.from({ length: review.rating }).map((_, s) => (
+                      <Star key={s} size={14} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">&ldquo;{review.text}&rdquo;</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-800">{review.name}</span>
+                    <span className="text-[10px] text-gray-400">{review.date}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

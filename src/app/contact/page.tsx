@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle } from 'lucide-react';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -141,11 +141,27 @@ export default function ContactPage() {
               </div>
 
               <div className="bg-accent/10 rounded-2xl p-6 border border-accent/20">
-                <h3 className="font-semibold text-foreground mb-2">Reactietijd</h3>
-                <p className="text-sm text-muted">
-                  We reageren binnen 24 uur op alle berichten. Voor urgente vragen kun je ons telefonisch of via WhatsApp bereiken.
-                </p>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-accent" />Bereikbaarheid</h3>
+                <div className="text-sm text-muted space-y-1">
+                  <p>Ma – Vr: 09:00 – 18:00</p>
+                  <p>Za: 10:00 – 14:00</p>
+                  <p>Zo: gesloten</p>
+                  <p className="text-xs mt-2 text-muted/70">Reactietijd e-mail: max 24 uur</p>
+                </div>
               </div>
+
+              <a
+                href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag%20over%20caravanverhuur."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-[#25D366] hover:bg-[#1da851] text-white rounded-2xl p-5 transition-colors group"
+              >
+                <MessageCircle size={24} className="shrink-0" />
+                <div>
+                  <div className="font-semibold text-sm">Liever via WhatsApp?</div>
+                  <div className="text-white/80 text-xs">Direct antwoord op je vragen</div>
+                </div>
+              </a>
             </motion.div>
 
             {/* Contact form */}

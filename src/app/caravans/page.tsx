@@ -330,6 +330,19 @@ export default function CaravansPage() {
       {/* Grid */}
       <section className="py-12 bg-surface-alt min-h-[60vh]">
         <div className="max-w-7xl mx-auto px-4">
+          {/* Results header */}
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-muted">
+              <span className="font-semibold text-foreground">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} gevonden
+            </p>
+            {filtered.length > 0 && (
+              <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                Seizoen 2026 beschikbaar
+              </p>
+            )}
+          </div>
+
           {filtered.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-xl text-muted mb-4">Geen caravans gevonden met deze filters.</p>
@@ -360,13 +373,19 @@ export default function CaravansPage() {
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
                       unoptimized
                     />
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
                         caravan.type === 'LUXE' ? 'bg-yellow-500' :
                         caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-green-500'
                       }`}>
                         {caravan.type}
                       </span>
+                      {caravan.status === 'BESCHIKBAAR' && (
+                        <span className="px-2.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 w-fit">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                          Beschikbaar
+                        </span>
+                      )}
                     </div>
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
                       <span className="text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}/week</span>

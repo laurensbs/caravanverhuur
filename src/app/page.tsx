@@ -81,7 +81,7 @@ export default function HomePage() {
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
             src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600&q=80"
-            alt="Camping Costa Brava"
+            alt="Familie geniet van caravanvakantie aan de Costa Brava"
             fill
             className="object-cover scale-110"
             priority
@@ -105,7 +105,7 @@ export default function HomePage() {
               <span className="hidden sm:inline">Seizoen 2026 – nu boeken!</span>
               <span className="sm:hidden">Seizoen 2026</span>
               <span className="w-1 h-1 bg-white/40 rounded-full" />
-              <span className="text-emerald-300 text-xs font-semibold">3 boekingen vandaag</span>
+              <span className="text-emerald-300 text-xs font-semibold">Populair deze week</span>
             </motion.div>
 
             <motion.h1
@@ -638,19 +638,19 @@ export default function HomePage() {
                 location: 'Utrecht',
                 rating: 5,
                 text: 'Fantastische ervaring! De caravan stond helemaal klaar met alles erop en eraan. De kinderen vonden het geweldig. Zeker een aanrader!',
-                date: 'Augustus 2025',
+                date: 'Oktober 2025',
               },
               {
                 name: 'Mark & Lisa',
                 location: 'Amsterdam',
                 rating: 5,
                 text: 'Super makkelijk geboekt en alles was perfect geregeld. Geen stress met transport of opbouwen. Gewoon uitstappen en genieten van de zon.',
-                date: 'Juli 2025',
+                date: 'September 2025',
               },
               {
                 name: 'Familie Bakker',
                 location: 'Rotterdam',
-                rating: 5,
+                rating: 4,
                 text: 'De camping was prachtig en de caravan was schoon en compleet ingericht. De communicatie verliep heel vlot. Volgend jaar boeken we weer!',
                 date: 'September 2025',
               },
@@ -666,14 +666,14 @@ export default function HomePage() {
                 location: 'Eindhoven',
                 rating: 5,
                 text: 'Onze derde keer en weer helemaal tevreden. De kinderen vragen elk jaar opnieuw om een caravanvakantie aan de Costa Brava.',
-                date: 'Augustus 2025',
+                date: 'Oktober 2025',
               },
               {
                 name: 'Sophie & Tom',
                 location: 'Groningen',
                 rating: 5,
                 text: 'Beste vakantie ooit! Geen gedoe met slepen, alles stond al klaar. Het voelde als thuiskomen. Absolute aanrader!',
-                date: 'Juli 2025',
+                date: 'November 2025',
               },
             ].map((review, i) => (
               <motion.div
@@ -697,7 +697,10 @@ export default function HomePage() {
                     <div className="font-semibold text-sm text-foreground">{review.name}</div>
                     <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
                   </div>
-                  <span className="text-[10px] text-muted bg-gray-100 px-2 py-1 rounded-full">{review.date}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] text-muted bg-gray-100 px-2 py-1 rounded-full">{review.date}</span>
+                    <span className="text-[9px] text-emerald-600 flex items-center gap-0.5"><CheckCircle size={10} />Geverifieerd</span>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -714,7 +717,7 @@ export default function HomePage() {
             {[
               { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via Stripe' },
               { icon: <CheckCircle size={18} className="text-primary" />, text: 'Volledige inventaris' },
-              { icon: <Star size={18} className="text-primary fill-primary" />, text: '5/5 beoordeling' },
+              { icon: <Star size={18} className="text-primary fill-primary" />, text: '4.8/5 beoordeling' },
               { icon: <Users size={18} className="text-primary" />, text: '100+ tevreden gasten' },
               { icon: <Clock size={18} className="text-primary" />, text: '20+ jaar ervaring' },
             ].map(badge => (

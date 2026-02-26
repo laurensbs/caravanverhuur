@@ -24,7 +24,7 @@ const faqCategories = [
       },
       {
         q: 'Hoe werkt de borgregeling?',
-        a: 'Bij aankomst wordt een borg van €200-€500 (afhankelijk van de caravan) gereserveerd via Stripe. Na controle bij vertrek wordt de borg binnen 7 dagen teruggestort als er geen schade is.',
+        a: 'Bij aankomst wordt een borg van €250-€500 (afhankelijk van de caravan) gereserveerd via Stripe. Na controle bij vertrek wordt de borg binnen 7 dagen teruggestort als er geen schade is.',
       },
       {
         q: 'Kan ik annuleren?',
@@ -71,6 +71,18 @@ const faqCategories = [
       {
         q: 'Wat als er een probleem is met de caravan?',
         a: 'Je kunt ons 7 dagen per week bereiken via WhatsApp of telefoon. We zorgen zo snel mogelijk voor een oplossing, vaak al dezelfde dag.',
+      },
+      {
+        q: 'Is er WiFi op de camping?',
+        a: 'De meeste campings bieden WiFi aan, soms gratis bij het campingplaats en soms tegen een kleine toeslag. Informeer bij je gekozen camping naar de beschikbaarheid.',
+      },
+      {
+        q: 'Hoe zit het met elektriciteit en gas?',
+        a: 'Elektriciteit is inbegrepen bij de campingplaats. Gasfles voor koken is aanwezig bij aankomst. Mocht deze leeg raken, kun je bij de campingreceptie een nieuwe kopen.',
+      },
+      {
+        q: 'Moet ik de caravan schoonmaken bij vertrek?',
+        a: 'We vragen je de caravan bezemschoon op te leveren: afwas doen, vuilnis meenemen en de vloer aanvegen. Diepte-reiniging is niet nodig — dat doen wij.',
       },
     ],
   },
@@ -201,13 +213,24 @@ export default function FAQPage() {
           <div className="bg-surface rounded-2xl p-8 text-center border border-border mt-12">
             <h3 className="text-xl font-bold text-foreground mb-2">Vraag niet gevonden?</h3>
             <p className="text-muted mb-6">Neem gerust contact met ons op. We helpen je graag verder!</p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full transition-all shadow-md"
-            >
-              Neem contact op
-              <ArrowRight size={18} />
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full transition-all shadow-md"
+              >
+                Neem contact op
+                <ArrowRight size={18} />
+              </Link>
+              <a
+                href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-semibold rounded-full transition-all shadow-md"
+              >
+                WhatsApp
+                <ArrowRight size={18} />
+              </a>
+            </div>
           </div>
         </div>
       </section>

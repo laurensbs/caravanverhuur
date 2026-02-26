@@ -92,6 +92,7 @@ export default function MijnAccountPage() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -534,7 +535,7 @@ export default function MijnAccountPage() {
                   </div>
 
                   {/* Danger zone */}
-                  <div className="bg-white rounded-2xl p-5">
+                  <div className="bg-white rounded-2xl p-5 space-y-3">
                     <button
                       onClick={handleLogout}
                       className="w-full py-3 border border-red-200 text-red-600 font-semibold rounded-xl text-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
@@ -542,6 +543,40 @@ export default function MijnAccountPage() {
                       <LogOut size={16} />
                       Uitloggen
                     </button>
+
+                    {/* GDPR Account Deletion */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-400 mb-2">Op grond van de AVG/GDPR heb je het recht om je account en gegevens te laten verwijderen.</p>
+                      {!showDeleteConfirm ? (
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors"
+                        >
+                          Account verwijderen
+                        </button>
+                      ) : (
+                        <div className="bg-red-50 rounded-xl p-3 space-y-2">
+                          <p className="text-xs text-red-700 font-medium">Weet je het zeker? Dit kan niet ongedaan worden gemaakt.</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={async () => {
+                                await fetch('/api/auth/me', { method: 'DELETE' });
+                                router.push('/account');
+                              }}
+                              className="flex-1 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              Ja, verwijder mijn account
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(false)}
+                              className="px-4 py-2 bg-gray-200 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                            >
+                              Annuleer
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

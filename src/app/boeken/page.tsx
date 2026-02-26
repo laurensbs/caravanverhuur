@@ -213,6 +213,7 @@ function BoekenContent() {
             </div>
             <div className="bg-blue-50 rounded-xl p-4 text-sm text-primary-dark mb-8">
               <strong>Volgende stap:</strong> Je ontvangt een e-mail met betaalinstructies voor de aanbetaling van &euro;{deposit}. Na ontvangst is je boeking definitief bevestigd.
+              <br /><span className="text-xs mt-1 block text-blue-500">Geen e-mail ontvangen? Controleer je spam of ongewenste post.</span>
             </div>
           </motion.div>
         </div>
@@ -259,7 +260,7 @@ function BoekenContent() {
                   }`}>
                     {i + 1 < step ? <CheckCircle size={18} /> : i + 1}
                   </div>
-                  <span className={`text-xs mt-1.5 hidden sm:block ${i + 1 === step ? 'text-primary font-semibold' : 'text-muted'}`}>
+                  <span className={`text-[10px] sm:text-xs mt-1.5 ${i + 1 === step ? 'text-primary font-semibold' : 'text-muted'} ${i + 1 === step ? '' : 'hidden sm:block'}`}>
                     {label}
                   </span>
                 </div>
@@ -320,6 +321,12 @@ function BoekenContent() {
                   {nights > 0 && (
                     <div className="bg-primary/5 rounded-xl p-4 text-sm text-primary font-medium">
                       Verblijfsduur: {nights} {nights === 1 ? 'nacht' : 'nachten'} ({Math.floor(nights / 7)} {Math.floor(nights / 7) === 1 ? 'week' : 'weken'}{nights % 7 > 0 ? ` en ${nights % 7} ${nights % 7 === 1 ? 'dag' : 'dagen'}` : ''})
+                    </div>
+                  )}
+                  {nights > 0 && nights < 7 && (
+                    <div className="bg-amber-50 rounded-xl p-3 text-xs text-amber-700 flex items-center gap-2">
+                      <CalendarDays size={14} className="shrink-0" />
+                      We raden een verblijf van minimaal 7 nachten aan voor de beste ervaring en prijs.
                     </div>
                   )}
                 </div>

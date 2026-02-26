@@ -114,7 +114,7 @@ export default function Footer() {
               <li>
                 <a href="mailto:info@caravanverhuurcostabrava.com" className="text-gray-500 hover:text-primary transition-colors text-sm flex items-start gap-2">
                   <Mail size={14} className="text-primary shrink-0 mt-0.5" />
-                  <span className="break-all">info@caravanhuur<wbr />costabrava.com</span>
+                  <span className="break-all">info@caravanverhuur<wbr />costabrava.com</span>
                 </a>
               </li>
               <li>

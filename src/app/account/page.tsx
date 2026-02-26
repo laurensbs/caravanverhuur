@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, ClipboardList, CreditCard, Search, UserCircle } from 'lucide-react';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -19,6 +19,7 @@ export default function AccountPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +28,11 @@ export default function AccountPage() {
     setSuccess('');
 
     try {
+      if (mode === 'register' && !acceptTerms) {
+        setError('Je moet akkoord gaan met de voorwaarden en het privacybeleid.');
+        setLoading(false);
+        return;
+      }
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const body = mode === 'login'
         ? { email, password }
@@ -190,6 +196,27 @@ export default function AccountPage() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {mode === 'login' && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Wachtwoord vergeten? <Link href="/contact" className="text-primary hover:underline">Neem contact op</Link>
+                  </p>
+                )}
+                {mode === 'register' && password.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex gap-1">
+                      {[1,2,3,4].map(i => (
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${
+                          password.length >= i * 3
+                            ? password.length >= 10 ? 'bg-emerald-500' : password.length >= 6 ? 'bg-amber-500' : 'bg-red-400'
+                            : 'bg-gray-200'
+                        }`} />
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-0.5">
+                      {password.length < 6 ? 'Te kort' : password.length < 10 ? 'Redelijk' : 'Sterk'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Phone (register only) */}
@@ -216,6 +243,23 @@ export default function AccountPage() {
               </AnimatePresence>
 
               {/* Submit */}
+              {mode === 'register' && (
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-gray-500 leading-relaxed">
+                    Ik ga akkoord met de{' '}
+                    <Link href="/voorwaarden" className="text-primary underline" target="_blank">Algemene Voorwaarden</Link>{' '}
+                    en het{' '}
+                    <Link href="/privacy" className="text-primary underline" target="_blank">Privacybeleid</Link>.
+                  </label>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={loading}
@@ -245,13 +289,13 @@ export default function AccountPage() {
           {/* Info cards */}
           <div className="mt-6 grid grid-cols-2 gap-3">
             {[
-              { icon: '📋', title: 'Boekingen', desc: 'Bekijk al je boekingen' },
-              { icon: '💳', title: 'Betalingen', desc: 'Betaalstatus volgen' },
-              { icon: '🔍', title: 'Borg', desc: 'Checklist inzien' },
-              { icon: '👤', title: 'Profiel', desc: 'Gegevens beheren' },
+              { icon: <ClipboardList size={20} className="text-primary" />, title: 'Boekingen', desc: 'Bekijk al je boekingen' },
+              { icon: <CreditCard size={20} className="text-primary" />, title: 'Betalingen', desc: 'Betaalstatus volgen' },
+              { icon: <Search size={20} className="text-primary" />, title: 'Borg', desc: 'Checklist inzien' },
+              { icon: <UserCircle size={20} className="text-primary" />, title: 'Profiel', desc: 'Gegevens beheren' },
             ].map(item => (
               <div key={item.title} className="bg-white rounded-xl p-3 text-center">
-                <span className="text-xl">{item.icon}</span>
+                <div className="flex justify-center mb-1">{item.icon}</div>
                 <div className="text-xs font-semibold text-gray-800 mt-1">{item.title}</div>
                 <div className="text-[11px] text-gray-500">{item.desc}</div>
               </div>

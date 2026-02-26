@@ -151,7 +151,7 @@ export const destinations: Destination[] = [
     bestFor: ['Surfers', 'Natuurliefhebbers', 'Rust zoekers'],
     nearestCampings: ['Camping Las Dunas', 'Camping L\'Àmfora', 'Camping Aquarius'],
     weather: { summer: '27-31°C', water: '20-23°C' },
-    travelTip: 'Huur een fiest en rijd door het Aiguamolls natuurpark — flamingo\'s, ooievaars en ijsvogels spotten!',
+    travelTip: 'Huur een fiets en rijd door het Aiguamolls natuurpark — flamingo\'s, ooievaars en ijsvogels spotten!',
     coordinates: { lat: 42.189, lng: 3.099 },
   },
   {
