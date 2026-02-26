@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes } from '@/lib/db';
+import { sendBookingConfirmationEmail } from '@/lib/email';
+import { caravans } from '@/data/caravans';
+import { campings } from '@/data/campings';
 
 export async function GET() {
   try {
     const bookings = await getAllBookings();
-    return NextResponse.json(bookings);
+    return NextResponse.json({ bookings });
   } catch (error) {
     console.error('GET /api/bookings error:', error);
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
@@ -14,7 +17,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, depositAmount, remainingAmount, borgAmount } = body;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, depositAmount, remainingAmount, borgAmount, spotNumber } = body;
 
     if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -36,7 +39,27 @@ export async function POST(request: NextRequest) {
       depositAmount,
       remainingAmount,
       borgAmount,
+      spotNumber,
     });
+
+    // Send booking confirmation email (non-blocking)
+    const caravanName = caravans.find(c => c.id === caravanId)?.name || caravanId;
+    const campingName = campings.find(c => c.id === campingId)?.name || campingId;
+    sendBookingConfirmationEmail(guestEmail, {
+      guestName,
+      reference: result.reference,
+      caravanName,
+      campingName,
+      checkIn,
+      checkOut,
+      nights,
+      adults: adults || 2,
+      children: children || 0,
+      totalPrice,
+      depositAmount,
+      remainingAmount,
+      spotNumber,
+    }).catch(err => console.error('Booking confirmation email failed:', err));
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

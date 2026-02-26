@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     }
 
     const bookings = await getBookingsByCaravanId(caravanId);
-    return NextResponse.json(bookings);
+    return NextResponse.json({ bookings });
   } catch (error) {
     console.error('GET /api/admin/caravan-bookings error:', error);
     return NextResponse.json({ error: 'Failed to fetch caravan bookings' }, { status: 500 });

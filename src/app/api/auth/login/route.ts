@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerByEmail, createCustomerSession, updateCustomerLastLogin } from '@/lib/db';
+import { getCustomerByEmail, createCustomerSession, updateCustomerLastLogin, setupDatabase } from '@/lib/db';
 
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   const [salt, storedHash] = hash.split(':');
@@ -45,8 +45,17 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
+    const msg = error instanceof Error ? error.message : '';
+    if (msg.includes('does not exist') || msg.includes('relation')) {
+      try {
+        await setupDatabase();
+        return NextResponse.json({ error: 'Database was zojuist opgezet. Probeer het nogmaals.' }, { status: 503 });
+      } catch (setupErr) {
+        console.error('Auto-setup failed:', setupErr);
+      }
+    }
     return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 500 });
   }
 }

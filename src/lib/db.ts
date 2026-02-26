@@ -41,6 +41,7 @@ export async function setupDatabase() {
       deposit_amount NUMERIC(10,2) NOT NULL,
       remaining_amount NUMERIC(10,2) NOT NULL,
       borg_amount NUMERIC(10,2) NOT NULL,
+      spot_number TEXT,
       admin_notes TEXT
     )
   `;
@@ -129,6 +130,13 @@ export async function setupDatabase() {
     )
   `;
 
+  // Migration: add spot_number column if it doesn't exist
+  try {
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS spot_number TEXT`;
+  } catch {
+    // Column might already exist or DB doesn't support IF NOT EXISTS — ignore
+  }
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -166,21 +174,31 @@ export async function createBooking(data: {
   depositAmount: number;
   remainingAmount: number;
   borgAmount: number;
+  spotNumber?: string;
 }) {
   const id = generateId('B');
   const reference = await generateBookingReference();
 
   await sql`
-    INSERT INTO bookings (id, reference, status, guest_name, guest_email, guest_phone, adults, children, special_requests, caravan_id, camping_id, check_in, check_out, nights, total_price, deposit_amount, remaining_amount, borg_amount)
-    VALUES (${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount})
+    INSERT INTO bookings (id, reference, status, guest_name, guest_email, guest_phone, adults, children, special_requests, caravan_id, camping_id, check_in, check_out, nights, total_price, deposit_amount, remaining_amount, borg_amount, spot_number)
+    VALUES (${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null})
   `;
 
-  // Create the initial deposit payment record
-  const paymentId = generateId('P');
+  // Create the deposit payment record
+  const depositPaymentId = generateId('P');
   await sql`
     INSERT INTO payments (id, booking_id, type, amount, status, method)
-    VALUES (${paymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'bank')
+    VALUES (${depositPaymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'bank')
   `;
+
+  // Create the remaining payment record
+  if (data.remainingAmount > 0) {
+    const remainingPaymentId = generateId('P');
+    await sql`
+      INSERT INTO payments (id, booking_id, type, amount, status, method)
+      VALUES (${remainingPaymentId}, ${id}, 'RESTBETALING', ${data.remainingAmount}, 'OPENSTAAND', 'bank')
+    `;
+  }
 
   return { id, reference };
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCustomer, getCustomerByEmail, createCustomerSession } from '@/lib/db';
+import { createCustomer, getCustomerByEmail, createCustomerSession, setupDatabase } from '@/lib/db';
+import { sendWelcomeEmail } from '@/lib/email';
 
 // Simple password hashing (SHA-256 with salt)
 async function hashPassword(password: string): Promise<string> {
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
     // Auto-login: create session
     const session = await createCustomerSession(id);
 
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(email.toLowerCase().trim(), name.trim()).catch(err => 
+      console.error('Welcome email failed:', err)
+    );
+
     const response = NextResponse.json({ success: true, customerId: id });
     response.cookies.set('customer_session', session.token, {
       httpOnly: true,
@@ -51,8 +57,19 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Register error:', error);
+    // Auto-setup database tables if they don't exist
+    const msg = error instanceof Error ? error.message : '';
+    if (msg.includes('does not exist') || msg.includes('relation')) {
+      try {
+        await setupDatabase();
+        // Retry not needed - user can try again
+        return NextResponse.json({ error: 'Database was zojuist opgezet. Probeer het nogmaals.' }, { status: 503 });
+      } catch (setupErr) {
+        console.error('Auto-setup failed:', setupErr);
+      }
+    }
     return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 500 });
   }
 }

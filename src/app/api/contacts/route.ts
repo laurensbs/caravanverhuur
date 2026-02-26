@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createContact, getAllContacts, updateContactStatus, replyToContact } from '@/lib/db';
+import { sendContactAcknowledgmentEmail } from '@/lib/email';
 
 export async function GET() {
   try {
     const contacts = await getAllContacts();
-    return NextResponse.json(contacts);
+    return NextResponse.json({ contacts });
   } catch (error) {
     console.error('GET /api/contacts error:', error);
     return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 });
@@ -21,6 +22,12 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await createContact({ name, email, phone, subject, message });
+
+    // Send acknowledgment email (non-blocking)
+    sendContactAcknowledgmentEmail(email, name, subject).catch(err =>
+      console.error('Contact acknowledgment email failed:', err)
+    );
+
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error('POST /api/contacts error:', error);
