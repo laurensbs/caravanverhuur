@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, Phone, Mail, ArrowRight, ChevronRight } from 'lucide-react';
+import { Menu, X, Phone, Mail, ArrowRight, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WeatherBar from './WeatherBar';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/caravans', label: 'Caravans' },
+  { href: '/bestemmingen', label: 'Bestemmingen' },
   { href: '/boeken', label: 'Boeken' },
   { href: '/over-ons', label: 'Over Ons' },
   { href: '/faq', label: 'FAQ' },
@@ -36,15 +37,15 @@ export default function Header() {
 
       {/* Main nav */}
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-18 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="shrink-0 relative z-[60]">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-24 sm:h-26 lg:h-28 py-2">
+          {/* Logo — hidden on mobile when menu is open so only the panel logo shows */}
+          <Link href="/" className={`shrink-0 transition-opacity duration-200 ${menuOpen ? 'opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto' : ''}`}>
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravanverhuur Costa Brava"
-              width={200}
-              height={60}
-              className="w-28 sm:w-36 lg:w-44 h-auto"
+              width={260}
+              height={80}
+              className="w-44 sm:w-52 lg:w-60 h-auto max-h-20 sm:max-h-22 lg:max-h-24 object-contain"
               unoptimized
             />
           </Link>
@@ -61,8 +62,15 @@ export default function Header() {
               </Link>
             ))}
             <Link
+              href="/account"
+              className="ml-1 w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 hover:text-primary transition-colors"
+              aria-label="Mijn Account"
+            >
+              <User size={18} />
+            </Link>
+            <Link
               href="/boeken"
-              className="ml-3 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-150 shadow-sm hover:shadow-md flex items-center gap-1.5"
+              className="ml-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-150 shadow-sm hover:shadow-md flex items-center gap-1.5"
             >
               Boek Nu
               <ArrowRight size={14} />
@@ -160,7 +168,7 @@ export default function Header() {
                 </nav>
 
                 {/* CTA + contact */}
-                <div className="p-5 border-t border-gray-100 space-y-4">
+                <div className="p-5 border-t border-gray-100 space-y-3">
                   <Link
                     href="/boeken"
                     onClick={() => setMenuOpen(false)}
@@ -168,6 +176,15 @@ export default function Header() {
                   >
                     Boek Nu
                     <ArrowRight size={18} />
+                  </Link>
+
+                  <Link
+                    href="/account"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    <User size={16} />
+                    Mijn Account
                   </Link>
 
                   <div className="space-y-2">

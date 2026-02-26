@@ -72,10 +72,12 @@ export default function Footer() {
             <ul className="space-y-2">
               {[
                 { href: '/caravans', label: 'Onze Caravans' },
+                { href: '/bestemmingen', label: 'Bestemmingen' },
                 { href: '/boeken', label: 'Direct Boeken' },
                 { href: '/over-ons', label: 'Over Ons' },
                 { href: '/faq', label: 'FAQ' },
                 { href: '/contact', label: 'Contact' },
+                { href: '/account', label: 'Mijn Account' },
               ].map(link => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-gray-500 hover:text-primary transition-colors text-sm">

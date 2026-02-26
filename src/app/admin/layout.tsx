@@ -12,6 +12,7 @@ import {
   Mail,
   CarFront,
   ClipboardCheck,
+  Users,
   LogOut,
   Menu,
   X,
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/admin/berichten', label: 'Berichten', icon: Mail },
   { href: '/admin/caravans', label: 'Caravans', icon: CarFront },
   { href: '/admin/borg', label: 'Borgchecklist', icon: ClipboardCheck },
+  { href: '/admin/klanten', label: 'Klanten', icon: Users },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

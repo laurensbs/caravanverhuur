@@ -105,6 +105,30 @@ export async function setupDatabase() {
     )
   `;
 
+  // Customers table (login system)
+  await sql`
+    CREATE TABLE IF NOT EXISTS customers (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      name TEXT NOT NULL,
+      phone TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      last_login TIMESTAMP
+    )
+  `;
+
+  // Customer sessions table
+  await sql`
+    CREATE TABLE IF NOT EXISTS customer_sessions (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -506,4 +530,96 @@ export async function customerAgreeBorgChecklist(token: string, agreed: boolean,
       status = CASE WHEN ${agreed} THEN 'KLANT_AKKOORD' ELSE 'KLANT_BEZWAAR' END
     WHERE token = ${token}
   `;
+}
+
+// ===== CUSTOMER QUERIES =====
+
+export async function createCustomer(data: { email: string; passwordHash: string; name: string; phone?: string }) {
+  const id = generateId('CU');
+  await sql`
+    INSERT INTO customers (id, email, password_hash, name, phone)
+    VALUES (${id}, ${data.email}, ${data.passwordHash}, ${data.name}, ${data.phone || null})
+  `;
+  return { id };
+}
+
+export async function getCustomerByEmail(email: string) {
+  const result = await sql`SELECT * FROM customers WHERE email = ${email}`;
+  return result.rows[0] || null;
+}
+
+export async function getCustomerById(id: string) {
+  const result = await sql`SELECT * FROM customers WHERE id = ${id}`;
+  return result.rows[0] || null;
+}
+
+export async function updateCustomerLastLogin(id: string) {
+  await sql`UPDATE customers SET last_login = NOW() WHERE id = ${id}`;
+}
+
+export async function updateCustomerProfile(id: string, data: { name?: string; phone?: string }) {
+  if (data.name && data.phone) {
+    await sql`UPDATE customers SET name = ${data.name}, phone = ${data.phone} WHERE id = ${id}`;
+  } else if (data.name) {
+    await sql`UPDATE customers SET name = ${data.name} WHERE id = ${id}`;
+  } else if (data.phone) {
+    await sql`UPDATE customers SET phone = ${data.phone} WHERE id = ${id}`;
+  }
+}
+
+export async function getAllCustomers() {
+  const result = await sql`SELECT id, email, name, phone, created_at, last_login FROM customers ORDER BY created_at DESC`;
+  return result.rows;
+}
+
+// ===== CUSTOMER SESSION QUERIES =====
+
+export async function createCustomerSession(customerId: string) {
+  const id = generateId('CS');
+  const token = generateToken();
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+  await sql`
+    INSERT INTO customer_sessions (id, customer_id, token, expires_at)
+    VALUES (${id}, ${customerId}, ${token}, ${expiresAt})
+  `;
+  return { id, token, expiresAt };
+}
+
+export async function getCustomerBySessionToken(token: string) {
+  const result = await sql`
+    SELECT c.* FROM customers c
+    JOIN customer_sessions cs ON cs.customer_id = c.id
+    WHERE cs.token = ${token} AND cs.expires_at > NOW()
+  `;
+  return result.rows[0] || null;
+}
+
+export async function deleteCustomerSession(token: string) {
+  await sql`DELETE FROM customer_sessions WHERE token = ${token}`;
+}
+
+export async function getBookingsByEmail(email: string) {
+  const result = await sql`
+    SELECT * FROM bookings WHERE guest_email = ${email} ORDER BY created_at DESC
+  `;
+  return result.rows;
+}
+
+export async function getPaymentsByBookingIds(bookingIds: string[]) {
+  if (bookingIds.length === 0) return [];
+  const result = await sql`
+    SELECT * FROM payments WHERE booking_id = ANY(${bookingIds as unknown as string}) ORDER BY created_at DESC
+  `;
+  return result.rows;
+}
+
+export async function getBorgChecklistsByEmail(email: string) {
+  const result = await sql`
+    SELECT bc.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.check_in, b.check_out, b.borg_amount
+    FROM borg_checklists bc
+    JOIN bookings b ON bc.booking_id = b.id
+    WHERE b.guest_email = ${email}
+    ORDER BY bc.created_at DESC
+  `;
+  return result.rows;
 }

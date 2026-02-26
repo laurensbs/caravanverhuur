@@ -76,7 +76,7 @@ export default function HomePage() {
   return (
     <>
       {/* ===== HERO with Booking Widget ===== */}
-      <section ref={heroRef} className="relative min-h-[100svh] flex flex-col justify-center overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[105svh] sm:min-h-[100svh] flex flex-col justify-center overflow-hidden">
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
@@ -93,7 +93,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/10" />
         </motion.div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 sm:py-20 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-16 sm:pt-28 sm:pb-20 w-full">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -102,7 +102,10 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/25"
             >
               <Sun size={14} className="text-amber-300" />
-              Seizoen 2026 – nu boeken!
+              <span className="hidden sm:inline">Seizoen 2026 – nu boeken!</span>
+              <span className="sm:hidden">Seizoen 2026</span>
+              <span className="w-1 h-1 bg-white/40 rounded-full" />
+              <span className="text-emerald-300 text-xs font-semibold">3 boekingen vandaag</span>
             </motion.div>
 
             <motion.h1
