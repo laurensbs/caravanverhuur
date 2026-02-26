@@ -572,6 +572,12 @@ export async function getAllCustomers() {
   return result.rows;
 }
 
+export async function deleteCustomer(id: string) {
+  // Delete sessions first (FK constraint), then customer
+  await sql`DELETE FROM customer_sessions WHERE customer_id = ${id}`;
+  await sql`DELETE FROM customers WHERE id = ${id}`;
+}
+
 // ===== CUSTOMER SESSION QUERIES =====
 
 export async function createCustomerSession(customerId: string) {
