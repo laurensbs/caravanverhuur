@@ -62,13 +62,13 @@ function StatCard({
     >
       <Link
         href={href}
-        className="block bg-white rounded-2xl p-5 border border-[#e2e8f0] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+        className="block bg-white rounded-2xl p-5 border border-border hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-[#64748b] font-medium">{label}</p>
-            <p className="text-2xl font-bold text-[#1a1a2e] mt-1">{value}</p>
-            {sub && <p className="text-xs text-[#64748b] mt-1">{sub}</p>}
+            <p className="text-sm text-muted font-medium">{label}</p>
+            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+            {sub && <p className="text-xs text-muted mt-1">{sub}</p>}
           </div>
           <div className={`p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
             <Icon className="w-5 h-5" />
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1a3c6e]" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-dark" />
       </div>
     );
   }
@@ -115,8 +115,8 @@ export default function AdminDashboard() {
   if (error || !data) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-500">{error || 'Er ging iets mis'}</p>
-        <p className="text-sm text-[#64748b] mt-2">
+        <p className="text-danger">{error || 'Er ging iets mis'}</p>
+        <p className="text-sm text-muted mt-2">
           Controleer of de database is opgezet via <code>/api/setup</code>
         </p>
       </div>
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-gradient-to-r from-[#1a3c6e] to-[#2a5298] rounded-2xl p-5 text-white"
+        className="bg-gradient-to-r from-primary-dark to-primary rounded-2xl p-5 text-white"
       >
         <p className="text-sm text-white/70 font-medium uppercase tracking-wider">
           Overzicht {monthName} {new Date().getFullYear()}
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           value={String(activeBookings)}
           sub={`${totalBookings} totaal • ${newBookings} nieuw`}
           icon={CalendarCheck}
-          color="bg-blue-100 text-blue-600"
+          color="bg-primary-100 text-primary"
           href="/admin/boekingen"
           index={0}
         />
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
           value={formatCurrency(totalPaid)}
           sub={`${paidCount} betalingen`}
           icon={TrendingUp}
-          color="bg-green-100 text-green-600"
+          color="bg-primary-light text-primary-dark"
           href="/admin/betalingen"
           index={1}
         />
@@ -192,7 +192,7 @@ export default function AdminDashboard() {
           value={formatCurrency(totalOpen)}
           sub={`${openCount} betalingen`}
           icon={CreditCard}
-          color="bg-orange-100 text-orange-600"
+          color="bg-primary-50 text-accent"
           href="/admin/betalingen"
           index={2}
         />
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
           value={String(totalMessages)}
           sub={`${newMessages} ongelezen`}
           icon={Mail}
-          color="bg-purple-100 text-purple-600"
+          color="bg-primary-100 text-primary-dark"
           href="/admin/berichten"
           index={3}
         />
@@ -213,16 +213,16 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}
-          className="bg-white rounded-2xl border border-[#e2e8f0] p-5"
+          className="bg-white rounded-2xl border border-border p-5"
         >
-          <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider mb-3">
+          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
             Actiepunten
           </h3>
           <div className="space-y-2">
             {newBookings > 0 && (
               <Link
                 href="/admin/boekingen"
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-blue-50 transition-colors text-blue-700"
+                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
             {openCount > 0 && (
               <Link
                 href="/admin/betalingen"
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-orange-50 transition-colors text-orange-700"
+                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-accent"
               >
                 <Clock className="w-4 h-4 shrink-0" />
                 <span>
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
             {newMessages > 0 && (
               <Link
                 href="/admin/berichten"
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-purple-50 transition-colors text-purple-700"
+                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
               >
                 <Mail className="w-4 h-4 shrink-0" />
                 <span>
@@ -266,22 +266,22 @@ export default function AdminDashboard() {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         {/* Recent bookings */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#e2e8f0] p-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               Recente Boekingen
             </h3>
             <Link
               href="/admin/boekingen"
-              className="text-xs text-[#1a3c6e] font-medium hover:underline flex items-center gap-1"
+              className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
             >
               Alles bekijken <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {recentBookings.length === 0 ? (
-            <p className="text-sm text-[#94a3b8] py-8 text-center">Nog geen boekingen</p>
+            <p className="text-sm text-muted py-8 text-center">Nog geen boekingen</p>
           ) : (
-            <div className="divide-y divide-[#e2e8f0]">
+            <div className="divide-y divide-border">
               {recentBookings.map((booking) => {
                 const caravan = getBookingCaravan(booking);
                 const camping = getBookingCamping(booking);
@@ -289,13 +289,13 @@ export default function AdminDashboard() {
                   <Link
                     key={booking.id}
                     href="/admin/boekingen"
-                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-[#f8fafc] transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-[#1a1a2e] truncate">
+                      <p className="font-medium text-sm text-foreground truncate">
                         {booking.guest_name}
                       </p>
-                      <p className="text-xs text-[#64748b] truncate">
+                      <p className="text-xs text-muted truncate">
                         {caravan?.name} • {camping?.name}
                       </p>
                     </div>
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                       >
                         {booking.status.replace('_', ' ')}
                       </span>
-                      <p className="text-xs text-[#64748b] mt-0.5">
+                      <p className="text-xs text-muted mt-0.5">
                         {formatDate(booking.created_at)}
                       </p>
                     </div>
@@ -317,39 +317,39 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+        <div className="bg-white rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               Berichten
             </h3>
             <Link
               href="/admin/berichten"
-              className="text-xs text-[#1a3c6e] font-medium hover:underline flex items-center gap-1"
+              className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
             >
               Alles <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {recentContacts.length === 0 ? (
-            <p className="text-sm text-[#94a3b8] py-8 text-center">Nog geen berichten</p>
+            <p className="text-sm text-muted py-8 text-center">Nog geen berichten</p>
           ) : (
             <div className="space-y-3">
               {recentContacts.map((contact) => (
                 <Link
                   key={contact.id}
                   href="/admin/berichten"
-                  className="block p-3 rounded-xl hover:bg-[#f8fafc] transition-colors"
+                  className="block p-3 rounded-xl hover:bg-surface transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm text-[#1a1a2e]">{contact.name}</p>
+                    <p className="font-medium text-sm text-foreground">{contact.name}</p>
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${getContactStatusColor(contact.status as 'NIEUW' | 'GELEZEN' | 'BEANTWOORD')}`}
                     >
                       {contact.status}
                     </span>
                   </div>
-                  <p className="text-xs font-medium text-[#1a1a2e]">{contact.subject}</p>
-                  <p className="text-xs text-[#64748b] line-clamp-2 mt-0.5">{contact.message}</p>
-                  <p className="text-xs text-[#94a3b8] mt-1">{formatDateTime(contact.created_at)}</p>
+                  <p className="text-xs font-medium text-foreground">{contact.subject}</p>
+                  <p className="text-xs text-muted line-clamp-2 mt-0.5">{contact.message}</p>
+                  <p className="text-xs text-muted mt-1">{formatDateTime(contact.created_at)}</p>
                 </Link>
               ))}
             </div>
@@ -362,13 +362,13 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55, duration: 0.4 }}
-        className="bg-white rounded-2xl border border-[#e2e8f0] p-5"
+        className="bg-white rounded-2xl border border-border p-5"
       >
-        <h3 className="text-sm font-semibold text-[#1a1a2e] uppercase tracking-wider mb-4">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
           Aankomende Verblijven
         </h3>
         {upcomingStays.length === 0 ? (
-          <p className="text-sm text-[#94a3b8] py-8 text-center">Geen aankomende verblijven</p>
+          <p className="text-sm text-muted py-8 text-center">Geen aankomende verblijven</p>
         ) : (
           <div className="space-y-3">
             {upcomingStays.map((b) => {
@@ -377,22 +377,22 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={b.id}
-                  className="flex items-center gap-4 p-3 rounded-xl border border-[#e2e8f0]"
+                  className="flex items-center gap-4 p-3 rounded-xl border border-border"
                 >
-                  <div className="text-center bg-[#f8fafc] rounded-xl px-3 py-2 shrink-0">
-                    <p className="text-lg font-bold text-[#1a3c6e]">
+                  <div className="text-center bg-surface rounded-xl px-3 py-2 shrink-0">
+                    <p className="text-lg font-bold text-primary-dark">
                       {new Date(b.check_in).getDate()}
                     </p>
-                    <p className="text-xs text-[#64748b] uppercase">
+                    <p className="text-xs text-muted uppercase">
                       {new Date(b.check_in).toLocaleDateString('nl-NL', { month: 'short' })}
                     </p>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-[#1a1a2e]">{b.guest_name}</p>
-                    <p className="text-xs text-[#64748b] truncate">
+                    <p className="font-medium text-sm text-foreground">{b.guest_name}</p>
+                    <p className="text-xs text-muted truncate">
                       {caravan?.name} → {camping?.name}
                     </p>
-                    <p className="text-xs text-[#94a3b8]">
+                    <p className="text-xs text-muted">
                       {formatDate(b.check_in)} – {formatDate(b.check_out)} ({b.nights} nachten)
                     </p>
                   </div>

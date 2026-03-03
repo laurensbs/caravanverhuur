@@ -1,101 +1,277 @@
 import Link from 'next/link';
+import {
+  FileText, CreditCard, XCircle, Shield, UserCheck, Package,
+  Scale, Clock, Gavel, Mail, ChevronRight, AlertTriangle,
+} from 'lucide-react';
 
 export const metadata = {
   title: 'Algemene Voorwaarden | Caravanverhuur Costa Brava',
 };
 
+const sections = [
+  {
+    id: 'definities',
+    icon: FileText,
+    title: '1. Definities',
+    content: (
+      <div className="grid sm:grid-cols-2 gap-4">
+        {[
+          { term: 'Verhuurder', def: 'Caravanverhuur Costa Brava, onderdeel van Caravanstalling-Spanje.' },
+          { term: 'Huurder', def: 'De persoon die een caravan huurt via onze website of telefonisch.' },
+          { term: 'Caravan', def: 'Het gehuurde object inclusief alle aanwezige inventaris.' },
+          { term: 'Huurperiode', def: 'De periode tussen de overeengekomen aankomst- en vertrekdatum.' },
+        ].map(d => (
+          <div key={d.term} className="bg-surface rounded-xl p-4">
+            <p className="font-semibold text-foreground text-sm mb-1">{d.term}</p>
+            <p className="text-muted text-sm leading-relaxed">{d.def}</p>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    id: 'betaling',
+    icon: CreditCard,
+    title: '2. Boeking en Betaling',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">
+          Een boeking is definitief na ontvangst van de aanbetaling van <strong className="text-foreground">30%</strong> van de totale huurprijs.
+          De aanbetaling wordt voldaan via iDEAL bij het boeken.
+        </p>
+        <div className="bg-primary-50 border border-primary-light rounded-xl p-4 flex gap-3">
+          <CreditCard size={20} className="text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-foreground leading-relaxed">
+            Het restbedrag (70%) dient uiterlijk <strong>7 dagen voor aanvang</strong> van de huurperiode te zijn voldaan via iDEAL.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'annulering',
+    icon: XCircle,
+    title: '3. Annuleringsbeleid',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Bij annulering gelden de volgende voorwaarden:</p>
+        <div className="space-y-3">
+          {[
+            { period: 'Meer dan 30 dagen', pct: '100%', desc: 'Volledige restitutie van de aanbetaling', color: 'bg-primary-50 border-primary-light text-primary-dark' },
+            { period: '14 – 30 dagen', pct: '50%', desc: '50% restitutie van de aanbetaling', color: 'bg-primary-50/50 border-primary-light/50 text-accent' },
+            { period: 'Minder dan 14 dagen', pct: '0%', desc: 'Geen restitutie mogelijk', color: 'bg-danger/5 border-danger/20 text-danger' },
+          ].map(r => (
+            <div key={r.period} className={`flex items-center gap-4 p-4 rounded-xl border ${r.color}`}>
+              <span className="text-xl font-bold shrink-0 w-14 text-center">{r.pct}</span>
+              <div>
+                <p className="font-semibold text-sm">{r.period} voor aankomst</p>
+                <p className="text-sm opacity-80">{r.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-3 bg-surface rounded-xl p-4">
+          <AlertTriangle size={18} className="text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted leading-relaxed">
+            Annuleringen dienen <strong className="text-foreground">schriftelijk per e-mail</strong> te worden ingediend.
+            De datum van ontvangst geldt als annuleringsdatum.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'borg',
+    icon: Shield,
+    title: '4. Borg',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">
+          Bij aanvang van de huurperiode wordt een borg van <strong className="text-foreground">€200 tot €500</strong> gereserveerd
+          via iDEAL (afhankelijk van het type caravan).
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="bg-surface rounded-xl p-4">
+            <p className="font-semibold text-foreground text-sm mb-1">Dekking</p>
+            <p className="text-muted text-sm leading-relaxed">Eventuele schade aan de caravan of ontbrekende inventaris.</p>
+          </div>
+          <div className="bg-surface rounded-xl p-4">
+            <p className="font-semibold text-foreground text-sm mb-1">Terugbetaling</p>
+            <p className="text-muted text-sm leading-relaxed">Na controle bij vertrek: binnen 7 werkdagen teruggestort, verminderd met eventuele schadekosten.</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'verplichtingen',
+    icon: UserCheck,
+    title: '5. Verplichtingen Huurder',
+    content: (
+      <div className="grid sm:grid-cols-2 gap-3">
+        {[
+          'De huurder dient de caravan als een goed huurder te gebruiken',
+          'Roken in de caravan is niet toegestaan',
+          'Huisdieren alleen na voorafgaand overleg en akkoord',
+          'Aansprakelijk voor schade tijdens de huurperiode',
+          'Caravan schoon en in dezelfde staat achterlaten',
+          'Maximaal aantal personen als aangegeven bij boeking',
+        ].map((rule, i) => (
+          <div key={i} className="flex gap-3 bg-surface rounded-xl p-4">
+            <ChevronRight size={16} className="text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-muted leading-relaxed">{rule}</p>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    id: 'inventaris',
+    icon: Package,
+    title: '6. Inventaris',
+    content: (
+      <p className="text-muted leading-relaxed">
+        Elke caravan wordt verhuurd inclusief een volledige inventaris. Bij aankomst dient de huurder de inventarislijst te controleren.
+        Ontbrekende of beschadigde items worden verrekend met de borg. De inventarislijst wordt bij elke caravan getoond op de website.
+      </p>
+    ),
+  },
+  {
+    id: 'aansprakelijkheid',
+    icon: Scale,
+    title: '7. Aansprakelijkheid',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">
+          Caravanverhuur Costa Brava is niet aansprakelijk voor:
+        </p>
+        <ul className="space-y-2">
+          {[
+            'Persoonlijk letsel',
+            'Diefstal of verlies van persoonlijke bezittingen',
+            'Weersomstandigheden of andere zaken buiten onze controle',
+          ].map((item, i) => (
+            <li key={i} className="flex gap-3 items-start text-muted text-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-muted mt-2 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <div className="bg-primary-50 border border-primary-light rounded-xl p-4 flex gap-3">
+          <Shield size={18} className="text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-foreground leading-relaxed">
+            Wij adviseren huurders een <strong>reisverzekering</strong> af te sluiten.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'check-in-out',
+    icon: Clock,
+    title: '8. Check-in en Check-out',
+    content: (
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="bg-primary-50 border border-primary-light rounded-xl p-5 text-center">
+          <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Check-in</p>
+          <p className="text-2xl font-bold text-foreground">15:00</p>
+          <p className="text-sm text-muted mt-1">uur op de aankomstdatum</p>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-5 text-center">
+          <p className="text-xs font-bold text-accent uppercase tracking-wider mb-2">Check-out</p>
+          <p className="text-2xl font-bold text-foreground">11:00</p>
+          <p className="text-sm text-muted mt-1">uur op de vertrekdatum</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'geschillen',
+    icon: Gavel,
+    title: '9. Geschillen',
+    content: (
+      <p className="text-muted leading-relaxed">
+        Op deze voorwaarden is het Spaans recht van toepassing. Geschillen zullen in eerste instantie in onderling overleg worden opgelost.
+      </p>
+    ),
+  },
+  {
+    id: 'contact',
+    icon: Mail,
+    title: '10. Contact',
+    content: (
+      <p className="text-muted leading-relaxed">
+        Voor vragen over deze voorwaarden kunt u contact opnemen via{' '}
+        <a href="mailto:info@caravanverhuurcostabrava.com" className="text-primary hover:underline font-medium">
+          info@caravanverhuurcostabrava.com
+        </a>.
+      </p>
+    ),
+  },
+];
+
 export default function VoorwaardenPage() {
   return (
     <>
-      <section className="bg-gradient-to-b from-primary-dark to-primary text-white py-14">
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Algemene Voorwaarden</h1>
-          <p className="text-blue-100">Laatst bijgewerkt: 1 februari 2026</p>
+      {/* Hero */}
+      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-dark text-white py-16 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="max-w-4xl mx-auto px-4 relative">
+          <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <ChevronRight size={14} />
+            <span>Algemene Voorwaarden</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold mb-3">Algemene Voorwaarden</h1>
+          <p className="text-primary-light text-lg">Laatst bijgewerkt: 1 februari 2026</p>
         </div>
       </section>
-      <section className="py-16">
-      <div className="max-w-3xl mx-auto px-4 prose prose-blue max-w-none">
 
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">1. Definities</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          <strong>Verhuurder:</strong> Caravanverhuur Costa Brava, onderdeel van Caravanstalling-Spanje.<br />
-          <strong>Huurder:</strong> De persoon die een caravan huurt via onze website of telefonisch.<br />
-          <strong>Caravan:</strong> Het gehuurde object inclusief alle aanwezige inventaris.<br />
-          <strong>Huurperiode:</strong> De periode tussen de overeengekomen aankomst- en vertrekdatum.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">2. Boeking en Betaling</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Een boeking is definitief na ontvangst van de aanbetaling van 30% van de totale huurprijs. De aanbetaling kan worden voldaan per bankoverschrijving of contant. Het restbedrag (70%) dient uiterlijk 7 dagen voor aanvang van de huurperiode te zijn voldaan via Stripe.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4" id="annulering">3. Annuleringsbeleid</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Bij annulering gelden de volgende voorwaarden:
-        </p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li><strong>Meer dan 30 dagen voor aankomst:</strong> 100% restitutie van de aanbetaling</li>
-          <li><strong>14-30 dagen voor aankomst:</strong> 50% restitutie van de aanbetaling</li>
-          <li><strong>Minder dan 14 dagen voor aankomst:</strong> Geen restitutie</li>
-        </ul>
-        <p className="text-muted leading-relaxed mb-4">
-          Annuleringen dienen schriftelijk (per e-mail) te worden ingediend. De datum van ontvangst geldt als annuleringsdatum.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4" id="borg">4. Borg</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Bij aanvang van de huurperiode wordt een borg van €200 tot €500 gereserveerd via Stripe (afhankelijk van het type caravan). 
-          De borg dient ter dekking van eventuele schade aan de caravan of ontbrekende inventaris. 
-          Na controle bij vertrek wordt de borg binnen 7 werkdagen teruggestort, verminderd met eventuele schadekosten.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">5. Verplichtingen Huurder</h2>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>De huurder dient de caravan als een goed huurder te gebruiken</li>
-          <li>Roken in de caravan is niet toegestaan</li>
-          <li>Huisdieren alleen na voorafgaand overleg en akkoord</li>
-          <li>De huurder is aansprakelijk voor schade veroorzaakt tijdens de huurperiode</li>
-          <li>De caravan dient schoon en in dezelfde staat te worden achtergelaten</li>
-          <li>Maximaal aantal personen als aangegeven bij boeking</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">6. Inventaris</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Elke caravan wordt verhuurd inclusief een volledige inventaris. Bij aankomst dient de huurder de inventarislijst te controleren. 
-          Ontbrekende of beschadigde items worden verrekend met de borg. De inventarislijst wordt bij elke caravan getoond op de website.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">7. Aansprakelijkheid</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Caravanverhuur Costa Brava is niet aansprakelijk voor persoonlijk letsel, diefstal of verlies van persoonlijke bezittingen, 
-          weersomstandigheden of andere zaken buiten onze controle. Wij adviseren huurders een reisverzekering af te sluiten.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">8. Check-in en Check-out</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          <strong>Check-in:</strong> vanaf 15:00 uur op de aankomstdatum.<br />
-          <strong>Check-out:</strong> voor 11:00 uur op de vertrekdatum.<br />
-          Afwijkende tijden zijn uitsluitend mogelijk na voorafgaand overleg.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">9. Geschillen</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Op deze voorwaarden is het Spaans recht van toepassing. Geschillen zullen in eerste instantie in onderling overleg worden opgelost.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">10. Contact</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Voor vragen over deze voorwaarden kunt u contact opnemen via{' '}
-          <a href="mailto:info@caravanverhuurcostabrava.com" className="text-primary underline">info@caravanverhuurcostabrava.com</a>.
-        </p>
-
-        <div className="mt-12 pt-8 border-t border-border">
-          <Link href="/" className="text-primary underline text-sm">
-            &larr; Terug naar home
-          </Link>
+      {/* Quick nav */}
+      <section className="border-b border-border bg-white sticky top-0 z-30">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
+            {sections.map(s => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-foreground hover:bg-surface-alt transition-colors"
+              >
+                {s.title.replace(/^\d+\.\s/, '')}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Content */}
+      <section className="py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 space-y-8">
+          {sections.map(s => {
+            const Icon = s.icon;
+            return (
+              <div key={s.id} id={s.id} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 scroll-mt-20">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                    <Icon size={20} className="text-primary" />
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground">{s.title}</h2>
+                </div>
+                {s.content}
+              </div>
+            );
+          })}
+
+          <div className="pt-4 flex items-center justify-between">
+            <Link href="/" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+              ← Terug naar home
+            </Link>
+            <Link href="/privacy" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+              Privacybeleid →
+            </Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

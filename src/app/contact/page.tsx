@@ -43,8 +43,8 @@ export default function ContactPage() {
       <section className="py-20 min-h-[60vh] flex items-center">
         <div className="max-w-xl mx-auto px-4 text-center">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="text-green-500" size={40} />
+            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="text-primary" size={40} />
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-4">Bericht verzonden!</h1>
             <p className="text-muted text-lg">
@@ -238,7 +238,7 @@ export default function ContactPage() {
                       className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                     />
                   </div>
-                  {submitError && <p className="text-red-500 text-sm mb-2">{submitError}</p>}
+                  {submitError && <p className="text-danger text-sm mb-2">{submitError}</p>}
                   <button
                     type="submit"
                     disabled={submitting}

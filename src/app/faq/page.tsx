@@ -16,15 +16,15 @@ const faqCategories = [
       },
       {
         q: 'Hoeveel aanbetaling moet ik doen?',
-        a: 'Bij boeking betaal je 30% aanbetaling. Dit kan per bankoverschrijving of cash. Het restbedrag (70%) betaal je uiterlijk 1 week voor aanvang via Stripe.',
+        a: 'Bij boeking betaal je 30% aanbetaling via iDEAL. Het restbedrag (70%) betaal je uiterlijk 1 week voor aanvang, ook via iDEAL.',
       },
       {
         q: 'Welke betaalmethodes accepteren jullie?',
-        a: 'Aanbetaling kan per bankoverschrijving of cash. Het restbedrag wordt veilig verwerkt via Stripe (creditcard, debitcard). In de toekomst voegen we meer methodes toe.',
+        a: 'Alle betalingen verlopen veilig via iDEAL. Je wordt doorgestuurd naar je eigen bank om de betaling te voltooien. Snel, veilig en vertrouwd.',
       },
       {
         q: 'Hoe werkt de borgregeling?',
-        a: 'Bij aankomst wordt een borg van €250-€500 (afhankelijk van de caravan) gereserveerd via Stripe. Na controle bij vertrek wordt de borg binnen 7 dagen teruggestort als er geen schade is.',
+        a: 'Bij aankomst wordt een borg van €250-€500 (afhankelijk van de caravan) gereserveerd via iDEAL. Na controle bij vertrek wordt de borg binnen 7 dagen teruggestort als er geen schade is.',
       },
       {
         q: 'Kan ik annuleren?',

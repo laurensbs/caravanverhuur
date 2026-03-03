@@ -2,10 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Filter, X, Search, Euro, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
-import { caravans, CaravanType } from '@/data/caravans';
+import { caravans as staticCaravans, CaravanType } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -25,6 +26,16 @@ export default function CaravansPage() {
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const [sortBy, setSortBy] = useState<SortOption>('default');
   const [showFilters, setShowFilters] = useState(false);
+  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/caravans')
+      .then(res => res.json())
+      .then(data => setCustomCaravans(data.caravans || []))
+      .catch(() => {});
+  }, []);
+
+  const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
 
   const priceRange = useMemo(() => {
     const prices = caravans.map(c => c.pricePerWeek);
@@ -122,9 +133,9 @@ export default function CaravansPage() {
                   onClick={() => setTypeFilter(type)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     typeFilter === type
-                      ? type === 'LUXE' ? 'bg-yellow-500 text-white shadow-md' :
+                      ? type === 'LUXE' ? 'bg-primary text-white shadow-md' :
                         type === 'FAMILIE' ? 'bg-primary text-white shadow-md' :
-                        type === 'COMPACT' ? 'bg-green-500 text-white shadow-md' :
+                        type === 'COMPACT' ? 'bg-primary text-white shadow-md' :
                         'bg-primary text-white shadow-md'
                       : 'bg-surface text-foreground hover:bg-surface-alt'
                   }`}
@@ -260,9 +271,9 @@ export default function CaravansPage() {
                       onClick={() => setTypeFilter(type)}
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                         typeFilter === type
-                          ? type === 'LUXE' ? 'bg-yellow-500 text-white' :
+                          ? type === 'LUXE' ? 'bg-primary text-white' :
                             type === 'FAMILIE' ? 'bg-primary text-white' :
-                            type === 'COMPACT' ? 'bg-green-500 text-white' :
+                            type === 'COMPACT' ? 'bg-primary text-white' :
                             'bg-primary text-white'
                           : 'bg-surface text-foreground'
                       }`}
@@ -336,8 +347,8 @@ export default function CaravansPage() {
               <span className="font-semibold text-foreground">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} gevonden
             </p>
             {filtered.length > 0 && (
-              <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <p className="text-xs text-primary font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                 Seizoen 2026 beschikbaar
               </p>
             )}
@@ -375,13 +386,13 @@ export default function CaravansPage() {
                     />
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                        caravan.type === 'LUXE' ? 'bg-yellow-500' :
-                        caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-green-500'
+                        caravan.type === 'LUXE' ? 'bg-primary' :
+                        caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary'
                       }`}>
                         {caravan.type}
                       </span>
                       {caravan.status === 'BESCHIKBAAR' && (
-                        <span className="px-2.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 w-fit">
+                        <span className="px-2.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center gap-1 w-fit">
                           <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                           Beschikbaar
                         </span>

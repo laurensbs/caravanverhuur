@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import {
   Shield,
   Truck,
@@ -17,7 +17,6 @@ import {
   CreditCard,
   Camera,
   Heart,
-  Sparkles,
   ThumbsUp,
   Clock,
   Wallet,
@@ -25,31 +24,37 @@ import {
   Sun,
   MapPin,
 } from 'lucide-react';
-import { caravans } from '@/data/caravans';
+import { caravans as staticCaravans } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
 import BookingWidget from '@/components/BookingWidget';
 import WeatherChecker from '@/components/WeatherChecker';
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.06 } },
 };
 
 const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.85 },
   visible: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { delay: i * 0.05, duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { delay: i * 0.06, duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
+
+// Decorative floating blob component
+const FloatingBlob = ({ className = '' }: { className?: string }) => (
+  <div className={`absolute rounded-full blur-3xl opacity-20 pointer-events-none ${className}`} />
+);
 
 // WhatsApp SVG icon component
 const WhatsAppIcon = ({ size = 28 }: { size?: number }) => (
@@ -67,7 +72,24 @@ const WaveDivider = ({ className = '', flip = false }: { className?: string; fli
   </div>
 );
 
+// Section label component for consistent styling
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-flex items-center gap-1.5 text-primary font-bold text-[11px] sm:text-xs uppercase tracking-[0.15em]">
+    <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
+    {children}
+    <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
+  </span>
+);
+
 export default function HomePage() {
+  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/caravans')
+      .then(res => res.json())
+      .then(data => setCustomCaravans(data.caravans || []))
+      .catch(() => {});
+  }, []);
+  const caravans = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -83,15 +105,32 @@ export default function HomePage() {
             src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600&q=80"
             alt="Familie geniet van caravanvakantie aan de Costa Brava"
             fill
-            className="object-cover scale-110"
+            className="object-cover"
+            sizes="100vw"
             priority
             unoptimized
           />
-          {/* Warmer, lighter overlay so the image shines through */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-primary-dark/40 to-black/70 sm:bg-gradient-to-r sm:from-black/70 sm:via-primary-dark/50 sm:to-transparent" />
-          {/* Warm color wash */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/10" />
+          {/* Layered gradient overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-primary-dark/35 to-black/75 sm:bg-gradient-to-r sm:from-black/75 sm:via-primary-dark/45 sm:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-accent/10" />
         </motion.div>
+
+        {/* Floating decorative particles */}
+        <motion.div
+          className="absolute top-1/4 right-[15%] w-2 h-2 bg-primary-light/40 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -20, 0], opacity: [0.3, 0.8, 0.3] }}
+          transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-[25%] w-3 h-3 bg-white/20 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -15, 0], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
+        />
+        <motion.div
+          className="absolute bottom-1/3 right-[20%] w-1.5 h-1.5 bg-primary/30 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -25, 0], opacity: [0.2, 0.6, 0.2] }}
+          transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut', delay: 2 }}
+        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-16 sm:pt-28 sm:pb-20 w-full">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
@@ -101,31 +140,32 @@ export default function HomePage() {
               transition={{ duration: 0.3 }}
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/25"
             >
-              <Sun size={14} className="text-amber-300" />
+              <Sun size={14} className="text-primary-light animate-pulse-soft" />
               <span className="hidden sm:inline">Seizoen 2026 – nu boeken!</span>
               <span className="sm:hidden">Seizoen 2026</span>
               <span className="w-1 h-1 bg-white/40 rounded-full" />
-              <span className="text-emerald-300 text-xs font-semibold">Populair deze week</span>
+              <span className="text-primary-light text-xs font-semibold">Populair deze week</span>
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6"
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-4 sm:mb-6 tracking-tight"
             >
               Zorgeloze
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400"> caravanvakantie</span>
-              <br className="hidden sm:block" /> op de Costa Brava
+              <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-primary to-primary-light animate-gradient"> caravanvakantie</span>
+              <br className="hidden sm:block" />
+              <span className="text-white/90"> op de Costa Brava</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-              className="text-sm sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0"
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-sm sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light"
             >
-              Jouw caravan staat klaar op de camping. Volledig ingericht met inventaris, beddengoed en kookgerei. Geen transport, geen gedoe – alleen genieten.
+              Jouw caravan staat klaar op de camping. Volledig ingericht met inventaris, beddengoed en kookgerei. <span className="text-white font-medium">Geen transport, geen gedoe</span> – alleen genieten.
             </motion.p>
 
             {/* Mobile stats */}
@@ -136,9 +176,9 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
             >
               {[
-                { value: '6+', label: 'Caravans', color: 'text-blue-300' },
-                { value: '30+', label: 'Campings', color: 'text-amber-300' },
-                { value: '100%', label: 'Ontzorgd', color: 'text-emerald-300' },
+                { value: '6+', label: 'Caravans', color: 'text-primary-light' },
+                { value: '30+', label: 'Campings', color: 'text-white/80' },
+                { value: '100%', label: 'Ontzorgd', color: 'text-primary-light' },
               ].map(stat => (
                 <div key={stat.label} className="text-center">
                   <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -159,9 +199,9 @@ export default function HomePage() {
             className="hidden lg:flex gap-8 mt-8 max-w-md"
           >
             {[
-              { value: '6+', label: 'Caravans beschikbaar', color: 'text-blue-300' },
-              { value: '30+', label: 'Campings Costa Brava', color: 'text-amber-300' },
-              { value: '100%', label: 'Volledig ontzorgd', color: 'text-emerald-300' },
+              { value: '6+', label: 'Caravans beschikbaar', color: 'text-primary-light' },
+              { value: '30+', label: 'Campings Costa Brava', color: 'text-white/80' },
+              { value: '100%', label: 'Volledig ontzorgd', color: 'text-primary-light' },
             ].map(stat => (
               <div key={stat.label}>
                 <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -192,22 +232,26 @@ export default function HomePage() {
       </section>
 
       {/* ===== VOORDELEN / USP ===== */}
-      <section className="py-12 sm:py-20 bg-gray-50 relative">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
+        {/* Decorative background blobs */}
+        <FloatingBlob className="w-72 h-72 bg-primary/30 -top-20 -left-20" />
+        <FloatingBlob className="w-56 h-56 bg-accent/20 bottom-10 right-10" />
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
             variants={stagger}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-12 sm:mb-20"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-xs sm:text-sm uppercase tracking-wider">
-              Waarom kiezen voor ons
-            </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+            <motion.div variants={fadeUp} custom={0}>
+              <SectionLabel>Waarom kiezen voor ons</SectionLabel>
+            </motion.div>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
               Volledig ontzorgd op vakantie
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-3 max-w-2xl mx-auto text-sm sm:text-lg">
+            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-2xl mx-auto text-sm sm:text-lg leading-relaxed">
               Wij regelen alles zodat jij alleen maar hoeft te genieten van de zon, zee en strand op de Costa Brava.
             </motion.p>
           </motion.div>
@@ -224,43 +268,50 @@ export default function HomePage() {
                 icon: <Tent size={24} />,
                 title: 'Klaar op de camping',
                 desc: 'Je caravan staat al klaar op de camping van je keuze. Gewoon uitstappen en genieten.',
+                color: 'from-primary to-primary-dark',
               },
               {
                 icon: <Package size={24} />,
                 title: 'Volledige inventaris',
                 desc: 'Beddengoed, kookgerei, servies, handdoeken – alles aanwezig. Niets meenemen.',
+                color: 'from-primary-dark to-accent-dark',
               },
               {
                 icon: <Camera size={24} />,
                 title: "Foto's vooraf",
                 desc: "Foto's van exact jouw caravan of een vergelijkbare. Geen verrassingen.",
+                color: 'from-accent to-accent-dark',
               },
               {
                 icon: <Wallet size={24} />,
                 title: 'Flexibel betalen',
-                desc: '30% aanbetaling, restbedrag vlak voor je vakantie. Veilig via Stripe.',
+                desc: '30% aanbetaling, restbedrag vlak voor je vakantie. Veilig via iDEAL.',
+                color: 'from-primary to-accent',
               },
               {
                 icon: <Shield size={24} />,
                 title: 'Borg bescherming',
                 desc: 'Duidelijke borgvoorwaarden. Na controle krijg je je borg volledig retour.',
+                color: 'from-accent-dark to-primary-dark',
               },
               {
                 icon: <Truck size={24} />,
                 title: 'Transport mogelijk',
                 desc: 'Via Caravanstalling-Spanje kun je optioneel transport boeken.',
+                color: 'from-primary-dark to-primary',
               },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
                 variants={scaleIn}
                 custom={i}
-                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8"
+                whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-border/30 group"
               >
-                <div className="w-10 h-10 sm:w-14 sm:h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-3 sm:mb-5">
-                  <div className="text-primary">{item.icon}</div>
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <div className="text-white">{item.icon}</div>
                 </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
@@ -270,21 +321,24 @@ export default function HomePage() {
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section className="py-12 sm:py-20 overflow-hidden bg-white">
+      <section className="py-14 sm:py-24 overflow-hidden bg-white relative">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
             variants={stagger}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-12 sm:mb-20"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-xs sm:text-sm uppercase tracking-wider">
-              Hoe het werkt
-            </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+            <motion.div variants={fadeUp} custom={0}>
+              <SectionLabel>Hoe het werkt</SectionLabel>
+            </motion.div>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
               In 5 stappen op vakantie
             </motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
+              Van kiezen tot genieten — wij maken het simpel.
+            </motion.p>
           </motion.div>
 
           {/* Desktop: horizontal */}
@@ -299,12 +353,12 @@ export default function HomePage() {
               {[
                 { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={22} /> },
                 { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={22} /> },
-                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={22} /> },
-                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={22} /> },
+                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling via iDEAL.', icon: <CreditCard size={22} /> },
+                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via iDEAL.', icon: <CheckCircle size={22} /> },
                 { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar. Uitstappen en genieten!', icon: <Star size={22} /> },
               ].map((item, i) => (
-                <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative">
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative group">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                     {item.icon}
                   </div>
                   <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Stap {item.step}</div>
@@ -323,8 +377,8 @@ export default function HomePage() {
             {[
               { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={18} /> },
               { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={18} /> },
-              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling per bank of cash.', icon: <CreditCard size={18} /> },
-              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via Stripe.', icon: <CheckCircle size={18} /> },
+              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling via iDEAL.', icon: <CreditCard size={18} /> },
+              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via iDEAL.', icon: <CheckCircle size={18} /> },
               { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar!', icon: <Star size={18} /> },
             ].map((item, i) => (
               <motion.div
@@ -354,22 +408,24 @@ export default function HomePage() {
       </section>
 
       {/* ===== FEATURED CARAVANS ===== */}
-      <section className="py-12 sm:py-20 bg-gradient-to-b from-surface to-white relative">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-14 sm:py-24 bg-gradient-to-b from-surface to-white relative overflow-hidden">
+        <FloatingBlob className="w-80 h-80 bg-primary/15 -top-40 right-0" />
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
             variants={stagger}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-12 sm:mb-20"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-xs sm:text-sm uppercase tracking-wider">
-              Ons aanbod
-            </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+            <motion.div variants={fadeUp} custom={0}>
+              <SectionLabel>Ons aanbod</SectionLabel>
+            </motion.div>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
               Uitgelichte caravans
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-3 max-w-xl mx-auto text-sm sm:text-lg">
+            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-xl mx-auto text-sm sm:text-lg">
               Goed onderhouden, volledig uitgerust en klaar voor jouw vakantie.
             </motion.p>
           </motion.div>
@@ -383,14 +439,15 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 sm:hover:-translate-y-2 border border-border/50 group"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 sm:hover:-translate-y-3 border border-border/30 group"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
                   <Image
                     src={caravan.photos[0]}
                     alt={caravan.name}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                     unoptimized
                   />
                   {/* Warm gradient overlay at bottom */}
@@ -416,7 +473,7 @@ export default function HomePage() {
                   <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
-                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-50 text-primary-dark rounded-md">{a}</span>
+                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
                     ))}
                     {caravan.amenities.length > 3 && (
                       <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
@@ -460,17 +517,19 @@ export default function HomePage() {
       </section>
 
       {/* ===== INVENTORY SECTION ===== */}
-      <section className="py-12 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
+        <FloatingBlob className="w-64 h-64 bg-accent/15 top-20 -right-20" />
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              <span className="text-primary font-semibold text-xs sm:text-sm uppercase tracking-wider">Volledig uitgerust</span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2 mb-4 sm:mb-6">
+              <SectionLabel>Volledig uitgerust</SectionLabel>
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 mb-4 sm:mb-6 tracking-tight">
                 Alles inbegrepen in elke caravan
               </h2>
               <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed">
@@ -516,13 +575,14 @@ export default function HomePage() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <Image
                   src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=800&q=80"
-                  alt="Caravan interieur"
+                  alt="Caravan interieur volledig ingericht"
                   width={600}
                   height={400}
-                  className="w-full object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="w-full object-cover group-hover:scale-105 transition-transform duration-700"
                   unoptimized
                 />
               </div>
@@ -551,17 +611,27 @@ export default function HomePage() {
       </section>
 
       {/* ===== ADVANTAGES HIGHLIGHT ===== */}
-      <section className="py-12 sm:py-20 bg-primary text-white overflow-hidden relative">
+      <section className="py-14 sm:py-24 bg-gradient-to-br from-primary via-primary-dark to-primary text-white overflow-hidden relative">
+        {/* Animated gradient mesh background */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_50%,rgba(202,247,226,0.3),transparent_50%)]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_80%_20%,rgba(74,68,45,0.2),transparent_50%)]" />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-10 sm:mb-14"
+            className="text-center mb-12 sm:mb-16"
           >
-            <span className="text-white/70 font-semibold text-xs sm:text-sm uppercase tracking-wider">De voordelen</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">Waarom bij ons huren?</h2>
+            <span className="inline-flex items-center gap-1.5 text-white/60 font-bold text-[11px] sm:text-xs uppercase tracking-[0.15em]">
+              <span className="w-8 h-[2px] bg-white/30 rounded-full" />
+              De voordelen
+              <span className="w-8 h-[2px] bg-white/30 rounded-full" />
+            </span>
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">Waarom bij ons huren?</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -569,7 +639,7 @@ export default function HomePage() {
               { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.' },
               { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.' },
               { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.' },
-              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'Stripe PCI-compliant. 3D Secure. Borg bescherming.' },
+              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'iDEAL betaling via je eigen bank. Veilig en vertrouwd.' },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -577,12 +647,13 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/10"
+                whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 hover:bg-white/20 transition-colors duration-300"
               >
-                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 group-hover:bg-white/25 transition-colors">
                   {item.icon}
                 </div>
-                <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.title}</h3>
+                <h3 className="text-sm sm:text-lg font-bold mb-1 sm:mb-2">{item.title}</h3>
                 <p className="text-white/70 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
@@ -596,39 +667,57 @@ export default function HomePage() {
             transition={{ delay: 0.4, duration: 0.5 }}
             className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 text-center"
           >
-            <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
+            <p className="text-sm sm:text-base text-primary-light/80 leading-relaxed">
               <span className="text-white font-bold">Meer dan 20 jaar actief</span> in de caravansbranche in de Costa Brava.
               Onderdeel van{' '}
-              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-amber-300 underline underline-offset-2 hover:text-white transition-colors">
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary-light underline underline-offset-2 hover:text-white transition-colors">
                 caravanstalling-spanje.com
               </a>
             </p>
           </motion.div>
         </div>
-        {/* Decorative blurred circles */}
-        <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+        {/* Decorative floating circles */}
+        <motion.div
+          className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
+          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute bottom-10 left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.05, 0.08, 0.05] }}
+          transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut', delay: 2 }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent/5 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut', delay: 4 }}
+        />
       </section>
 
       {/* ===== WEATHER CHECKER ===== */}
       <WeatherChecker />
 
       {/* ===== REVIEWS / SOCIAL PROOF ===== */}
-      <section className="py-12 sm:py-20 bg-gray-50 overflow-hidden relative">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-14 sm:py-24 bg-surface overflow-hidden relative">
+        <FloatingBlob className="w-64 h-64 bg-primary/10 -top-20 left-1/3" />
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
             variants={stagger}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-12 sm:mb-20"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-xs sm:text-sm uppercase tracking-wider">
-              Ervaringen
-            </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+            <motion.div variants={fadeUp} custom={0}>
+              <SectionLabel>Ervaringen</SectionLabel>
+            </motion.div>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
               Wat onze gasten zeggen
             </motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
+              Meer dan 100 tevreden gasten gingen je voor.
+            </motion.p>
           </motion.div>
 
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
@@ -682,13 +771,13 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm relative"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 relative border border-border/20"
               >
 
                 <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: review.rating }).map((_, s) => (
-                    <Star key={s} size={16} className="fill-amber-400 text-amber-400" />
+                    <Star key={s} size={16} className="fill-primary text-primary" />
                   ))}
                 </div>
                 <p className="text-sm text-foreground leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
@@ -698,8 +787,8 @@ export default function HomePage() {
                     <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] text-muted bg-gray-100 px-2 py-1 rounded-full">{review.date}</span>
-                    <span className="text-[9px] text-emerald-600 flex items-center gap-0.5"><CheckCircle size={10} />Geverifieerd</span>
+                    <span className="text-[10px] text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
+                    <span className="text-[9px] text-primary flex items-center gap-0.5"><CheckCircle size={10} />Geverifieerd</span>
                   </div>
                 </div>
               </motion.div>
@@ -715,7 +804,7 @@ export default function HomePage() {
             className="mt-10 sm:mt-14 flex overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:justify-center sm:overflow-visible scrollbar-hide"
           >
             {[
-              { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via Stripe' },
+              { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via iDEAL' },
               { icon: <CheckCircle size={18} className="text-primary" />, text: 'Volledige inventaris' },
               { icon: <Star size={18} className="text-primary fill-primary" />, text: '4.8/5 beoordeling' },
               { icon: <Users size={18} className="text-primary" />, text: '100+ tevreden gasten' },
@@ -731,8 +820,11 @@ export default function HomePage() {
       </section>
 
       {/* ===== CTA SECTION ===== */}
-      <section className="py-12 sm:py-20 bg-white relative overflow-hidden">
-        
+      <section className="py-14 sm:py-24 bg-gradient-to-b from-white via-primary-50 to-white relative overflow-hidden">
+        {/* Decorative rings */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-primary/5 rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-primary/10 rounded-full pointer-events-none" />
+
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -745,27 +837,27 @@ export default function HomePage() {
               whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg"
+              className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg animate-float-slow"
             >
               <Sun className="text-white" size={28} />
             </motion.div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
-              Klaar voor jouw zorgeloze vakantie?
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-3 sm:mb-5 tracking-tight">
+              Klaar voor jouw <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">zorgeloze vakantie</span>?
             </h2>
-            <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
+            <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
               Boek nu je caravan op de Costa Brava. Seizoen 2026 is beschikbaar!
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/boeken"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
               >
                 Start met boeken
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95"
               >
                 Neem contact op
               </Link>

@@ -1,117 +1,273 @@
 import Link from 'next/link';
+import {
+  Eye, Database, CreditCard, Clock, UserCheck, Cookie,
+  Lock, Share2, Mail, ChevronRight, Shield,
+} from 'lucide-react';
 
 export const metadata = {
   title: 'Privacybeleid | Caravanverhuur Costa Brava',
 };
 
+const sections = [
+  {
+    id: 'gegevens',
+    icon: Database,
+    title: '1. Welke gegevens verzamelen wij?',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Wij verzamelen de volgende persoonsgegevens:</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            'Voor- en achternaam',
+            'E-mailadres',
+            'Telefoonnummer',
+            'Adresgegevens (indien nodig voor facturatie)',
+            'Betaalgegevens (via iDEAL/Stripe, niet door ons opgeslagen)',
+            'Boekingsgegevens (datum, camping, personen, caravankeuze)',
+            'Communicatie (berichten via contactformulier)',
+          ].map((item, i) => (
+            <div key={i} className="flex gap-3 bg-surface rounded-xl p-3.5">
+              <ChevronRight size={14} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-sm text-muted">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'doel',
+    icon: Eye,
+    title: '2. Waarvoor gebruiken wij uw gegevens?',
+    content: (
+      <div className="grid sm:grid-cols-2 gap-3">
+        {[
+          'Het verwerken en bevestigen van boekingen',
+          'Het versturen van betalingsherinneringen en boekingsbevestigingen',
+          'Communicatie over uw boeking',
+          'Het uitvoeren van de huurovereenkomst',
+          'Het verbeteren van onze dienstverlening',
+          'Voldoen aan wettelijke verplichtingen',
+        ].map((item, i) => (
+          <div key={i} className="flex gap-3 bg-surface rounded-xl p-3.5">
+            <ChevronRight size={14} className="text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-muted">{item}</p>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    id: 'betalingen',
+    icon: CreditCard,
+    title: '3. Betalingsverwerking',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">
+          Betalingen worden verwerkt via iDEAL, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker.
+        </p>
+        <div className="bg-primary-50 border border-primary-light rounded-xl p-4 flex gap-3">
+          <Shield size={18} className="text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-foreground leading-relaxed">
+            Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'bewaartermijn',
+    icon: Clock,
+    title: '4. Bewaartermijn',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Wij bewaren uw gegevens niet langer dan noodzakelijk:</p>
+        <div className="space-y-3">
+          {[
+            { label: 'Boekingsgegevens', period: '7 jaar', note: 'Wettelijke bewaarplicht' },
+            { label: 'Contactformulierberichten', period: '1 jaar', note: '' },
+            { label: 'Marketingcommunicatie', period: 'Tot intrekking', note: 'U kunt uw toestemming altijd intrekken' },
+          ].map(item => (
+            <div key={item.label} className="flex items-center gap-4 bg-surface rounded-xl p-4">
+              <span className="text-lg font-bold text-primary shrink-0 w-20 text-center">{item.period}</span>
+              <div>
+                <p className="font-semibold text-foreground text-sm">{item.label}</p>
+                {item.note && <p className="text-xs text-muted">{item.note}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'rechten',
+    icon: UserCheck,
+    title: '5. Uw Rechten',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Onder de AVG/GDPR heeft u de volgende rechten:</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            { right: 'Recht op inzage', desc: 'U kunt opvragen welke gegevens wij van u hebben' },
+            { right: 'Recht op rectificatie', desc: 'U kunt onjuiste gegevens laten corrigeren' },
+            { right: 'Recht op verwijdering', desc: 'U kunt verzoeken uw gegevens te verwijderen' },
+            { right: 'Recht op overdraagbaarheid', desc: 'U kunt uw gegevens in een gangbaar formaat opvragen' },
+            { right: 'Recht op bezwaar', desc: 'U kunt bezwaar maken tegen de verwerking' },
+          ].map(r => (
+            <div key={r.right} className="bg-surface rounded-xl p-4">
+              <p className="font-semibold text-foreground text-sm mb-1">{r.right}</p>
+              <p className="text-muted text-sm leading-relaxed">{r.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'cookies',
+    icon: Cookie,
+    title: '6. Cookies',
+    content: (
+      <p className="text-muted leading-relaxed">
+        Onze website maakt gebruik van <strong className="text-foreground">functionele cookies</strong> die noodzakelijk zijn voor het functioneren van de website.
+        Wij gebruiken geen tracking cookies zonder uw toestemming.
+        Als wij analytics gebruiken, doen wij dit met een privacy-vriendelijke oplossing.
+      </p>
+    ),
+  },
+  {
+    id: 'beveiliging',
+    icon: Lock,
+    title: '7. Beveiliging',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Wij nemen passende maatregelen om uw gegevens te beschermen:</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            'SSL/TLS versleuteling op onze website',
+            'Versleutelde opslag van gevoelige gegevens',
+            'Beperkte toegang tot persoonsgegevens',
+            'Regelmatige beveiligingsaudits',
+          ].map((item, i) => (
+            <div key={i} className="flex gap-3 bg-primary-50 border border-primary-light rounded-xl p-3.5">
+              <Lock size={14} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-sm text-foreground">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'derden',
+    icon: Share2,
+    title: '8. Delen met Derden',
+    content: (
+      <div className="space-y-4">
+        <p className="text-muted leading-relaxed">Wij delen uw gegevens niet met derden, behalve:</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            { party: 'Stripe / iDEAL', reason: 'Betalingsverwerking' },
+            { party: 'E-maildienstverlener', reason: 'Boekingsbevestigingen' },
+            { party: 'Campingbeheerders', reason: 'Voor uw reservering' },
+            { party: 'Overheid', reason: 'Wanneer wettelijk verplicht' },
+          ].map(p => (
+            <div key={p.party} className="bg-surface rounded-xl p-4">
+              <p className="font-semibold text-foreground text-sm mb-1">{p.party}</p>
+              <p className="text-muted text-sm">{p.reason}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'contact',
+    icon: Mail,
+    title: '9. Contact',
+    content: (
+      <p className="text-muted leading-relaxed">
+        Voor vragen over dit privacybeleid of om uw rechten uit te oefenen, kunt u contact opnemen via:{' '}
+        <a href="mailto:info@caravanverhuurcostabrava.com" className="text-primary hover:underline font-medium">
+          info@caravanverhuurcostabrava.com
+        </a>
+      </p>
+    ),
+  },
+];
+
 export default function PrivacyPage() {
   return (
     <>
-      <section className="bg-gradient-to-b from-primary-dark to-primary text-white py-14">
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Privacybeleid</h1>
-          <p className="text-blue-100">Laatst bijgewerkt: 1 februari 2026</p>
+      {/* Hero */}
+      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-dark text-white py-16 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 80% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="max-w-4xl mx-auto px-4 relative">
+          <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <ChevronRight size={14} />
+            <span>Privacybeleid</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold mb-3">Privacybeleid</h1>
+          <p className="text-primary-light text-lg">Laatst bijgewerkt: 1 februari 2026</p>
         </div>
       </section>
-      <section className="py-16">
-      <div className="max-w-3xl mx-auto px-4 prose prose-blue max-w-none">
 
-        <p className="text-muted leading-relaxed mb-6">
-          Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens. 
-          Dit privacybeleid beschrijft hoe wij uw gegevens verzamelen, gebruiken en beschermen conform de Algemene Verordening Gegevensbescherming (AVG/GDPR).
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">1. Welke gegevens verzamelen wij?</h2>
-        <p className="text-muted leading-relaxed mb-2">Wij verzamelen de volgende persoonsgegevens:</p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>Voor- en achternaam</li>
-          <li>E-mailadres</li>
-          <li>Telefoonnummer</li>
-          <li>Adresgegevens (indien nodig voor facturatie)</li>
-          <li>Betaalgegevens (verwerkt via Stripe, niet door ons opgeslagen)</li>
-          <li>Boekingsgegevens (datum, camping, personen, caravankeuze)</li>
-          <li>Communicatie (berichten via contactformulier)</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">2. Waarvoor gebruiken wij uw gegevens?</h2>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>Het verwerken en bevestigen van boekingen</li>
-          <li>Het versturen van betalingsherinneringen en boekingsbevestigingen</li>
-          <li>Communicatie over uw boeking</li>
-          <li>Het uitvoeren van de huurovereenkomst</li>
-          <li>Het verbeteren van onze dienstverlening</li>
-          <li>Voldoen aan wettelijke verplichtingen</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">3. Betalingsverwerking</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Betalingen worden verwerkt via Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker. 
-          Wij slaan geen creditcardgegevens of bankpasgegevens op onze servers op. 
-          Alle betaalgegevens worden direct en versleuteld verwerkt door Stripe.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">4. Bewaartermijn</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Wij bewaren uw gegevens niet langer dan noodzakelijk voor de doeleinden waarvoor ze zijn verzameld:
-        </p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>Boekingsgegevens: 7 jaar (wettelijke bewaarplicht)</li>
-          <li>Contactformulierberichten: 1 jaar</li>
-          <li>Marketingcommunicatie: tot intrekking toestemming</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">5. Uw Rechten</h2>
-        <p className="text-muted leading-relaxed mb-2">Onder de AVG/GDPR heeft u de volgende rechten:</p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li><strong>Recht op inzage:</strong> U kunt opvragen welke gegevens wij van u hebben</li>
-          <li><strong>Recht op rectificatie:</strong> U kunt onjuiste gegevens laten corrigeren</li>
-          <li><strong>Recht op verwijdering:</strong> U kunt verzoeken uw gegevens te laten verwijderen</li>
-          <li><strong>Recht op overdraagbaarheid:</strong> U kunt uw gegevens in een gangbaar formaat opvragen</li>
-          <li><strong>Recht op bezwaar:</strong> U kunt bezwaar maken tegen de verwerking van uw gegevens</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">6. Cookies</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Onze website maakt gebruik van functionele cookies die noodzakelijk zijn voor het functioneren van de website. 
-          Wij gebruiken geen tracking cookies zonder uw toestemming. 
-          Als wij analytics gebruiken, doen wij dit met een privacy-vriendelijke oplossing.
-        </p>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">7. Beveiliging</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beschermen:
-        </p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>SSL/TLS versleuteling op onze website</li>
-          <li>Versleutelde opslag van gevoelige gegevens</li>
-          <li>Beperkte toegang tot persoonsgegevens</li>
-          <li>Regelmatige beveiligingsaudits</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">8. Delen met Derden</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Wij delen uw gegevens niet met derden, behalve:
-        </p>
-        <ul className="list-disc pl-6 text-muted space-y-2 mb-4">
-          <li>Stripe (betalingsverwerking)</li>
-          <li>E-maildienstverlener (boekingsbevestigingen)</li>
-          <li>Campingbeheerders (voor uw reservering)</li>
-          <li>Wanneer wettelijk verplicht</li>
-        </ul>
-
-        <h2 className="text-xl font-semibold text-foreground mt-10 mb-4">9. Contact</h2>
-        <p className="text-muted leading-relaxed mb-4">
-          Voor vragen over dit privacybeleid of om uw rechten uit te oefenen, kunt u contact opnemen via:<br />
-          <a href="mailto:info@caravanverhuurcostabrava.com" className="text-primary underline">info@caravanverhuurcostabrava.com</a>
-        </p>
-
-        <div className="mt-12 pt-8 border-t border-border">
-          <Link href="/" className="text-primary underline text-sm">
-            &larr; Terug naar home
-          </Link>
+      {/* Quick nav */}
+      <section className="border-b border-border bg-white sticky top-0 z-30">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
+            {sections.map(s => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-foreground hover:bg-surface-alt transition-colors"
+              >
+                {s.title.replace(/^\d+\.\s/, '')}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Content */}
+      <section className="py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 space-y-8">
+          {/* Intro */}
+          <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8">
+            <p className="text-muted leading-relaxed">
+              Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens.
+              Dit privacybeleid beschrijft hoe wij uw gegevens verzamelen, gebruiken en beschermen conform de
+              <strong className="text-foreground"> Algemene Verordening Gegevensbescherming (AVG/GDPR)</strong>.
+            </p>
+          </div>
+
+          {sections.map(s => {
+            const Icon = s.icon;
+            return (
+              <div key={s.id} id={s.id} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 scroll-mt-20">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                    <Icon size={20} className="text-primary" />
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground">{s.title}</h2>
+                </div>
+                {s.content}
+              </div>
+            );
+          })}
+
+          <div className="pt-4 flex items-center justify-between">
+            <Link href="/voorwaarden" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+              ← Algemene Voorwaarden
+            </Link>
+            <Link href="/" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+              Terug naar home →
+            </Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

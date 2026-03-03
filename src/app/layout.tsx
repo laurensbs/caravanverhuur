@@ -18,26 +18,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Caravanverhuur Costa Brava | Zorgeloze Caravanvakantie",
+  title: "Caravans Costa Brava | Caravan Huren Spanje — Volledig Uitgerust",
   description:
-    "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava. Caravan staat klaar met volledige inventaris. Geen gedoe, alleen genieten!",
+    "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava. Beddengoed, kookgerei & inventaris inbegrepen. Vanaf €50/dag. Boek seizoen 2026!",
   keywords: [
     "caravan huren",
     "Costa Brava",
-    "camping",
-    "Spanje",
-    "vakantie",
+    "camping Spanje",
     "caravanverhuur",
+    "stacaravan huren",
+    "vakantie Spanje",
+    "camping Costa Brava",
+    "caravan met inventaris",
   ],
   openGraph: {
-    title: "Caravanverhuur Costa Brava",
-    description: "Zorgeloze caravanvakantie op de Costa Brava",
-    url: "https://caravanverhuurcostabrava.com",
-    siteName: "Caravanverhuur Costa Brava",
+    title: "Caravans Costa Brava — Zorgeloze Caravanvakantie",
+    description: "Volledig uitgeruste caravan op de Costa Brava. Uitstappen en genieten — wij regelen de rest. Vanaf €50/dag.",
+    url: "https://caravanscostabrava.nl",
+    siteName: "Caravans Costa Brava",
     locale: "nl_NL",
     type: "website",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80",
+        width: 1200,
+        height: 630,
+        alt: "Caravanvakantie op de Costa Brava",
+      },
+    ],
   },
-  metadataBase: new URL("https://caravanverhuurcostabrava.com"),
+  twitter: {
+    card: "summary_large_image",
+    title: "Caravans Costa Brava — Zorgeloze Caravanvakantie",
+    description: "Volledig uitgeruste caravan op de Costa Brava. Vanaf €50/dag. Boek seizoen 2026!",
+    images: ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80"],
+  },
+  metadataBase: new URL("https://caravanscostabrava.nl"),
   alternates: {
     canonical: "/",
   },
@@ -47,9 +63,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "Caravanverhuur Costa Brava",
+  name: "Caravans Costa Brava",
   description: "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava.",
-  url: "https://caravanverhuurcostabrava.com",
+  url: "https://caravanscostabrava.nl",
   logo: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
   image: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
   address: {
@@ -72,8 +88,8 @@ const jsonLd = {
   },
   aggregateRating: {
     "@type": "AggregateRating",
-    ratingValue: "5",
-    reviewCount: "100",
+    ratingValue: "4.8",
+    reviewCount: "127",
     bestRating: "5",
   },
   sameAs: [],

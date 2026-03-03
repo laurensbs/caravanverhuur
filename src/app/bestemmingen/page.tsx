@@ -106,7 +106,7 @@ export default function DestinationsPage() {
       {/* ===== FEATURED DESTINATION ===== */}
       <section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-12">
         <Link href={`/bestemmingen/${featured.slug}`} className="group block">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-border/50">
             <div className="grid lg:grid-cols-2">
               <div className="relative h-64 lg:h-auto lg:min-h-[350px] overflow-hidden">
                 <Image src={featured.heroImage} alt={featured.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
@@ -117,11 +117,11 @@ export default function DestinationsPage() {
                 </div>
               </div>
               <div className="p-8 lg:p-10 flex flex-col justify-center">
-                <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                <div className="flex items-center gap-2 text-sm text-muted mb-2">
                   <MapPin size={14} /> {featured.region}
                 </div>
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">{featured.name}</h2>
-                <p className="text-gray-600 mb-5 leading-relaxed">{featured.description}</p>
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">{featured.name}</h2>
+                <p className="text-foreground-light mb-5 leading-relaxed">{featured.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-5">
                   {featured.bestFor.map(tag => (
@@ -132,13 +132,13 @@ export default function DestinationsPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-blue-50 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-xs text-blue-500 mb-0.5"><Thermometer size={12} /> Zomer</div>
-                    <p className="font-bold text-blue-900">{featured.weather.summer}</p>
+                  <div className="bg-primary-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Thermometer size={12} /> Zomer</div>
+                    <p className="font-bold text-primary-dark">{featured.weather.summer}</p>
                   </div>
-                  <div className="bg-cyan-50 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-xs text-cyan-500 mb-0.5"><Waves size={12} /> Watertemp.</div>
-                    <p className="font-bold text-cyan-900">{featured.weather.water}</p>
+                  <div className="bg-primary-50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Waves size={12} /> Watertemp.</div>
+                    <p className="font-bold text-primary-dark">{featured.weather.water}</p>
                   </div>
                 </div>
 
@@ -161,10 +161,10 @@ export default function DestinationsPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wider mb-3">
                   {regionIcons[region]} {region}
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{region}</h2>
-                <p className="text-gray-500 mt-1">{regionDescriptions[region]}</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{region}</h2>
+                <p className="text-muted mt-1">{regionDescriptions[region]}</p>
               </div>
-              <p className="text-sm text-gray-400 mt-2 sm:mt-0">{items.length} bestemmingen</p>
+              <p className="text-sm text-muted mt-2 sm:mt-0">{items.length} bestemmingen</p>
             </div>
 
             {/* Destinations grid */}
@@ -173,7 +173,7 @@ export default function DestinationsPage() {
                 <Link
                   key={dest.id}
                   href={`/bestemmingen/${dest.slug}`}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200"
+                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border/50 hover:border-border"
                 >
                   {/* Image */}
                   <div className="relative aspect-[16/10] overflow-hidden">
@@ -182,8 +182,8 @@ export default function DestinationsPage() {
 
                     {/* Weather badge */}
                     <div className="absolute top-3 right-3">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-900">
-                        <Sun size={12} className="text-amber-500" /> {dest.weather.summer}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-foreground">
+                        <Sun size={12} className="text-primary" /> {dest.weather.summer}
                       </span>
                     </div>
 
@@ -198,7 +198,7 @@ export default function DestinationsPage() {
 
                   {/* Content */}
                   <div className="p-5">
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">{dest.description}</p>
+                    <p className="text-sm text-foreground-light line-clamp-2 mb-4 leading-relaxed">{dest.description}</p>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5 mb-4">
@@ -212,7 +212,7 @@ export default function DestinationsPage() {
                     {/* Highlights peek */}
                     <div className="space-y-1.5 mb-4">
                       {dest.highlights.slice(0, 3).map(h => (
-                        <div key={h} className="flex items-start gap-2 text-xs text-gray-500">
+                        <div key={h} className="flex items-start gap-2 text-xs text-muted">
                           <div className="w-1 h-1 bg-primary rounded-full shrink-0 mt-1.5" />
                           {h}
                         </div>
@@ -220,10 +220,10 @@ export default function DestinationsPage() {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div className="flex items-center gap-3 text-xs text-gray-400">
-                        <span className="flex items-center gap-1"><Waves size={13} className="text-cyan-400" /> {dest.weather.water}</span>
-                        <span className="flex items-center gap-1"><Users size={13} className="text-gray-400" /> {dest.nearestCampings.length} campings</span>
+                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                      <div className="flex items-center gap-3 text-xs text-muted">
+                        <span className="flex items-center gap-1"><Waves size={13} className="text-primary" /> {dest.weather.water}</span>
+                        <span className="flex items-center gap-1"><Users size={13} className="text-muted" /> {dest.nearestCampings.length} campings</span>
                       </div>
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
                         Ontdek <ChevronRight size={14} />
@@ -238,9 +238,9 @@ export default function DestinationsPage() {
       ))}
 
       {/* ===== TRAVEL TIP BAR ===== */}
-      <section className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 py-12">
+      <section className="bg-gradient-to-r from-primary-50 via-primary-100 to-primary-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Insider Tips van onze experts</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Insider Tips van onze experts</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {destinations.slice(0, 4).map(d => (
               <div key={d.id} className="bg-white rounded-xl p-4 shadow-sm">
@@ -249,11 +249,11 @@ export default function DestinationsPage() {
                     <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{d.name}</p>
-                    <p className="text-[10px] text-gray-400">{d.region}</p>
+                    <p className="text-sm font-bold text-foreground">{d.name}</p>
+                    <p className="text-[10px] text-muted">{d.region}</p>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">{d.travelTip}</p>
+                <p className="text-xs text-foreground-light leading-relaxed">{d.travelTip}</p>
               </div>
             ))}
           </div>
@@ -263,45 +263,45 @@ export default function DestinationsPage() {
       {/* ===== COMPARISON BAR ===== */}
       <section className="bg-white py-12 lg:py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Vergelijk bestemmingen</h2>
-          <p className="text-gray-500 text-center mb-8">Op een rij: het weer, de campings en voor wie het geschikt is</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Vergelijk bestemmingen</h2>
+          <p className="text-muted text-center mb-8">Op een rij: het weer, de campings en voor wie het geschikt is</p>
 
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full min-w-[640px] border-collapse">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Bestemming</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Regio</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Zomer &deg;C</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Water &deg;C</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Campings</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-gray-900">Best voor</th>
+                <tr className="border-b border-border/50">
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Bestemming</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Regio</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Zomer &deg;C</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Water &deg;C</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Campings</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Best voor</th>
                   <th className="py-3 px-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {destinations.map(d => (
-                  <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                  <tr key={d.id} className="border-b border-border/30 hover:bg-surface/50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden relative shrink-0">
                           <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
                         </div>
-                        <span className="text-sm font-semibold text-gray-900">{d.name}</span>
+                        <span className="text-sm font-semibold text-foreground">{d.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-500">{d.region}</td>
+                    <td className="py-3 px-4 text-sm text-muted">{d.region}</td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-700">
-                        <Sun size={13} className="text-amber-500" /> {d.weather.summer}
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-accent">
+                        <Sun size={13} className="text-primary" /> {d.weather.summer}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-cyan-700">
-                        <Waves size={13} className="text-cyan-500" /> {d.weather.water}
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-primary-dark">
+                        <Waves size={13} className="text-primary" /> {d.weather.water}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{d.nearestCampings.length}</td>
+                    <td className="py-3 px-4 text-sm text-foreground-light">{d.nearestCampings.length}</td>
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">
                         {d.bestFor.slice(0, 2).map(tag => (

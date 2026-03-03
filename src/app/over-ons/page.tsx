@@ -153,9 +153,9 @@ export default function OverOnsPage() {
           <div className="space-y-8">
             {[
               { step: '1', title: 'Je kiest een caravan en datum', desc: 'Bekijk ons aanbod, kies de caravan die bij je past en selecteer een camping op de Costa Brava.' },
-              { step: '2', title: 'Aanbetaling van 30%', desc: 'Na het invullen van je gegevens betaal je 30% aanbetaling per bank of cash. Je boeking is nu bevestigd.' },
+              { step: '2', title: 'Aanbetaling van 30%', desc: 'Na het invullen van je gegevens betaal je 30% aanbetaling direct via iDEAL. Je boeking is nu bevestigd.' },
               { step: '3', title: 'Voorbereiding', desc: 'Wij zorgen ervoor dat jouw caravan wordt klaargezet op de camping, volledig schoongemaakt en uitgerust.' },
-              { step: '4', title: 'Restbedrag betalen', desc: 'Een week voor je vakantie betaal je het restbedrag (70%) veilig via Stripe.' },
+              { step: '4', title: 'Restbedrag betalen', desc: 'Een week voor je vakantie betaal je het restbedrag (70%) veilig via iDEAL.' },
               { step: '5', title: 'Uitstappen en genieten!', desc: 'Je caravan staat klaar met volledige inventaris. Check in, installeer je en geniet van de Costa Brava!' },
             ].map((item, i) => (
               <motion.div
@@ -236,10 +236,10 @@ export default function OverOnsPage() {
           <div className="mt-12 text-center">
             <p className="text-muted text-sm mb-4">Volg ons voor updates, tips en foto&apos;s van de Costa Brava</p>
             <div className="flex justify-center gap-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-primary via-primary-dark to-accent rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
                 <Instagram size={22} />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary-dark rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
                 <Facebook size={22} />
               </a>
             </div>
@@ -248,10 +248,10 @@ export default function OverOnsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-gradient-to-r from-primary-dark via-primary to-blue-400 text-white">
+      <section className="py-20 bg-gradient-to-r from-primary-dark via-primary to-primary text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Overtuigd?</h2>
-          <p className="text-blue-100 text-lg mb-8">Boek nu je zorgeloze caravanvakantie op de Costa Brava.</p>
+          <p className="text-primary-light text-lg mb-8">Boek nu je zorgeloze caravanvakantie op de Costa Brava.</p>
           <Link
             href="/boeken"
             className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all text-lg"

@@ -81,31 +81,31 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
   };
 
   return (
-    <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] mt-2 space-y-5">
+    <div className="bg-surface rounded-2xl p-5 border border-border mt-2 space-y-5">
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2 flex items-center gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <User className="w-4 h-4" /> Gastgegevens
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <p className="text-sm font-medium text-[#1a1a2e]">{booking.guest_name}</p>
-            <div className="flex items-center gap-1.5 text-xs text-[#64748b] mt-1">
+            <p className="text-sm font-medium text-foreground">{booking.guest_name}</p>
+            <div className="flex items-center gap-1.5 text-xs text-muted mt-1">
               <Mail className="w-3 h-3" />
-              <a href={`mailto:${booking.guest_email}`} className="hover:text-[#1a3c6e]">{booking.guest_email}</a>
+              <a href={`mailto:${booking.guest_email}`} className="hover:text-primary-dark">{booking.guest_email}</a>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-[#64748b] mt-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
               <Phone className="w-3 h-3" />
-              <a href={`tel:${booking.guest_phone}`} className="hover:text-[#1a3c6e]">{booking.guest_phone}</a>
+              <a href={`tel:${booking.guest_phone}`} className="hover:text-primary-dark">{booking.guest_phone}</a>
             </div>
           </div>
           <div>
-            <p className="text-xs text-[#64748b]">
+            <p className="text-xs text-muted">
               <strong>{booking.adults}</strong> volwassenen, <strong>{booking.children}</strong> kinderen
             </p>
             {booking.special_requests && (
               <div className="mt-1 flex items-start gap-1.5">
-                <FileText className="w-3 h-3 text-[#64748b] mt-0.5 shrink-0" />
-                <p className="text-xs text-[#64748b] italic">{booking.special_requests}</p>
+                <FileText className="w-3 h-3 text-muted mt-0.5 shrink-0" />
+                <p className="text-xs text-muted italic">{booking.special_requests}</p>
               </div>
             )}
           </div>
@@ -113,26 +113,26 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2 flex items-center gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <Calendar className="w-4 h-4" /> Verblijf
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex items-start gap-2">
-            <CarFront className="w-4 h-4 text-[#64748b] mt-0.5" />
+            <CarFront className="w-4 h-4 text-muted mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-[#1a1a2e]">{caravan?.name || booking.caravan_id}</p>
-              <p className="text-xs text-[#64748b]">{caravan?.reference}</p>
+              <p className="text-sm font-medium text-foreground">{caravan?.name || booking.caravan_id}</p>
+              <p className="text-xs text-muted">{caravan?.reference}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <MapPin className="w-4 h-4 text-[#64748b] mt-0.5" />
+            <MapPin className="w-4 h-4 text-muted mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-[#1a1a2e]">{camping?.name || booking.camping_id}</p>
-              <p className="text-xs text-[#64748b]">{camping?.location}</p>
+              <p className="text-sm font-medium text-foreground">{camping?.name || booking.camping_id}</p>
+              <p className="text-xs text-muted">{camping?.location}</p>
             </div>
           </div>
         </div>
-        <div className="mt-2 bg-white rounded-xl p-3 text-xs text-[#64748b]">
+        <div className="mt-2 bg-white rounded-xl p-3 text-xs text-muted">
           <p>
             <strong>Check-in:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
             <strong>Check-out:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
@@ -142,46 +142,46 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2 flex items-center gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <CreditCard className="w-4 h-4" /> Financieel
         </h4>
         <div className="bg-white rounded-xl p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Totaalprijs</span>
-            <span className="font-semibold text-[#1a1a2e]">{formatCurrency(Number(booking.total_price))}</span>
+            <span className="text-muted">Totaalprijs</span>
+            <span className="font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Aanbetaling (30%)</span>
-            <span className="text-[#1a1a2e]">{formatCurrency(Number(booking.deposit_amount))}</span>
+            <span className="text-muted">Aanbetaling (30%)</span>
+            <span className="text-foreground">{formatCurrency(Number(booking.deposit_amount))}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Restbedrag</span>
-            <span className="text-[#1a1a2e]">{formatCurrency(Number(booking.remaining_amount))}</span>
+            <span className="text-muted">Restbedrag</span>
+            <span className="text-foreground">{formatCurrency(Number(booking.remaining_amount))}</span>
           </div>
-          <div className="flex justify-between text-sm border-t border-[#e2e8f0] pt-2">
-            <span className="text-[#64748b]">Borg</span>
-            <span className="text-[#1a1a2e]">{formatCurrency(Number(booking.borg_amount))}</span>
+          <div className="flex justify-between text-sm border-t border-border pt-2">
+            <span className="text-muted">Borg</span>
+            <span className="text-foreground">{formatCurrency(Number(booking.borg_amount))}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2">Betalingen</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">Betalingen</h4>
         {loadingPayments ? (
-          <div className="flex items-center gap-2 text-sm text-[#94a3b8]"><Loader2 className="w-4 h-4 animate-spin" /> Laden...</div>
+          <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" /> Laden...</div>
         ) : payments.length === 0 ? (
-          <p className="text-sm text-[#94a3b8]">Geen betalingen</p>
+          <p className="text-sm text-muted">Geen betalingen</p>
         ) : (
           <div className="space-y-2">
             {payments.map((p) => (
               <div key={p.id} className="bg-white rounded-xl p-3 flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium text-[#1a1a2e]">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
-                  <p className="text-xs text-[#64748b]">
-                    {p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? 'Bank' : 'Contant'}
+                  <p className="font-medium text-foreground">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
+                  <p className="text-xs text-muted">
+                    {p.method === 'ideal' ? 'iDEAL' : p.method === 'stripe' ? 'iDEAL' : p.method === 'bank' ? 'Bank' : 'Contant'}
                     {p.stripe_id && ` (${p.stripe_id})`}
                   </p>
-                  {p.paid_at && <p className="text-xs text-green-600">Betaald op {formatDateTime(p.paid_at)}</p>}
+                  {p.paid_at && <p className="text-xs text-primary">Betaald op {formatDateTime(p.paid_at)}</p>}
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(p.status)}`}>{p.status}</span>
               </div>
@@ -192,11 +192,11 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wider block mb-1">Status wijzigen</label>
+          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">Status wijzigen</label>
           <select
             value={newStatus}
             onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
-            className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
@@ -204,12 +204,12 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wider block mb-1">Admin Notities</label>
+          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">Admin Notities</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 bg-white border border-[#e2e8f0] rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
             placeholder="Interne notities..."
           />
         </div>
@@ -219,7 +219,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1a3c6e] text-white rounded-xl text-sm font-medium hover:bg-[#15325c] transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#2D4A3D] transition-colors cursor-pointer disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Opslaan
@@ -276,7 +276,7 @@ export default function BookingenPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1a3c6e]" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-dark" />
       </div>
     );
   }
@@ -285,21 +285,21 @@ export default function BookingenPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Zoek op naam, e-mail, referentie..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle statussen</option>
             {STATUS_OPTIONS.map((s) => (
@@ -309,7 +309,7 @@ export default function BookingenPage() {
         </div>
       </div>
 
-      <p className="text-xs text-[#64748b]">
+      <p className="text-xs text-muted">
         {filtered.length} boeking{filtered.length !== 1 ? 'en' : ''} gevonden
       </p>
 
@@ -320,33 +320,33 @@ export default function BookingenPage() {
           const isExpanded = expandedId === booking.id;
 
           return (
-            <div key={booking.id} className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
+            <div key={booking.id} className="bg-white rounded-2xl border border-border overflow-hidden">
               <button
                 onClick={() => setExpandedId(isExpanded ? null : booking.id)}
-                className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-[#f8fafc] transition-colors cursor-pointer"
+                className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
               >
-                <div className="text-center bg-[#f8fafc] rounded-xl px-3 py-2 shrink-0 hidden sm:block">
-                  <p className="text-lg font-bold text-[#1a3c6e]">
+                <div className="text-center bg-surface rounded-xl px-3 py-2 shrink-0 hidden sm:block">
+                  <p className="text-lg font-bold text-primary-dark">
                     {new Date(booking.check_in).getDate()}
                   </p>
-                  <p className="text-xs text-[#64748b] uppercase">
+                  <p className="text-xs text-muted uppercase">
                     {new Date(booking.check_in).toLocaleDateString('nl-NL', { month: 'short' })}
                   </p>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-sm text-[#1a1a2e]">{booking.guest_name}</p>
-                    <span className="text-xs text-[#94a3b8]">{booking.reference}</span>
+                    <p className="font-semibold text-sm text-foreground">{booking.guest_name}</p>
+                    <span className="text-xs text-muted">{booking.reference}</span>
                   </div>
-                  <p className="text-xs text-[#64748b] truncate mt-0.5">
+                  <p className="text-xs text-muted truncate mt-0.5">
                     {caravan?.name} → {camping?.name} &nbsp;|&nbsp; {formatDate(booking.check_in)} – {formatDate(booking.check_out)}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right hidden md:block">
-                    <p className="text-sm font-semibold text-[#1a1a2e]">{formatCurrency(Number(booking.total_price))}</p>
+                    <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</p>
                   </div>
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(booking.status)}`}
@@ -354,9 +354,9 @@ export default function BookingenPage() {
                     {booking.status.replace('_', ' ')}
                   </span>
                   {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-[#94a3b8]" />
+                    <ChevronUp className="w-4 h-4 text-muted" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-[#94a3b8]" />
+                    <ChevronDown className="w-4 h-4 text-muted" />
                   )}
                 </div>
               </button>
@@ -375,7 +375,7 @@ export default function BookingenPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-[#94a3b8]">
+          <div className="text-center py-12 text-muted">
             <p className="text-lg">Geen boekingen gevonden</p>
             <p className="text-sm mt-1">Pas je zoekopdracht of filters aan</p>
           </div>

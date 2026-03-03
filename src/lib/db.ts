@@ -137,6 +137,29 @@ export async function setupDatabase() {
     // Column might already exist or DB doesn't support IF NOT EXISTS — ignore
   }
 
+  // Custom caravans table (admin-added caravans)
+  await sql`
+    CREATE TABLE IF NOT EXISTS custom_caravans (
+      id TEXT PRIMARY KEY,
+      reference TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'FAMILIE',
+      max_persons INTEGER NOT NULL DEFAULT 4,
+      manufacturer TEXT NOT NULL,
+      year INTEGER NOT NULL,
+      description TEXT NOT NULL,
+      photos JSONB DEFAULT '[]',
+      amenities JSONB DEFAULT '[]',
+      inventory JSONB DEFAULT '[]',
+      price_per_day NUMERIC(10,2) NOT NULL,
+      price_per_week NUMERIC(10,2) NOT NULL,
+      deposit NUMERIC(10,2) NOT NULL,
+      status TEXT NOT NULL DEFAULT 'BESCHIKBAAR',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -188,19 +211,20 @@ export async function createBooking(data: {
   const depositPaymentId = generateId('P');
   await sql`
     INSERT INTO payments (id, booking_id, type, amount, status, method)
-    VALUES (${depositPaymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'bank')
+    VALUES (${depositPaymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'ideal')
   `;
 
   // Create the remaining payment record
+  let remainingPaymentId: string | undefined;
   if (data.remainingAmount > 0) {
-    const remainingPaymentId = generateId('P');
+    remainingPaymentId = generateId('P');
     await sql`
       INSERT INTO payments (id, booking_id, type, amount, status, method)
-      VALUES (${remainingPaymentId}, ${id}, 'RESTBETALING', ${data.remainingAmount}, 'OPENSTAAND', 'bank')
+      VALUES (${remainingPaymentId}, ${id}, 'RESTBETALING', ${data.remainingAmount}, 'OPENSTAAND', 'ideal')
     `;
   }
 
-  return { id, reference };
+  return { id, reference, depositPaymentId, remainingPaymentId };
 }
 
 export async function getAllBookings() {
@@ -270,9 +294,22 @@ export async function createPayment(data: {
   const id = generateId('P');
   await sql`
     INSERT INTO payments (id, booking_id, type, amount, status, method)
-    VALUES (${id}, ${data.bookingId}, ${data.type}, ${data.amount}, ${data.status || 'OPENSTAAND'}, ${data.method || 'bank'})
+    VALUES (${id}, ${data.bookingId}, ${data.type}, ${data.amount}, ${data.status || 'OPENSTAAND'}, ${data.method || 'ideal'})
   `;
   return { id };
+}
+
+export async function getPaymentById(id: string) {
+  const result = await sql`
+    SELECT * FROM payments WHERE id = ${id}
+  `;
+  return result.rows[0] || null;
+}
+
+export async function updatePaymentStripeId(id: string, stripeId: string) {
+  await sql`
+    UPDATE payments SET stripe_id = ${stripeId}, method = 'ideal' WHERE id = ${id}
+  `;
 }
 
 // ===== CONTACT QUERIES =====
@@ -585,6 +622,32 @@ export async function updateCustomerProfile(id: string, data: { name?: string; p
   }
 }
 
+export async function updateCustomerByAdmin(id: string, data: { name?: string; email?: string; phone?: string }) {
+  const fields: string[] = [];
+  const values: (string | null)[] = [];
+  if (data.name !== undefined) { fields.push('name'); values.push(data.name); }
+  if (data.email !== undefined) { fields.push('email'); values.push(data.email.toLowerCase().trim()); }
+  if (data.phone !== undefined) { fields.push('phone'); values.push(data.phone || null); }
+  if (fields.length === 0) return;
+  
+  // Build dynamic update - using individual conditionals since sql template doesn't support dynamic columns easily
+  if (data.name !== undefined && data.email !== undefined && data.phone !== undefined) {
+    await sql`UPDATE customers SET name = ${data.name}, email = ${data.email.toLowerCase().trim()}, phone = ${data.phone || null} WHERE id = ${id}`;
+  } else if (data.name !== undefined && data.email !== undefined) {
+    await sql`UPDATE customers SET name = ${data.name}, email = ${data.email.toLowerCase().trim()} WHERE id = ${id}`;
+  } else if (data.name !== undefined && data.phone !== undefined) {
+    await sql`UPDATE customers SET name = ${data.name}, phone = ${data.phone || null} WHERE id = ${id}`;
+  } else if (data.email !== undefined && data.phone !== undefined) {
+    await sql`UPDATE customers SET email = ${data.email.toLowerCase().trim()}, phone = ${data.phone || null} WHERE id = ${id}`;
+  } else if (data.name !== undefined) {
+    await sql`UPDATE customers SET name = ${data.name} WHERE id = ${id}`;
+  } else if (data.email !== undefined) {
+    await sql`UPDATE customers SET email = ${data.email.toLowerCase().trim()} WHERE id = ${id}`;
+  } else if (data.phone !== undefined) {
+    await sql`UPDATE customers SET phone = ${data.phone || null} WHERE id = ${id}`;
+  }
+}
+
 export async function getAllCustomers() {
   const result = await sql`SELECT id, email, name, phone, created_at, last_login FROM customers ORDER BY created_at DESC`;
   return result.rows;
@@ -646,4 +709,101 @@ export async function getBorgChecklistsByEmail(email: string) {
     ORDER BY bc.created_at DESC
   `;
   return result.rows;
+}
+
+// ===== CUSTOM CARAVAN QUERIES =====
+
+export async function getAllCustomCaravans() {
+  const result = await sql`SELECT * FROM custom_caravans ORDER BY created_at DESC`;
+  return result.rows;
+}
+
+export async function getCustomCaravanById(id: string) {
+  const result = await sql`SELECT * FROM custom_caravans WHERE id = ${id}`;
+  return result.rows[0] || null;
+}
+
+export async function createCustomCaravan(data: {
+  name: string;
+  type: string;
+  maxPersons: number;
+  manufacturer: string;
+  year: number;
+  description: string;
+  photos: string[];
+  amenities: string[];
+  inventory: string[];
+  pricePerDay: number;
+  pricePerWeek: number;
+  deposit: number;
+}) {
+  const id = generateId('CC');
+  // Generate reference like CV-007, CV-008, etc.
+  const countResult = await sql`SELECT COUNT(*) as count FROM custom_caravans`;
+  const refNum = parseInt(countResult.rows[0].count) + 7; // Start after existing 6 static caravans
+  const reference = `CV-${refNum.toString().padStart(3, '0')}`;
+
+  await sql`
+    INSERT INTO custom_caravans (id, reference, name, type, max_persons, manufacturer, year, description, photos, amenities, inventory, price_per_day, price_per_week, deposit)
+    VALUES (${id}, ${reference}, ${data.name}, ${data.type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${JSON.stringify(data.photos)}, ${JSON.stringify(data.amenities)}, ${JSON.stringify(data.inventory)}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit})
+  `;
+  return { id, reference };
+}
+
+export async function updateCustomCaravan(id: string, data: {
+  name?: string;
+  type?: string;
+  maxPersons?: number;
+  manufacturer?: string;
+  year?: number;
+  description?: string;
+  photos?: string[];
+  amenities?: string[];
+  inventory?: string[];
+  pricePerDay?: number;
+  pricePerWeek?: number;
+  deposit?: number;
+  status?: string;
+}) {
+  // Build update dynamically
+  const existing = await getCustomCaravanById(id);
+  if (!existing) return null;
+
+  const name = data.name ?? existing.name;
+  const type = data.type ?? existing.type;
+  const maxPersons = data.maxPersons ?? existing.max_persons;
+  const manufacturer = data.manufacturer ?? existing.manufacturer;
+  const year = data.year ?? existing.year;
+  const description = data.description ?? existing.description;
+  const photos = data.photos ? JSON.stringify(data.photos) : existing.photos;
+  const amenities = data.amenities ? JSON.stringify(data.amenities) : existing.amenities;
+  const inventory = data.inventory ? JSON.stringify(data.inventory) : existing.inventory;
+  const pricePerDay = data.pricePerDay ?? existing.price_per_day;
+  const pricePerWeek = data.pricePerWeek ?? existing.price_per_week;
+  const deposit = data.deposit ?? existing.deposit;
+  const status = data.status ?? existing.status;
+
+  await sql`
+    UPDATE custom_caravans SET
+      name = ${name},
+      type = ${type},
+      max_persons = ${maxPersons},
+      manufacturer = ${manufacturer},
+      year = ${year},
+      description = ${description},
+      photos = ${photos},
+      amenities = ${amenities},
+      inventory = ${inventory},
+      price_per_day = ${pricePerDay},
+      price_per_week = ${pricePerWeek},
+      deposit = ${deposit},
+      status = ${status},
+      updated_at = NOW()
+    WHERE id = ${id}
+  `;
+  return { success: true };
+}
+
+export async function deleteCustomCaravan(id: string) {
+  await sql`DELETE FROM custom_caravans WHERE id = ${id}`;
 }

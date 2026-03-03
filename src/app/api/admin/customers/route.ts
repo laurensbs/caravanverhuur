@@ -1,12 +1,113 @@
-import { NextResponse } from 'next/server';
-import { getAllCustomers } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer } from '@/lib/db';
 
+const ADMIN_PASSWORD = 'CostaAdmin2026!';
+
+// Simple password hashing (same as auth/register)
+async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.randomUUID();
+  const encoder = new TextEncoder();
+  const data = encoder.encode(salt + password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${salt}:${hashHex}`;
+}
+
+// GET - List all customers
 export async function GET() {
   try {
     const customers = await getAllCustomers();
     return NextResponse.json({ customers });
   } catch (error) {
-    console.error('Admin customers error:', error);
-    return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 500 });
+    console.error('Error fetching customers:', error);
+    return NextResponse.json({ error: 'Fout bij ophalen klanten' }, { status: 500 });
+  }
+}
+
+// POST - Create new customer
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { email, name, phone, password } = body;
+
+    if (!email || !name) {
+      return NextResponse.json({ error: 'E-mail en naam zijn verplicht' }, { status: 400 });
+    }
+
+    // Check if email already exists
+    const existing = await getCustomerByEmail(email.toLowerCase().trim());
+    if (existing) {
+      return NextResponse.json({ error: 'Er bestaat al een klant met dit e-mailadres' }, { status: 409 });
+    }
+
+    // Use provided password or generate a random one
+    const customerPassword = password || crypto.randomUUID().slice(0, 12);
+    const passwordHash = await hashPassword(customerPassword);
+
+    const result = await createCustomer({
+      email: email.toLowerCase().trim(),
+      passwordHash,
+      name: name.trim(),
+      phone: phone?.trim(),
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      customerId: result.id,
+      generatedPassword: !password ? customerPassword : undefined,
+    });
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    return NextResponse.json({ error: 'Fout bij aanmaken klant' }, { status: 500 });
+  }
+}
+
+// PATCH - Update customer details
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, name, email, phone } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Klant-ID is verplicht' }, { status: 400 });
+    }
+
+    // If email is being changed, check uniqueness
+    if (email) {
+      const existing = await getCustomerByEmail(email.toLowerCase().trim());
+      if (existing && existing.id !== id) {
+        return NextResponse.json({ error: 'Dit e-mailadres is al in gebruik door een andere klant' }, { status: 409 });
+      }
+    }
+
+    await updateCustomerByAdmin(id, { name, email, phone });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    return NextResponse.json({ error: 'Fout bij bijwerken klant' }, { status: 500 });
+  }
+}
+
+// DELETE - Delete customer (requires admin password)
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, adminPassword } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Klant-ID is verplicht' }, { status: 400 });
+    }
+
+    if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
+      return NextResponse.json({ error: 'Ongeldig admin wachtwoord' }, { status: 403 });
+    }
+
+    await deleteCustomer(id);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    return NextResponse.json({ error: 'Fout bij verwijderen klant' }, { status: 500 });
   }
 }

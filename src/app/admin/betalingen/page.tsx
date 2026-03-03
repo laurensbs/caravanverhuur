@@ -18,7 +18,8 @@ import {
   type PaymentStatus,
   type PaymentType,
 } from '@/data/admin';
-import { caravans } from '@/data/caravans';
+import { caravans as staticCaravans } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
 
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUGBETAALD', 'MISLUKT'];
 const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'BORG', 'BORG_RETOUR'];
@@ -30,8 +31,13 @@ export default function BetalingenPage() {
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'ALLE'>('ALLE');
   const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
 
   useEffect(() => {
+    fetch('/api/admin/caravans')
+      .then(res => res.json())
+      .then(data => setCustomCaravans(data.caravans || []))
+      .catch(() => {});
     fetch('/api/payments')
       .then(res => res.json())
       .then(data => setPayments(data.payments || []))
@@ -62,7 +68,7 @@ export default function BetalingenPage() {
 
   const getCaravanName = (caravanId?: string) => {
     if (!caravanId) return '';
-    return caravans.find(c => c.id === caravanId)?.name || caravanId;
+    return staticCaravans.find(c => c.id === caravanId)?.name || customCaravans.find(c => c.id === caravanId)?.name || caravanId;
   };
 
   const filtered = payments
@@ -92,7 +98,7 @@ export default function BetalingenPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1a3c6e]" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-dark" />
       </div>
     );
   }
@@ -101,34 +107,34 @@ export default function BetalingenPage() {
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-green-100 text-green-600">
+        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-primary-50 text-primary">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-[#64748b] font-medium">Ontvangen</p>
-            <p className="text-xl font-bold text-[#1a1a2e]">{formatCurrency(totalPaid)}</p>
-            <p className="text-xs text-[#94a3b8]">{paid.length} betalingen</p>
+            <p className="text-xs text-muted font-medium">Ontvangen</p>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
+            <p className="text-xs text-muted">{paid.length} betalingen</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-orange-100 text-orange-600">
+        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-accent/20 text-accent">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-[#64748b] font-medium">Openstaand</p>
-            <p className="text-xl font-bold text-[#1a1a2e]">{formatCurrency(totalOpen)}</p>
-            <p className="text-xs text-[#94a3b8]">{open.length} betalingen</p>
+            <p className="text-xs text-muted font-medium">Openstaand</p>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(totalOpen)}</p>
+            <p className="text-xs text-muted">{open.length} betalingen</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-100 text-blue-600">
+        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary">
             <RotateCcw className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-[#64748b] font-medium">Terugbetaald</p>
-            <p className="text-xl font-bold text-[#1a1a2e]">{formatCurrency(totalRefunded)}</p>
-            <p className="text-xs text-[#94a3b8]">{refunded.length} betalingen</p>
+            <p className="text-xs text-muted font-medium">Terugbetaald</p>
+            <p className="text-xl font-bold text-foreground">{formatCurrency(totalRefunded)}</p>
+            <p className="text-xs text-muted">{refunded.length} betalingen</p>
           </div>
         </div>
       </div>
@@ -136,21 +142,21 @@ export default function BetalingenPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Zoek op naam, referentie, Stripe ID..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            placeholder="Zoek op naam, referentie, betaal-ID..."
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle statussen</option>
             {PAYMENT_STATUS_OPTIONS.map((s) => (
@@ -159,11 +165,11 @@ export default function BetalingenPage() {
           </select>
         </div>
         <div className="relative">
-          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+          <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as PaymentType | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1a3c6e]"
+            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle types</option>
             {PAYMENT_TYPE_OPTIONS.map((t) => (
@@ -173,13 +179,13 @@ export default function BetalingenPage() {
         </div>
       </div>
 
-      <p className="text-xs text-[#64748b]">
+      <p className="text-xs text-muted">
         {filtered.length} betaling{filtered.length !== 1 ? 'en' : ''} gevonden
       </p>
 
       {/* Payments list */}
-      <div className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden">
-        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-[#f8fafc] text-xs font-semibold text-[#64748b] uppercase tracking-wider border-b border-[#e2e8f0]">
+      <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider border-b border-border">
           <div className="col-span-3">Gast / Boeking</div>
           <div className="col-span-2">Type</div>
           <div className="col-span-2">Bedrag</div>
@@ -188,23 +194,23 @@ export default function BetalingenPage() {
           <div className="col-span-2">Datum</div>
         </div>
 
-        <div className="divide-y divide-[#e2e8f0]">
+        <div className="divide-y divide-border">
           {filtered.map((payment) => (
             <div
               key={payment.id}
-              className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-[#f8fafc] transition-colors"
+              className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors"
             >
               <div className="col-span-3">
-                <p className="text-sm font-medium text-[#1a1a2e]">{payment.guest_name}</p>
-                <p className="text-xs text-[#94a3b8]">{payment.booking_ref}</p>
+                <p className="text-sm font-medium text-foreground">{payment.guest_name}</p>
+                <p className="text-xs text-muted">{payment.booking_ref}</p>
               </div>
 
               <div className="col-span-2">
-                <span className="text-sm text-[#1a1a2e]">{payment.type.replace('_', ' ')}</span>
+                <span className="text-sm text-foreground">{payment.type.replace('_', ' ')}</span>
               </div>
 
               <div className="col-span-2">
-                <span className="text-sm font-semibold text-[#1a1a2e]">
+                <span className="text-sm font-semibold text-foreground">
                   {formatCurrency(Number(payment.amount))}
                 </span>
               </div>
@@ -219,7 +225,7 @@ export default function BetalingenPage() {
                   <button
                     onClick={() => handleMarkPaid(payment.id)}
                     disabled={updatingId === payment.id}
-                    className="text-xs text-green-700 bg-green-50 hover:bg-green-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                    className="text-xs text-primary-dark bg-primary-50 hover:bg-primary-50 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {updatingId === payment.id ? '...' : 'Markeer betaald'}
                   </button>
@@ -227,15 +233,15 @@ export default function BetalingenPage() {
               </div>
 
               <div className="col-span-1">
-                <span className="text-xs text-[#64748b]">
-                  {payment.method === 'stripe' ? 'Stripe' : payment.method === 'bank' ? 'Bank' : 'Contant'}
+                <span className="text-xs text-muted">
+                  {payment.method === 'ideal' ? 'iDEAL' : payment.method === 'stripe' ? 'iDEAL' : payment.method === 'bank' ? 'Bank' : 'Contant'}
                 </span>
               </div>
 
               <div className="col-span-2">
-                <p className="text-xs text-[#64748b]">{formatDateTime(payment.created_at)}</p>
+                <p className="text-xs text-muted">{formatDateTime(payment.created_at)}</p>
                 {payment.paid_at && (
-                  <p className="text-xs text-green-600">✓ {formatDateTime(payment.paid_at)}</p>
+                  <p className="text-xs text-primary">✓ {formatDateTime(payment.paid_at)}</p>
                 )}
               </div>
             </div>
@@ -243,7 +249,7 @@ export default function BetalingenPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-[#94a3b8]">
+          <div className="text-center py-12 text-muted">
             <p className="text-lg">Geen betalingen gevonden</p>
             <p className="text-sm mt-1">Pas je filters aan</p>
           </div>

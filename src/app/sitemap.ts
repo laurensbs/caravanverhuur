@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://caravanverhuurcostabrava.com';
+  const baseUrl = 'https://caravanscostabrava.nl';
   const now = new Date();
 
   const staticPages = [
@@ -17,6 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const caravanIds = ['CV-001', 'CV-002', 'CV-003', 'CV-004', 'CV-005', 'CV-006'];
 
+  const destinationSlugs = [
+    'pals', 'estartit', 'begur', 'tossa-de-mar', 'platja-daro',
+    'palamos', 'roses', 'cadaques', 'lloret-de-mar', 'sant-feliu-de-guixols',
+    'blanes', 'calella-de-palafrugell',
+  ];
+
   return [
     ...staticPages.map(page => ({
       url: `${baseUrl}${page.path}`,
@@ -29,6 +35,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+    })),
+    { url: `${baseUrl}/bestemmingen`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.7 },
+    ...destinationSlugs.map(slug => ({
+      url: `${baseUrl}/bestemmingen/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
   ];
 }

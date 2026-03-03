@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://caravanverhuurcostabrava.com/sitemap.xml',
+    sitemap: 'https://caravanscostabrava.nl/sitemap.xml',
   };
 }

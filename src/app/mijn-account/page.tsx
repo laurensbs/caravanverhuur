@@ -12,7 +12,8 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Minus, MessageSquare,
   ThumbsUp, ThumbsDown, Trash2, ExternalLink, ChevronDown,
 } from 'lucide-react';
-import { caravans } from '@/data/caravans';
+import { caravans as staticCaravans } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
 import { campings } from '@/data/campings';
 
 // ===== TYPES =====
@@ -84,18 +85,18 @@ type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'profiel';
 
 // ===== HELPERS =====
 const statusColors: Record<string, string> = {
-  NIEUW: 'bg-blue-100 text-blue-700',
-  BEVESTIGD: 'bg-emerald-100 text-emerald-700',
-  BETAALD: 'bg-emerald-100 text-emerald-700',
-  AANBETAALD: 'bg-amber-100 text-amber-700',
-  GEANNULEERD: 'bg-red-100 text-red-700',
-  AFGEROND: 'bg-gray-100 text-gray-600',
-  OPENSTAAND: 'bg-amber-100 text-amber-700',
-  OPEN: 'bg-blue-100 text-blue-700',
-  IN_BEHANDELING: 'bg-blue-100 text-blue-700',
-  AFGEROND_GOED: 'bg-emerald-100 text-emerald-700',
-  KLANT_AKKOORD: 'bg-emerald-100 text-emerald-700',
-  KLANT_BEZWAAR: 'bg-red-100 text-red-700',
+  NIEUW: 'bg-primary-100 text-primary-dark',
+  BEVESTIGD: 'bg-primary-light text-primary-dark',
+  BETAALD: 'bg-primary-light text-primary-dark',
+  AANBETAALD: 'bg-primary-light text-accent',
+  GEANNULEERD: 'bg-danger/10 text-danger',
+  AFGEROND: 'bg-surface-alt text-foreground-light',
+  OPENSTAAND: 'bg-primary-light text-accent',
+  OPEN: 'bg-primary-100 text-primary-dark',
+  IN_BEHANDELING: 'bg-primary-100 text-primary-dark',
+  AFGEROND_GOED: 'bg-primary-light text-primary-dark',
+  KLANT_AKKOORD: 'bg-primary-light text-primary-dark',
+  KLANT_BEZWAAR: 'bg-danger/10 text-danger',
 };
 
 const statusLabelsNL: Record<string, string> = {
@@ -113,10 +114,10 @@ const statusLabelsNL: Record<string, string> = {
 };
 
 const borgItemIcons: Record<string, React.ReactNode> = {
-  nvt: <Minus size={14} className="text-gray-300" />,
-  goed: <CheckCircle2 size={14} className="text-emerald-500" />,
-  beschadigd: <AlertTriangle size={14} className="text-amber-500" />,
-  ontbreekt: <XCircle size={14} className="text-red-500" />,
+  nvt: <Minus size={14} className="text-border" />,
+  goed: <CheckCircle2 size={14} className="text-primary" />,
+  beschadigd: <AlertTriangle size={14} className="text-primary" />,
+  ontbreekt: <XCircle size={14} className="text-danger" />,
 };
 
 function formatDate(d: string) {
@@ -154,6 +155,9 @@ export default function MijnAccountPage() {
   const [borgNotes, setBorgNotes] = useState('');
   const [submittingBorg, setSubmittingBorg] = useState(false);
   const [expandedBorgId, setExpandedBorgId] = useState<string | null>(null);
+
+  // Payment
+  const [payingId, setPayingId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -225,20 +229,45 @@ export default function MijnAccountPage() {
     setSubmittingBorg(false);
   };
 
+  const handlePayment = async (paymentId: string) => {
+    setPayingId(paymentId);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch { /* ignore */ }
+    setPayingId(null);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={32} className="animate-spin text-primary mx-auto" />
-          <p className="text-sm text-gray-400 mt-3">Je gegevens laden...</p>
+          <p className="text-sm text-muted mt-3">Je gegevens laden...</p>
         </div>
       </div>
     );
   }
 
+  const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/caravans')
+      .then(res => res.json())
+      .then(data => setCustomCaravansData(data.caravans || []))
+      .catch(() => {});
+  }, []);
+
   if (!customer) return null;
 
-  const getCaravan = (id: string) => caravans.find(c => c.id === id);
+  const getCaravan = (id: string) => staticCaravans.find(c => c.id === id) || customCaravansData.find(c => c.id === id);
   const getCamping = (id: string) => campings.find(c => c.id === id);
   const activeBookings = bookings.filter(b => !['GEANNULEERD', 'AFGEROND'].includes(b.status));
   const openPayments = payments.filter(p => p.status === 'OPENSTAAND');
@@ -255,7 +284,7 @@ export default function MijnAccountPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-br from-primary-dark via-primary to-primary-light px-4 pt-6 pb-16 sm:pt-8 sm:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
@@ -313,7 +342,7 @@ export default function MijnAccountPage() {
                 className={`shrink-0 flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   tab === t.key
                     ? 'bg-white text-primary shadow-lg shadow-primary/10'
-                    : 'bg-white/80 text-gray-500 hover:bg-white hover:shadow-sm'
+                    : 'bg-white/80 text-muted hover:bg-white hover:shadow-sm'
                 }`}
               >
                 {t.icon}
@@ -348,7 +377,7 @@ export default function MijnAccountPage() {
                     const camping = getCamping(upcomingBooking.camping_id);
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
-                      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
                         <div className="relative h-32 sm:h-40 bg-gradient-to-r from-primary to-primary-light">
                           {caravan?.photos?.[0] && (
                             <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-30" unoptimized />
@@ -371,11 +400,11 @@ export default function MijnAccountPage() {
                           </div>
                         </div>
                         <div className="p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-4 text-sm text-muted">
                             <span className="flex items-center gap-1"><Calendar size={13} className="text-primary" /> {formatDate(upcomingBooking.check_in)}</span>
-                            <span className="text-gray-300">→</span>
+                            <span className="text-border">→</span>
                             <span>{formatDate(upcomingBooking.check_out)}</span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-gray-100 text-gray-600'}`}>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
                               {statusLabelsNL[upcomingBooking.status] || upcomingBooking.status}
                             </span>
                           </div>
@@ -389,28 +418,28 @@ export default function MijnAccountPage() {
 
                   {/* Alerts */}
                   {openPayments.length > 0 && (
-                    <button onClick={() => setTab('betalingen')} className="w-full bg-amber-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-amber-100 hover:border-amber-200 transition-colors">
-                      <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                        <CreditCard size={18} className="text-amber-600" />
+                    <button onClick={() => setTab('betalingen')} className="w-full bg-primary-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-primary-light hover:border-primary transition-colors">
+                      <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center shrink-0">
+                        <CreditCard size={18} className="text-accent" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-amber-800 text-sm">{openPayments.length} openstaande betaling{openPayments.length > 1 ? 'en' : ''}</div>
-                        <div className="text-xs text-amber-600">Totaal: {formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
+                        <div className="font-semibold text-accent-dark text-sm">{openPayments.length} openstaande betaling{openPayments.length > 1 ? 'en' : ''}</div>
+                        <div className="text-xs text-accent">Totaal: {formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
                       </div>
-                      <ChevronRight size={18} className="text-amber-400 shrink-0" />
+                      <ChevronRight size={18} className="text-primary shrink-0" />
                     </button>
                   )}
 
                   {openBorg.length > 0 && (
-                    <button onClick={() => setTab('borg')} className="w-full bg-blue-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-blue-100 hover:border-blue-200 transition-colors">
-                      <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
-                        <Shield size={18} className="text-blue-600" />
+                    <button onClick={() => setTab('borg')} className="w-full bg-primary-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-primary-100 hover:border-primary transition-colors">
+                      <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
+                        <Shield size={18} className="text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-blue-800 text-sm">{openBorg.length} borgchecklist{openBorg.length > 1 ? 's' : ''} wacht{openBorg.length === 1 ? '' : 'en'} op je akkoord</div>
-                        <div className="text-xs text-blue-600">Bekijk inspectie en reageer</div>
+                        <div className="font-semibold text-primary-dark text-sm">{openBorg.length} borgchecklist{openBorg.length > 1 ? 's' : ''} wacht{openBorg.length === 1 ? '' : 'en'} op je akkoord</div>
+                        <div className="text-xs text-primary">Bekijk inspectie en reageer</div>
                       </div>
-                      <ChevronRight size={18} className="text-blue-400 shrink-0" />
+                      <ChevronRight size={18} className="text-primary shrink-0" />
                     </button>
                   )}
 
@@ -421,21 +450,21 @@ export default function MijnAccountPage() {
                       <div className="text-sm font-semibold">Nieuwe boeking</div>
                       <div className="text-[10px] text-white/50 mt-0.5">Seizoen 2026</div>
                     </Link>
-                    <Link href="/contact" className="bg-white rounded-2xl p-5 text-gray-700 text-center hover:bg-gray-50 transition-colors border border-gray-100 group">
+                    <Link href="/contact" className="bg-white rounded-2xl p-5 text-foreground-light text-center hover:bg-surface transition-colors border border-border/50 group">
                       <Mail size={24} className="mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />
                       <div className="text-sm font-semibold">Contact opnemen</div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">Hulp nodig?</div>
+                      <div className="text-[10px] text-muted mt-0.5">Hulp nodig?</div>
                     </Link>
                   </div>
 
                   {/* Empty state */}
                   {bookings.length === 0 && (
-                    <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-gray-100">
+                    <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-border/50">
                       <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Sun size={28} className="text-primary" />
                       </div>
-                      <h3 className="font-bold text-gray-800 text-lg">Nog geen boekingen</h3>
-                      <p className="text-sm text-gray-500 mt-2 mb-5 max-w-sm mx-auto">
+                      <h3 className="font-bold text-foreground text-lg">Nog geen boekingen</h3>
+                      <p className="text-sm text-muted mt-2 mb-5 max-w-sm mx-auto">
                         Plan je eerste caravanvakantie aan de Costa Brava! Kies uit 6 caravans bij 30+ campings.
                       </p>
                       <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors">
@@ -450,14 +479,14 @@ export default function MijnAccountPage() {
               {tab === 'boekingen' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-1">
-                    <h2 className="text-lg font-bold text-gray-800">Mijn boekingen</h2>
-                    <span className="text-xs text-gray-400">{bookings.length} totaal</span>
+                    <h2 className="text-lg font-bold text-foreground">Mijn boekingen</h2>
+                    <span className="text-xs text-muted">{bookings.length} totaal</span>
                   </div>
 
                   {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
-                      <Calendar size={40} className="mx-auto text-gray-200 mb-3" />
-                      <p className="text-gray-500 text-sm">Je hebt nog geen boekingen</p>
+                    <div className="bg-white rounded-2xl p-8 text-center border border-border/50">
+                      <Calendar size={40} className="mx-auto text-muted/30 mb-3" />
+                      <p className="text-muted text-sm">Je hebt nog geen boekingen</p>
                       <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold mt-4 hover:bg-primary-dark transition-colors">
                         Boek nu <ArrowRight size={14} />
                       </Link>
@@ -468,7 +497,7 @@ export default function MijnAccountPage() {
                       const camping = getCamping(booking.camping_id);
                       const isPast = new Date(booking.check_out) < new Date();
                       return (
-                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-colors ${isPast ? 'border-gray-100 opacity-75' : 'border-gray-100 hover:border-primary/20'}`}>
+                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-colors ${isPast ? 'border-border/50 opacity-75' : 'border-border/50 hover:border-primary/20'}`}>
                           {/* Caravan image strip */}
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
@@ -479,7 +508,7 @@ export default function MijnAccountPage() {
                                   <h3 className="font-bold text-white text-sm">{caravan.name}</h3>
                                   <div className="text-white/70 text-xs flex items-center gap-1"><MapPin size={10} />{camping?.name || 'Camping'}</div>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${statusColors[booking.status] || 'bg-gray-100 text-gray-600'}`}>
+                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
                                   {statusLabelsNL[booking.status] || booking.status}
                                 </span>
                               </div>
@@ -492,41 +521,41 @@ export default function MijnAccountPage() {
                               <div className="flex items-start justify-between mb-3">
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono text-[10px] text-gray-400">{booking.reference}</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-gray-100 text-gray-600'}`}>
+                                    <span className="font-mono text-[10px] text-muted">{booking.reference}</span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
                                       {statusLabelsNL[booking.status] || booking.status}
                                     </span>
                                   </div>
-                                  <h3 className="font-semibold text-gray-800 mt-1 text-sm">{caravan?.name || `Caravan`}</h3>
+                                  <h3 className="font-semibold text-foreground mt-1 text-sm">{caravan?.name || `Caravan`}</h3>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-bold text-gray-800 text-sm">{formatPrice(Number(booking.total_price))}</div>
+                                  <div className="font-bold text-foreground text-sm">{formatPrice(Number(booking.total_price))}</div>
                                 </div>
                               </div>
                             )}
 
                             {/* Details grid */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                              <div className="flex items-center gap-2 text-gray-500">
+                              <div className="flex items-center gap-2 text-muted">
                                 <Calendar size={13} className="text-primary shrink-0" />
                                 <span className="truncate">{formatDate(booking.check_in)}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-gray-500">
+                              <div className="flex items-center gap-2 text-muted">
                                 <Calendar size={13} className="text-primary shrink-0" />
                                 <span className="truncate">{formatDate(booking.check_out)}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-gray-500">
+                              <div className="flex items-center gap-2 text-muted">
                                 <Clock size={13} className="text-primary shrink-0" />
                                 <span>{booking.nights} nachten</span>
                               </div>
-                              <div className="flex items-center gap-2 text-gray-500">
+                              <div className="flex items-center gap-2 text-muted">
                                 <Users size={13} className="text-primary shrink-0" />
                                 <span>{booking.adults} volw.{booking.children > 0 ? ` + ${booking.children} kind.` : ''}</span>
                               </div>
                             </div>
 
                             {/* Payment progress */}
-                            <div className="mt-4 pt-3 border-t border-gray-100">
+                            <div className="mt-4 pt-3 border-t border-border/50">
                               {(() => {
                                 const bookingPayments = payments.filter(p => p.booking_id === booking.id);
                                 const paid = bookingPayments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0);
@@ -535,11 +564,11 @@ export default function MijnAccountPage() {
                                 return (
                                   <div>
                                     <div className="flex items-center justify-between text-xs mb-1.5">
-                                      <span className="text-gray-500">Betaald {formatPrice(paid)} van {formatPrice(total)}</span>
-                                      <span className="font-semibold text-gray-700">{pct}%</span>
+                                      <span className="text-muted">Betaald {formatPrice(paid)} van {formatPrice(total)}</span>
+                                      <span className="font-semibold text-foreground-light">{pct}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                    <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
+                                      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                     </div>
                                   </div>
                                 );
@@ -549,8 +578,8 @@ export default function MijnAccountPage() {
                             {/* Reference footer for image-cards */}
                             {!isPast && caravan?.photos?.[0] && (
                               <div className="mt-3 flex items-center justify-between">
-                                <span className="font-mono text-[10px] text-gray-400">{booking.reference}</span>
-                                <span className="text-sm font-bold text-gray-800">{formatPrice(Number(booking.total_price))}</span>
+                                <span className="font-mono text-[10px] text-muted">{booking.reference}</span>
+                                <span className="text-sm font-bold text-foreground">{formatPrice(Number(booking.total_price))}</span>
                               </div>
                             )}
                           </div>
@@ -565,28 +594,28 @@ export default function MijnAccountPage() {
               {tab === 'betalingen' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-1">
-                    <h2 className="text-lg font-bold text-gray-800">Betalingen</h2>
+                    <h2 className="text-lg font-bold text-foreground">Betalingen</h2>
                   </div>
 
                   {/* Payment summary card */}
                   {payments.length > 0 && (
-                    <div className="bg-white rounded-2xl p-5 border border-gray-100">
+                    <div className="bg-white rounded-2xl p-5 border border-border/50">
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                          <div className="text-xs text-gray-400 mb-1">Betaald</div>
-                          <div className="text-lg font-bold text-emerald-600">
+                          <div className="text-xs text-muted mb-1">Betaald</div>
+                          <div className="text-lg font-bold text-primary">
                             {formatPrice(payments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-400 mb-1">Openstaand</div>
-                          <div className="text-lg font-bold text-amber-600">
+                          <div className="text-xs text-muted mb-1">Openstaand</div>
+                          <div className="text-lg font-bold text-accent">
                             {formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-400 mb-1">Totaal</div>
-                          <div className="text-lg font-bold text-gray-800">
+                          <div className="text-xs text-muted mb-1">Totaal</div>
+                          <div className="text-lg font-bold text-foreground">
                             {formatPrice(payments.reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
@@ -595,29 +624,43 @@ export default function MijnAccountPage() {
                   )}
 
                   {payments.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
-                      <CreditCard size={40} className="mx-auto text-gray-200 mb-3" />
-                      <p className="text-gray-500 text-sm">Geen betalingen gevonden</p>
+                    <div className="bg-white rounded-2xl p-8 text-center border border-border/50">
+                      <CreditCard size={40} className="mx-auto text-muted/30 mb-3" />
+                      <p className="text-muted text-sm">Geen betalingen gevonden</p>
                     </div>
                   ) : (
                     payments.map(payment => {
                       const booking = bookings.find(b => b.id === payment.booking_id);
                       return (
-                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100">
+                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-border/50">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            payment.status === 'BETAALD' ? 'bg-emerald-50' : 'bg-amber-50'
+                            payment.status === 'BETAALD' ? 'bg-primary-50' : 'bg-primary-50'
                           }`}>
-                            {payment.status === 'BETAALD' ? <CheckCircle size={18} className="text-emerald-500" /> : <Clock size={18} className="text-amber-500" />}
+                            {payment.status === 'BETAALD' ? <CheckCircle size={18} className="text-primary" /> : <Clock size={18} className="text-primary" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-gray-800">{payment.type}</div>
-                            <div className="text-xs text-gray-400">{booking?.reference || 'Boeking'} &middot; {payment.paid_at ? formatDate(payment.paid_at) : 'Nog niet betaald'}</div>
+                            <div className="font-semibold text-sm text-foreground">{payment.type}</div>
+                            <div className="text-xs text-muted">{booking?.reference || 'Boeking'} &middot; {payment.paid_at ? formatDate(payment.paid_at) : 'Nog niet betaald'}</div>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className="font-bold text-sm text-gray-800">{formatPrice(Number(payment.amount))}</div>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[payment.status] || 'bg-gray-100 text-gray-600'}`}>
-                              {statusLabelsNL[payment.status] || payment.status}
-                            </span>
+                            <div className="font-bold text-sm text-foreground">{formatPrice(Number(payment.amount))}</div>
+                            {payment.status === 'OPENSTAAND' ? (
+                              <button
+                                onClick={() => handlePayment(payment.id)}
+                                disabled={payingId === payment.id}
+                                className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                              >
+                                {payingId === payment.id ? (
+                                  <><Loader2 size={12} className="animate-spin" /> Even geduld...</>
+                                ) : (
+                                  <><CreditCard size={12} /> Betaal via iDEAL</>
+                                )}
+                              </button>
+                            ) : (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[payment.status] || 'bg-surface-alt text-foreground-light'}`}>
+                                {statusLabelsNL[payment.status] || payment.status}
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
@@ -627,10 +670,10 @@ export default function MijnAccountPage() {
                   {/* Payment instructions */}
                   {openPayments.length > 0 && (
                     <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
-                      <h3 className="text-sm font-semibold text-gray-800 mb-2">Betaalinstructies</h3>
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        Maak het openstaande bedrag over naar <strong>NL00 ABNA 0000 0000 00</strong> o.v.v. je boekingsnummer.
-                        Na ontvangst wordt de betaling automatisch geregistreerd.
+                      <h3 className="text-sm font-semibold text-foreground mb-2">Betalen via iDEAL</h3>
+                      <p className="text-xs text-foreground-light leading-relaxed">
+                        Klik op <strong>&quot;Betaal via iDEAL&quot;</strong> bij de openstaande betaling. Je wordt veilig doorgestuurd naar je eigen bank om de betaling te voltooien. 
+                        Na betaling wordt de status automatisch bijgewerkt.
                       </p>
                     </div>
                   )}
@@ -641,21 +684,21 @@ export default function MijnAccountPage() {
               {tab === 'borg' && (
                 <div className="space-y-4">
                   <div className="mb-1">
-                    <h2 className="text-lg font-bold text-gray-800">Borgchecklists</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Bekijk inspectierapporten van je caravan bij in- en uitchecken</p>
+                    <h2 className="text-lg font-bold text-foreground">Borgchecklists</h2>
+                    <p className="text-xs text-muted mt-0.5">Bekijk inspectierapporten van je caravan bij in- en uitchecken</p>
                   </div>
 
                   {borgChecklists.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-gray-100">
+                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-border/50">
                       <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Shield size={28} className="text-primary" />
                       </div>
-                      <h3 className="font-bold text-gray-800">Nog geen borgchecklists</h3>
-                      <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto">
+                      <h3 className="font-bold text-foreground">Nog geen borgchecklists</h3>
+                      <p className="text-sm text-muted mt-2 max-w-sm mx-auto">
                         Checklists worden aangemaakt wanneer je caravan wordt geïnspecteerd bij check-in en check-out.
                         Je wordt genotificeerd zodra er een beschikbaar is.
                       </p>
-                      <div className="mt-5 flex items-center justify-center gap-6 text-xs text-gray-400">
+                      <div className="mt-5 flex items-center justify-center gap-6 text-xs text-muted">
                         {[
                           { icon: <ClipboardCheck size={14} />, text: 'Check-in inspectie' },
                           { icon: <Shield size={14} />, text: 'Check-out inspectie' },
@@ -683,27 +726,27 @@ export default function MijnAccountPage() {
                       });
 
                       return (
-                        <div key={bc.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                        <div key={bc.id} className="bg-white rounded-2xl border border-border/50 overflow-hidden">
                           {/* Header */}
                           <button
                             onClick={() => setExpandedBorgId(isExpanded ? null : bc.id)}
-                            className="w-full p-4 sm:p-5 flex items-center gap-3 hover:bg-gray-50/50 transition-colors text-left"
+                            className="w-full p-4 sm:p-5 flex items-center gap-3 hover:bg-surface/50 transition-colors text-left"
                           >
                             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                              bc.type === 'INCHECKEN' ? 'bg-primary/10' : 'bg-amber-50'
+                              bc.type === 'INCHECKEN' ? 'bg-primary/10' : 'bg-primary-50'
                             }`}>
-                              <ClipboardCheck size={20} className={bc.type === 'INCHECKEN' ? 'text-primary' : 'text-amber-600'} />
+                              <ClipboardCheck size={20} className={bc.type === 'INCHECKEN' ? 'text-primary' : 'text-accent'} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-semibold text-sm text-gray-800">
+                                <span className="font-semibold text-sm text-foreground">
                                   {bc.type === 'INCHECKEN' ? 'Incheck-inspectie' : 'Uitcheck-inspectie'}
                                 </span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[bc.status] || 'bg-gray-100 text-gray-600'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[bc.status] || 'bg-surface-alt text-foreground-light'}`}>
                                   {statusLabelsNL[bc.status] || bc.status}
                                 </span>
                               </div>
-                              <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                              <div className="text-xs text-muted mt-0.5 flex items-center gap-2 flex-wrap">
                                 <span>{bc.booking_ref}</span>
                                 <span>{caravan?.name || bc.caravan_id}</span>
                                 {canRespond && <span className="text-primary font-medium animate-pulse">Actie vereist</span>}
@@ -712,11 +755,11 @@ export default function MijnAccountPage() {
                             <div className="flex items-center gap-3 shrink-0">
                               {/* Mini summary */}
                               <div className="hidden sm:flex items-center gap-2 text-xs">
-                                {goedItems > 0 && <span className="text-emerald-600 font-medium">{goedItems} ok</span>}
-                                {beschadigdItems > 0 && <span className="text-amber-600 font-medium">{beschadigdItems} schade</span>}
-                                {ontbreektItems > 0 && <span className="text-red-600 font-medium">{ontbreektItems} mist</span>}
+                                {goedItems > 0 && <span className="text-primary font-medium">{goedItems} ok</span>}
+                                {beschadigdItems > 0 && <span className="text-accent font-medium">{beschadigdItems} schade</span>}
+                                {ontbreektItems > 0 && <span className="text-danger font-medium">{ontbreektItems} mist</span>}
                               </div>
-                              <ChevronDown size={18} className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              <ChevronDown size={18} className={`text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </div>
                           </button>
 
@@ -729,48 +772,48 @@ export default function MijnAccountPage() {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
-                                <div className="border-t border-gray-100 p-4 sm:p-5 space-y-4">
+                                <div className="border-t border-border/50 p-4 sm:p-5 space-y-4">
                                   {/* Summary cards */}
                                   <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-emerald-50 rounded-xl p-3 text-center">
-                                      <CheckCircle2 size={18} className="text-emerald-500 mx-auto" />
-                                      <div className="text-lg font-bold text-emerald-700 mt-1">{goedItems}</div>
-                                      <div className="text-[10px] text-emerald-600 font-medium">In orde</div>
+                                    <div className="bg-primary-50 rounded-xl p-3 text-center">
+                                      <CheckCircle2 size={18} className="text-primary mx-auto" />
+                                      <div className="text-lg font-bold text-primary-dark mt-1">{goedItems}</div>
+                                      <div className="text-[10px] text-primary font-medium">In orde</div>
                                     </div>
-                                    <div className="bg-amber-50 rounded-xl p-3 text-center">
-                                      <AlertTriangle size={18} className="text-amber-500 mx-auto" />
-                                      <div className="text-lg font-bold text-amber-700 mt-1">{beschadigdItems}</div>
-                                      <div className="text-[10px] text-amber-600 font-medium">Beschadigd</div>
+                                    <div className="bg-primary-50 rounded-xl p-3 text-center">
+                                      <AlertTriangle size={18} className="text-primary mx-auto" />
+                                      <div className="text-lg font-bold text-accent mt-1">{beschadigdItems}</div>
+                                      <div className="text-[10px] text-accent font-medium">Beschadigd</div>
                                     </div>
-                                    <div className="bg-red-50 rounded-xl p-3 text-center">
-                                      <XCircle size={18} className="text-red-500 mx-auto" />
-                                      <div className="text-lg font-bold text-red-700 mt-1">{ontbreektItems}</div>
-                                      <div className="text-[10px] text-red-600 font-medium">Ontbreekt</div>
+                                    <div className="bg-danger/5 rounded-xl p-3 text-center">
+                                      <XCircle size={18} className="text-danger mx-auto" />
+                                      <div className="text-lg font-bold text-danger mt-1">{ontbreektItems}</div>
+                                      <div className="text-[10px] text-danger font-medium">Ontbreekt</div>
                                     </div>
                                   </div>
 
                                   {/* Checklist items */}
                                   {Object.entries(grouped).map(([category, catItems]) => (
                                     <div key={category}>
-                                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{category}</h4>
+                                      <h4 className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{category}</h4>
                                       <div className="space-y-1">
                                         {catItems.map(item => (
                                           <div key={item.item} className="flex items-start gap-2 py-1.5">
                                             {borgItemIcons[item.status]}
                                             <div className="flex-1 min-w-0">
                                               <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-sm text-gray-700">{item.item}</span>
+                                                <span className="text-sm text-foreground-light">{item.item}</span>
                                                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                                                  item.status === 'goed' ? 'bg-emerald-100 text-emerald-700' :
-                                                  item.status === 'beschadigd' ? 'bg-amber-100 text-amber-700' :
-                                                  item.status === 'ontbreekt' ? 'bg-red-100 text-red-700' :
-                                                  'bg-gray-100 text-gray-400'
+                                                  item.status === 'goed' ? 'bg-primary-light text-primary-dark' :
+                                                  item.status === 'beschadigd' ? 'bg-primary-light text-accent' :
+                                                  item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
+                                                  'bg-surface-alt text-muted'
                                                 }`}>
                                                   {item.status === 'nvt' ? 'N.v.t.' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                                                 </span>
                                               </div>
                                               {item.notes && (
-                                                <p className="text-xs text-gray-400 mt-0.5 flex items-start gap-1">
+                                                <p className="text-xs text-muted mt-0.5 flex items-start gap-1">
                                                   <MessageSquare size={10} className="mt-0.5 shrink-0" />{item.notes}
                                                 </p>
                                               )}
@@ -783,27 +826,27 @@ export default function MijnAccountPage() {
 
                                   {/* Staff notes */}
                                   {bc.general_notes && (
-                                    <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-                                      <h4 className="text-xs font-semibold text-blue-800 mb-1">Opmerkingen medewerker</h4>
-                                      <p className="text-sm text-blue-700">{bc.general_notes}</p>
+                                    <div className="bg-primary-50 rounded-xl p-3 border border-primary-100">
+                                      <h4 className="text-xs font-semibold text-primary-dark mb-1">Opmerkingen medewerker</h4>
+                                      <p className="text-sm text-primary-dark">{bc.general_notes}</p>
                                     </div>
                                   )}
 
                                   {/* Customer already responded */}
                                   {hasResponded && (
-                                    <div className={`rounded-xl p-4 border ${bc.customer_agreed ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+                                    <div className={`rounded-xl p-4 border ${bc.customer_agreed ? 'bg-primary-50 border-primary-100' : 'bg-danger/5 border-danger/20'}`}>
                                       <div className="flex items-center gap-2 mb-1">
-                                        {bc.customer_agreed ? <ThumbsUp size={16} className="text-emerald-500" /> : <ThumbsDown size={16} className="text-red-500" />}
+                                        {bc.customer_agreed ? <ThumbsUp size={16} className="text-primary" /> : <ThumbsDown size={16} className="text-danger" />}
                                         <h4 className="font-semibold text-sm">{bc.customer_agreed ? 'Je bent akkoord gegaan' : 'Je hebt bezwaar ingediend'}</h4>
                                       </div>
                                       {bc.customer_agreed_at && (
-                                        <p className="text-xs text-gray-400 mb-1">Op {new Date(bc.customer_agreed_at).toLocaleString('nl-NL')}</p>
+                                        <p className="text-xs text-muted mb-1">Op {new Date(bc.customer_agreed_at).toLocaleString('nl-NL')}</p>
                                       )}
                                       {bc.customer_notes && (
                                         <p className="text-sm mt-2 bg-white/60 rounded-lg p-2">{bc.customer_notes}</p>
                                       )}
                                       {bc.customer_agreed && bc.borg_amount && (
-                                        <p className="text-sm text-emerald-700 mt-2">
+                                        <p className="text-sm text-primary-dark mt-2">
                                           Borg van &euro;{parseFloat(bc.borg_amount).toFixed(2)} wordt geretourneerd na goede uitcheck-inspectie.
                                         </p>
                                       )}
@@ -813,8 +856,8 @@ export default function MijnAccountPage() {
                                   {/* Customer response form */}
                                   {canRespond && (
                                     <div className="bg-primary/5 rounded-xl p-4 border-2 border-primary/20">
-                                      <h4 className="font-bold text-gray-800 mb-1">Jouw beoordeling</h4>
-                                      <p className="text-xs text-gray-500 mb-3">
+                                      <h4 className="font-bold text-foreground mb-1">Jouw beoordeling</h4>
+                                      <p className="text-xs text-muted mb-3">
                                         {(beschadigdItems > 0 || ontbreektItems > 0)
                                           ? 'Er zijn aandachtspunten gevonden. Bekijk de details hierboven en geef je akkoord of dien bezwaar in.'
                                           : 'De inspectie is zonder bijzonderheden afgerond. Bevestig hieronder.'}
@@ -825,13 +868,13 @@ export default function MijnAccountPage() {
                                         onChange={(e) => { setRespondingBorgId(bc.id); setBorgNotes(e.target.value); }}
                                         rows={2}
                                         placeholder="Opmerkingen (optioneel)..."
-                                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 mb-3"
+                                        className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 mb-3"
                                       />
                                       <div className="flex flex-col sm:flex-row gap-2">
                                         <button
                                           onClick={() => handleBorgResponse(bc.token, true)}
                                           disabled={submittingBorg}
-                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 transition-colors text-sm disabled:opacity-50"
+                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors text-sm disabled:opacity-50"
                                         >
                                           {submittingBorg ? <Loader2 size={14} className="animate-spin" /> : <ThumbsUp size={14} />}
                                           Akkoord
@@ -839,7 +882,7 @@ export default function MijnAccountPage() {
                                         <button
                                           onClick={() => handleBorgResponse(bc.token, false)}
                                           disabled={submittingBorg}
-                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors text-sm disabled:opacity-50"
+                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-danger text-white rounded-xl font-semibold hover:bg-danger/80 transition-colors text-sm disabled:opacity-50"
                                         >
                                           {submittingBorg ? <Loader2 size={14} className="animate-spin" /> : <ThumbsDown size={14} />}
                                           Bezwaar
@@ -849,7 +892,7 @@ export default function MijnAccountPage() {
                                   )}
 
                                   {/* View full page link */}
-                                  <div className="pt-2 border-t border-gray-100">
+                                  <div className="pt-2 border-t border-border/50">
                                     <Link
                                       href={`/borg/${bc.token}`}
                                       className="flex items-center gap-1.5 text-primary text-sm font-medium hover:underline"
@@ -869,8 +912,8 @@ export default function MijnAccountPage() {
                   )}
 
                   {/* How borg works */}
-                  <div className="bg-white rounded-2xl p-5 border border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-800 mb-3">Hoe werkt de borg?</h3>
+                  <div className="bg-white rounded-2xl p-5 border border-border/50">
+                    <h3 className="text-sm font-bold text-foreground mb-3">Hoe werkt de borg?</h3>
                     <div className="space-y-3">
                       {[
                         { step: '1', title: 'Check-in inspectie', desc: 'Bij aankomst inspecteren wij de caravan samen met jou.' },
@@ -881,8 +924,8 @@ export default function MijnAccountPage() {
                         <div key={s.step} className="flex items-start gap-3">
                           <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center shrink-0 text-primary text-xs font-bold">{s.step}</div>
                           <div>
-                            <div className="text-sm font-medium text-gray-800">{s.title}</div>
-                            <div className="text-xs text-gray-400">{s.desc}</div>
+                            <div className="text-sm font-medium text-foreground">{s.title}</div>
+                            <div className="text-xs text-muted">{s.desc}</div>
                           </div>
                         </div>
                       ))}
@@ -894,18 +937,18 @@ export default function MijnAccountPage() {
               {/* ==================== PROFIEL ==================== */}
               {tab === 'profiel' && (
                 <div className="space-y-4">
-                  <h2 className="text-lg font-bold text-gray-800 mb-1">Mijn profiel</h2>
+                  <h2 className="text-lg font-bold text-foreground mb-1">Mijn profiel</h2>
 
                   {/* Profile card */}
-                  <div className="bg-white rounded-2xl p-5 border border-gray-100">
+                  <div className="bg-white rounded-2xl p-5 border border-border/50">
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
                         <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold text-xl">
                           {firstName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-800">{customer.name}</h3>
-                          <p className="text-xs text-gray-400">Klant sinds {customer.created_at ? new Date(customer.created_at).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : '2026'}</p>
+                          <h3 className="font-bold text-foreground">{customer.name}</h3>
+                          <p className="text-xs text-muted">Klant sinds {customer.created_at ? new Date(customer.created_at).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : '2026'}</p>
                         </div>
                       </div>
                       {!editingProfile && (
@@ -916,16 +959,16 @@ export default function MijnAccountPage() {
                     </div>
 
                     {editingProfile ? (
-                      <div className="space-y-3 pt-3 border-t border-gray-100">
+                      <div className="space-y-3 pt-3 border-t border-border/50">
                         <div>
-                          <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Naam</label>
+                          <label className="text-xs font-semibold text-foreground-light mb-1.5 block">Naam</label>
                           <input value={editName} onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-3.5 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                            className="w-full px-3.5 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                         </div>
                         <div>
-                          <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Telefoonnummer</label>
+                          <label className="text-xs font-semibold text-foreground-light mb-1.5 block">Telefoonnummer</label>
                           <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)}
-                            className="w-full px-3.5 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                            className="w-full px-3.5 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                         </div>
                         <div className="flex gap-2 pt-1">
                           <button onClick={handleSaveProfile} disabled={saving}
@@ -933,23 +976,23 @@ export default function MijnAccountPage() {
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Opslaan
                           </button>
                           <button onClick={() => { setEditingProfile(false); setEditName(customer.name); setEditPhone(customer.phone || ''); }}
-                            className="px-5 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm hover:bg-gray-200 transition-colors">
+                            className="px-5 py-2.5 bg-surface-alt text-foreground-light font-semibold rounded-xl text-sm hover:bg-surface-alt transition-colors">
                             Annuleer
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-3 pt-3 border-t border-gray-100">
+                      <div className="space-y-3 pt-3 border-t border-border/50">
                         {[
                           { icon: <User size={16} />, label: 'Naam', value: customer.name },
                           { icon: <Mail size={16} />, label: 'E-mail', value: customer.email },
                           { icon: <Phone size={16} />, label: 'Telefoon', value: customer.phone || '—' },
                         ].map(field => (
                           <div key={field.label} className="flex items-center gap-3 py-1.5">
-                            <span className="text-gray-300">{field.icon}</span>
+                            <span className="text-border">{field.icon}</span>
                             <div>
-                              <div className="text-[10px] text-gray-400 uppercase tracking-wider">{field.label}</div>
-                              <div className="text-sm font-medium text-gray-800">{field.value}</div>
+                              <div className="text-[10px] text-muted uppercase tracking-wider">{field.label}</div>
+                              <div className="text-sm font-medium text-foreground">{field.value}</div>
                             </div>
                           </div>
                         ))}
@@ -958,43 +1001,43 @@ export default function MijnAccountPage() {
                   </div>
 
                   {/* Account actions */}
-                  <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-3">
-                    <h3 className="text-sm font-bold text-gray-800">Account</h3>
+                  <div className="bg-white rounded-2xl p-5 border border-border/50 space-y-3">
+                    <h3 className="text-sm font-bold text-foreground">Account</h3>
                     <button onClick={handleLogout}
-                      className="w-full py-3 border border-gray-200 text-gray-600 font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                      className="w-full py-3 border border-border text-foreground-light font-semibold rounded-xl text-sm hover:bg-surface transition-colors flex items-center justify-center gap-2">
                       <LogOut size={15} /> Uitloggen
                     </button>
                   </div>
 
                   {/* GDPR / Danger zone */}
-                  <div className="bg-white rounded-2xl p-5 border border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-800 mb-1">Privacy & gegevens</h3>
-                    <p className="text-xs text-gray-400 mb-3 leading-relaxed">
+                  <div className="bg-white rounded-2xl p-5 border border-border/50">
+                    <h3 className="text-sm font-bold text-foreground mb-1">Privacy & gegevens</h3>
+                    <p className="text-xs text-muted mb-3 leading-relaxed">
                       Op grond van de AVG/GDPR heb je het recht om je account en alle gekoppelde gegevens permanent te laten verwijderen.
                     </p>
 
                     {!showDeleteConfirm ? (
                       <button onClick={() => setShowDeleteConfirm(true)}
-                        className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors flex items-center gap-1">
+                        className="text-xs text-danger/70 hover:text-danger font-medium transition-colors flex items-center gap-1">
                         <Trash2 size={12} /> Account en gegevens verwijderen
                       </button>
                     ) : (
-                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 rounded-xl p-4 border border-red-100 space-y-3">
+                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-danger/5 rounded-xl p-4 border border-danger/20 space-y-3">
                         <div className="flex items-start gap-2">
-                          <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                          <AlertCircle size={16} className="text-danger shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-sm font-semibold text-red-800">Weet je het zeker?</p>
-                            <p className="text-xs text-red-600 mt-0.5">Dit verwijdert je account, gegevens en sessies permanent. Dit kan niet ongedaan worden gemaakt.</p>
+                            <p className="text-sm font-semibold text-danger">Weet je het zeker?</p>
+                            <p className="text-xs text-danger mt-0.5">Dit verwijdert je account, gegevens en sessies permanent. Dit kan niet ongedaan worden gemaakt.</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <button onClick={handleDeleteAccount} disabled={deleting}
-                            className="flex-1 py-2.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-1 disabled:opacity-50">
+                            className="flex-1 py-2.5 bg-danger text-white text-xs font-bold rounded-lg hover:bg-danger/80 transition-colors flex items-center justify-center gap-1 disabled:opacity-50">
                             {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                             Ja, verwijder definitief
                           </button>
                           <button onClick={() => setShowDeleteConfirm(false)}
-                            className="px-4 py-2.5 bg-white text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+                            className="px-4 py-2.5 bg-white text-foreground-light text-xs font-semibold rounded-lg hover:bg-surface transition-colors border border-border">
                             Toch niet
                           </button>
                         </div>

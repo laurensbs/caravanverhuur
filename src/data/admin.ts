@@ -39,7 +39,7 @@ export interface Payment {
   type: PaymentType;
   amount: number;
   status: PaymentStatus;
-  method: 'stripe' | 'bank' | 'cash';
+  method: 'ideal' | 'stripe' | 'bank' | 'cash';
   stripe_id?: string;
   created_at: string;
   paid_at?: string;
@@ -73,32 +73,32 @@ export function getBookingCamping(booking: Booking) {
 
 export function getStatusColor(status: BookingStatus): string {
   const colors: Record<BookingStatus, string> = {
-    NIEUW: 'bg-blue-100 text-blue-700',
-    BEVESTIGD: 'bg-yellow-100 text-yellow-700',
-    AANBETAALD: 'bg-orange-100 text-orange-700',
-    VOLLEDIG_BETAALD: 'bg-green-100 text-green-700',
-    ACTIEF: 'bg-emerald-100 text-emerald-700',
-    AFGEROND: 'bg-gray-100 text-gray-600',
-    GEANNULEERD: 'bg-red-100 text-red-700',
+    NIEUW: 'bg-primary-100 text-primary-dark',
+    BEVESTIGD: 'bg-primary-50 text-accent',
+    AANBETAALD: 'bg-primary-light/50 text-accent',
+    VOLLEDIG_BETAALD: 'bg-primary-100 text-primary-dark',
+    ACTIEF: 'bg-primary-light text-primary-dark',
+    AFGEROND: 'bg-surface-alt text-muted',
+    GEANNULEERD: 'bg-danger/10 text-danger',
   };
   return colors[status];
 }
 
 export function getPaymentStatusColor(status: PaymentStatus): string {
   const colors: Record<PaymentStatus, string> = {
-    OPENSTAAND: 'bg-yellow-100 text-yellow-700',
-    BETAALD: 'bg-green-100 text-green-700',
-    TERUGBETAALD: 'bg-blue-100 text-blue-700',
-    MISLUKT: 'bg-red-100 text-red-700',
+    OPENSTAAND: 'bg-primary-50 text-accent',
+    BETAALD: 'bg-primary-100 text-primary-dark',
+    TERUGBETAALD: 'bg-primary-light/50 text-primary-dark',
+    MISLUKT: 'bg-danger/10 text-danger',
   };
   return colors[status];
 }
 
 export function getContactStatusColor(status: ContactStatus): string {
   const colors: Record<ContactStatus, string> = {
-    NIEUW: 'bg-blue-100 text-blue-700',
-    GELEZEN: 'bg-yellow-100 text-yellow-700',
-    BEANTWOORD: 'bg-green-100 text-green-700',
+    NIEUW: 'bg-primary-100 text-primary-dark',
+    GELEZEN: 'bg-primary-50 text-accent',
+    BEANTWOORD: 'bg-primary-light text-primary-dark',
   };
   return colors[status];
 }

@@ -62,11 +62,11 @@ interface Booking {
 }
 
 const statusColors: Record<string, string> = {
-  'OPEN': 'bg-yellow-100 text-yellow-700',
-  'IN_BEHANDELING': 'bg-blue-100 text-blue-700',
-  'AFGEROND': 'bg-green-100 text-green-700',
-  'KLANT_AKKOORD': 'bg-emerald-100 text-emerald-700',
-  'KLANT_BEZWAAR': 'bg-red-100 text-red-700',
+  'OPEN': 'bg-primary-50 text-accent',
+  'IN_BEHANDELING': 'bg-primary-50 text-primary',
+  'AFGEROND': 'bg-primary-50 text-primary',
+  'KLANT_AKKOORD': 'bg-primary-light text-primary-dark',
+  'KLANT_BEZWAAR': 'bg-danger/10 text-danger',
 };
 
 const statusLabels: Record<string, string> = {
@@ -78,10 +78,10 @@ const statusLabels: Record<string, string> = {
 };
 
 const itemStatusIcons: Record<string, React.ReactNode> = {
-  'nvt': <Minus size={14} className="text-gray-400" />,
-  'goed': <CheckCircle2 size={14} className="text-green-500" />,
-  'beschadigd': <AlertTriangle size={14} className="text-amber-500" />,
-  'ontbreekt': <XCircle size={14} className="text-red-500" />,
+  'nvt': <Minus size={14} className="text-muted" />,
+  'goed': <CheckCircle2 size={14} className="text-primary" />,
+  'beschadigd': <AlertTriangle size={14} className="text-accent" />,
+  'ontbreekt': <XCircle size={14} className="text-danger" />,
 };
 
 export default function AdminBorgPage() {
@@ -228,7 +228,7 @@ export default function AdminBorgPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-[#2563eb]" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -245,15 +245,15 @@ export default function AdminBorgPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a1a2e] flex items-center gap-2">
-            <Shield className="w-6 h-6 text-[#2563eb]" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="w-6 h-6 text-primary" />
             Borgchecklist
           </h1>
-          <p className="text-sm text-[#64748b] mt-1">Inspectie checklists voor check-in & check-out</p>
+          <p className="text-sm text-muted mt-1">Inspectie checklists voor check-in & check-out</p>
         </div>
         <button
           onClick={() => setShowNewForm(!showNewForm)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#2563eb] text-white rounded-xl text-sm font-semibold hover:bg-[#1d4ed8] transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
         >
           <Plus size={16} />
           Nieuwe checklist
@@ -263,10 +263,10 @@ export default function AdminBorgPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Totaal', value: stats.total, color: 'bg-gray-50 text-gray-700' },
-          { label: 'Open', value: stats.open, color: 'bg-yellow-50 text-yellow-700' },
-          { label: 'In behandeling', value: stats.inProgress, color: 'bg-blue-50 text-blue-700' },
-          { label: 'Afgerond', value: stats.done, color: 'bg-green-50 text-green-700' },
+          { label: 'Totaal', value: stats.total, color: 'bg-surface text-foreground' },
+          { label: 'Open', value: stats.open, color: 'bg-primary-50 text-accent' },
+          { label: 'In behandeling', value: stats.inProgress, color: 'bg-primary-50 text-primary' },
+          { label: 'Afgerond', value: stats.done, color: 'bg-primary-50 text-primary' },
         ].map(s => (
           <div key={s.label} className={`${s.color} rounded-xl p-4 text-center`}>
             <div className="text-2xl font-bold">{s.value}</div>
@@ -283,16 +283,16 @@ export default function AdminBorgPage() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleCreate}
-            className="bg-white rounded-xl border border-[#e2e8f0] p-5 overflow-hidden"
+            className="bg-white rounded-xl border border-border p-5 overflow-hidden"
           >
-            <h3 className="font-semibold text-[#1a1a2e] mb-4">Nieuwe borgchecklist aanmaken</h3>
+            <h3 className="font-semibold text-foreground mb-4">Nieuwe borgchecklist aanmaken</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#1a1a2e] mb-1">Boeking</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Boeking</label>
                 <select
                   value={newBookingId}
                   onChange={(e) => setNewBookingId(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:border-[#2563eb]"
+                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                   required
                 >
                   <option value="">Selecteer boeking...</option>
@@ -306,24 +306,24 @@ export default function AdminBorgPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1a1a2e] mb-1">Type</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Type</label>
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:border-[#2563eb]"
+                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="INCHECKEN">Inchecken</option>
                   <option value="UITCHECKEN">Uitchecken</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1a1a2e] mb-1">Medewerker</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Medewerker</label>
                 <input
                   type="text"
                   value={newStaffName}
                   onChange={(e) => setNewStaffName(e.target.value)}
                   placeholder="Naam medewerker"
-                  className="w-full px-3 py-2.5 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:border-[#2563eb]"
+                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function AdminBorgPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="flex items-center gap-2 px-4 py-2 bg-[#2563eb] text-white rounded-lg text-sm font-semibold hover:bg-[#1d4ed8] transition-colors cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
               >
                 {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Aanmaken
@@ -339,7 +339,7 @@ export default function AdminBorgPage() {
               <button
                 type="button"
                 onClick={() => setShowNewForm(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface-alt transition-colors cursor-pointer"
               >
                 Annuleren
               </button>
@@ -363,8 +363,8 @@ export default function AdminBorgPage() {
             onClick={() => setFilter(f.value)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               filter === f.value
-                ? 'bg-[#2563eb] text-white'
-                : 'bg-white text-[#64748b] border border-[#e2e8f0] hover:bg-gray-50'
+                ? 'bg-primary text-white'
+                : 'bg-white text-muted border border-border hover:bg-surface'
             }`}
           >
             {f.label}
@@ -374,9 +374,9 @@ export default function AdminBorgPage() {
 
       {/* Checklists */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-[#e2e8f0] p-12 text-center">
-          <ClipboardCheck className="w-12 h-12 text-[#94a3b8] mx-auto mb-3" />
-          <p className="text-[#64748b]">Geen checklists gevonden</p>
+        <div className="bg-white rounded-xl border border-border p-12 text-center">
+          <ClipboardCheck className="w-12 h-12 text-muted mx-auto mb-3" />
+          <p className="text-muted">Geen checklists gevonden</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -391,45 +391,45 @@ export default function AdminBorgPage() {
               <motion.div
                 key={checklist.id}
                 layout
-                className="bg-white rounded-xl border border-[#e2e8f0] overflow-hidden"
+                className="bg-white rounded-xl border border-border overflow-hidden"
               >
                 {/* Header row */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : checklist.id)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center justify-between p-4 hover:bg-surface transition-colors cursor-pointer text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      checklist.type === 'INCHECKEN' ? 'bg-blue-50' : 'bg-amber-50'
+                      checklist.type === 'INCHECKEN' ? 'bg-primary-50' : 'bg-primary-50'
                     }`}>
                       <ClipboardCheck size={18} className={
-                        checklist.type === 'INCHECKEN' ? 'text-blue-600' : 'text-amber-600'
+                        checklist.type === 'INCHECKEN' ? 'text-primary' : 'text-accent'
                       } />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm text-[#1a1a2e]">{checklist.booking_ref}</span>
+                        <span className="font-semibold text-sm text-foreground">{checklist.booking_ref}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          checklist.type === 'INCHECKEN' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                          checklist.type === 'INCHECKEN' ? 'bg-primary-50 text-primary' : 'bg-primary-50 text-accent'
                         }`}>
                           {checklist.type === 'INCHECKEN' ? 'Check-in' : 'Check-out'}
                         </span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[checklist.status] || 'bg-gray-100 text-gray-600'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[checklist.status] || 'bg-surface-alt text-muted'}`}>
                           {statusLabels[checklist.status] || checklist.status}
                         </span>
                       </div>
-                      <div className="text-xs text-[#64748b] mt-0.5 flex items-center gap-3 flex-wrap">
+                      <div className="text-xs text-muted mt-0.5 flex items-center gap-3 flex-wrap">
                         <span className="flex items-center gap-1"><User size={10} /> {checklist.guest_name}</span>
                         <span className="flex items-center gap-1"><Car size={10} /> {checklist.caravan_id}</span>
                         <span>{completedItems}/{allItems.length} ingevuld</span>
                         {damagedItems > 0 && (
-                          <span className="text-red-500 font-medium">{damagedItems} problemen</span>
+                          <span className="text-danger font-medium">{damagedItems} problemen</span>
                         )}
                       </div>
                     </div>
                   </div>
                   <div className="shrink-0 ml-2">
-                    {isExpanded ? <ChevronUp size={18} className="text-[#94a3b8]" /> : <ChevronDown size={18} className="text-[#94a3b8]" />}
+                    {isExpanded ? <ChevronUp size={18} className="text-muted" /> : <ChevronDown size={18} className="text-muted" />}
                   </div>
                 </button>
 
@@ -443,31 +443,31 @@ export default function AdminBorgPage() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-[#e2e8f0] p-4 space-y-5">
+                      <div className="border-t border-border p-4 space-y-5">
                         {/* Info bar */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                          <div className="flex items-center gap-2 text-[#64748b]">
-                            <Hash size={13} /> <span className="font-medium text-[#1a1a2e]">{checklist.booking_ref}</span>
+                          <div className="flex items-center gap-2 text-muted">
+                            <Hash size={13} /> <span className="font-medium text-foreground">{checklist.booking_ref}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-[#64748b]">
+                          <div className="flex items-center gap-2 text-muted">
                             <User size={13} /> <span>{checklist.guest_name}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-[#64748b]">
+                          <div className="flex items-center gap-2 text-muted">
                             <Calendar size={13} /> <span>{checklist.check_in ? new Date(checklist.check_in).toLocaleDateString('nl-NL') : '-'}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-[#64748b]">
+                          <div className="flex items-center gap-2 text-muted">
                             <Calendar size={13} /> <span>{checklist.check_out ? new Date(checklist.check_out).toLocaleDateString('nl-NL') : '-'}</span>
                           </div>
                         </div>
 
                         {/* Staff name */}
                         <div>
-                          <label className="block text-xs font-medium text-[#64748b] mb-1">Medewerker</label>
+                          <label className="block text-xs font-medium text-muted mb-1">Medewerker</label>
                           <input
                             type="text"
                             value={checklist.staff_name || ''}
                             onChange={(e) => handleStaffNameChange(checklist.id, e.target.value)}
-                            className="w-full max-w-xs px-3 py-2 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:border-[#2563eb]"
+                            className="w-full max-w-xs px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                             placeholder="Naam medewerker"
                             disabled={checklist.status === 'AFGEROND' || checklist.status === 'KLANT_AKKOORD'}
                           />
@@ -479,8 +479,8 @@ export default function AdminBorgPage() {
                           const categoryStartIndex = allItems.findIndex(i => i.category === category);
                           return (
                             <div key={category}>
-                              <h4 className="font-semibold text-sm text-[#1a1a2e] mb-2 flex items-center gap-2">
-                                <div className="w-2 h-2 bg-[#2563eb] rounded-full" />
+                              <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-primary rounded-full" />
                                 {category}
                               </h4>
                               <div className="space-y-2">
@@ -491,10 +491,10 @@ export default function AdminBorgPage() {
                                   const isEditable = checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD';
 
                                   return (
-                                    <div key={item.item} className="flex flex-col sm:flex-row sm:items-center gap-2 bg-gray-50 rounded-lg p-2.5">
+                                    <div key={item.item} className="flex flex-col sm:flex-row sm:items-center gap-2 bg-surface rounded-lg p-2.5">
                                       <div className="flex items-center gap-2 min-w-0 sm:w-1/3">
                                         {itemStatusIcons[item.status]}
-                                        <span className="text-sm text-[#1a1a2e]">{item.item}</span>
+                                        <span className="text-sm text-foreground">{item.item}</span>
                                       </div>
                                       <div className="flex items-center gap-2 sm:w-1/3">
                                         {(['goed', 'beschadigd', 'ontbreekt', 'nvt'] as const).map(st => (
@@ -504,11 +504,11 @@ export default function AdminBorgPage() {
                                             disabled={!isEditable}
                                             className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
                                               item.status === st
-                                                ? st === 'goed' ? 'bg-green-500 text-white'
-                                                : st === 'beschadigd' ? 'bg-amber-500 text-white'
-                                                : st === 'ontbreekt' ? 'bg-red-500 text-white'
-                                                : 'bg-gray-400 text-white'
-                                                : 'bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-gray-100 disabled:opacity-50'
+                                                ? st === 'goed' ? 'bg-primary text-white'
+                                                : st === 'beschadigd' ? 'bg-accent text-white'
+                                                : st === 'ontbreekt' ? 'bg-danger text-white'
+                                                : 'bg-muted text-white'
+                                                : 'bg-white border border-border text-muted hover:bg-surface-alt disabled:opacity-50'
                                             }`}
                                           >
                                             {st === 'nvt' ? 'N.v.t.' : st.charAt(0).toUpperCase() + st.slice(1)}
@@ -521,7 +521,7 @@ export default function AdminBorgPage() {
                                         onChange={(e) => isEditable && handleItemUpdate(checklist.id, globalIdx, 'notes', e.target.value)}
                                         placeholder="Opmerkingen..."
                                         disabled={!isEditable}
-                                        className="flex-1 px-2 py-1 border border-[#e2e8f0] rounded text-xs focus:outline-none focus:border-[#2563eb] disabled:bg-gray-100"
+                                        className="flex-1 px-2 py-1 border border-border rounded text-xs focus:outline-none focus:border-primary disabled:bg-surface-alt"
                                       />
                                     </div>
                                   );
@@ -533,14 +533,14 @@ export default function AdminBorgPage() {
 
                         {/* General notes */}
                         <div>
-                          <label className="block text-xs font-medium text-[#64748b] mb-1 flex items-center gap-1">
+                          <label className="block text-xs font-medium text-muted mb-1 flex items-center gap-1">
                             <StickyNote size={12} /> Algemene opmerkingen
                           </label>
                           <textarea
                             value={checklist.general_notes || ''}
                             onChange={(e) => handleNotesChange(checklist.id, e.target.value)}
                             rows={3}
-                            className="w-full px-3 py-2 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:border-[#2563eb] disabled:bg-gray-100"
+                            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:bg-surface-alt"
                             placeholder="Notities over de inspectie..."
                             disabled={checklist.status === 'AFGEROND' || checklist.status === 'KLANT_AKKOORD'}
                           />
@@ -548,12 +548,12 @@ export default function AdminBorgPage() {
 
                         {/* Customer response */}
                         {(checklist.customer_agreed || checklist.customer_notes) && (
-                          <div className={`rounded-lg p-4 ${checklist.customer_agreed ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+                          <div className={`rounded-lg p-4 ${checklist.customer_agreed ? 'bg-primary-light border border-primary-light' : 'bg-danger/10 border border-danger'}`}>
                             <h4 className="font-semibold text-sm mb-1">
                               {checklist.customer_agreed ? '✅ Klant akkoord' : '❌ Klant bezwaar'}
                             </h4>
                             {checklist.customer_agreed_at && (
-                              <p className="text-xs text-[#64748b] mb-1">
+                              <p className="text-xs text-muted mb-1">
                                 Op {new Date(checklist.customer_agreed_at).toLocaleString('nl-NL')}
                               </p>
                             )}
@@ -564,13 +564,13 @@ export default function AdminBorgPage() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex flex-wrap gap-3 pt-2 border-t border-[#e2e8f0]">
+                        <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
                           {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
                             <>
                               <button
                                 onClick={() => handleSave(checklist)}
                                 disabled={saving}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#2563eb] text-white rounded-lg text-sm font-semibold hover:bg-[#1d4ed8] transition-colors cursor-pointer disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                                 Opslaan
@@ -578,7 +578,7 @@ export default function AdminBorgPage() {
                               <button
                                 onClick={() => handleComplete(checklist)}
                                 disabled={saving}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition-colors cursor-pointer disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 <Send size={14} />
                                 Afronden & versturen naar klant
@@ -587,16 +587,16 @@ export default function AdminBorgPage() {
                           )}
                           <button
                             onClick={() => copyLink(checklist.token)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#64748b] rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface-alt transition-colors cursor-pointer"
                           >
-                            {copiedToken === checklist.token ? <CheckCircle2 size={14} className="text-green-500" /> : <Copy size={14} />}
+                            {copiedToken === checklist.token ? <CheckCircle2 size={14} className="text-primary" /> : <Copy size={14} />}
                             {copiedToken === checklist.token ? 'Gekopieerd!' : 'Kopieer klantlink'}
                           </button>
                           <a
                             href={`/borg/${checklist.token}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#64748b] rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface-alt transition-colors"
                           >
                             <ExternalLink size={14} />
                             Bekijk klantpagina

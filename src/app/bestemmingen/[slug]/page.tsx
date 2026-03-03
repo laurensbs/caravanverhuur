@@ -53,7 +53,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-surface">
         {/* Hero */}
         <section className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
           <Image
@@ -92,13 +92,13 @@ export default async function DestinationDetailPage({ params }: { params: Promis
             <div className="lg:col-span-2 space-y-6">
               {/* Description */}
               <div className="bg-white rounded-2xl p-5 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">Over {dest.name}</h2>
-                <p className="text-gray-600 text-sm sm:text-base leading-relaxed">{dest.description}</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3">Over {dest.name}</h2>
+                <p className="text-foreground-light text-sm sm:text-base leading-relaxed">{dest.description}</p>
               </div>
 
               {/* Highlights */}
               <div className="bg-white rounded-2xl p-5 sm:p-8">
-                <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                   <Star size={18} className="text-primary" />
                   Highlights
                 </h2>
@@ -108,34 +108,34 @@ export default async function DestinationDetailPage({ params }: { params: Promis
                       <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-primary text-xs font-bold">{i + 1}</span>
                       </div>
-                      <span className="text-sm text-gray-700">{h}</span>
+                      <span className="text-sm text-foreground-light">{h}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Travel tip */}
-              <div className="bg-amber-50 rounded-2xl p-5 sm:p-6 flex gap-4">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
-                  <Lightbulb size={18} className="text-amber-600" />
+              <div className="bg-primary-50 rounded-2xl p-5 sm:p-6 flex gap-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center shrink-0">
+                  <Lightbulb size={18} className="text-accent" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-amber-800 text-sm mb-1">Insider tip</h3>
-                  <p className="text-sm text-amber-700 leading-relaxed">{dest.travelTip}</p>
+                  <h3 className="font-semibold text-accent-dark text-sm mb-1">Insider tip</h3>
+                  <p className="text-sm text-accent leading-relaxed">{dest.travelTip}</p>
                 </div>
               </div>
 
               {/* Nearby campings */}
               <div className="bg-white rounded-2xl p-5 sm:p-8">
-                <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                   <Tent size={18} className="text-primary" />
                   Campings bij {dest.name}
                 </h2>
                 <div className="space-y-2">
                   {dest.nearestCampings.map(c => (
-                    <div key={c} className="flex items-center gap-3 py-2.5 px-3 bg-gray-50 rounded-xl">
+                    <div key={c} className="flex items-center gap-3 py-2.5 px-3 bg-surface rounded-xl">
                       <MapPin size={14} className="text-primary shrink-0" />
-                      <span className="text-sm text-gray-700">{c}</span>
+                      <span className="text-sm text-foreground-light">{c}</span>
                     </div>
                   ))}
                 </div>
@@ -146,24 +146,24 @@ export default async function DestinationDetailPage({ params }: { params: Promis
             <div className="space-y-4">
               {/* Quick info card */}
               <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32">
-                <h3 className="font-bold text-gray-800 mb-4">Praktische info</h3>
+                <h3 className="font-bold text-foreground mb-4">Praktische info</h3>
                 
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Regio</span>
-                    <span className="font-medium text-gray-800">{dest.region}</span>
+                    <span className="text-muted">Regio</span>
+                    <span className="font-medium text-foreground">{dest.region}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Zomertemperatuur</span>
-                    <span className="font-medium text-gray-800">{dest.weather.summer}</span>
+                    <span className="text-muted">Zomertemperatuur</span>
+                    <span className="font-medium text-foreground">{dest.weather.summer}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Watertemperatuur</span>
-                    <span className="font-medium text-gray-800">{dest.weather.water}</span>
+                    <span className="text-muted">Watertemperatuur</span>
+                    <span className="font-medium text-foreground">{dest.weather.water}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Campings</span>
-                    <span className="font-medium text-gray-800">{dest.nearestCampings.length} nabij</span>
+                    <span className="text-muted">Campings</span>
+                    <span className="font-medium text-foreground">{dest.nearestCampings.length} nabij</span>
                   </div>
                 </div>
 
@@ -185,22 +185,22 @@ export default async function DestinationDetailPage({ params }: { params: Promis
 
               {/* Other destinations */}
               <div className="bg-white rounded-2xl p-5">
-                <h3 className="font-bold text-gray-800 mb-3">Andere bestemmingen</h3>
+                <h3 className="font-bold text-foreground mb-3">Andere bestemmingen</h3>
                 <div className="space-y-2">
                   {otherDestinations.map(d => (
                     <Link
                       key={d.id}
                       href={`/bestemmingen/${d.slug}`}
-                      className="flex items-center gap-3 py-2 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors"
+                      className="flex items-center gap-3 py-2 hover:bg-surface rounded-lg px-2 -mx-2 transition-colors"
                     >
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
                         <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover" unoptimized />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-gray-800">{d.name}</div>
-                        <div className="text-xs text-gray-400">{d.region}</div>
+                        <div className="text-sm font-semibold text-foreground">{d.name}</div>
+                        <div className="text-xs text-muted">{d.region}</div>
                       </div>
-                      <ChevronRight size={14} className="text-gray-300 shrink-0" />
+                      <ChevronRight size={14} className="text-border shrink-0" />
                     </Link>
                   ))}
                   <Link href="/bestemmingen" className="block text-center text-sm text-primary font-medium pt-2">

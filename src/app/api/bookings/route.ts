@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
-import { caravans } from '@/data/caravans';
+import { caravans as staticCaravans } from '@/data/caravans';
 import { campings } from '@/data/campings';
 
 export async function GET() {
@@ -43,7 +43,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Send booking confirmation email (non-blocking)
-    const caravanName = caravans.find(c => c.id === caravanId)?.name || caravanId;
+    let caravanName: string = staticCaravans.find(c => c.id === caravanId)?.name || '';
+    if (!caravanName) {
+      try {
+        const custom = await getAllCustomCaravans();
+        caravanName = custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string || caravanId;
+      } catch { caravanName = caravanId; }
+    }
     const campingName = campings.find(c => c.id === campingId)?.name || campingId;
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
@@ -61,7 +67,11 @@ export async function POST(request: NextRequest) {
       spotNumber,
     }).catch(err => console.error('Booking confirmation email failed:', err));
 
-    return NextResponse.json(result, { status: 201 });
+    // Auto-create borgchecklist for this booking (inchecken)
+    createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })
+      .catch(err => console.error('Auto borg checklist creation failed:', err));
+
+    return NextResponse.json({ ...result, depositPaymentId: result.depositPaymentId }, { status: 201 });
   } catch (error) {
     console.error('POST /api/bookings error:', error);
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
