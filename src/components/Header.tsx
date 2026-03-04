@@ -78,13 +78,14 @@ export default function Header() {
     `px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors ${active(href) ? 'text-primary' : 'text-muted hover:text-foreground'}`;
 
   return (
+    <>
     <div className="sticky top-0 z-50">
       <WeatherBar />
 
-        <header className={`${menuOpen ? 'bg-white' : 'bg-white/95 backdrop-blur-md'} border-b border-border/60`}>
+        <header className="bg-white/95 backdrop-blur-md border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className={`shrink-0 transition-opacity ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <Link href="/" className="shrink-0">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravans Costa Brava"
@@ -147,7 +148,7 @@ export default function Header() {
           </nav>
 
           {/* Mobile hamburger */}
-          <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden relative z-[60] w-10 h-10 flex items-center justify-center" aria-label="Menu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden w-10 h-10 flex items-center justify-center" aria-label="Menu">
             <div className="relative w-5 h-3.5">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.2 }} className="absolute top-0 left-0 w-full h-0.5 bg-foreground rounded-full origin-center" />
               <motion.span animate={menuOpen ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-0.5 bg-foreground rounded-full" />
@@ -258,120 +259,122 @@ export default function Header() {
           )}
         </AnimatePresence>
 
-        {/* ============ MOBILE PANEL ============ */}
-        <AnimatePresence>
-          {menuOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-50 lg:hidden"
-                onClick={() => setMenuOpen(false)}
-              />
-
-              <motion.div
-                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-                className="fixed top-0 right-0 bottom-0 w-[80vw] max-w-xs bg-white z-50 lg:hidden shadow-2xl flex flex-col"
-              >
-                {/* Panel header */}
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
-                  <Link href="/" onClick={() => setMenuOpen(false)}>
-                    <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png" alt="Logo" width={100} height={28} className="w-24 h-auto" unoptimized />
-                  </Link>
-                  <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center">
-                    <X size={16} className="text-muted" />
-                  </button>
-                </div>
-
-                {/* Nav */}
-                <nav className="flex-1 overflow-y-auto py-2 px-2">
-                  <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
-
-                  {/* Caravans — expandable */}
-                  <button
-                    onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/caravans') ? 'text-primary' : 'text-foreground-light'}`}
-                  >
-                    {t('nav.caravans')}
-                    <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {mobileSubmenu === 'caravans' && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="pl-4 pr-1 pb-2">
-                          <Link href="/caravans" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
-                            {t('home.allCaravans')} →
-                          </Link>
-                          {caravans.map(c => (
-                            <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
-                              <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                                <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
-                              </div>
-                              <span className="truncate">{c.name}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Bestemmingen — expandable */}
-                  <button
-                    onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/bestemmingen') ? 'text-primary' : 'text-foreground-light'}`}
-                  >
-                    {t('nav.destinations')}
-                    <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {mobileSubmenu === 'bestemmingen' && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="pl-4 pr-1 pb-2">
-                          <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
-                            {t('home.allDestinations')} →
-                          </Link>
-                          {destinations.map(d => (
-                            <Link key={d.id} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
-                              <div className="w-8 h-8 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                                <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
-                              </div>
-                              <span>{d.name}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <MobLink href="/boeken" label={t('nav.bookNow')} on={active('/boeken')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
-                </nav>
-
-                {/* Bottom CTA */}
-                <div className="p-4 border-t border-border space-y-2">
-                  {/* Mobile language switcher */}
-                  <div className="flex items-center justify-center gap-1 mb-2">
-                    {(['nl', 'en', 'es'] as Locale[]).map(l => (
-                      <button key={l} onClick={() => setLocale(l)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${locale === l ? 'bg-primary text-white' : 'bg-surface-alt text-foreground-light hover:bg-surface'}`}>
-                        {localeFlags[l]}
-                      </button>
-                    ))}
-                  </div>
-                  <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl text-sm active:scale-[0.98] transition-transform">
-                    {t('nav.bookNow')} <ArrowRight size={16} />
-                  </Link>
-                  <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 border border-border text-foreground-light font-medium rounded-xl text-sm hover:bg-surface transition-colors">
-                    <User size={15} /> {t('footer.myAccount')}
-                  </Link>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
       </header>
     </div>
+
+    {/* ============ MOBILE PANEL (outside sticky container for iOS fix) ============ */}
+    <AnimatePresence>
+      {menuOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-[100] lg:hidden"
+            onClick={() => setMenuOpen(false)}
+          />
+
+          <motion.div
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white z-[101] lg:hidden shadow-2xl flex flex-col"
+          >
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
+              <Link href="/" onClick={() => setMenuOpen(false)}>
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png" alt="Logo" width={100} height={28} className="w-24 h-auto" unoptimized />
+              </Link>
+              <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center">
+                <X size={16} className="text-muted" />
+              </button>
+            </div>
+
+            {/* Nav */}
+            <nav className="flex-1 overflow-y-auto py-2 px-2">
+              <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
+
+              {/* Caravans — expandable */}
+              <button
+                onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/caravans') ? 'text-primary' : 'text-foreground-light'}`}
+              >
+                {t('nav.caravans')}
+                <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {mobileSubmenu === 'caravans' && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                    <div className="pl-4 pr-1 pb-2">
+                      <Link href="/caravans" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
+                        {t('home.allCaravans')} →
+                      </Link>
+                      {caravans.map(c => (
+                        <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
+                          <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
+                            <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
+                          </div>
+                          <span className="truncate">{c.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Bestemmingen — expandable */}
+              <button
+                onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/bestemmingen') ? 'text-primary' : 'text-foreground-light'}`}
+              >
+                {t('nav.destinations')}
+                <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {mobileSubmenu === 'bestemmingen' && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                    <div className="pl-4 pr-1 pb-2">
+                      <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
+                        {t('home.allDestinations')} →
+                      </Link>
+                      {destinations.map(d => (
+                        <Link key={d.id} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
+                          <div className="w-8 h-8 rounded overflow-hidden relative shrink-0 bg-surface-alt">
+                            <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
+                          </div>
+                          <span>{d.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <MobLink href="/boeken" label={t('nav.bookNow')} on={active('/boeken')} close={() => setMenuOpen(false)} />
+              <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
+              <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
+              <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
+            </nav>
+
+            {/* Bottom CTA */}
+            <div className="p-4 border-t border-border space-y-2">
+              {/* Mobile language switcher */}
+              <div className="flex items-center justify-center gap-1 mb-2">
+                {(['nl', 'en', 'es'] as Locale[]).map(l => (
+                  <button key={l} onClick={() => setLocale(l)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${locale === l ? 'bg-primary text-white' : 'bg-surface-alt text-foreground-light hover:bg-surface'}`}>
+                    {localeFlags[l]}
+                  </button>
+                ))}
+              </div>
+              <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl text-sm active:scale-[0.98] transition-transform">
+                {t('nav.bookNow')} <ArrowRight size={16} />
+              </Link>
+              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 border border-border text-foreground-light font-medium rounded-xl text-sm hover:bg-surface transition-colors">
+                <User size={15} /> {t('footer.myAccount')}
+              </Link>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+    </>
   );
 }
 
