@@ -181,8 +181,8 @@ export default function HomePage() {
                 { value: '6+', label: t('home.statCaravans'), color: 'text-primary-light' },
                 { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
                 { value: '100%', label: t('home.statRelaxed'), color: 'text-primary-light' },
-              ].map(stat => (
-                <div key={stat.label} className="text-center">
+              ].map((stat, si) => (
+                <div key={si} className="text-center">
                   <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
                   <div className="text-white/60 text-[11px]">{stat.label}</div>
                 </div>
@@ -204,8 +204,8 @@ export default function HomePage() {
               { value: '6+', label: t('home.statCaravansAvailable'), color: 'text-primary-light' },
               { value: '30+', label: t('home.statCampingsCB'), color: 'text-white/80' },
               { value: '100%', label: t('home.statFullyRelaxed'), color: 'text-primary-light' },
-            ].map(stat => (
-              <div key={stat.label}>
+            ].map((stat, si) => (
+              <div key={si}>
                 <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
                 <div className="text-white/60 text-xs">{stat.label}</div>
               </div>
@@ -304,7 +304,7 @@ export default function HomePage() {
               },
             ].map((item, i) => (
               <motion.div
-                key={item.title}
+                key={i}
                 variants={scaleIn}
                 custom={i}
                 whileHover={{ y: -6, transition: { duration: 0.25 } }}
@@ -644,7 +644,7 @@ export default function HomePage() {
               { icon: <Shield size={22} />, title: t('home.advSafePayment'), desc: t('home.advSafePaymentDesc') },
             ].map((item, i) => (
               <motion.div
-                key={item.title}
+                key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -767,7 +767,7 @@ export default function HomePage() {
               },
             ].map((review, i) => (
               <motion.div
-                key={review.name}
+                key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -810,8 +810,8 @@ export default function HomePage() {
               { icon: <Star size={18} className="text-primary fill-primary" />, text: t('home.trustRating') },
               { icon: <Users size={18} className="text-primary" />, text: t('home.trustGuests') },
               { icon: <Clock size={18} className="text-primary" />, text: t('home.trustExperience') },
-            ].map(badge => (
-              <div key={badge.text} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
+            ].map((badge, bi) => (
+              <div key={bi} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
                 {badge.icon}
                 {badge.text}
               </div>

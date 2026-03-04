@@ -920,8 +920,8 @@ function BoekenContent() {
                     { icon: <Shield size={16} className="text-primary" />, text: t('booking.trustCancel') },
                     { icon: <Star size={16} className="text-primary" />, text: t('booking.trustGuests') },
                     { icon: <Clock size={16} className="text-primary" />, text: t('booking.trustConfirm') },
-                  ].map(item => (
-                    <div key={item.text} className="flex items-start gap-2.5">
+                  ].map((item, ti) => (
+                    <div key={ti} className="flex items-start gap-2.5">
                       <div className="shrink-0 mt-0.5">{item.icon}</div>
                       <p className="text-xs text-primary-dark font-medium">{item.text}</p>
                     </div>

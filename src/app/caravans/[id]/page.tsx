@@ -304,8 +304,8 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               {[
                 { name: t('caravans.review1Name'), text: t('caravans.review1Text'), rating: 5, date: 'Okt 2025' },
                 { name: t('caravans.review2Name'), text: t('caravans.review2Text'), rating: 5, date: 'Sep 2025' },
-              ].map(review => (
-                <div key={review.name} className="bg-white rounded-2xl p-5 relative">
+              ].map((review, ri) => (
+                <div key={ri} className="bg-white rounded-2xl p-5 relative">
                   <Quote size={28} className="absolute top-4 right-4 text-primary/10" />
                   <div className="flex gap-0.5 mb-2">
                     {Array.from({ length: review.rating }).map((_, s) => (

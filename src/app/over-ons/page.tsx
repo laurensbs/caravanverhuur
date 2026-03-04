@@ -128,7 +128,7 @@ export default function OverOnsPage() {
               { icon: <Award className="text-primary" size={28} />, title: t('about.adv4Title'), desc: t('about.adv4Desc') },
             ].map((item, i) => (
               <motion.div
-                key={item.title}
+                key={i}
                 variants={fadeUp}
                 custom={i}
                 className="bg-white rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -225,7 +225,7 @@ export default function OverOnsPage() {
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub') },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub') },
             ].map((stat, i) => (
-              <motion.div key={stat.label} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border border-border">
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border border-border">
                 <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.number}</div>
                 <div className="font-semibold text-foreground text-sm">{stat.label}</div>
                 <div className="text-xs text-muted mt-1">{stat.sub}</div>
