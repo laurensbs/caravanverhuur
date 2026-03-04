@@ -188,7 +188,7 @@ const sections = [
     content: (
       <p className="text-muted leading-relaxed">
         Voor vragen over dit privacybeleid of om uw rechten uit te oefenen, kunt u contact opnemen via:{' '}
-        <a href="mailto:info@caravanverhuurcostabrava.com" className="text-primary hover:underline font-medium">
+        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary hover:underline font-medium">
           info@caravanverhuurcostabrava.com
         </a>
       </p>

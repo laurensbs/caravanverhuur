@@ -96,13 +96,13 @@ export default function ContactPage() {
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.directlyAvailable')}</h2>
                 <div className="space-y-4">
-                  <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-start gap-3 group">
+                  <a href="mailto:info@caravanverhuurspanje.com" className="flex items-start gap-3 group">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                       <Mail size={18} className="text-primary" />
                     </div>
                     <div>
                       <div className="text-sm text-muted">{t('contact.emailLabel')}</div>
-                      <div className="text-foreground font-medium">info@caravanverhuurcostabrava.com</div>
+                      <div className="text-foreground font-medium">info@caravanverhuurspanje.com</div>
                     </div>
                   </a>
                   <a href="tel:+34600000000" className="flex items-start gap-3 group">

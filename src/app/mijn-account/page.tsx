@@ -11,7 +11,7 @@ import {
   Clock, CheckCircle, ArrowRight, FileText, Sun, Shield, Star,
   CheckCircle2, AlertTriangle, XCircle, Minus, MessageSquare,
   ThumbsUp, ThumbsDown, Trash2, ExternalLink, ChevronDown,
-  Home, Settings, Plus, Eye,
+  Home, Settings, Plus, Eye, Plane, TreePalm, ScrollText,
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -84,7 +84,7 @@ interface BorgChecklist {
   borg_amount?: string;
 }
 
-type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'profiel';
+type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'voorwaarden' | 'profiel';
 
 // ===== HELPERS =====
 const localeMap: Record<Locale, string> = { nl: 'nl-NL', en: 'en-GB', es: 'es-ES' };
@@ -202,7 +202,7 @@ function MijnAccountContent() {
   // Sync tab with URL
   useEffect(() => {
     const urlTab = searchParams.get('tab') as Tab;
-    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'profiel'].includes(urlTab)) {
+    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'voorwaarden', 'profiel'].includes(urlTab)) {
       setTab(urlTab);
     }
   }, [searchParams]);
@@ -326,6 +326,7 @@ function MijnAccountContent() {
     { key: 'boekingen', label: t('myAccount.tabBookings'), icon: <Calendar size={18} />, badge: activeBookings.length || undefined },
     { key: 'betalingen', label: t('myAccount.tabPayments'), icon: <CreditCard size={18} />, badge: openPayments.length || undefined },
     { key: 'borg', label: t('myAccount.tabBorg'), icon: <Shield size={18} />, badge: openBorg.length || undefined },
+    { key: 'voorwaarden', label: t('myAccount.tabTerms'), icon: <ScrollText size={18} /> },
     { key: 'profiel', label: t('myAccount.tabProfile'), icon: <Settings size={18} /> },
   ];
 
@@ -506,8 +507,79 @@ function MijnAccountContent() {
                     );
                   })()}
 
+                  {/* Vacation countdown */}
+                  {upcomingBooking && (() => {
+                    const days = daysUntil(upcomingBooking.check_in);
+                    if (days <= 0) return null;
+                    const totalDays = Math.ceil((new Date(upcomingBooking.check_in).getTime() - new Date(upcomingBooking.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                    const pct = totalDays > 0 ? Math.min(100, Math.round(((totalDays - days) / totalDays) * 100)) : 0;
+                    const hours = Math.floor((new Date(upcomingBooking.check_in).getTime() - Date.now()) / (1000 * 60 * 60)) % 24;
+                    const weeks = Math.floor(days / 7);
+                    const remainingDays = days % 7;
+
+                    return (
+                      <div className="bg-gradient-to-br from-primary/5 via-white to-primary/5 rounded-2xl border border-primary/15 p-5 sm:p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <TreePalm size={20} className="text-primary" />
+                          <h3 className="font-bold text-foreground text-sm">{t('myAccount.countdownTitle')}</h3>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4">
+                          {[
+                            { value: weeks, label: t('myAccount.weeks') },
+                            { value: remainingDays, label: days === 1 ? t('myAccount.day') : t('myAccount.daysLabel') },
+                            { value: hours, label: t('myAccount.hours') },
+                          ].map((item, i) => (
+                            <div key={i} className="text-center bg-white rounded-xl p-3 border border-border/40 shadow-sm">
+                              <div className="text-2xl sm:text-3xl font-bold text-primary leading-none">{item.value}</div>
+                              <div className="text-[10px] text-muted font-medium uppercase tracking-wider mt-1.5">{item.label}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between text-xs text-muted mb-1.5">
+                            <span>{t('myAccount.countdownProgress')}</span>
+                            <span className="font-semibold text-primary">{pct}%</span>
+                          </div>
+                          <div className="h-2 bg-border/30 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary to-primary-dark rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-muted mt-2 flex items-center gap-1">
+                          <Plane size={12} className="text-primary" />
+                          {t('myAccount.arrivalOn').replace('{date}', fd(upcomingBooking.check_in))}
+                        </p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Prominent borg notification banner */}
+                  {openBorg.length > 0 && (
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border-2 border-primary/25 p-5 sm:p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-primary/15 rounded-xl flex items-center justify-center shrink-0 animate-pulse">
+                          <Shield size={24} className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground text-base mb-1">{t('myAccount.borgAlertTitle')}</h3>
+                          <p className="text-sm text-muted mb-3">{t('myAccount.borgAlertDesc').replace('{count}', String(openBorg.length))}</p>
+                          <button
+                            onClick={() => switchTab('borg')}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                          >
+                            <ClipboardCheck size={16} />
+                            {t('myAccount.borgAlertAction')}
+                            <ArrowRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Alerts */}
-                  {(openPayments.length > 0 || openBorg.length > 0) && (
+                  {(openPayments.length > 0) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {openPayments.length > 0 && (
                         <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 hover:border-primary/30 transition-all group">
@@ -517,19 +589,6 @@ function MijnAccountContent() {
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
                             <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
-                          </div>
-                          <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                      )}
-
-                      {openBorg.length > 0 && (
-                        <button onClick={() => switchTab('borg')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 hover:border-primary/30 transition-all group">
-                          <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
-                            <Shield size={18} className="text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-foreground text-sm">{t('myAccount.borgWaiting').replace('{count}', String(openBorg.length))}</div>
-                            <div className="text-xs text-muted">{t('myAccount.viewInspection')}</div>
                           </div>
                           <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
                         </button>
@@ -1042,6 +1101,98 @@ function MijnAccountContent() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================== VOORWAARDEN ==================== */}
+              {tab === 'voorwaarden' && (
+                <div className="space-y-5">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.termsTitle')}</h2>
+                    <p className="text-xs text-muted mt-0.5">{t('myAccount.termsSubtitle')}</p>
+                  </div>
+
+                  {/* Quick overview */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { icon: <CreditCard size={18} />, title: t('myAccount.termsPayment'), desc: t('myAccount.termsPaymentDesc') },
+                      { icon: <XCircle size={18} />, title: t('myAccount.termsCancellation'), desc: t('myAccount.termsCancellationDesc') },
+                      { icon: <Shield size={18} />, title: t('myAccount.termsDeposit'), desc: t('myAccount.termsDepositDesc') },
+                      { icon: <Clock size={18} />, title: t('myAccount.termsCheckInOut'), desc: t('myAccount.termsCheckInOutDesc') },
+                    ].map((item, i) => (
+                      <div key={i} className="bg-white rounded-2xl p-4 border border-border/40">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 bg-primary/8 rounded-lg flex items-center justify-center shrink-0 text-primary">
+                            {item.icon}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-semibold text-foreground">{item.title}</h4>
+                            <p className="text-xs text-muted mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Important rules */}
+                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                    <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                      <FileText size={16} className="text-primary" />
+                      {t('myAccount.termsImportant')}
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        t('myAccount.termsRule1'),
+                        t('myAccount.termsRule2'),
+                        t('myAccount.termsRule3'),
+                        t('myAccount.termsRule4'),
+                        t('myAccount.termsRule5'),
+                      ].map((rule, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <CheckCircle2 size={14} className="text-primary mt-0.5 shrink-0" />
+                          <p className="text-sm text-foreground-light leading-relaxed">{rule}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cancellation policy */}
+                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                    <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                      <AlertTriangle size={16} className="text-accent" />
+                      {t('myAccount.termsCancellationTitle')}
+                    </h3>
+                    <div className="space-y-2">
+                      {[
+                        { period: t('myAccount.termsCancelPeriod1'), pct: '100%', color: 'bg-primary/8 text-primary' },
+                        { period: t('myAccount.termsCancelPeriod2'), pct: '50%', color: 'bg-primary/5 text-accent' },
+                        { period: t('myAccount.termsCancelPeriod3'), pct: '0%', color: 'bg-danger/5 text-danger' },
+                      ].map((item, i) => (
+                        <div key={i} className={`flex items-center justify-between px-4 py-2.5 rounded-xl ${item.color}`}>
+                          <span className="text-sm">{item.period}</span>
+                          <span className="text-sm font-bold">{t('myAccount.termsCancelRefund').replace('{pct}', item.pct)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Full terms link */}
+                  <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">{t('myAccount.termsFullTitle')}</h3>
+                        <p className="text-xs text-muted mt-0.5">{t('myAccount.termsFullDesc')}</p>
+                      </div>
+                      <Link
+                        href="/voorwaarden"
+                        target="_blank"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shrink-0"
+                      >
+                        <ExternalLink size={14} />
+                        {t('myAccount.termsReadFull')}
+                      </Link>
                     </div>
                   </div>
                 </div>

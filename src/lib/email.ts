@@ -14,7 +14,7 @@ interface EmailOptions {
 
 async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM || `${BRAND_NAME} <noreply@caravanverhuurspanje.com>`;
+  const from = process.env.EMAIL_FROM || `${BRAND_NAME} <info@caravanverhuurspanje.com>`;
 
   if (!apiKey) {
     console.warn('RESEND_API_KEY not set — email not sent:', options.subject);
@@ -414,5 +414,104 @@ export async function sendNewsletterEmail(data: {
 
       ${button('Bekijk caravans →', `${SITE_URL}/caravans`)}
     `, `${cat.emoji} ${data.title} — ${BRAND_NAME}`),
+  });
+}
+
+// ===== COUNTDOWN EMAIL =====
+
+export async function sendCountdownEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+  daysUntil: number;
+}) {
+  const firstName = data.guestName.split(' ')[0];
+  const formatDateNl = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const weeks = Math.floor(data.daysUntil / 7);
+  const remainingDays = data.daysUntil % 7;
+
+  let countdownText: string;
+  let emoji: string;
+  let subjectLine: string;
+
+  if (data.daysUntil === 30) {
+    emoji = '📅';
+    subjectLine = `Nog 30 dagen — je vakantie komt eraan!`;
+    countdownText = `Over precies 30 dagen begint je vakantie aan de Costa Brava! Tijd om alvast te gaan pakken en je reisgids te bekijken.`;
+  } else if (data.daysUntil === 14) {
+    emoji = '🌊';
+    subjectLine = `Nog 2 weken tot de Costa Brava!`;
+    countdownText = `De vakantie is bijna in zicht! Nog slechts twee weken en je geniet van de zon, zee en de prachtige Costa Brava.`;
+  } else if (data.daysUntil === 7) {
+    emoji = '☀️';
+    subjectLine = `Volgende week begint je vakantie!`;
+    countdownText = `Nog maar één week! Heb je alles ingepakt? Vergeet je reisdocumenten niet en neem genoeg zonnebrand mee.`;
+  } else if (data.daysUntil === 3) {
+    emoji = '🎉';
+    subjectLine = `Over 3 dagen ben je op vakantie!`;
+    countdownText = `Het is bijna zover! Nog drie nachtjes slapen en je bent op je vakantiebestemming. We hebben alles klaarstaan!`;
+  } else if (data.daysUntil === 1) {
+    emoji = '✈️';
+    subjectLine = `Morgen begint je vakantie!`;
+    countdownText = `Morgen is het zover! We hopen dat je een fantastische reis hebt. De caravan is schoon en klaar voor je komst.`;
+  } else {
+    emoji = '🏖️';
+    subjectLine = `Nog ${data.daysUntil} dagen tot je vakantie!`;
+    countdownText = `Je vakantie aan de Costa Brava komt steeds dichterbij. Nog ${data.daysUntil} dagen!`;
+  }
+
+  return sendEmail({
+    to: data.to,
+    subject: `${emoji} ${subjectLine}`,
+    html: emailWrapper(`
+      ${heading(`${emoji} ${subjectLine}`)}
+      ${subtext(`Hallo ${firstName}, je vakantie komt in zicht!`)}
+
+      <!-- Countdown blocks -->
+      <div style="text-align:center;margin:0 0 28px;">
+        <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
+          <tr>
+            <td style="padding:0 6px;">
+              <div style="background:#f0faf6;border:1px solid #d1f0e3;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#386150;line-height:1;">${weeks}</div>
+                <div style="font-size:10px;color:#9a9588;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">weken</div>
+              </div>
+            </td>
+            <td style="padding:0 6px;">
+              <div style="background:#f0faf6;border:1px solid #d1f0e3;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#386150;line-height:1;">${remainingDays}</div>
+                <div style="font-size:10px;color:#9a9588;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">dagen</div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p style="margin:0 0 24px;color:#3D3522;font-size:15px;line-height:1.7;">${countdownText}</p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
+        ${infoRow('Boeking', data.reference)}
+        ${infoRow('Caravan', data.caravanName)}
+        ${infoRow('Camping', data.campingName)}
+        ${infoRow('Check-in', formatDateNl(data.checkIn))}
+        ${infoRow('Check-out', formatDateNl(data.checkOut))}
+      </table>
+
+      ${highlight(`
+        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+          <strong>💡 Tip:</strong> Bewaar onze contactgegevens voor je reis. Bij vragen kun je ons bereiken via info@caravanverhuurspanje.com of WhatsApp.
+        </p>
+      `, true)}
+
+      ${button('Bekijk mijn boeking →', `${SITE_URL}/mijn-account?tab=boekingen`)}
+    `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`),
   });
 }

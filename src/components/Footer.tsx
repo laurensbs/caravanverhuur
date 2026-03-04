@@ -117,9 +117,9 @@ export default function Footer() {
             <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
             <ul className="space-y-2.5">
               <li>
-                <a href="mailto:info@caravanverhuurcostabrava.com" className="text-muted hover:text-primary transition-colors text-sm flex items-start gap-2">
+                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted hover:text-primary transition-colors text-sm flex items-start gap-2">
                   <Mail size={14} className="text-primary shrink-0 mt-0.5" />
-                  <span className="break-all">info@caravanverhuur<wbr />costabrava.com</span>
+                  <span className="break-all">info@caravanverhuur<wbr />spanje.com</span>
                 </a>
               </li>
               <li>
