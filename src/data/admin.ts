@@ -74,8 +74,8 @@ export function getBookingCamping(booking: Booking) {
 export function getStatusColor(status: BookingStatus): string {
   const colors: Record<BookingStatus, string> = {
     NIEUW: 'bg-primary-100 text-primary-dark',
-    BEVESTIGD: 'bg-primary-50 text-accent',
-    AANBETAALD: 'bg-primary-light/50 text-accent',
+    BEVESTIGD: 'bg-primary-50 text-primary',
+    AANBETAALD: 'bg-primary-light/50 text-primary',
     VOLLEDIG_BETAALD: 'bg-primary-100 text-primary-dark',
     ACTIEF: 'bg-primary-light text-primary-dark',
     AFGEROND: 'bg-surface-alt text-muted',
@@ -86,7 +86,7 @@ export function getStatusColor(status: BookingStatus): string {
 
 export function getPaymentStatusColor(status: PaymentStatus): string {
   const colors: Record<PaymentStatus, string> = {
-    OPENSTAAND: 'bg-primary-50 text-accent',
+    OPENSTAAND: 'bg-primary-50 text-primary',
     BETAALD: 'bg-primary-100 text-primary-dark',
     TERUGBETAALD: 'bg-primary-light/50 text-primary-dark',
     MISLUKT: 'bg-danger/10 text-danger',
@@ -97,7 +97,7 @@ export function getPaymentStatusColor(status: PaymentStatus): string {
 export function getContactStatusColor(status: ContactStatus): string {
   const colors: Record<ContactStatus, string> = {
     NIEUW: 'bg-primary-100 text-primary-dark',
-    GELEZEN: 'bg-primary-50 text-accent',
+    GELEZEN: 'bg-primary-50 text-primary',
     BEANTWOORD: 'bg-primary-light text-primary-dark',
   };
   return colors[status];

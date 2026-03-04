@@ -65,7 +65,7 @@ interface Booking {
 }
 
 const statusColors: Record<string, string> = {
-  'OPEN': 'bg-primary-50 text-accent',
+  'OPEN': 'bg-primary-50 text-primary',
   'IN_BEHANDELING': 'bg-primary-50 text-primary',
   'AFGEROND': 'bg-primary-50 text-primary',
   'KLANT_AKKOORD': 'bg-primary-light text-primary-dark',
@@ -83,7 +83,7 @@ const statusLabels: Record<string, string> = {
 const itemStatusIcons: Record<string, React.ReactNode> = {
   'nvt': <Minus size={14} className="text-muted" />,
   'goed': <CheckCircle2 size={14} className="text-primary" />,
-  'beschadigd': <AlertTriangle size={14} className="text-accent" />,
+  'beschadigd': <AlertTriangle size={14} className="text-primary" />,
   'ontbreekt': <XCircle size={14} className="text-danger" />,
 };
 
@@ -289,7 +289,7 @@ export default function AdminBorgPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Totaal', value: stats.total, color: 'bg-surface text-foreground' },
-          { label: 'Open', value: stats.open, color: 'bg-primary-50 text-accent' },
+          { label: 'Open', value: stats.open, color: 'bg-primary-50 text-primary' },
           { label: 'In behandeling', value: stats.inProgress, color: 'bg-primary-50 text-primary' },
           { label: 'Afgerond', value: stats.done, color: 'bg-primary-50 text-primary' },
         ].map(s => (
@@ -428,14 +428,14 @@ export default function AdminBorgPage() {
                       checklist.type === 'INCHECKEN' ? 'bg-primary-50' : 'bg-primary-50'
                     }`}>
                       <ClipboardCheck size={18} className={
-                        checklist.type === 'INCHECKEN' ? 'text-primary' : 'text-accent'
+                        checklist.type === 'INCHECKEN' ? 'text-primary' : 'text-primary'
                       } />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm text-foreground">{checklist.booking_ref}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          checklist.type === 'INCHECKEN' ? 'bg-primary-50 text-primary' : 'bg-primary-50 text-accent'
+                          checklist.type === 'INCHECKEN' ? 'bg-primary-50 text-primary' : 'bg-primary-50 text-primary'
                         }`}>
                           {checklist.type === 'INCHECKEN' ? 'Check-in' : 'Check-out'}
                         </span>
@@ -530,7 +530,7 @@ export default function AdminBorgPage() {
                                             className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
                                               item.status === st
                                                 ? st === 'goed' ? 'bg-primary text-white'
-                                                : st === 'beschadigd' ? 'bg-accent text-white'
+                                                : st === 'beschadigd' ? 'bg-primary text-white'
                                                 : st === 'ontbreekt' ? 'bg-danger text-white'
                                                 : 'bg-muted text-white'
                                                 : 'bg-white border border-border text-muted hover:bg-surface-alt disabled:opacity-50'

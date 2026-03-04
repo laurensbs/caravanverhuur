@@ -57,7 +57,7 @@ const sections = [
         <div className="space-y-3">
           {[
             { period: 'Meer dan 30 dagen', pct: '100%', desc: 'Volledige restitutie van de aanbetaling', color: 'bg-primary-50 border-primary-light text-primary-dark' },
-            { period: '14 – 30 dagen', pct: '50%', desc: '50% restitutie van de aanbetaling', color: 'bg-primary-50/50 border-primary-light/50 text-accent' },
+            { period: '14 – 30 dagen', pct: '50%', desc: '50% restitutie van de aanbetaling', color: 'bg-primary-50/50 border-primary-light/50 text-primary' },
             { period: 'Minder dan 14 dagen', pct: '0%', desc: 'Geen restitutie mogelijk', color: 'bg-danger/5 border-danger/20 text-danger' },
           ].map(r => (
             <div key={r.period} className={`flex items-center gap-4 p-4 rounded-xl border ${r.color}`}>
@@ -70,7 +70,7 @@ const sections = [
           ))}
         </div>
         <div className="flex gap-3 bg-surface rounded-xl p-4">
-          <AlertTriangle size={18} className="text-accent shrink-0 mt-0.5" />
+          <AlertTriangle size={18} className="text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-muted leading-relaxed">
             Annuleringen dienen <strong className="text-foreground">schriftelijk per e-mail</strong> te worden ingediend.
             De datum van ontvangst geldt als annuleringsdatum.
@@ -177,7 +177,7 @@ const sections = [
           <p className="text-sm text-muted mt-1">uur op de aankomstdatum</p>
         </div>
         <div className="bg-surface border border-border rounded-xl p-5 text-center">
-          <p className="text-xs font-bold text-accent uppercase tracking-wider mb-2">Check-out</p>
+          <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Check-out</p>
           <p className="text-2xl font-bold text-foreground">11:00</p>
           <p className="text-sm text-muted mt-1">uur op de vertrekdatum</p>
         </div>
@@ -215,8 +215,8 @@ export default function VoorwaardenPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-dark text-white py-16 sm:py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <section className="relative bg-primary-dark text-white py-16 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
         <div className="max-w-4xl mx-auto px-4 relative">
           <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>

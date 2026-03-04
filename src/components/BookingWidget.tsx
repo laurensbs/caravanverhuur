@@ -257,7 +257,7 @@ export default function BookingWidget() {
           <div className="px-1 py-1">
             <button
               onClick={handleSearch}
-              className="w-full lg:w-auto px-6 lg:px-8 py-3.5 lg:py-4 bg-accent hover:bg-accent-dark text-white font-bold rounded-xl lg:rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
+              className="w-full lg:w-auto px-6 lg:px-8 py-3.5 lg:py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl lg:rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
             >
               <Search size={18} />
               <span>{t('booking.widgetSearch')}</span>

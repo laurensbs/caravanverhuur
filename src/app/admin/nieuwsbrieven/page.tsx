@@ -271,7 +271,7 @@ export default function AdminNieuwsbrieven() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Totaal', value: totalCount, icon: Newspaper, color: 'text-[#2563EB]', bg: 'bg-[#2563EB]/10' },
+          { label: 'Totaal', value: totalCount, icon: Newspaper, color: 'text-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10' },
           { label: 'Concepten', value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Verzonden', value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Totaal ontvangers', value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -619,7 +619,7 @@ export default function AdminNieuwsbrieven() {
                     </div>
                     <div className="p-6 bg-white">
                       <div className="text-center mb-4">
-                        <span className="inline-block bg-[#EFF6FF] text-[#1D4ED8] text-xs font-semibold px-3 py-1 rounded-full">
+                        <span className="inline-block bg-[#F0F9FF] text-[#0284C7] text-xs font-semibold px-3 py-1 rounded-full">
                           {getCategoryInfo(selected.category).emoji} {getCategoryInfo(selected.category).label}
                         </span>
                       </div>
@@ -648,14 +648,14 @@ export default function AdminNieuwsbrieven() {
 
                       <hr className="my-4 border-border" />
 
-                      <div className="bg-[#EFF6FF] border border-[#93C5FD] rounded-xl p-4 mb-4">
+                      <div className="bg-[#F0F9FF] border border-[#7DD3FC] rounded-xl p-4 mb-4">
                         <p className="text-sm text-foreground">
                           Wil je de Costa Brava zelf ervaren? Bekijk onze beschikbare caravans en boek jouw perfecte vakantie.
                         </p>
                       </div>
 
                       <div className="text-center">
-                        <span className="inline-block bg-[#1D4ED8] text-white px-6 py-3 rounded-xl font-semibold text-sm">
+                        <span className="inline-block bg-[#0284C7] text-white px-6 py-3 rounded-xl font-semibold text-sm">
                           Bekijk caravans →
                         </span>
                       </div>

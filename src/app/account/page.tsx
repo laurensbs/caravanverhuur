@@ -98,7 +98,7 @@ export default function AccountPage() {
     <div className="min-h-screen bg-surface">
       <div className="flex min-h-screen">
         {/* ====== LEFT HERO (desktop only) ====== */}
-        <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-primary-dark via-primary to-primary-light overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden">
           <div className="absolute inset-0 opacity-15">
             <Image
               src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80"
@@ -173,7 +173,7 @@ export default function AccountPage() {
         {/* ====== RIGHT SIDE — FORM ====== */}
         <div className="w-full lg:w-1/2 flex flex-col">
           {/* Mobile hero header */}
-          <div className="lg:hidden bg-gradient-to-br from-primary-dark to-primary px-5 pt-6 pb-10">
+          <div className="lg:hidden bg-primary-dark px-5 pt-6 pb-10">
             <Link href="/" className="inline-block mb-4">
               <Image
                 src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"

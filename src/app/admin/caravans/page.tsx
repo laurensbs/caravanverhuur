@@ -46,7 +46,7 @@ interface CustomCaravan extends Caravan {
 function getCaravanStatusColor(status: string) {
   switch (status) {
     case 'BESCHIKBAAR': return 'bg-primary-50 text-primary-dark';
-    case 'ONDERHOUD': return 'bg-primary-50 text-accent';
+    case 'ONDERHOUD': return 'bg-primary-50 text-primary';
     case 'GEBOEKT': return 'bg-primary-50 text-primary';
     case 'NIET_BESCHIKBAAR': return 'bg-danger/10 text-danger';
     default: return 'bg-surface-alt text-muted';
@@ -552,7 +552,7 @@ export default function CaravansAdminPage() {
           <p className="text-xs text-muted">Beschikbaar</p>
         </div>
         <div className="bg-white rounded-xl border border-border p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{onderhoud}</p>
+          <p className="text-2xl font-bold text-primary">{onderhoud}</p>
           <p className="text-xs text-muted">Onderhoud</p>
         </div>
         <div className="bg-white rounded-xl border border-border p-3 text-center">

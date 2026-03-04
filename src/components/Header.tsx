@@ -22,7 +22,7 @@ const caravansByType = {
 };
 
 const typeLabel: Record<string, { name: string; color: string }> = {
-  LUXE: { name: 'Luxe', color: 'text-accent-dark' },
+  LUXE: { name: 'Luxe', color: 'text-primary-dark' },
   FAMILIE: { name: 'Familie', color: 'text-primary' },
   COMPACT: { name: 'Compact', color: 'text-primary-dark' },
 };
@@ -294,7 +294,7 @@ export default function Header() {
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
                       <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" unoptimized />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-1">{t('nav.featured')}</p>
                         <p className="text-white font-bold text-sm mb-3">{featuredCaravan.name}</p>
@@ -335,7 +335,7 @@ export default function Header() {
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
                       <Image src={featuredDest.heroImage} alt={featuredDest.name} fill className="object-cover" unoptimized />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-1">{featuredDest.region}</p>
                         <p className="text-white font-bold text-sm mb-3">{featuredDest.name}</p>

@@ -202,8 +202,8 @@ export default function PrivacyPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary-dark via-primary to-primary-dark text-white py-16 sm:py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 80% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <section className="relative bg-primary-dark text-white py-16 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
         <div className="max-w-4xl mx-auto px-4 relative">
           <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>

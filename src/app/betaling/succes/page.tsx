@@ -21,7 +21,7 @@ function SuccesContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={36} className="animate-spin text-primary mx-auto" />
           <p className="text-sm text-muted mt-4">{t('paymentPage.verifying')}</p>
@@ -31,7 +31,7 @@ function SuccesContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50">
+    <div className="min-h-screen bg-primary-50">
       <div className="max-w-xl mx-auto px-4 py-20">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}

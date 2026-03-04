@@ -92,14 +92,14 @@ export default function DestinationsPage() {
           alt="Costa Brava coastline"
           fill className="object-cover" priority unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-black/40" />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-semibold mb-4 uppercase tracking-wider">
             <Compass size={14} /> {t('destinations.discoverCostaBrava')}
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-            {destinations.length} {t('destinations.uniqueDestinations')} <span className="text-accent">{t('destinations.destinationsWord')}</span>
+            {destinations.length} {t('destinations.uniqueDestinations')} <span className="text-primary">{t('destinations.destinationsWord')}</span>
           </h1>
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto drop-shadow mb-6">
             {t('destinations.heroDesc')}
@@ -131,7 +131,7 @@ export default function DestinationsPage() {
               <div className="relative h-64 lg:h-auto lg:min-h-[350px] overflow-hidden">
                 <Image src={featured.heroImage} alt={featured.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-accent text-white text-xs font-bold rounded-full shadow-md">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-white text-xs font-bold rounded-full shadow-md">
                     <Star size={12} /> {t('destinations.recommended')}
                   </span>
                 </div>
@@ -198,7 +198,7 @@ export default function DestinationsPage() {
                   {/* Image */}
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" unoptimized />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-black/30" />
 
                     {/* Weather badge */}
                     <div className="absolute top-3 right-3">
@@ -258,7 +258,7 @@ export default function DestinationsPage() {
       ))}
 
       {/* ===== TRAVEL TIP BAR ===== */}
-      <section className="bg-gradient-to-r from-primary-50 via-primary-100 to-primary-50 py-12">
+      <section className="bg-primary-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-foreground mb-6 text-center">{t('destinations.insiderTips')}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -312,7 +312,7 @@ export default function DestinationsPage() {
                     </td>
                     <td className="py-3 px-4 text-sm text-muted">{d.region}</td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-accent">
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
                         <Sun size={13} className="text-primary" /> {d.weather.summer}
                       </span>
                     </td>
@@ -354,7 +354,7 @@ export default function DestinationsPage() {
             {t('destinations.ctaDesc')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/boeken" className="inline-flex items-center gap-2 bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl active:scale-95">
+            <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl active:scale-95">
               {t('destinations.bookNow')} <ArrowRight size={20} />
             </Link>
             <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white px-6 py-4 rounded-full font-semibold transition-all">

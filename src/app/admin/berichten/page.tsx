@@ -135,7 +135,7 @@ function ContactDetail({
               <button
                 onClick={handleMarkRead}
                 disabled={markingRead}
-                className="px-4 py-2 bg-primary-50 text-accent rounded-xl text-sm font-medium hover:bg-primary-50 transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 bg-primary-50 text-primary rounded-xl text-sm font-medium hover:bg-primary-50 transition-colors cursor-pointer disabled:opacity-50"
               >
                 {markingRead ? 'Bezig...' : 'Markeer als gelezen'}
               </button>
@@ -210,7 +210,7 @@ export default function BerichtenPage() {
           <p className="text-xs text-muted">Nieuw</p>
         </div>
         <div className="bg-white rounded-xl border border-border p-3 text-center">
-          <p className="text-2xl font-bold text-accent">{readCount}</p>
+          <p className="text-2xl font-bold text-primary">{readCount}</p>
           <p className="text-xs text-muted">Gelezen</p>
         </div>
         <div className="bg-white rounded-xl border border-border p-3 text-center">

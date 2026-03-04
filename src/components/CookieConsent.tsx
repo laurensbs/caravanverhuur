@@ -40,8 +40,8 @@ export default function CookieConsent() {
         >
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl border border-border p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
-                <Cookie className="text-accent" size={20} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Cookie className="text-primary" size={20} />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1">{t('cookie.title')}</h3>

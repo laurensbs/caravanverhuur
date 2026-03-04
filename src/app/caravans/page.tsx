@@ -85,7 +85,7 @@ export default function CaravansPage() {
           priority
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4 max-w-3xl">
             <motion.h1
@@ -232,7 +232,7 @@ export default function CaravansPage() {
               <SlidersHorizontal size={16} />
               {t('caravans.filterFilters')}
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 bg-accent text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
+                <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
               )}
             </button>
             <span className="text-xs text-muted whitespace-nowrap">{filtered.length} {t('caravans.results')}</span>
@@ -256,7 +256,7 @@ export default function CaravansPage() {
             >
               <Filter size={16} />
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 bg-accent text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
+                <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
               )}
             </button>
           </div>
@@ -428,7 +428,7 @@ export default function CaravansPage() {
                       </Link>
                       <Link
                         href={`/boeken?caravan=${caravan.id}`}
-                        className="flex-1 text-center py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-xl transition-all text-sm shadow-md"
+                        className="flex-1 text-center py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all text-sm shadow-md"
                       >
                         {t('caravans.bookNow')}
                       </Link>

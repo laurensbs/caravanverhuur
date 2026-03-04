@@ -150,7 +150,7 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-gradient-to-r from-primary-dark to-primary rounded-2xl p-5 text-white"
+        className="bg-primary-dark rounded-2xl p-5 text-white"
       >
         <p className="text-sm text-white/70 font-medium uppercase tracking-wider">
           Overzicht {monthName} {new Date().getFullYear()}
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
           value={formatCurrency(totalOpen)}
           sub={`${openCount} betalingen`}
           icon={CreditCard}
-          color="bg-primary-50 text-accent"
+          color="bg-primary-50 text-primary"
           href={p('/betalingen')}
           index={2}
         />
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
             {openCount > 0 && (
               <Link
                 href={p('/betalingen')}
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-accent"
+                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary"
               >
                 <Clock className="w-4 h-4 shrink-0" />
                 <span>

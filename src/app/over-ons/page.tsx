@@ -45,7 +45,7 @@ export default function OverOnsPage() {
           priority
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
@@ -63,7 +63,7 @@ export default function OverOnsPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <span className="text-accent font-semibold text-sm uppercase tracking-wider">{t('about.whoWeAre')}</span>
+              <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.whoWeAre')}</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2 mb-6">
                 {t('about.whoWeAreTitle')}
               </h2>
@@ -106,7 +106,7 @@ export default function OverOnsPage() {
             variants={stagger}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-accent font-semibold text-sm uppercase tracking-wider">
+            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-sm uppercase tracking-wider">
               {t('about.advantagesLabel')}
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl font-bold text-foreground mt-2">
@@ -148,7 +148,7 @@ export default function OverOnsPage() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="text-accent font-semibold text-sm uppercase tracking-wider">{t('about.processLabel')}</span>
+            <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.processLabel')}</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">{t('about.processTitle')}</h2>
           </div>
 
@@ -209,7 +209,7 @@ export default function OverOnsPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="text-accent font-semibold text-sm uppercase tracking-wider">{t('about.numbersLabel')}</span>
+            <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.numbersLabel')}</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">{t('about.numbersTitle')}</h2>
           </div>
           <motion.div
@@ -237,7 +237,7 @@ export default function OverOnsPage() {
           <div className="mt-12 text-center">
             <p className="text-muted text-sm mb-4">{t('about.socialText')}</p>
             <div className="flex justify-center gap-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-gradient-to-br from-primary via-primary-dark to-accent rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
                 <Instagram size={22} />
               </a>
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary-dark rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
@@ -249,13 +249,13 @@ export default function OverOnsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-gradient-to-r from-primary-dark via-primary to-primary text-white">
+      <section className="py-20 bg-primary-dark text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">{t('about.ctaTitle')}</h2>
           <p className="text-primary-light text-lg mb-8">{t('about.ctaSubtitle')}</p>
           <Link
             href="/boeken"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all text-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all text-lg"
           >
             {t('about.ctaButton')}
             <ArrowRight size={20} />

@@ -89,7 +89,7 @@ function emailWrapper(content: string, preheader?: string): string {
             ${BRAND_NAME} &middot; Costa Brava, Spanje
           </p>
           <p style="margin:0;color:#94A3B8;font-size:12px;">
-            <a href="${SITE_URL}" style="color:#2563EB;text-decoration:none;">caravanverhuurspanje.com</a>
+            <a href="${SITE_URL}" style="color:#0EA5E9;text-decoration:none;">caravanverhuurspanje.com</a>
             &nbsp;&middot;&nbsp;
             <a href="${SITE_URL}/privacy" style="color:#94A3B8;text-decoration:none;">Privacy</a>
           </p>
@@ -114,7 +114,7 @@ function subtext(text: string): string {
 
 function button(label: string, href: string): string {
   return `<div style="text-align:center;margin:36px 0 8px;">
-    <a href="${href}" style="display:inline-block;background:#1D4ED8;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:600;font-size:15px;letter-spacing:0.2px;">${label}</a>
+    <a href="${href}" style="display:inline-block;background:#0284C7;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:600;font-size:15px;letter-spacing:0.2px;">${label}</a>
   </div>`;
 }
 
@@ -130,8 +130,8 @@ function infoRow(label: string, value: string): string {
 }
 
 function highlight(content: string, accent = false): string {
-  const bg = accent ? '#EFF6FF' : '#FAFAF9';
-  const border = accent ? '#93C5FD' : '#E7E5E4';
+  const bg = accent ? '#F0F9FF' : '#FAFAF9';
+  const border = accent ? '#7DD3FC' : '#E7E5E4';
   return `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:20px 24px;margin:0 0 24px;">${content}</div>`;
 }
 
@@ -151,19 +151,19 @@ export async function sendWelcomeEmail(to: string, name: string) {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#2563EB;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0EA5E9;font-size:16px;vertical-align:middle;">✓</span>
               <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Caravans bekijken &amp; boeken</span>
             </td>
           </tr>
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#2563EB;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0EA5E9;font-size:16px;vertical-align:middle;">✓</span>
               <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Boekingen &amp; betalingen inzien</span>
             </td>
           </tr>
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#2563EB;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0EA5E9;font-size:16px;vertical-align:middle;">✓</span>
               <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Borg-checklist digitaal ondertekenen</span>
             </td>
           </tr>
@@ -205,8 +205,8 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${subtext(`Bedankt ${firstName}! We hebben je boeking ontvangen en gaan deze zo snel mogelijk bevestigen.`)}
 
       ${highlight(`
-        <p style="margin:0 0 2px;color:#1D4ED8;font-weight:700;font-size:18px;letter-spacing:-0.2px;">${data.reference}</p>
-        <p style="margin:0;color:#2563EB;font-size:13px;">Wacht op bevestiging</p>
+        <p style="margin:0 0 2px;color:#0284C7;font-weight:700;font-size:18px;letter-spacing:-0.2px;">${data.reference}</p>
+        <p style="margin:0;color:#0EA5E9;font-size:13px;">Wacht op bevestiging</p>
       `, true)}
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
@@ -228,7 +228,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
         </tr>
         <tr>
           <td style="color:#94A3B8;font-size:14px;padding:4px 0;">Aanbetaling (30%)</td>
-          <td style="color:#1D4ED8;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.depositAmount)}</td>
+          <td style="color:#0284C7;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.depositAmount)}</td>
         </tr>
         <tr>
           <td style="color:#94A3B8;font-size:14px;padding:4px 0;">Restbetaling</td>
@@ -269,8 +269,8 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
       ${highlight(`
         <div style="text-align:center;">
           <p style="margin:0 0 4px;color:#94A3B8;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">${typeLabel}</p>
-          <p style="margin:0 0 6px;color:#1D4ED8;font-weight:700;font-size:32px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
-          <p style="margin:0;color:#2563EB;font-size:13px;">Betaald op ${dateStr}</p>
+          <p style="margin:0 0 6px;color:#0284C7;font-weight:700;font-size:32px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
+          <p style="margin:0;color:#0EA5E9;font-size:13px;">Betaald op ${dateStr}</p>
         </div>
       `, true)}
 
@@ -345,7 +345,7 @@ export async function sendBorgChecklistEmail(data: {
       ${button('Bekijk checklist & reageer →', checklistUrl)}
 
       <div style="text-align:center;margin-top:12px;">
-        <a href="${dashboardUrl}" style="color:#2563EB;font-size:13px;text-decoration:none;">Of bekijk via je account →</a>
+        <a href="${dashboardUrl}" style="color:#0EA5E9;font-size:13px;text-decoration:none;">Of bekijk via je account →</a>
       </div>
     `, `Borgchecklist klaar voor boeking ${data.reference} — bekijk en reageer`),
   });
@@ -382,7 +382,7 @@ export async function sendNewsletterEmail(data: {
     subject: `${cat.emoji} ${data.title}`,
     html: emailWrapper(`
       <div style="text-align:center;margin-bottom:8px;">
-        <span style="display:inline-block;background:#EFF6FF;color:#1D4ED8;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:0.3px;">${cat.emoji} ${cat.label}</span>
+        <span style="display:inline-block;background:#F0F9FF;color:#0284C7;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:0.3px;">${cat.emoji} ${cat.label}</span>
       </div>
 
       ${heading(data.title)}
@@ -480,14 +480,14 @@ export async function sendCountdownEmail(data: {
         <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
           <tr>
             <td style="padding:0 6px;">
-              <div style="background:#EFF6FF;border:1px solid #93C5FD;border-radius:12px;padding:16px 22px;text-align:center;">
-                <div style="font-size:32px;font-weight:800;color:#1D4ED8;line-height:1;">${weeks}</div>
+              <div style="background:#F0F9FF;border:1px solid #7DD3FC;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#0284C7;line-height:1;">${weeks}</div>
                 <div style="font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">weken</div>
               </div>
             </td>
             <td style="padding:0 6px;">
-              <div style="background:#EFF6FF;border:1px solid #93C5FD;border-radius:12px;padding:16px 22px;text-align:center;">
-                <div style="font-size:32px;font-weight:800;color:#1D4ED8;line-height:1;">${remainingDays}</div>
+              <div style="background:#F0F9FF;border:1px solid #7DD3FC;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#0284C7;line-height:1;">${remainingDays}</div>
                 <div style="font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">dagen</div>
               </div>
             </td>

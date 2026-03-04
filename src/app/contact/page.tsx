@@ -70,7 +70,7 @@ export default function ContactPage() {
           priority
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
@@ -142,8 +142,8 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="bg-accent/10 rounded-2xl p-6 border border-accent/20">
-                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-accent" />{t('contact.availability')}</h3>
+              <div className="bg-primary/10 rounded-2xl p-6 border border-primary/20">
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-primary" />{t('contact.availability')}</h3>
                 <div className="text-sm text-muted space-y-1">
                   <p>{t('contact.monFri')}</p>
                   <p>{t('contact.sat')}</p>
@@ -244,7 +244,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-dark disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
                   >
                     {submitting ? (
                       <>

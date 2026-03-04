@@ -171,7 +171,7 @@ function BoekenContent() {
   /* ---- Success state ---- */
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50">
+      <div className="min-h-screen bg-primary-50">
         <div className="max-w-2xl mx-auto px-4 py-20">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 20 }} className="text-center">
             {/* Animated check */}
@@ -188,7 +188,7 @@ function BoekenContent() {
                   initial={{ scale: 0, x: 0, y: 0 }}
                   animate={{ scale: [0, 1, 0], x: Math.cos(i * 45 * Math.PI / 180) * 60, y: Math.sin(i * 45 * Math.PI / 180) * 60 }}
                   transition={{ delay: 0.4 + i * 0.05, duration: 0.8 }}
-                  className={`absolute top-1/2 left-1/2 w-2.5 h-2.5 rounded-full ${['bg-primary', 'bg-accent', 'bg-primary', 'bg-primary-light'][i % 4]}`}
+                  className={`absolute top-1/2 left-1/2 w-2.5 h-2.5 rounded-full ${['bg-primary', 'bg-primary', 'bg-primary', 'bg-primary-light'][i % 4]}`}
                 />
               ))}
             </div>
@@ -224,7 +224,7 @@ function BoekenContent() {
               </div>
               <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
                 <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{totalPrice}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-accent">&euro;{deposit}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-primary">&euro;{deposit}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
               </div>
             </motion.div>
@@ -251,7 +251,7 @@ function BoekenContent() {
           alt="Strand Costa Brava"
           fill className="object-cover" priority unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-gray-50" />
+        <div className="absolute inset-0 bg-black/35" />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -259,7 +259,7 @@ function BoekenContent() {
               <Sparkles size={14} /> {t('booking.planDream')}
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-              {t('booking.bookYour')} <span className="text-accent">{t('booking.caravan')}</span>
+              {t('booking.bookYour')} <span className="text-primary">{t('booking.caravan')}</span>
             </h1>
             <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto drop-shadow">
               {t('booking.heroDesc')}
@@ -291,7 +291,7 @@ function BoekenContent() {
               <span className="text-xs text-muted">{stepConfig[step - 1].desc}</span>
             </div>
             <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
-              <motion.div animate={{ width: `${(step / 5) * 100}%` }} transition={{ duration: 0.4, ease: 'easeOut' }} className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full" />
+              <motion.div animate={{ width: `${(step / 5) * 100}%` }} transition={{ duration: 0.4, ease: 'easeOut' }} className="h-full bg-primary rounded-full" />
             </div>
           </div>
 
@@ -372,7 +372,7 @@ function BoekenContent() {
                         </div>
 
                         {nights > 0 && (
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-gradient-to-r from-primary/5 to-primary-50 rounded-xl p-4 flex items-center gap-3">
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-primary-50 rounded-xl p-4 flex items-center gap-3">
                             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                               <Sun size={20} className="text-primary" />
                             </div>
@@ -387,7 +387,7 @@ function BoekenContent() {
                         )}
 
                         {nights > 0 && nights < 7 && (
-                          <div className="mt-3 flex items-start gap-2 text-accent text-xs bg-primary-50 rounded-lg p-3">
+                          <div className="mt-3 flex items-start gap-2 text-primary text-xs bg-primary-50 rounded-lg p-3">
                             <Info size={14} className="shrink-0 mt-0.5" />
                             {t('booking.minAdvice')}
                           </div>
@@ -584,9 +584,9 @@ function BoekenContent() {
                                       <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
                                       <div className="absolute top-3 left-3">
                                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md ${
-                                          c.type === 'LUXE' ? 'bg-gradient-to-r from-accent to-accent-dark' :
-                                          c.type === 'FAMILIE' ? 'bg-gradient-to-r from-primary to-primary-light' :
-                                          'bg-gradient-to-r from-primary to-primary-light'
+                                          c.type === 'LUXE' ? 'bg-primary' :
+                                          c.type === 'FAMILIE' ? 'bg-primary' :
+                                          'bg-primary'
                                         }`}>{c.type}</span>
                                       </div>
                                       {isSelected && (
@@ -617,7 +617,7 @@ function BoekenContent() {
                                         {nights > 0 && (
                                           <div className="text-right">
                                             <p className="text-xs text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
-                                            <p className="text-lg font-bold text-accent">&euro;{price}</p>
+                                            <p className="text-lg font-bold text-primary">&euro;{price}</p>
                                           </div>
                                         )}
                                       </div>
@@ -766,12 +766,12 @@ function BoekenContent() {
                         {chosenCaravan && (
                           <div className="relative h-40 sm:h-48">
                             <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" unoptimized />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                            <div className="absolute inset-0 bg-black/40" />
                             <div className="absolute bottom-4 left-5 right-5">
                               <span className={`inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 ${
-                                chosenCaravan.type === 'LUXE' ? 'bg-gradient-to-r from-accent to-accent-dark' :
-                                chosenCaravan.type === 'FAMILIE' ? 'bg-gradient-to-r from-primary to-primary-light' :
-                                'bg-gradient-to-r from-primary to-primary-light'
+                                chosenCaravan.type === 'LUXE' ? 'bg-primary' :
+                                chosenCaravan.type === 'FAMILIE' ? 'bg-primary' :
+                                'bg-primary'
                               }`}>{chosenCaravan.type}</span>
                               <h3 className="text-white font-bold text-xl">{chosenCaravan.name}</h3>
                             </div>
@@ -812,7 +812,7 @@ function BoekenContent() {
 
                           <div className="border-t border-border/50 pt-4 space-y-2">
                             <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{totalPrice}</span></div>
-                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-bold text-accent">&euro;{deposit}</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-bold text-primary">&euro;{deposit}</span></div>
                             <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
                           </div>
                         </div>
@@ -841,7 +841,7 @@ function BoekenContent() {
                     {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
-                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95 text-base">
+                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary-dark disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95 text-base">
                     {submitting ? (
                       <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
                     ) : (
@@ -857,7 +857,7 @@ function BoekenContent() {
               <div className="sticky top-[140px] space-y-5">
                 {/* Live summary card */}
                 <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden">
-                  <div className="bg-gradient-to-r from-primary to-primary-dark p-5 text-white">
+                  <div className="bg-primary p-5 text-white">
                     <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> {t('booking.yourBooking')}</h3>
                   </div>
                   <div className="p-5 space-y-3 text-sm">
@@ -903,11 +903,11 @@ function BoekenContent() {
                       <div className="border-t border-border/50 pt-3 mt-3">
                         <div className="flex justify-between items-baseline mb-1">
                           <span className="text-muted">{t('booking.total')}</span>
-                          <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#2563EB' }} animate={{ scale: 1, color: '#1D4ED8' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
+                          <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted">{t('booking.depositPercent')}</span>
-                          <span className="font-semibold text-accent">&euro;{deposit}</span>
+                          <span className="font-semibold text-primary">&euro;{deposit}</span>
                         </div>
                       </div>
                     )}

@@ -54,7 +54,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
           priority
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-black/40" />
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
           <div className="max-w-5xl mx-auto">
             <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-3">
@@ -103,11 +103,11 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
 
             <div className="bg-primary-50 rounded-2xl p-5 sm:p-6 flex gap-4">
               <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center shrink-0">
-                <Lightbulb size={18} className="text-accent" />
+                <Lightbulb size={18} className="text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-accent-dark text-sm mb-1">{t('destinations.travelTip')}</h3>
-                <p className="text-sm text-accent leading-relaxed">{dest.travelTip}</p>
+                <h3 className="font-semibold text-primary-dark text-sm mb-1">{t('destinations.travelTip')}</h3>
+                <p className="text-sm text-primary leading-relaxed">{dest.travelTip}</p>
               </div>
             </div>
 

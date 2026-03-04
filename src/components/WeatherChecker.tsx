@@ -45,7 +45,7 @@ export default function WeatherChecker() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <span className="text-accent font-semibold text-sm uppercase tracking-wider">{t('weather.title')}</span>
+          <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('weather.title')}</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
             {t('weather.bestWeather')}
           </h2>

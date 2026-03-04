@@ -176,7 +176,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-dark via-primary to-primary-light text-white">
+      <div className="bg-primary-dark-light text-white">
         <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
           <div className="flex items-center gap-4 mb-6">
             <Image
@@ -294,8 +294,8 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           </div>
           <div className="bg-primary-50 rounded-xl p-4 text-center border border-primary-light">
             <AlertTriangle className="w-6 h-6 text-primary mx-auto mb-1" />
-            <div className="text-xl font-bold text-accent">{beschadigdItems}</div>
-            <div className="text-[10px] font-medium text-accent">{t('borgPage.damagedLabel')}</div>
+            <div className="text-xl font-bold text-primary">{beschadigdItems}</div>
+            <div className="text-[10px] font-medium text-primary">{t('borgPage.damagedLabel')}</div>
           </div>
           <div className="bg-danger/5 rounded-xl p-4 text-center border border-danger/20">
             <XCircle className="w-6 h-6 text-danger mx-auto mb-1" />
@@ -325,7 +325,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                       <span className="text-sm text-foreground">{item.item}</span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                         item.status === 'goed' ? 'bg-primary-100 text-primary-dark' :
-                        item.status === 'beschadigd' ? 'bg-primary-100 text-accent' :
+                        item.status === 'beschadigd' ? 'bg-primary-100 text-primary' :
                         item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
                         'bg-surface-alt text-muted'
                       }`}>

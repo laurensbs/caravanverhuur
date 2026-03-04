@@ -113,7 +113,7 @@ export default function HomePage() {
             unoptimized
           />
           {/* Layered gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/50 sm:to-transparent" />
+          <div className="absolute inset-0 bg-black/50" />
         </motion.div>
 
         {/* Floating decorative particles */}
@@ -236,7 +236,7 @@ export default function HomePage() {
       <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
         {/* Decorative background blobs */}
         <FloatingBlob className="w-72 h-72 bg-primary/30 -top-20 -left-20" />
-        <FloatingBlob className="w-56 h-56 bg-accent/20 bottom-10 right-10" />
+        <FloatingBlob className="w-56 h-56 bg-primary/20 bottom-10 right-10" />
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
@@ -269,37 +269,37 @@ export default function HomePage() {
                 icon: <Tent size={24} />,
                 title: t('home.uspReady'),
                 desc: t('home.uspReadyDesc'),
-                color: 'from-primary to-primary-dark',
+                color: 'bg-primary',
               },
               {
                 icon: <Package size={24} />,
                 title: t('home.uspInventory'),
                 desc: t('home.uspInventoryDesc'),
-                color: 'from-primary-dark to-accent-dark',
+                color: 'bg-primary-dark',
               },
               {
                 icon: <Camera size={24} />,
                 title: t('home.uspPhotos'),
                 desc: t('home.uspPhotosDesc'),
-                color: 'from-accent to-accent-dark',
+                color: 'bg-primary',
               },
               {
                 icon: <Wallet size={24} />,
                 title: t('home.uspPayment'),
                 desc: t('home.uspPaymentDesc'),
-                color: 'from-primary to-accent',
+                color: 'bg-primary',
               },
               {
                 icon: <Shield size={24} />,
                 title: t('home.uspDeposit'),
                 desc: t('home.uspDepositDesc'),
-                color: 'from-accent-dark to-primary-dark',
+                color: 'bg-primary-dark',
               },
               {
                 icon: <Truck size={24} />,
                 title: t('home.uspTransport'),
                 desc: t('home.uspTransportDesc'),
-                color: 'from-primary-dark to-primary',
+                color: 'bg-primary-dark',
               },
             ].map((item, i) => (
               <motion.div
@@ -309,7 +309,7 @@ export default function HomePage() {
                 whileHover={{ y: -6, transition: { duration: 0.25 } }}
                 className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-border/30 group"
               >
-                <div className={`w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md group-hover:scale-110 transition-transform duration-300`}>
                   <div className="text-white">{item.icon}</div>
                 </div>
                 <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
@@ -359,14 +359,14 @@ export default function HomePage() {
                 { step: '5', title: t('home.step5'), desc: t('home.step5Desc'), icon: <Star size={22} /> },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative group">
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                     {item.icon}
                   </div>
                   <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">{t('home.step')} {item.step}</div>
                   <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
                   <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
                   {i < 4 && (
-                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-border to-transparent" />
+                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-border" />
                   )}
                 </motion.div>
               ))}
@@ -392,7 +392,7 @@ export default function HomePage() {
               >
                 {/* Line */}
                 {i < 4 && (
-                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-gradient-to-b from-border to-transparent" />
+                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-border" />
                 )}
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10">
                   {item.icon}
@@ -409,7 +409,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== FEATURED CARAVANS ===== */}
-      <section className="py-14 sm:py-24 bg-gradient-to-b from-surface to-white relative overflow-hidden">
+      <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
         <FloatingBlob className="w-80 h-80 bg-primary/15 -top-40 right-0" />
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -452,7 +452,7 @@ export default function HomePage() {
                     unoptimized
                   />
                   {/* Warm gradient overlay at bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/20" />
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold text-white shadow-md ${
                       caravan.type === 'LUXE' ? 'bg-primary-dark' :
@@ -489,7 +489,7 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href={`/boeken?caravan=${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm active:scale-95 shadow-md"
+                      className="flex-1 text-center py-2 sm:py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm active:scale-95 shadow-md"
                     >
                       {t('nav.bookNow')}
                     </Link>
@@ -519,7 +519,7 @@ export default function HomePage() {
 
       {/* ===== INVENTORY SECTION ===== */}
       <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
-        <FloatingBlob className="w-64 h-64 bg-accent/15 top-20 -right-20" />
+        <FloatingBlob className="w-64 h-64 bg-primary/15 top-20 -right-20" />
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -562,7 +562,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/caravans"
-                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95 shadow-lg"
+                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95 shadow-lg"
               >
                 {t('home.inventoryViewCaravans')}
                 <ArrowRight size={16} />
@@ -612,12 +612,9 @@ export default function HomePage() {
       </section>
 
       {/* ===== ADVANTAGES HIGHLIGHT ===== */}
-      <section className="py-14 sm:py-24 bg-gradient-to-br from-primary via-primary-dark to-primary text-white overflow-hidden relative">
-        {/* Animated gradient mesh background */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_50%,rgba(219,234,254,0.3),transparent_50%)]" />
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_80%_20%,rgba(217,119,6,0.15),transparent_50%)]" />
-        </div>
+      <section className="py-14 sm:py-24 bg-primary text-white overflow-hidden relative">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-10 bg-white/20" />
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
@@ -688,7 +685,7 @@ export default function HomePage() {
           transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut', delay: 2 }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent/5 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl"
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut', delay: 4 }}
         />
@@ -820,7 +817,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== CTA SECTION ===== */}
-      <section className="py-14 sm:py-24 bg-gradient-to-b from-white via-primary-50 to-white relative overflow-hidden">
+      <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
         {/* Decorative rings */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-primary/5 rounded-full pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-primary/10 rounded-full pointer-events-none" />
@@ -837,7 +834,7 @@ export default function HomePage() {
               whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg animate-float-slow"
+              className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg animate-float-slow"
             >
               <Sun className="text-white" size={28} />
             </motion.div>
@@ -850,7 +847,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/boeken"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
               >
                 {t('home.ctaBookNow')}
                 <ArrowRight size={18} />

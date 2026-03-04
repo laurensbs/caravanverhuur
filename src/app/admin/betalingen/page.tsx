@@ -118,7 +118,7 @@ export default function BetalingenPage() {
           </div>
         </div>
         <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-accent/20 text-accent">
+          <div className="p-3 rounded-xl bg-primary/20 text-primary">
             <Clock className="w-5 h-5" />
           </div>
           <div>

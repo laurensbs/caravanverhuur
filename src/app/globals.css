@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #2563EB;
-  --color-primary-light: #DBEAFE;
-  --color-primary-dark: #1D4ED8;
-  --color-primary-50: #EFF6FF;
-  --color-primary-100: #BFDBFE;
-  --color-accent: #D97706;
-  --color-accent-light: #F59E0B;
-  --color-accent-dark: #B45309;
+  --color-primary: #0EA5E9;
+  --color-primary-light: #E0F2FE;
+  --color-primary-dark: #0284C7;
+  --color-primary-50: #F0F9FF;
+  --color-primary-100: #BAE6FD;
+  --color-accent: #14B8A6;
+  --color-accent-light: #2DD4BF;
+  --color-accent-dark: #0D9488;
   --color-background: #ffffff;
   --color-foreground: #0F172A;
   --color-foreground-light: #334155;
@@ -16,8 +16,8 @@
   --color-surface: #FAFAF9;
   --color-surface-alt: #F5F5F4;
   --color-border: #E7E5E4;
-  --color-warm: #FFFBEB;
-  --color-warm-dark: #FEF3C7;
+  --color-warm: #F0F9FF;
+  --color-warm-dark: #E0F2FE;
   --color-success: #059669;
   --color-danger: #DC2626;
   --font-sans: var(--font-inter);
@@ -68,12 +68,6 @@ h1, h2, h3 {
   50% { opacity: 1; }
 }
 
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -94,11 +88,6 @@ h1, h2, h3 {
 
 .animate-pulse-soft {
   animation: pulse-soft 3s ease-in-out infinite;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease infinite;
 }
 
 .animate-spin-slow {

@@ -93,10 +93,10 @@ const statusColors: Record<string, string> = {
   NIEUW: 'bg-primary-100 text-primary-dark',
   BEVESTIGD: 'bg-primary-light text-primary-dark',
   BETAALD: 'bg-primary-light text-primary-dark',
-  AANBETAALD: 'bg-primary-light text-accent',
+  AANBETAALD: 'bg-primary-light text-primary',
   GEANNULEERD: 'bg-danger/10 text-danger',
   AFGEROND: 'bg-surface-alt text-foreground-light',
-  OPENSTAAND: 'bg-primary-light text-accent',
+  OPENSTAAND: 'bg-primary-light text-primary',
   OPEN: 'bg-primary-100 text-primary-dark',
   IN_BEHANDELING: 'bg-primary-100 text-primary-dark',
   AFGEROND_GOED: 'bg-primary-light text-primary-dark',
@@ -341,7 +341,7 @@ function MijnAccountContent() {
               {/* User card */}
               <div className="bg-white rounded-2xl border border-border/40 p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                  <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                     {firstName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -411,7 +411,7 @@ function MijnAccountContent() {
             {/* Mobile user greeting */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                   {firstName.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -518,7 +518,7 @@ function MijnAccountContent() {
                     const remainingDays = days % 7;
 
                     return (
-                      <div className="bg-gradient-to-br from-primary/5 via-white to-primary/5 rounded-2xl border border-primary/15 p-5 sm:p-6">
+                      <div className="bg-white rounded-2xl border border-primary/15 p-5 sm:p-6">
                         <div className="flex items-center gap-2 mb-4">
                           <TreePalm size={20} className="text-primary" />
                           <h3 className="font-bold text-foreground text-sm">{t('myAccount.countdownTitle')}</h3>
@@ -543,7 +543,7 @@ function MijnAccountContent() {
                             <span className="font-semibold text-primary">{pct}%</span>
                           </div>
                           <div className="h-2 bg-border/30 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-primary to-primary-dark rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                            <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
 
@@ -557,7 +557,7 @@ function MijnAccountContent() {
 
                   {/* Prominent borg notification banner */}
                   {openBorg.length > 0 && (
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border-2 border-primary/25 p-5 sm:p-6">
+                    <div className="bg-primary-50 rounded-2xl border-2 border-primary/25 p-5 sm:p-6">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-primary/15 rounded-xl flex items-center justify-center shrink-0 animate-pulse">
                           <Shield size={24} className="text-primary" />
@@ -673,7 +673,7 @@ function MijnAccountContent() {
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
                               <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover" unoptimized />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                              <div className="absolute inset-0 bg-black/30" />
                               <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
                                 <div>
                                   <h3 className="font-bold text-white text-sm">{caravan.name}</h3>
@@ -780,7 +780,7 @@ function MijnAccountContent() {
                         </div>
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.outstanding')}</div>
-                          <div className="text-lg font-bold text-accent">
+                          <div className="text-lg font-bold text-primary">
                             {fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
@@ -904,7 +904,7 @@ function MijnAccountContent() {
                             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                               bc.type === 'INCHECKEN' ? 'bg-primary/10' : 'bg-primary-50'
                             }`}>
-                              <ClipboardCheck size={20} className={bc.type === 'INCHECKEN' ? 'text-primary' : 'text-accent'} />
+                              <ClipboardCheck size={20} className={bc.type === 'INCHECKEN' ? 'text-primary' : 'text-primary'} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -925,7 +925,7 @@ function MijnAccountContent() {
                               {/* Mini summary */}
                               <div className="hidden sm:flex items-center gap-2 text-xs">
                                 {goedItems > 0 && <span className="text-primary font-medium">{goedItems} {t('myAccount.ok')}</span>}
-                                {beschadigdItems > 0 && <span className="text-accent font-medium">{beschadigdItems} {t('myAccount.damage')}</span>}
+                                {beschadigdItems > 0 && <span className="text-primary font-medium">{beschadigdItems} {t('myAccount.damage')}</span>}
                                 {ontbreektItems > 0 && <span className="text-danger font-medium">{ontbreektItems} {t('myAccount.misses')}</span>}
                               </div>
                               <ChevronDown size={18} className={`text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -951,8 +951,8 @@ function MijnAccountContent() {
                                     </div>
                                     <div className="bg-primary-50 rounded-xl p-3 text-center">
                                       <AlertTriangle size={18} className="text-primary mx-auto" />
-                                      <div className="text-lg font-bold text-accent mt-1">{beschadigdItems}</div>
-                                      <div className="text-[10px] text-accent font-medium">{t('myAccount.damaged')}</div>
+                                      <div className="text-lg font-bold text-primary mt-1">{beschadigdItems}</div>
+                                      <div className="text-[10px] text-primary font-medium">{t('myAccount.damaged')}</div>
                                     </div>
                                     <div className="bg-danger/5 rounded-xl p-3 text-center">
                                       <XCircle size={18} className="text-danger mx-auto" />
@@ -974,7 +974,7 @@ function MijnAccountContent() {
                                                 <span className="text-sm text-foreground-light">{item.item}</span>
                                                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                                                   item.status === 'goed' ? 'bg-primary-light text-primary-dark' :
-                                                  item.status === 'beschadigd' ? 'bg-primary-light text-accent' :
+                                                  item.status === 'beschadigd' ? 'bg-primary-light text-primary' :
                                                   item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
                                                   'bg-surface-alt text-muted'
                                                 }`}>
@@ -1161,13 +1161,13 @@ function MijnAccountContent() {
                   {/* Cancellation policy */}
                   <div className="bg-white rounded-2xl p-5 border border-border/40">
                     <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                      <AlertTriangle size={16} className="text-accent" />
+                      <AlertTriangle size={16} className="text-primary" />
                       {t('myAccount.termsCancellationTitle')}
                     </h3>
                     <div className="space-y-2">
                       {[
                         { period: t('myAccount.termsCancelPeriod1'), pct: '100%', color: 'bg-primary/8 text-primary' },
-                        { period: t('myAccount.termsCancelPeriod2'), pct: '50%', color: 'bg-primary/5 text-accent' },
+                        { period: t('myAccount.termsCancelPeriod2'), pct: '50%', color: 'bg-primary/5 text-primary' },
                         { period: t('myAccount.termsCancelPeriod3'), pct: '0%', color: 'bg-danger/5 text-danger' },
                       ].map((item, i) => (
                         <div key={i} className={`flex items-center justify-between px-4 py-2.5 rounded-xl ${item.color}`}>
@@ -1207,7 +1207,7 @@ function MijnAccountContent() {
                   <div className="bg-white rounded-2xl p-6 border border-border/40">
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                        <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
                           {firstName.charAt(0).toUpperCase()}
                         </div>
                         <div>

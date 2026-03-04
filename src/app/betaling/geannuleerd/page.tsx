@@ -31,7 +31,7 @@ function GeannuleerdContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-surface">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-xl mx-auto px-4 py-20">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
