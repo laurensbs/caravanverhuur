@@ -160,6 +160,7 @@ function MijnAccountContent() {
   // GDPR
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteEmailSent, setDeleteEmailSent] = useState(false);
 
   // Borg response
   const [respondingBorgId, setRespondingBorgId] = useState<string | null>(null);
@@ -169,6 +170,10 @@ function MijnAccountContent() {
 
   // Payment
   const [payingId, setPayingId] = useState<string | null>(null);
+
+  // Newsletter subscription
+  const [newsletterUnsubscribed, setNewsletterUnsubscribed] = useState(false);
+  const [togglingNewsletter, setTogglingNewsletter] = useState(false);
 
   // Custom caravans (must be before any early returns to satisfy Rules of Hooks)
   const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
@@ -190,6 +195,7 @@ function MijnAccountContent() {
       setBorgChecklists(data.borgChecklists || []);
       setEditName(data.customer.name);
       setEditPhone(data.customer.phone || '');
+      setNewsletterUnsubscribed(data.customer.newsletter_unsubscribed || false);
     } catch {
       router.push('/account');
     } finally {
@@ -237,11 +243,21 @@ function MijnAccountContent() {
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
-      await fetch('/api/auth/me', { method: 'DELETE' });
-      router.push('/account');
+      const res = await fetch('/api/auth/me', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.confirmationSent) {
+        setDeleteEmailSent(true);
+      } else if (data.deleted) {
+        router.push('/account');
+      }
     } catch {
-      setDeleting(false);
+      // ignore
     }
+    setDeleting(false);
   };
 
   const handleBorgResponse = async (token: string, agreed: boolean) => {
@@ -551,6 +567,49 @@ function MijnAccountContent() {
                           <Plane size={12} className="text-primary" />
                           {t('myAccount.arrivalOn').replace('{date}', fd(upcomingBooking.check_in))}
                         </p>
+
+                        {/* Caravan preparation timeline */}
+                        <div className="mt-5 pt-4 border-t border-border/40">
+                          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <ClipboardCheck size={13} className="text-primary" />
+                            Caravan klaarzetten
+                          </h4>
+                          <div className="space-y-0">
+                            {[
+                              { daysB: 7, label: 'Grondige reiniging caravan', icon: '🧹', desc: 'Interieur & exterieur worden schoongemaakt' },
+                              { daysB: 5, label: 'Inventaris controle', icon: '📋', desc: 'Alle spullen worden gecontroleerd en aangevuld' },
+                              { daysB: 3, label: 'Technische inspectie', icon: '🔧', desc: 'Gas, water, elektra worden getest' },
+                              { daysB: 1, label: 'Finale check & beddengoed', icon: '🛏️', desc: 'Alles wordt klaargelegd voor aankomst' },
+                              { daysB: 0, label: 'Klaar voor ontvangst!', icon: '🔑', desc: 'Sleutels klaargezet, welkomstpakket gereed' },
+                            ].map((step, i) => {
+                              const completed = days <= step.daysB;
+                              const current = days <= step.daysB && (i === 0 || days > [7, 5, 3, 1, 0][i - 1] === false);
+                              return (
+                                <div key={i} className="flex gap-3">
+                                  <div className="flex flex-col items-center">
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
+                                      completed ? 'bg-primary text-white' : 'bg-border/30 text-muted'
+                                    }`}>
+                                      {completed ? <Check size={12} /> : <span>{step.icon}</span>}
+                                    </div>
+                                    {i < 4 && (
+                                      <div className={`w-0.5 h-6 ${completed ? 'bg-primary/30' : 'bg-border/30'}`} />
+                                    )}
+                                  </div>
+                                  <div className={`pb-3 ${current ? '' : ''}`}>
+                                    <div className={`text-xs font-semibold ${completed ? 'text-primary' : 'text-foreground-light'}`}>
+                                      {step.icon} {step.label}
+                                    </div>
+                                    <div className="text-[10px] text-muted">{step.desc}</div>
+                                    <div className="text-[10px] text-muted/60 mt-0.5">
+                                      {step.daysB === 0 ? 'Check-in dag' : `${step.daysB} ${step.daysB === 1 ? 'dag' : 'dagen'} voor aankomst`}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     );
                   })()}
@@ -1264,6 +1323,48 @@ function MijnAccountContent() {
                     )}
                   </div>
 
+                  {/* Newsletter subscription */}
+                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                    <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
+                      <Mail size={16} className="text-primary" />
+                      Nieuwsbrief
+                    </h3>
+                    <p className="text-xs text-muted mb-3 leading-relaxed">
+                      Ontvang updates over evenementen, activiteiten en aanbiedingen aan de Costa Brava.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className={`text-sm font-medium ${newsletterUnsubscribed ? 'text-muted' : 'text-primary'}`}>
+                          {newsletterUnsubscribed ? 'Uitgeschreven' : 'Ingeschreven'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          setTogglingNewsletter(true);
+                          try {
+                            const res = await fetch('/api/auth/me', {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ newsletterUnsubscribed: !newsletterUnsubscribed }),
+                            });
+                            if (res.ok) {
+                              setNewsletterUnsubscribed(!newsletterUnsubscribed);
+                            }
+                          } catch { /* ignore */ }
+                          setTogglingNewsletter(false);
+                        }}
+                        disabled={togglingNewsletter}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
+                          !newsletterUnsubscribed ? 'bg-primary' : 'bg-border'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                          !newsletterUnsubscribed ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
+                  </div>
+
                   {/* GDPR / Danger zone */}
                   <div className="bg-white rounded-2xl p-5 border border-border/40">
                     <h3 className="text-sm font-bold text-foreground mb-1">{t('myAccount.privacyData')}</h3>
@@ -1276,6 +1377,23 @@ function MijnAccountContent() {
                         className="text-xs text-danger/70 hover:text-danger font-medium transition-colors flex items-center gap-1">
                         <Trash2 size={12} /> {t('myAccount.deleteAccount')}
                       </button>
+                    ) : deleteEmailSent ? (
+                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-primary/5 rounded-xl p-4 border border-primary/20 space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Mail size={16} className="text-primary shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">Bevestigingsmail verzonden</p>
+                            <p className="text-xs text-muted mt-0.5">
+                              We hebben een bevestigingslink naar <strong>{customer.email}</strong> gestuurd. Klik op de link in de e-mail om je account definitief te verwijderen.
+                            </p>
+                            <p className="text-xs text-muted mt-2">De link is 24 uur geldig.</p>
+                          </div>
+                        </div>
+                        <button onClick={() => { setShowDeleteConfirm(false); setDeleteEmailSent(false); }}
+                          className="text-xs text-muted hover:text-foreground font-medium transition-colors">
+                          Sluiten
+                        </button>
+                      </motion.div>
                     ) : (
                       <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-danger/5 rounded-xl p-4 border border-danger/20 space-y-3">
                         <div className="flex items-start gap-2">

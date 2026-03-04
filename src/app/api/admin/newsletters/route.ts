@@ -6,9 +6,10 @@ import {
   deleteNewsletter,
   getNewsletterById,
   markNewsletterSent,
-  getAllCustomerEmails,
+  getSubscribedCustomerEmails,
 } from '@/lib/db';
 import { sendNewsletterEmail } from '@/lib/email';
+import { generateUnsubscribeToken } from '@/app/api/newsletter/unsubscribe/route';
 
 // GET - List all newsletters
 export async function GET() {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Send existing newsletter
     if (action === 'send') {
-      const { id } = body;
+      const { id, excludeEmails } = body;
       if (!id) {
         return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
       }
@@ -43,8 +44,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Nieuwsbrief is al verzonden' }, { status: 400 });
       }
 
-      // Get all customer emails
-      const emails = await getAllCustomerEmails();
+      // Get subscribed customer emails (excludes unsubscribed)
+      let emails = await getSubscribedCustomerEmails();
+      
+      // Apply manual exclusion list
+      if (excludeEmails && Array.isArray(excludeEmails) && excludeEmails.length > 0) {
+        const excludeSet = new Set(excludeEmails.map((e: string) => e.toLowerCase()));
+        emails = emails.filter(e => !excludeSet.has(e.toLowerCase()));
+      }
+
       if (emails.length === 0) {
         return NextResponse.json({ error: 'Geen e-mailadressen gevonden' }, { status: 400 });
       }
@@ -61,12 +69,18 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // Parse photos
+      const photos: string[] = newsletter.photos ? (typeof newsletter.photos === 'string' ? JSON.parse(newsletter.photos) : newsletter.photos) : [];
+
       // Send to all customers
       let sentCount = 0;
       const errors: string[] = [];
 
       for (const email of emails) {
         try {
+          const token = generateUnsubscribeToken(email);
+          const unsubscribeUrl = `https://caravanverhuurspanje.com/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+          
           const result = await sendNewsletterEmail({
             to: email,
             title: newsletter.title,
@@ -74,6 +88,8 @@ export async function POST(request: NextRequest) {
             category: newsletter.category,
             eventDate: eventDateFormatted,
             eventLocation: newsletter.event_location,
+            photos,
+            unsubscribeUrl,
           });
           if (result.success) {
             sentCount++;
@@ -97,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new newsletter
-    const { title, content, category, eventDate, eventLocation } = body;
+    const { title, content, category, eventDate, eventLocation, photos } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Titel en inhoud zijn verplicht' }, { status: 400 });
@@ -109,6 +125,7 @@ export async function POST(request: NextRequest) {
       category: category || 'algemeen',
       eventDate: eventDate || undefined,
       eventLocation: eventLocation?.trim() || undefined,
+      photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
     });
 
     return NextResponse.json({ success: true, id: result.id });
@@ -122,7 +139,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, content, category, eventDate, eventLocation } = body;
+    const { id, title, content, category, eventDate, eventLocation, photos } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
@@ -143,6 +160,7 @@ export async function PUT(request: NextRequest) {
       category,
       eventDate: eventDate !== undefined ? eventDate : undefined,
       eventLocation: eventLocation !== undefined ? eventLocation?.trim() || null : undefined,
+      photos: photos !== undefined ? (Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined) : undefined,
     });
 
     if (!result) {

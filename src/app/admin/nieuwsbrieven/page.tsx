@@ -19,6 +19,8 @@ import {
   Tag,
   Users,
   Eye,
+  ImageIcon,
+  UserMinus,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -29,6 +31,7 @@ interface Newsletter {
   category: string;
   event_date: string | null;
   event_location: string | null;
+  photos: string[] | null;
   status: string;
   sent_at: string | null;
   sent_count: number;
@@ -45,6 +48,29 @@ const CATEGORIES = [
   { value: 'markt', label: 'Markt', emoji: '🛍️' },
   { value: 'evenement', label: 'Evenement', emoji: '🎭' },
 ];
+
+const CATEGORY_DRAFTS: Record<string, { title: string; content: string }> = {
+  algemeen: {
+    title: '',
+    content: '',
+  },
+  activiteit: {
+    title: 'Leuke activiteit aan de Costa Brava',
+    content: 'Beste gasten,\n\nWe willen jullie graag attenderen op een leuke activiteit in de buurt van onze caravans.\n\nDit is een geweldige kans om de lokale cultuur te ervaren en te genieten van de Costa Brava.\n\nHopelijk tot snel!',
+  },
+  feestdag: {
+    title: 'Feestdag aan de Costa Brava',
+    content: 'Beste gasten,\n\nEr komt een bijzondere feestdag aan in Spanje! Dit is altijd een prachtige ervaring aan de Costa Brava.\n\nDenk aan kleurrijke optochten, lokale muziek en heerlijk Spaans eten.\n\nWe raden aan om deze feestdag mee te maken als je in de buurt bent!',
+  },
+  markt: {
+    title: 'Lokale markt aan de Costa Brava',
+    content: 'Beste gasten,\n\nBinnenkort vindt er een gezellige lokale markt plaats in de buurt.\n\nHier vind je verse producten, handgemaakte souvenirs en lokale specialiteiten. Een perfecte dagactiviteit!\n\nVeel plezier!',
+  },
+  evenement: {
+    title: 'Evenement aan de Costa Brava',
+    content: 'Beste gasten,\n\nWe hebben een leuk evenement gevonden dat binnenkort plaatsvindt aan de Costa Brava.\n\nEen uitstekende gelegenheid om de omgeving te verkennen en nieuwe ervaringen op te doen.\n\nMeer informatie volgt!',
+  },
+};
 
 function getCategoryInfo(cat: string) {
   return CATEGORIES.find(c => c.value === cat) || CATEGORIES[0];
@@ -91,6 +117,12 @@ export default function AdminNieuwsbrieven() {
   const [formCategory, setFormCategory] = useState('algemeen');
   const [formEventDate, setFormEventDate] = useState('');
   const [formEventLocation, setFormEventLocation] = useState('');
+  const [formPhotos, setFormPhotos] = useState<string[]>([]);
+  const [newPhotoUrl, setNewPhotoUrl] = useState('');
+
+  // Send modal: exclude emails
+  const [excludeInput, setExcludeInput] = useState('');
+  const [excludeEmails, setExcludeEmails] = useState<string[]>([]);
 
   const fetchNewsletters = useCallback(async () => {
     try {
@@ -122,6 +154,10 @@ export default function AdminNieuwsbrieven() {
     setFormCategory('algemeen');
     setFormEventDate('');
     setFormEventLocation('');
+    setFormPhotos([]);
+    setNewPhotoUrl('');
+    setExcludeInput('');
+    setExcludeEmails([]);
     setError('');
     setSuccess('');
     setSendResult(null);
@@ -140,6 +176,8 @@ export default function AdminNieuwsbrieven() {
     setFormCategory(n.category);
     setFormEventDate(n.event_date ? new Date(n.event_date).toISOString().split('T')[0] : '');
     setFormEventLocation(n.event_location || '');
+    setFormPhotos(n.photos || []);
+    setNewPhotoUrl('');
     setError('');
     setSuccess('');
     setModal('edit');
@@ -155,6 +193,8 @@ export default function AdminNieuwsbrieven() {
     setError('');
     setSuccess('');
     setSendResult(null);
+    setExcludeInput('');
+    setExcludeEmails([]);
     setModal('send');
   };
 
@@ -180,6 +220,7 @@ export default function AdminNieuwsbrieven() {
         category: formCategory,
         eventDate: formEventDate || null,
         eventLocation: formEventLocation || null,
+        photos: formPhotos.filter(p => p.trim()),
       };
 
       if (modal === 'edit' && selected) {
@@ -218,7 +259,7 @@ export default function AdminNieuwsbrieven() {
       const res = await fetch('/api/admin/newsletters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', id: selected.id }),
+        body: JSON.stringify({ action: 'send', id: selected.id, excludeEmails }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -496,7 +537,17 @@ export default function AdminNieuwsbrieven() {
                           <button
                             key={c.value}
                             type="button"
-                            onClick={() => setFormCategory(c.value)}
+                            onClick={() => {
+                              setFormCategory(c.value);
+                              // Apply draft template when creating and fields are empty
+                              if (modal === 'create') {
+                                const draft = CATEGORY_DRAFTS[c.value];
+                                if (draft && !formTitle && !formContent) {
+                                  setFormTitle(draft.title);
+                                  setFormContent(draft.content);
+                                }
+                              }
+                            }}
                             className={`px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer border ${
                               formCategory === c.value
                                 ? 'bg-primary/10 border-primary text-primary'
@@ -564,6 +615,65 @@ export default function AdminNieuwsbrieven() {
                         placeholder="Schrijf hier de inhoud van je nieuwsbrief. Elke regel wordt een aparte paragraaf in de e-mail."
                       />
                       <p className="text-xs text-muted mt-1">Elke nieuwe regel wordt een aparte paragraaf in de e-mail</p>
+                    </div>
+
+                    {/* Photos */}
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
+                        Foto&apos;s (URL&apos;s)
+                      </label>
+                      {formPhotos.length > 0 && (
+                        <div className="space-y-2 mb-2">
+                          {formPhotos.map((url, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <div className="w-10 h-10 rounded-lg border border-border overflow-hidden shrink-0 bg-[#FAFAF9]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = ''; }} />
+                              </div>
+                              <input
+                                type="text"
+                                value={url}
+                                onChange={(e) => {
+                                  const updated = [...formPhotos];
+                                  updated[i] = e.target.value;
+                                  setFormPhotos(updated);
+                                }}
+                                className="flex-1 px-3 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setFormPhotos(formPhotos.filter((_, j) => j !== i))}
+                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={newPhotoUrl}
+                          onChange={(e) => setNewPhotoUrl(e.target.value)}
+                          placeholder="https://voorbeeld.com/foto.jpg"
+                          className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (newPhotoUrl.trim()) {
+                              setFormPhotos([...formPhotos, newPhotoUrl.trim()]);
+                              setNewPhotoUrl('');
+                            }
+                          }}
+                          className="px-3 py-2 bg-primary/10 text-primary text-sm font-medium rounded-lg hover:bg-primary/20 transition cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-muted mt-1">Voeg foto-URL&apos;s toe die in de nieuwsbrief worden getoond</p>
                     </div>
 
                     {error && (
@@ -646,6 +756,18 @@ export default function AdminNieuwsbrieven() {
                         <p key={i} className="text-sm text-foreground mb-3 leading-relaxed">{line}</p>
                       ))}
 
+                      {/* Preview photos */}
+                      {selected.photos && selected.photos.length > 0 && (
+                        <div className="space-y-3 mb-4">
+                          {(typeof selected.photos === 'string' ? JSON.parse(selected.photos) : selected.photos).map((url: string, i: number) => (
+                            <div key={i} className="rounded-xl overflow-hidden border border-border">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={url} alt="" className="w-full h-auto" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <hr className="my-4 border-border" />
 
                       <div className="bg-[#F0F9FF] border border-[#7DD3FC] rounded-xl p-4 mb-4">
@@ -703,7 +825,7 @@ export default function AdminNieuwsbrieven() {
                           <div>
                             <p className="text-sm font-semibold text-amber-800 mb-1">Let op!</p>
                             <p className="text-sm text-amber-700">
-                              Deze nieuwsbrief wordt naar alle geregistreerde klanten en gasten gestuurd. Dit kan niet ongedaan worden gemaakt.
+                              Deze nieuwsbrief wordt naar alle ingeschreven klanten gestuurd (uitgeschreven klanten worden automatisch overgeslagen). Dit kan niet ongedaan worden gemaakt.
                             </p>
                           </div>
                         </div>
@@ -712,6 +834,60 @@ export default function AdminNieuwsbrieven() {
                       <div className="bg-[#FAFAF9] border border-border rounded-xl p-4 mb-5">
                         <p className="text-sm font-semibold text-foreground mb-1">{selected.title}</p>
                         <p className="text-xs text-muted">{getCategoryInfo(selected.category).emoji} {getCategoryInfo(selected.category).label}</p>
+                      </div>
+
+                      {/* Exclude emails */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-foreground mb-1.5">
+                          <UserMinus className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
+                          Klanten uitsluiten (optioneel)
+                        </label>
+                        {excludeEmails.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {excludeEmails.map((email, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-full text-xs text-red-700">
+                                {email}
+                                <button
+                                  onClick={() => setExcludeEmails(excludeEmails.filter((_, j) => j !== i))}
+                                  className="hover:text-red-900 cursor-pointer"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <input
+                            type="email"
+                            value={excludeInput}
+                            onChange={(e) => setExcludeInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && excludeInput.trim()) {
+                                e.preventDefault();
+                                if (!excludeEmails.includes(excludeInput.trim().toLowerCase())) {
+                                  setExcludeEmails([...excludeEmails, excludeInput.trim().toLowerCase()]);
+                                }
+                                setExcludeInput('');
+                              }
+                            }}
+                            placeholder="email@voorbeeld.com"
+                            className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (excludeInput.trim() && !excludeEmails.includes(excludeInput.trim().toLowerCase())) {
+                                setExcludeEmails([...excludeEmails, excludeInput.trim().toLowerCase()]);
+                                setExcludeInput('');
+                              }
+                            }}
+                            className="px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                          >
+                            Uitsluiten
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted mt-1">Typ een e-mailadres en druk Enter om die klant uit te sluiten</p>
                       </div>
 
                       {error && (

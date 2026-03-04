@@ -169,6 +169,7 @@ export async function setupDatabase() {
       category TEXT NOT NULL DEFAULT 'algemeen',
       event_date DATE,
       event_location TEXT,
+      photos JSONB DEFAULT '[]',
       status TEXT NOT NULL DEFAULT 'concept',
       sent_at TIMESTAMP,
       sent_count INTEGER DEFAULT 0,
@@ -176,6 +177,31 @@ export async function setupDatabase() {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Delete confirmation tokens table
+  await sql`
+    CREATE TABLE IF NOT EXISTS delete_confirmations (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Migration: add newsletter_unsubscribed column to customers
+  try {
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS newsletter_unsubscribed BOOLEAN DEFAULT false`;
+  } catch {
+    // ignore
+  }
+
+  // Migration: add photos column to newsletters
+  try {
+    await sql`ALTER TABLE newsletters ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'`;
+  } catch {
+    // ignore
+  }
 
   return { success: true, message: 'Database tables created successfully' };
 }
@@ -833,11 +859,13 @@ export async function createNewsletter(data: {
   category: string;
   eventDate?: string;
   eventLocation?: string;
+  photos?: string[];
 }) {
   const id = generateId('NL');
+  const photosJson = data.photos ? JSON.stringify(data.photos) : '[]';
   await sql`
-    INSERT INTO newsletters (id, title, content, category, event_date, event_location)
-    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null})
+    INSERT INTO newsletters (id, title, content, category, event_date, event_location, photos)
+    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null}, ${photosJson})
   `;
   return { id };
 }
@@ -858,6 +886,7 @@ export async function updateNewsletter(id: string, data: {
   category?: string;
   eventDate?: string | null;
   eventLocation?: string | null;
+  photos?: string[];
 }) {
   const existing = await getNewsletterById(id);
   if (!existing) return null;
@@ -867,6 +896,7 @@ export async function updateNewsletter(id: string, data: {
   const category = data.category ?? existing.category;
   const eventDate = data.eventDate !== undefined ? data.eventDate : existing.event_date;
   const eventLocation = data.eventLocation !== undefined ? data.eventLocation : existing.event_location;
+  const photos = data.photos !== undefined ? JSON.stringify(data.photos) : (existing.photos || '[]');
 
   await sql`
     UPDATE newsletters SET
@@ -875,6 +905,7 @@ export async function updateNewsletter(id: string, data: {
       category = ${category},
       event_date = ${eventDate},
       event_location = ${eventLocation},
+      photos = ${typeof photos === 'string' ? photos : JSON.stringify(photos)},
       updated_at = NOW()
     WHERE id = ${id}
   `;
@@ -908,4 +939,98 @@ export async function getAllCustomerEmails() {
     ORDER BY email
   `;
   return result.rows.map(r => r.email as string);
+}
+
+// ===== NEWSLETTER SUBSCRIPTION =====
+
+export async function getSubscribedCustomerEmails() {
+  // Get unique emails excluding unsubscribed customers
+  const result = await sql`
+    SELECT DISTINCT email FROM (
+      SELECT email FROM customers WHERE newsletter_unsubscribed = false OR newsletter_unsubscribed IS NULL
+      UNION
+      SELECT guest_email AS email FROM bookings
+      WHERE guest_email NOT IN (SELECT email FROM customers WHERE newsletter_unsubscribed = true)
+    ) AS all_emails
+    WHERE email IS NOT NULL AND email != ''
+    ORDER BY email
+  `;
+  return result.rows.map(r => r.email as string);
+}
+
+export async function setNewsletterSubscription(email: string, unsubscribed: boolean) {
+  await sql`
+    UPDATE customers SET newsletter_unsubscribed = ${unsubscribed} WHERE LOWER(email) = LOWER(${email})
+  `;
+}
+
+export async function getNewsletterSubscriptionStatus(email: string) {
+  const result = await sql`
+    SELECT newsletter_unsubscribed FROM customers WHERE LOWER(email) = LOWER(${email})
+  `;
+  return result.rows[0]?.newsletter_unsubscribed === true;
+}
+
+// ===== DATA PURGE =====
+
+export async function purgeAllTestData() {
+  // Delete in correct order for FK constraints
+  await sql`DELETE FROM borg_checklists`;
+  await sql`DELETE FROM payments`;
+  await sql`DELETE FROM bookings`;
+  await sql`DELETE FROM contacts`;
+  await sql`DELETE FROM newsletters`;
+  return { success: true };
+}
+
+// ===== DELETE CONFIRMATION =====
+
+export async function createDeleteConfirmation(customerId: string) {
+  const id = generateId('DC');
+  const token = generateToken();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+  await sql`
+    INSERT INTO delete_confirmations (id, customer_id, token, expires_at)
+    VALUES (${id}, ${customerId}, ${token}, ${expiresAt})
+  `;
+  return { id, token };
+}
+
+export async function getDeleteConfirmation(token: string) {
+  const result = await sql`
+    SELECT dc.*, c.email, c.name FROM delete_confirmations dc
+    JOIN customers c ON c.id = dc.customer_id
+    WHERE dc.token = ${token} AND dc.expires_at > NOW()
+  `;
+  return result.rows[0] || null;
+}
+
+export async function executeDeleteConfirmation(token: string) {
+  const confirmation = await getDeleteConfirmation(token);
+  if (!confirmation) return null;
+
+  // Delete sessions, then customer
+  await sql`DELETE FROM customer_sessions WHERE customer_id = ${confirmation.customer_id}`;
+  await sql`DELETE FROM customers WHERE id = ${confirmation.customer_id}`;
+  await sql`DELETE FROM delete_confirmations WHERE token = ${token}`;
+  return { success: true, email: confirmation.email, name: confirmation.name };
+}
+
+// ===== NEWSLETTER CREATE WITH PHOTOS =====
+
+export async function createNewsletterWithPhotos(data: {
+  title: string;
+  content: string;
+  category: string;
+  eventDate?: string;
+  eventLocation?: string;
+  photos?: string[];
+}) {
+  const id = generateId('NL');
+  const photos = JSON.stringify(data.photos || []);
+  await sql`
+    INSERT INTO newsletters (id, title, content, category, event_date, event_location, photos)
+    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null}, ${photos})
+  `;
+  return { id };
 }

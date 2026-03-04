@@ -351,6 +351,42 @@ export async function sendBorgChecklistEmail(data: {
   });
 }
 
+// ===== DELETE CONFIRMATION EMAIL =====
+
+export async function sendDeleteConfirmationEmail(data: {
+  to: string;
+  name: string;
+  token: string;
+}) {
+  const firstName = data.name.split(' ')[0];
+  const confirmUrl = `${SITE_URL}/api/auth/delete-confirm?token=${data.token}`;
+
+  return sendEmail({
+    to: data.to,
+    subject: `Bevestig verwijdering van je account`,
+    html: emailWrapper(`
+      ${heading('Account verwijderen')}
+      ${subtext(`Hallo ${firstName}, we hebben een verzoek ontvangen om je account en alle bijbehorende gegevens te verwijderen.`)}
+
+      ${highlight(`
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
+          <strong>⚠️ Let op:</strong> Dit is onomkeerbaar. Alle gegevens, boekingen en betalingshistorie worden permanent verwijderd.
+        </p>
+      `)}
+
+      <p style="margin:0 0 24px;color:#0F172A;font-size:15px;line-height:1.7;">
+        Klik op de onderstaande knop om de verwijdering te bevestigen. Deze link is 24 uur geldig.
+      </p>
+
+      ${button('Ja, verwijder mijn account →', confirmUrl)}
+
+      <p style="margin:24px 0 0;color:#94A3B8;font-size:13px;line-height:1.6;text-align:center;">
+        Heb je dit verzoek niet gedaan? Negeer deze e-mail dan — er wordt niets verwijderd.
+      </p>
+    `, `Bevestig de verwijdering van je account bij ${BRAND_NAME}`),
+  });
+}
+
 // ===== NEWSLETTER EMAIL =====
 
 const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -368,6 +404,8 @@ export async function sendNewsletterEmail(data: {
   category: string;
   eventDate?: string | null;
   eventLocation?: string | null;
+  photos?: string[];
+  unsubscribeUrl?: string;
 }) {
   const cat = CATEGORY_LABELS[data.category] || CATEGORY_LABELS.algemeen;
   const lines = data.content.split('\n').filter(l => l.trim());
@@ -376,6 +414,26 @@ export async function sendNewsletterEmail(data: {
   ).join('');
 
   const hasDetails = data.eventDate || data.eventLocation;
+
+  // Photos section
+  const photosHtml = data.photos && data.photos.length > 0
+    ? `<div style="margin:0 0 24px;">
+        ${data.photos.map(url =>
+          `<div style="margin:0 0 12px;border-radius:12px;overflow:hidden;">
+            <img src="${url}" alt="" style="width:100%;height:auto;display:block;border-radius:12px;border:1px solid #E7E5E4;" />
+          </div>`
+        ).join('')}
+      </div>`
+    : '';
+
+  // Unsubscribe footer
+  const unsubscribeHtml = data.unsubscribeUrl
+    ? `<div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #E7E5E4;">
+        <p style="margin:0;color:#94A3B8;font-size:11px;">
+          <a href="${data.unsubscribeUrl}" style="color:#94A3B8;text-decoration:underline;">Uitschrijven voor nieuwsbrieven</a>
+        </p>
+      </div>`
+    : '';
 
   return sendEmail({
     to: data.to,
@@ -402,6 +460,8 @@ export async function sendNewsletterEmail(data: {
         </div>
       ` : ''}
 
+      ${photosHtml}
+
       ${contentHtml}
 
       ${divider()}
@@ -413,6 +473,8 @@ export async function sendNewsletterEmail(data: {
       `, true)}
 
       ${button('Bekijk caravans →', `${SITE_URL}/caravans`)}
+
+      ${unsubscribeHtml}
     `, `${cat.emoji} ${data.title} — ${BRAND_NAME}`),
   });
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerBySessionToken, getBookingsByEmail, getPaymentsByBookingIds, getBorgChecklistsByEmail, updateCustomerProfile, deleteCustomer, deleteCustomerSession } from '@/lib/db';
+import { getCustomerBySessionToken, getBookingsByEmail, getPaymentsByBookingIds, getBorgChecklistsByEmail, updateCustomerProfile, deleteCustomer, deleteCustomerSession, createDeleteConfirmation, getNewsletterSubscriptionStatus, setNewsletterSubscription } from '@/lib/db';
+import { sendDeleteConfirmationEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
     const bookingIds = bookings.map((b) => (b as { id: string }).id);
     const payments = await getPaymentsByBookingIds(bookingIds);
     const borgChecklists = await getBorgChecklistsByEmail(customer.email);
+    const newsletterUnsubscribed = await getNewsletterSubscriptionStatus(customer.email);
 
     return NextResponse.json({
       customer: {
@@ -26,6 +28,7 @@ export async function GET(request: NextRequest) {
         name: customer.name,
         phone: customer.phone,
         created_at: customer.created_at,
+        newsletter_unsubscribed: newsletterUnsubscribed,
       },
       bookings,
       payments,
@@ -50,7 +53,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, phone } = body;
+    const { name, phone, newsletterUnsubscribed } = body;
+
+    // Handle newsletter subscription change
+    if (newsletterUnsubscribed !== undefined) {
+      await setNewsletterSubscription(customer.email, newsletterUnsubscribed);
+      return NextResponse.json({ success: true });
+    }
 
     await updateCustomerProfile(customer.id, { name, phone });
     return NextResponse.json({ success: true });
@@ -72,13 +81,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Sessie verlopen' }, { status: 401 });
     }
 
-    // Delete session first, then customer (cascades sessions)
-    await deleteCustomerSession(token);
-    await deleteCustomer(customer.id);
+    const body = await request.json().catch(() => ({}));
 
-    const response = NextResponse.json({ success: true });
-    response.cookies.delete('customer_session');
-    return response;
+    // If confirmed=true, actually delete (after email confirmation)
+    if (body.confirmed) {
+      await deleteCustomerSession(token);
+      await deleteCustomer(customer.id);
+      const response = NextResponse.json({ success: true, deleted: true });
+      response.cookies.delete('customer_session');
+      return response;
+    }
+
+    // Otherwise, send confirmation email
+    const confirmation = await createDeleteConfirmation(customer.id);
+    await sendDeleteConfirmationEmail({
+      to: customer.email,
+      name: customer.name,
+      token: confirmation.token,
+    });
+
+    return NextResponse.json({ success: true, confirmationSent: true });
   } catch (error) {
     console.error('Account delete error:', error);
     return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 500 });

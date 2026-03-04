@@ -13,6 +13,8 @@ import {
   Clock,
   AlertCircle,
   Loader2,
+  Trash2,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   getBookingCaravan,
@@ -87,6 +89,10 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showPurge, setShowPurge] = useState(false);
+  const [purgePassword, setPurgePassword] = useState('');
+  const [purging, setPurging] = useState(false);
+  const [purgeResult, setPurgeResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/dashboard')
@@ -411,6 +417,105 @@ export default function AdminDashboard() {
               );
             })}
           </div>
+        )}
+      </motion.div>
+
+      {/* Test data purge */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.65, duration: 0.4 }}
+        className="bg-white rounded-2xl border border-border p-5"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-50">
+              <ShieldAlert className="w-5 h-5 text-red-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Database opschonen</h3>
+              <p className="text-xs text-muted">Verwijder alle testdata (boekingen, betalingen, berichten, checklists)</p>
+            </div>
+          </div>
+          {!showPurge && (
+            <button
+              onClick={() => setShowPurge(true)}
+              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" />
+              Wis alle testdata
+            </button>
+          )}
+        </div>
+
+        {showPurge && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mt-4 pt-4 border-t border-border space-y-3"
+          >
+            {purgeResult ? (
+              <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                {purgeResult.message}
+              </div>
+            ) : (
+              <>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <p className="text-xs text-red-700 font-medium">
+                    ⚠️ Dit verwijdert ALLE boekingen, betalingen, berichten, borgchecklists en nieuwsbrieven uit de database. Dit is onomkeerbaar!
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-foreground mb-1 block">Bevestig met admin wachtwoord</label>
+                  <input
+                    type="password"
+                    value={purgePassword}
+                    onChange={(e) => setPurgePassword(e.target.value)}
+                    placeholder="Admin wachtwoord"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!purgePassword) return;
+                      setPurging(true);
+                      try {
+                        const res = await fetch('/api/admin/dashboard', {
+                          method: 'DELETE',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ adminPassword: purgePassword }),
+                        });
+                        const d = await res.json();
+                        if (res.ok) {
+                          setPurgeResult({ success: true, message: 'Alle testdata is succesvol verwijderd. Herlaad de pagina.' });
+                          // Refresh data after purge
+                          setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                          setPurgeResult({ success: false, message: d.error || 'Fout bij verwijderen' });
+                        }
+                      } catch {
+                        setPurgeResult({ success: false, message: 'Netwerkfout' });
+                      }
+                      setPurging(false);
+                    }}
+                    disabled={purging || !purgePassword}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {purging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Definitief verwijderen
+                  </button>
+                  <button
+                    onClick={() => { setShowPurge(false); setPurgePassword(''); setPurgeResult(null); }}
+                    className="px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-surface transition-colors cursor-pointer"
+                  >
+                    Annuleren
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
         )}
       </motion.div>
     </div>
