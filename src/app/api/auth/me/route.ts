@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerBySessionToken, getBookingsByEmail, getPaymentsByBookingIds, getBorgChecklistsByEmail, updateCustomerProfile, deleteCustomer, deleteCustomerSession, createDeleteConfirmation, getNewsletterSubscriptionStatus, setNewsletterSubscription } from '@/lib/db';
+import { getCustomerBySessionToken, getBookingsByEmail, getPaymentsByBookingIds, getBorgChecklistsByEmail, updateCustomerProfile, deleteCustomer, deleteCustomerSession, createDeleteConfirmation, getNewsletterSubscriptionStatus, setNewsletterSubscription, setupDatabase } from '@/lib/db';
 import { sendDeleteConfirmationEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
@@ -34,8 +34,28 @@ export async function GET(request: NextRequest) {
       payments,
       borgChecklists,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Customer me error:', error);
+    const msg = error instanceof Error ? error.message : '';
+    if (msg.includes('does not exist') || msg.includes('relation')) {
+      try {
+        await setupDatabase();
+        // Retry after setup
+        const token2 = request.cookies.get('customer_session')?.value;
+        if (!token2) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 });
+        const customer2 = await getCustomerBySessionToken(token2);
+        if (!customer2) return NextResponse.json({ error: 'Sessie verlopen' }, { status: 401 });
+        const bookings2 = await getBookingsByEmail(customer2.email);
+        const bookingIds2 = bookings2.map((b) => (b as { id: string }).id);
+        const payments2 = await getPaymentsByBookingIds(bookingIds2);
+        const borgChecklists2 = await getBorgChecklistsByEmail(customer2.email);
+        let newsletterUnsubscribed2 = false;
+        try { newsletterUnsubscribed2 = await getNewsletterSubscriptionStatus(customer2.email); } catch { /* ignore */ }
+        return NextResponse.json({ customer: { id: customer2.id, email: customer2.email, name: customer2.name, phone: customer2.phone, created_at: customer2.created_at, newsletter_unsubscribed: newsletterUnsubscribed2 }, bookings: bookings2, payments: payments2, borgChecklists: borgChecklists2 });
+      } catch (setupErr) {
+        console.error('Auto-setup failed:', setupErr);
+      }
+    }
     return NextResponse.json({ error: 'Er is een fout opgetreden' }, { status: 500 });
   }
 }

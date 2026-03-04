@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -179,6 +179,7 @@ function MijnAccountContent() {
 
   // Custom caravans (must be before any early returns to satisfy Rules of Hooks)
   const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
+  const redirectingRef = useRef(false);
   useEffect(() => {
     fetch('/api/admin/caravans')
       .then(res => res.json())
@@ -187,9 +188,10 @@ function MijnAccountContent() {
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (redirectingRef.current) return;
     try {
       const res = await fetch('/api/auth/me');
-      if (!res.ok) { router.push('/account'); return; }
+      if (!res.ok) { redirectingRef.current = true; router.push('/account'); return; }
       const data = await res.json();
       setCustomer(data.customer);
       setBookings(data.bookings || []);
@@ -199,7 +201,7 @@ function MijnAccountContent() {
       setEditPhone(data.customer.phone || '');
       setNewsletterUnsubscribed(data.customer.newsletter_unsubscribed || false);
     } catch {
-      router.push('/account');
+      if (!redirectingRef.current) { redirectingRef.current = true; router.push('/account'); }
     } finally {
       setLoading(false);
     }

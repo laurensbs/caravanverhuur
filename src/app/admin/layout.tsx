@@ -239,7 +239,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               alt="Caravanverhuur Costa Brava"
               width={200}
               height={56}
-              className="w-44 h-auto brightness-0 invert"
+              className="w-44 h-auto drop-shadow-lg"
               unoptimized
             />
           </div>

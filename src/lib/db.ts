@@ -972,10 +972,15 @@ export async function setNewsletterSubscription(email: string, unsubscribed: boo
 }
 
 export async function getNewsletterSubscriptionStatus(email: string) {
-  const result = await sql`
-    SELECT newsletter_unsubscribed FROM customers WHERE LOWER(email) = LOWER(${email})
-  `;
-  return result.rows[0]?.newsletter_unsubscribed === true;
+  try {
+    const result = await sql`
+      SELECT newsletter_unsubscribed FROM customers WHERE LOWER(email) = LOWER(${email})
+    `;
+    return result.rows[0]?.newsletter_unsubscribed === true;
+  } catch {
+    // Column may not exist yet — return safe default
+    return false;
+  }
 }
 
 // ===== DATA PURGE =====

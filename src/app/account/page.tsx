@@ -116,7 +116,7 @@ export default function AccountPage() {
                   alt="Caravanverhuur Spanje"
                   width={320}
                   height={90}
-                  className="h-16 xl:h-20 w-auto drop-shadow-lg"
+                  className="w-48 xl:w-64 h-auto drop-shadow-lg"
                   unoptimized
                 />
               </Link>
@@ -180,7 +180,7 @@ export default function AccountPage() {
                 alt="Caravanverhuur Spanje"
                 width={280}
                 height={80}
-                className="h-12 sm:h-14 w-auto drop-shadow-lg"
+                className="w-40 sm:w-48 h-auto drop-shadow-lg"
                 unoptimized
               />
             </Link>
