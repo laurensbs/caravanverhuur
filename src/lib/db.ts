@@ -982,11 +982,14 @@ export async function getNewsletterSubscriptionStatus(email: string) {
 
 export async function purgeAllTestData() {
   // Delete in correct order for FK constraints
+  await sql`DELETE FROM delete_confirmations`;
+  await sql`DELETE FROM customer_sessions`;
   await sql`DELETE FROM borg_checklists`;
   await sql`DELETE FROM payments`;
   await sql`DELETE FROM bookings`;
   await sql`DELETE FROM contacts`;
   await sql`DELETE FROM newsletters`;
+  await sql`DELETE FROM customers`;
   return { success: true };
 }
 

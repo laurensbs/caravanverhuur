@@ -11,11 +11,13 @@ import {
   Clock, CheckCircle, ArrowRight, FileText, Sun, Shield, Star,
   CheckCircle2, AlertTriangle, XCircle, Minus, MessageSquare,
   ThumbsUp, ThumbsDown, Trash2, ExternalLink, ChevronDown,
-  Home, Settings, Plus, Eye, Plane, TreePalm, ScrollText,
+  Home, Settings, Plus, Eye, Plane, TreePalm, ScrollText, Compass, Lightbulb,
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings } from '@/data/campings';
+import { getActivitiesForLocation, getCategoryLabel, generalTips, groupActivitiesByCategory } from '@/data/activities';
+import type { Activity } from '@/data/activities';
 import { useLanguage } from '@/i18n/context';
 import type { Locale } from '@/i18n/context';
 
@@ -608,6 +610,96 @@ function MijnAccountContent() {
                                 </div>
                               );
                             })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ===== ACTIVITEITEN TIPS (personalized) ===== */}
+                  {upcomingBooking && (() => {
+                    const camping = getCamping(upcomingBooking.camping_id);
+                    if (!camping) return null;
+                    const activities = getActivitiesForLocation(camping.location);
+                    const grouped = groupActivitiesByCategory(activities);
+                    const categoryOrder: Activity['category'][] = ['strand', 'sport', 'natuur', 'cultuur', 'kinderen', 'culinair', 'uitstap'];
+                    const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
+
+                    return (
+                      <div className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+                        <div className="p-5 sm:p-6 pb-0 sm:pb-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
+                              <Compass size={20} className="text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-foreground text-sm">Tips & activiteiten bij {camping.location}</h3>
+                              <p className="text-xs text-muted">Ontdek de mooiste plekken in de buurt van je vakantieadres</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-5 sm:p-6 pt-4 sm:pt-4 space-y-4">
+                          {sortedCategories.map((cat) => (
+                            <div key={cat}>
+                              <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-primary" />
+                                {getCategoryLabel(cat, locale)}
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {grouped[cat].map((act) => (
+                                  <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3 hover:bg-surface-alt transition-colors group">
+                                    <div className="flex items-start gap-2.5">
+                                      <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
+                                          {act.distance && (
+                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full border border-border/40 whitespace-nowrap shrink-0">
+                                              {act.distance}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
+                                        {act.tip && (
+                                          <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
+                                            <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
+                                            <p className="text-[10px] text-primary-dark leading-relaxed">{act.tip}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* General tips */}
+                          <div className="border-t border-border/40 pt-4">
+                            <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <Star size={10} className="text-primary" />
+                              Algemene tips Costa Brava
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {generalTips.slice(0, 4).map((act) => (
+                                <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3">
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
+                                    <div className="min-w-0">
+                                      <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
+                                      <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
+                                      {act.tip && (
+                                        <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
+                                          <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
+                                          <p className="text-[10px] text-primary-dark leading-relaxed">{act.tip}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
