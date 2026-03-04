@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings } from '@/data/campings';
@@ -98,5 +98,27 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('PATCH /api/bookings error:', error);
     return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, password } = body;
+
+    if (!id || !password) {
+      return NextResponse.json({ error: 'ID en wachtwoord zijn verplicht' }, { status: 400 });
+    }
+
+    // Verify admin password
+    if (password !== 'CostaAdmin2026!') {
+      return NextResponse.json({ error: 'Onjuist wachtwoord' }, { status: 403 });
+    }
+
+    await deleteBookingById(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/bookings error:', error);
+    return NextResponse.json({ error: 'Failed to delete booking' }, { status: 500 });
   }
 }

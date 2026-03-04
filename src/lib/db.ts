@@ -296,6 +296,13 @@ export async function updateBookingNotes(id: string, notes: string) {
   `;
 }
 
+export async function deleteBookingById(id: string) {
+  // Delete related records first (FK constraints)
+  await sql`DELETE FROM borg_checklists WHERE booking_id = ${id}`;
+  await sql`DELETE FROM payments WHERE booking_id = ${id}`;
+  await sql`DELETE FROM bookings WHERE id = ${id}`;
+}
+
 // ===== PAYMENT QUERIES =====
 
 export async function getPaymentsByBookingId(bookingId: string) {

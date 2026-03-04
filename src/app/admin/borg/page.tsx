@@ -113,7 +113,7 @@ export default function AdminBorgPage() {
       const checklistData = await checklistRes.json();
       const bookingData = await bookingRes.json();
       setChecklists(Array.isArray(checklistData) ? checklistData : []);
-      setBookings(Array.isArray(bookingData) ? bookingData : []);
+      setBookings(Array.isArray(bookingData?.bookings) ? bookingData.bookings : Array.isArray(bookingData) ? bookingData : []);
     } catch (err) {
       console.error('Fetch error:', err);
     } finally {

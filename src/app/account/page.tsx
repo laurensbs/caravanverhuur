@@ -113,10 +113,10 @@ export default function AccountPage() {
               <Link href="/">
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                  alt="Caravanverhuur Costa Brava"
+                  alt="Caravanverhuur Spanje"
                   width={320}
                   height={90}
-                  className="h-16 xl:h-20 w-auto brightness-0 invert"
+                  className="h-16 xl:h-20 w-auto drop-shadow-lg"
                   unoptimized
                 />
               </Link>
@@ -177,10 +177,10 @@ export default function AccountPage() {
             <Link href="/" className="inline-block mb-4">
               <Image
                 src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                alt="Caravanverhuur Costa Brava"
+                alt="Caravanverhuur Spanje"
                 width={280}
                 height={80}
-                className="h-12 sm:h-14 w-auto brightness-0 invert"
+                className="h-12 sm:h-14 w-auto drop-shadow-lg"
                 unoptimized
               />
             </Link>

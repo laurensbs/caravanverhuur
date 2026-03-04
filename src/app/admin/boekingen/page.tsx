@@ -16,6 +16,9 @@ import {
   CreditCard,
   Loader2,
   Save,
+  Trash2,
+  Lock,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   getBookingCaravan,
@@ -34,10 +37,11 @@ const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
 ];
 
-function BookingDetail({ booking, onStatusChange, onNotesChange }: {
+function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   booking: Booking;
   onStatusChange: (id: string, status: BookingStatus) => void;
   onNotesChange: (id: string, notes: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const caravan = getBookingCaravan(booking);
   const camping = getBookingCamping(booking);
@@ -46,6 +50,10 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
   const [newStatus, setNewStatus] = useState(booking.status);
   const [notes, setNotes] = useState(booking.admin_notes || '');
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     fetch(`/api/payments?bookingId=${booking.id}`)
@@ -215,15 +223,82 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
         </div>
       </div>
 
-      {(newStatus !== booking.status || notes !== (booking.admin_notes || '')) && (
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {(newStatus !== booking.status || notes !== (booking.admin_notes || '')) && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#1E40AF] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Opslaan
+          </button>
+        )}
         <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#1E40AF] transition-colors cursor-pointer disabled:opacity-50"
+          onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }}
+          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer ml-auto"
         >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Opslaan
+          <Trash2 className="w-4 h-4" />
+          Verwijderen
         </button>
+      </div>
+
+      {showDeleteConfirm && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2 text-red-700">
+            <AlertTriangle className="w-5 h-5" />
+            <p className="text-sm font-semibold">Boeking permanent verwijderen?</p>
+          </div>
+          <p className="text-xs text-red-600">
+            Dit verwijdert de boeking, alle betalingen en borgchecklists. Dit kan niet ongedaan worden gemaakt.
+          </p>
+          {deleteError && (
+            <p className="text-xs text-red-700 bg-red-100 px-3 py-1.5 rounded-lg">{deleteError}</p>
+          )}
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-red-400" />
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Admin wachtwoord"
+              className="flex-1 px-3 py-2 bg-white border border-red-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                if (!deletePassword) { setDeleteError('Voer het wachtwoord in'); return; }
+                setDeleting(true);
+                setDeleteError('');
+                try {
+                  const res = await fetch('/api/bookings', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: booking.id, password: deletePassword }),
+                  });
+                  if (res.status === 403) { setDeleteError('Onjuist wachtwoord'); setDeleting(false); return; }
+                  if (!res.ok) { setDeleteError('Verwijderen mislukt'); setDeleting(false); return; }
+                  onDelete(booking.id);
+                } catch {
+                  setDeleteError('Er ging iets mis');
+                }
+                setDeleting(false);
+              }}
+              disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Definitief verwijderen
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              Annuleren
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -252,6 +327,11 @@ export default function BookingenPage() {
 
   const handleNotesChange = (id: string, adminNotes: string) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, admin_notes: adminNotes } : b));
+  };
+
+  const handleDelete = (id: string) => {
+    setBookings(prev => prev.filter(b => b.id !== id));
+    setExpandedId(null);
   };
 
   const filtered = bookings
@@ -367,6 +447,7 @@ export default function BookingenPage() {
                     booking={booking}
                     onStatusChange={handleStatusChange}
                     onNotesChange={handleNotesChange}
+                    onDelete={handleDelete}
                   />
                 </div>
               )}

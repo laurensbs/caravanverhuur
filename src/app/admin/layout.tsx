@@ -20,6 +20,8 @@ import {
   Eye,
   EyeOff,
   Newspaper,
+  Shield,
+  AlertCircle,
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
@@ -81,19 +83,29 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-[#0C4A6E] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'50\' height=\'50\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'25\' cy=\'25\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
+        {/* Animated background circles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-primary/5 rounded-full blur-2xl" />
+        </div>
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1.5\' fill=\'white\'/%3E%3C/svg%3E")' }} />
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="w-full max-w-md relative"
         >
+          {/* Glowing border effect */}
+          <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 rounded-[28px] blur-sm" />
+          
           <form
             onSubmit={handleLogin}
-            className="bg-white rounded-3xl p-8 sm:p-10 w-full max-w-md shadow-2xl relative"
+            className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl"
           >
             {/* Logo */}
             <motion.div
@@ -105,57 +117,64 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <div className="mx-auto mb-5 relative">
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                  alt="Caravanverhuur Costa Brava"
+                  alt="Caravanverhuur Spanje"
                   width={280}
                   height={80}
                   className="mx-auto w-56 sm:w-64 h-auto"
                   unoptimized
                 />
               </div>
-              <p className="text-sm text-muted mt-1">Log in om het dashboard te beheren</p>
+              <div className="inline-flex items-center gap-2 bg-primary/5 text-primary text-xs font-semibold px-3 py-1.5 rounded-full border border-primary/10">
+                <Shield className="w-3.5 h-3.5" />
+                Admin Dashboard
+              </div>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.4 }}
+              className="space-y-4"
             >
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                <Lock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                Wachtwoord
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                  className="w-full px-4 py-3.5 border-2 border-border rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base"
-                  placeholder="Voer wachtwoord in..."
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground cursor-pointer transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  <Lock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                  Wachtwoord
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                    className="w-full px-4 py-3.5 border-2 border-border rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base bg-surface"
+                    placeholder="Voer wachtwoord in..."
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground cursor-pointer transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <AnimatePresence>
                 {error && (
-                  <motion.p
+                  <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="text-red-500 text-sm mt-2 font-medium"
+                    className="flex items-center gap-2 text-red-500 text-sm font-medium bg-red-50 px-3 py-2.5 rounded-lg border border-red-100"
                   >
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}
-                  </motion.p>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
-              <label className="flex items-center gap-2 mt-4 cursor-pointer select-none">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -167,8 +186,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
               <button
                 type="submit"
-                className="w-full mt-4 py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/25"
+                className="w-full py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
               >
+                <Lock className="w-4 h-4" />
                 Inloggen
               </button>
             </motion.div>

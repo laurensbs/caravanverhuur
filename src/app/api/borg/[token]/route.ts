@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBorgChecklistByToken, customerAgreeBorgChecklist } from '@/lib/db';
+import { getBorgChecklistByToken, customerAgreeBorgChecklist, createPayment, getBookingById } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -39,6 +39,24 @@ export async function POST(
     }
 
     await customerAgreeBorgChecklist(token, agreed, notes);
+
+    // Auto-create BORG_RETOUR payment when customer agrees (no damage)
+    if (agreed && checklist.booking_id) {
+      try {
+        const booking = await getBookingById(checklist.booking_id);
+        if (booking && booking.borg_amount) {
+          await createPayment({
+            bookingId: booking.id,
+            type: 'BORG_RETOUR',
+            amount: parseFloat(booking.borg_amount),
+            status: 'BETAALD',
+            method: 'bank',
+          });
+        }
+      } catch (refundErr) {
+        console.error('Auto borg refund creation failed (non-fatal):', refundErr);
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
