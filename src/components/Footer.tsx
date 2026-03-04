@@ -31,11 +31,11 @@ export default function Footer() {
         {/* Mobile: logo centered + stacked columns */}
         <div className="flex flex-col items-center text-center lg:hidden mb-8">
           <Image
-            src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+            src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
             alt="Caravanverhuur Costa Brava"
-            width={160}
-            height={48}
-            className="w-32 sm:w-36 h-auto mb-4"
+            width={240}
+            height={70}
+            className="w-44 sm:w-52 h-auto mb-4"
             unoptimized
           />
           <p className="text-muted text-sm leading-relaxed max-w-xs">
@@ -53,11 +53,11 @@ export default function Footer() {
           {/* Brand - desktop only */}
           <div className="hidden lg:block space-y-4">
             <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
-              width={160}
-              height={48}
-              className="w-32 h-auto"
+              width={240}
+              height={70}
+              className="w-48 h-auto"
               unoptimized
             />
             <p className="text-muted text-sm leading-relaxed">

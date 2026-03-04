@@ -75,8 +75,8 @@ const jsonLd = {
   name: "Caravans Costa Brava",
   description: "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava.",
   url: "https://caravanscostabrava.nl",
-  logo: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
-  image: "https://u.cubeupload.com/laurensbos/Caravanverhuur.png",
+  logo: "https://u.cubeupload.com/laurensbos/Caravanverhuur1.png",
+  image: "https://u.cubeupload.com/laurensbos/Caravanverhuur1.png",
   address: {
     "@type": "PostalAddress",
     addressRegion: "Costa Brava",

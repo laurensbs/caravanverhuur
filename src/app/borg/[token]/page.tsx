@@ -180,11 +180,11 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
         <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
           <div className="flex items-center gap-4 mb-6">
             <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
-              alt="Logo"
-              width={140}
-              height={42}
-              className="w-28 sm:w-32 h-auto"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+              alt="Caravanverhuur Costa Brava"
+              width={240}
+              height={70}
+              className="w-40 sm:w-48 h-auto brightness-0 invert"
               unoptimized
             />
           </div>

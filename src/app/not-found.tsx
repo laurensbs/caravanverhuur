@@ -17,9 +17,9 @@ export default function NotFound() {
         transition={{ duration: 0.6 }}
         className="text-center max-w-md"
       >
-        <div className="relative w-40 h-20 sm:w-48 sm:h-24 mx-auto mb-6">
+        <div className="relative w-52 h-24 sm:w-64 sm:h-28 mx-auto mb-6">
           <Image
-            src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+            src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
             alt="Caravanverhuur Costa Brava"
             fill
             className="object-contain opacity-30"

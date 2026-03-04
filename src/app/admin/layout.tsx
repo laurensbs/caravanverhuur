@@ -104,15 +104,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             >
               <div className="mx-auto mb-5 relative">
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
                   alt="Caravanverhuur Costa Brava"
-                  width={160}
-                  height={48}
-                  className="mx-auto w-36 h-auto"
+                  width={280}
+                  height={80}
+                  className="mx-auto w-56 sm:w-64 h-auto"
                   unoptimized
                 />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
               <p className="text-sm text-muted mt-1">Log in om het dashboard te beheren</p>
             </motion.div>
 
@@ -214,19 +213,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="p-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center">
             <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
-              alt="Logo"
-              width={120}
-              height={36}
-              className="w-24 h-auto"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+              alt="Caravanverhuur Costa Brava"
+              width={200}
+              height={56}
+              className="w-44 h-auto brightness-0 invert"
               unoptimized
             />
-            <div>
-              <h2 className="text-base font-bold tracking-tight">Admin Panel</h2>
-              <p className="text-[10px] text-white/50">Caravanverhuur Costa Brava</p>
-            </div>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
