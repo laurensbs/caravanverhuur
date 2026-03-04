@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   CalendarCheck,
@@ -80,6 +81,9 @@ function StatCard({
 }
 
 export default function AdminDashboard() {
+  const pathname = usePathname();
+  const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -175,7 +179,7 @@ export default function AdminDashboard() {
           sub={`${totalBookings} totaal • ${newBookings} nieuw`}
           icon={CalendarCheck}
           color="bg-primary-100 text-primary"
-          href="/admin/boekingen"
+          href={p('/boekingen')}
           index={0}
         />
         <StatCard
@@ -184,7 +188,7 @@ export default function AdminDashboard() {
           sub={`${paidCount} betalingen`}
           icon={TrendingUp}
           color="bg-primary-light text-primary-dark"
-          href="/admin/betalingen"
+          href={p('/betalingen')}
           index={1}
         />
         <StatCard
@@ -193,7 +197,7 @@ export default function AdminDashboard() {
           sub={`${openCount} betalingen`}
           icon={CreditCard}
           color="bg-primary-50 text-accent"
-          href="/admin/betalingen"
+          href={p('/betalingen')}
           index={2}
         />
         <StatCard
@@ -202,7 +206,7 @@ export default function AdminDashboard() {
           sub={`${newMessages} ongelezen`}
           icon={Mail}
           color="bg-primary-100 text-primary-dark"
-          href="/admin/berichten"
+          href={p('/berichten')}
           index={3}
         />
       </div>
@@ -221,7 +225,7 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             {newBookings > 0 && (
               <Link
-                href="/admin/boekingen"
+                href={p('/boekingen')}
                 className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -233,7 +237,7 @@ export default function AdminDashboard() {
             )}
             {openCount > 0 && (
               <Link
-                href="/admin/betalingen"
+                href={p('/betalingen')}
                 className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-accent"
               >
                 <Clock className="w-4 h-4 shrink-0" />
@@ -245,7 +249,7 @@ export default function AdminDashboard() {
             )}
             {newMessages > 0 && (
               <Link
-                href="/admin/berichten"
+                href={p('/berichten')}
                 className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
               >
                 <Mail className="w-4 h-4 shrink-0" />
@@ -272,7 +276,7 @@ export default function AdminDashboard() {
               Recente Boekingen
             </h3>
             <Link
-              href="/admin/boekingen"
+              href={p('/boekingen')}
               className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
             >
               Alles bekijken <ArrowRight className="w-3 h-3" />
@@ -288,7 +292,7 @@ export default function AdminDashboard() {
                 return (
                   <Link
                     key={booking.id}
-                    href="/admin/boekingen"
+                    href={p('/boekingen')}
                     className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors"
                   >
                     <div className="flex-1 min-w-0">
@@ -323,7 +327,7 @@ export default function AdminDashboard() {
               Berichten
             </h3>
             <Link
-              href="/admin/berichten"
+              href={p('/berichten')}
               className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
             >
               Alles <ArrowRight className="w-3 h-3" />
@@ -336,7 +340,7 @@ export default function AdminDashboard() {
               {recentContacts.map((contact) => (
                 <Link
                   key={contact.id}
-                  href="/admin/berichten"
+                  href={p('/berichten')}
                   className="block p-3 rounded-xl hover:bg-surface transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">

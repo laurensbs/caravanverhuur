@@ -23,14 +23,14 @@ import {
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
 
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/boekingen', label: 'Boekingen', icon: CalendarCheck },
-  { href: '/admin/betalingen', label: 'Betalingen', icon: CreditCard },
-  { href: '/admin/berichten', label: 'Berichten', icon: Mail },
-  { href: '/admin/caravans', label: 'Caravans', icon: CarFront },
-  { href: '/admin/borg', label: 'Borgchecklist', icon: ClipboardCheck },
-  { href: '/admin/klanten', label: 'Klanten', icon: Users },
+const NAV_ITEMS = [
+  { sub: '', label: 'Dashboard', icon: LayoutDashboard },
+  { sub: '/boekingen', label: 'Boekingen', icon: CalendarCheck },
+  { sub: '/betalingen', label: 'Betalingen', icon: CreditCard },
+  { sub: '/berichten', label: 'Berichten', icon: Mail },
+  { sub: '/caravans', label: 'Caravans', icon: CarFront },
+  { sub: '/borg', label: 'Borgchecklist', icon: ClipboardCheck },
+  { sub: '/klanten', label: 'Klanten', icon: Users },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -39,11 +39,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mainSiteUrl, setMainSiteUrl] = useState('/');
   const pathname = usePathname();
+
+  /* Subdomain-aware admin paths */
+  const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+  const navItems = NAV_ITEMS.map(i => ({ ...i, href: p(i.sub) }));
 
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_auth');
     if (stored === 'true') setAuthenticated(true);
+    if (window.location.hostname.startsWith('admin.')) {
+      setMainSiteUrl(`https://${window.location.hostname.replace('admin.', '')}`);
+    }
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -154,12 +162,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <Link
-                href="/"
+              <a
+                href={mainSiteUrl}
                 className="block text-center text-sm text-muted mt-5 hover:text-primary transition-colors"
               >
                 ← Terug naar website
-              </Link>
+              </a>
             </motion.div>
           </form>
         </motion.div>
@@ -237,12 +245,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="p-3 border-t border-white/10">
-          <Link
-            href="/"
+          <a
+            href={mainSiteUrl}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors mb-1"
           >
             ← Website bekijken
-          </Link>
+          </a>
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors w-full cursor-pointer"
