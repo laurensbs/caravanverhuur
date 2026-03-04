@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #58B09C;
-  --color-primary-light: #CAF7E2;
-  --color-primary-dark: #386150;
-  --color-primary-50: #EEFBF5;
-  --color-primary-100: #D8F5E8;
-  --color-accent: #4A442D;
-  --color-accent-light: #5C563F;
-  --color-accent-dark: #3D3522;
+  --color-primary: #0891B2;
+  --color-primary-light: #CFFAFE;
+  --color-primary-dark: #0E7490;
+  --color-primary-50: #ECFEFF;
+  --color-primary-100: #A5F3FC;
+  --color-accent: #EA580C;
+  --color-accent-light: #FB923C;
+  --color-accent-dark: #C2410C;
   --color-background: #ffffff;
-  --color-foreground: #3D3522;
-  --color-foreground-light: #4A442D;
-  --color-muted: #7B7768;
-  --color-surface: #FAFAF7;
-  --color-surface-alt: #F3F4F0;
-  --color-border: #DDD9D0;
-  --color-warm: #EEFBF5;
-  --color-warm-dark: #CAF7E2;
-  --color-success: #58B09C;
-  --color-danger: #B84233;
+  --color-foreground: #0F172A;
+  --color-foreground-light: #334155;
+  --color-muted: #64748B;
+  --color-surface: #F8FAFC;
+  --color-surface-alt: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-warm: #ECFEFF;
+  --color-warm-dark: #CFFAFE;
+  --color-success: #10B981;
+  --color-danger: #EF4444;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

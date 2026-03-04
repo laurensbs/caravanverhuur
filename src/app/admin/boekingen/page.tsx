@@ -219,7 +219,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange }: {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#2D4A3D] transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#0C5A6B] transition-colors cursor-pointer disabled:opacity-50"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Opslaan

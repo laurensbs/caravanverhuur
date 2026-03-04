@@ -60,9 +60,9 @@ function emailWrapper(content: string, preheader?: string): string {
   <title>${BRAND_NAME}</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 </head>
-<body style="margin:0;padding:0;background:#f4f3ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f4f3ef;">${preheader}</div>` : ''}
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f4f3ef;">
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F1F5F9;">${preheader}</div>` : ''}
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F1F5F9;">
     <tr><td style="padding:40px 16px;" align="center">
 
       <!-- Logo -->
@@ -71,12 +71,12 @@ function emailWrapper(content: string, preheader?: string): string {
           <span style="font-size:28px;">☀️</span>
         </td></tr>
         <tr><td align="center">
-          <a href="${SITE_URL}" style="color:#3D3522;text-decoration:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;">${BRAND_NAME}</a>
+          <a href="${SITE_URL}" style="color:#0F172A;text-decoration:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;">${BRAND_NAME}</a>
         </td></tr>
       </table>
 
       <!-- Card -->
-      <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e8e6e0;">
+      <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;">
         <tr><td style="padding:44px 40px 40px;">
           ${content}
         </td></tr>
@@ -85,13 +85,13 @@ function emailWrapper(content: string, preheader?: string): string {
       <!-- Footer -->
       <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:24px;">
         <tr><td align="center" style="padding:0 40px;">
-          <p style="margin:0 0 8px;color:#9a9588;font-size:12px;line-height:1.5;">
+          <p style="margin:0 0 8px;color:#94A3B8;font-size:12px;line-height:1.5;">
             ${BRAND_NAME} &middot; Costa Brava, Spanje
           </p>
-          <p style="margin:0;color:#9a9588;font-size:12px;">
-            <a href="${SITE_URL}" style="color:#58B09C;text-decoration:none;">caravanverhuurspanje.com</a>
+          <p style="margin:0;color:#94A3B8;font-size:12px;">
+            <a href="${SITE_URL}" style="color:#0891B2;text-decoration:none;">caravanverhuurspanje.com</a>
             &nbsp;&middot;&nbsp;
-            <a href="${SITE_URL}/privacy" style="color:#9a9588;text-decoration:none;">Privacy</a>
+            <a href="${SITE_URL}/privacy" style="color:#94A3B8;text-decoration:none;">Privacy</a>
           </p>
         </td></tr>
       </table>
@@ -105,33 +105,33 @@ function emailWrapper(content: string, preheader?: string): string {
 // ===== HELPERS =====
 
 function heading(text: string): string {
-  return `<h2 style="margin:0 0 6px;color:#3D3522;font-size:24px;font-weight:700;letter-spacing:-0.3px;">${text}</h2>`;
+  return `<h2 style="margin:0 0 6px;color:#0F172A;font-size:24px;font-weight:700;letter-spacing:-0.3px;">${text}</h2>`;
 }
 
 function subtext(text: string): string {
-  return `<p style="margin:0 0 28px;color:#7B7768;font-size:15px;line-height:1.5;">${text}</p>`;
+  return `<p style="margin:0 0 28px;color:#64748B;font-size:15px;line-height:1.5;">${text}</p>`;
 }
 
 function button(label: string, href: string): string {
   return `<div style="text-align:center;margin:36px 0 8px;">
-    <a href="${href}" style="display:inline-block;background:#386150;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:600;font-size:15px;letter-spacing:0.2px;">${label}</a>
+    <a href="${href}" style="display:inline-block;background:#0E7490;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:600;font-size:15px;letter-spacing:0.2px;">${label}</a>
   </div>`;
 }
 
 function divider(): string {
-  return `<hr style="border:none;border-top:1px solid #eeece6;margin:28px 0;">`;
+  return `<hr style="border:none;border-top:1px solid #E2E8F0;margin:28px 0;">`;
 }
 
 function infoRow(label: string, value: string): string {
   return `<tr>
-    <td style="color:#9a9588;font-size:14px;padding:10px 0;border-bottom:1px solid #f4f3ef;">${label}</td>
-    <td style="color:#3D3522;font-weight:600;font-size:14px;text-align:right;padding:10px 0;border-bottom:1px solid #f4f3ef;">${value}</td>
+    <td style="color:#94A3B8;font-size:14px;padding:10px 0;border-bottom:1px solid #F1F5F9;">${label}</td>
+    <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:10px 0;border-bottom:1px solid #F1F5F9;">${value}</td>
   </tr>`;
 }
 
 function highlight(content: string, accent = false): string {
-  const bg = accent ? '#f0faf6' : '#f9f8f5';
-  const border = accent ? '#d1f0e3' : '#eeece6';
+  const bg = accent ? '#ECFEFF' : '#F8FAFC';
+  const border = accent ? '#BAE6FD' : '#E2E8F0';
   return `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:20px 24px;margin:0 0 24px;">${content}</div>`;
 }
 
@@ -151,20 +151,20 @@ export async function sendWelcomeEmail(to: string, name: string) {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#58B09C;font-size:16px;vertical-align:middle;">✓</span>
-              <span style="color:#3D3522;font-size:14px;margin-left:10px;vertical-align:middle;">Caravans bekijken &amp; boeken</span>
+              <span style="color:#0891B2;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Caravans bekijken &amp; boeken</span>
             </td>
           </tr>
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#58B09C;font-size:16px;vertical-align:middle;">✓</span>
-              <span style="color:#3D3522;font-size:14px;margin-left:10px;vertical-align:middle;">Boekingen &amp; betalingen inzien</span>
+              <span style="color:#0891B2;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Boekingen &amp; betalingen inzien</span>
             </td>
           </tr>
           <tr>
             <td style="padding:6px 0;">
-              <span style="color:#58B09C;font-size:16px;vertical-align:middle;">✓</span>
-              <span style="color:#3D3522;font-size:14px;margin-left:10px;vertical-align:middle;">Borg-checklist digitaal ondertekenen</span>
+              <span style="color:#0891B2;font-size:16px;vertical-align:middle;">✓</span>
+              <span style="color:#0F172A;font-size:14px;margin-left:10px;vertical-align:middle;">Borg-checklist digitaal ondertekenen</span>
             </td>
           </tr>
         </table>
@@ -205,8 +205,8 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${subtext(`Bedankt ${firstName}! We hebben je boeking ontvangen en gaan deze zo snel mogelijk bevestigen.`)}
 
       ${highlight(`
-        <p style="margin:0 0 2px;color:#386150;font-weight:700;font-size:18px;letter-spacing:-0.2px;">${data.reference}</p>
-        <p style="margin:0;color:#58B09C;font-size:13px;">Wacht op bevestiging</p>
+        <p style="margin:0 0 2px;color:#0E7490;font-weight:700;font-size:18px;letter-spacing:-0.2px;">${data.reference}</p>
+        <p style="margin:0;color:#0891B2;font-size:13px;">Wacht op bevestiging</p>
       `, true)}
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
@@ -223,21 +223,21 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
         <tr>
-          <td style="color:#3D3522;font-size:15px;padding:6px 0;">Totaalprijs</td>
-          <td style="color:#3D3522;font-weight:700;font-size:18px;text-align:right;padding:6px 0;">${formatPrice(data.totalPrice)}</td>
+          <td style="color:#0F172A;font-size:15px;padding:6px 0;">Totaalprijs</td>
+          <td style="color:#0F172A;font-weight:700;font-size:18px;text-align:right;padding:6px 0;">${formatPrice(data.totalPrice)}</td>
         </tr>
         <tr>
-          <td style="color:#9a9588;font-size:14px;padding:4px 0;">Aanbetaling (30%)</td>
-          <td style="color:#386150;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.depositAmount)}</td>
+          <td style="color:#94A3B8;font-size:14px;padding:4px 0;">Aanbetaling (30%)</td>
+          <td style="color:#0E7490;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.depositAmount)}</td>
         </tr>
         <tr>
-          <td style="color:#9a9588;font-size:14px;padding:4px 0;">Restbetaling</td>
-          <td style="color:#9a9588;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.remainingAmount)}</td>
+          <td style="color:#94A3B8;font-size:14px;padding:4px 0;">Restbetaling</td>
+          <td style="color:#94A3B8;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.remainingAmount)}</td>
         </tr>
       </table>
 
       ${highlight(`
-        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
           <strong>Volgende stap:</strong> betaal de aanbetaling van ${formatPrice(data.depositAmount)} via iDEAL in je account.
         </p>
       `, true)}
@@ -268,9 +268,9 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
 
       ${highlight(`
         <div style="text-align:center;">
-          <p style="margin:0 0 4px;color:#9a9588;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">${typeLabel}</p>
-          <p style="margin:0 0 6px;color:#386150;font-weight:700;font-size:32px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
-          <p style="margin:0;color:#58B09C;font-size:13px;">Betaald op ${dateStr}</p>
+          <p style="margin:0 0 4px;color:#94A3B8;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">${typeLabel}</p>
+          <p style="margin:0 0 6px;color:#0E7490;font-weight:700;font-size:32px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
+          <p style="margin:0;color:#0891B2;font-size:13px;">Betaald op ${dateStr}</p>
         </div>
       `, true)}
 
@@ -296,7 +296,7 @@ export async function sendContactAcknowledgmentEmail(to: string, name: string, s
       ${subtext(`Bedankt ${firstName}! We hebben je bericht over "<em>${subject}</em>" ontvangen en reageren zo snel mogelijk — meestal binnen 24 uur.`)}
 
       ${highlight(`
-        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
           Dringende vraag? Je kunt ons ook altijd bereiken via WhatsApp of telefoon.
         </p>
       `)}
@@ -337,7 +337,7 @@ export async function sendBorgChecklistEmail(data: {
       </table>
 
       ${highlight(`
-        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
           Bekijk de checklist en geef je akkoord of dien eventueel bezwaar in. Dit kan via onderstaande link of via je account.
         </p>
       `)}
@@ -345,7 +345,7 @@ export async function sendBorgChecklistEmail(data: {
       ${button('Bekijk checklist & reageer →', checklistUrl)}
 
       <div style="text-align:center;margin-top:12px;">
-        <a href="${dashboardUrl}" style="color:#58B09C;font-size:13px;text-decoration:none;">Of bekijk via je account →</a>
+        <a href="${dashboardUrl}" style="color:#0891B2;font-size:13px;text-decoration:none;">Of bekijk via je account →</a>
       </div>
     `, `Borgchecklist klaar voor boeking ${data.reference} — bekijk en reageer`),
   });
@@ -372,7 +372,7 @@ export async function sendNewsletterEmail(data: {
   const cat = CATEGORY_LABELS[data.category] || CATEGORY_LABELS.algemeen;
   const lines = data.content.split('\n').filter(l => l.trim());
   const contentHtml = lines.map(l =>
-    `<p style="margin:0 0 14px;color:#3D3522;font-size:15px;line-height:1.7;">${l}</p>`
+    `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
   ).join('');
 
   const hasDetails = data.eventDate || data.eventLocation;
@@ -382,21 +382,21 @@ export async function sendNewsletterEmail(data: {
     subject: `${cat.emoji} ${data.title}`,
     html: emailWrapper(`
       <div style="text-align:center;margin-bottom:8px;">
-        <span style="display:inline-block;background:#f0faf6;color:#386150;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:0.3px;">${cat.emoji} ${cat.label}</span>
+        <span style="display:inline-block;background:#ECFEFF;color:#0E7490;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:0.3px;">${cat.emoji} ${cat.label}</span>
       </div>
 
       ${heading(data.title)}
 
       ${hasDetails ? `
-        <div style="background:#f9f8f5;border:1px solid #eeece6;border-radius:10px;padding:16px 20px;margin:0 0 24px;">
+        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:16px 20px;margin:0 0 24px;">
           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
             ${data.eventDate ? `<tr>
-              <td style="color:#9a9588;font-size:13px;padding:4px 0;">📅 Datum</td>
-              <td style="color:#3D3522;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventDate}</td>
+              <td style="color:#94A3B8;font-size:13px;padding:4px 0;">📅 Datum</td>
+              <td style="color:#0F172A;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventDate}</td>
             </tr>` : ''}
             ${data.eventLocation ? `<tr>
-              <td style="color:#9a9588;font-size:13px;padding:4px 0;">📍 Locatie</td>
-              <td style="color:#3D3522;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventLocation}</td>
+              <td style="color:#94A3B8;font-size:13px;padding:4px 0;">📍 Locatie</td>
+              <td style="color:#0F172A;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventLocation}</td>
             </tr>` : ''}
           </table>
         </div>
@@ -407,7 +407,7 @@ export async function sendNewsletterEmail(data: {
       ${divider()}
 
       ${highlight(`
-        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
           Wil je de Costa Brava zelf ervaren? Bekijk onze beschikbare caravans en boek jouw perfecte vakantie.
         </p>
       `, true)}
@@ -480,22 +480,22 @@ export async function sendCountdownEmail(data: {
         <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
           <tr>
             <td style="padding:0 6px;">
-              <div style="background:#f0faf6;border:1px solid #d1f0e3;border-radius:12px;padding:16px 22px;text-align:center;">
-                <div style="font-size:32px;font-weight:800;color:#386150;line-height:1;">${weeks}</div>
-                <div style="font-size:10px;color:#9a9588;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">weken</div>
+              <div style="background:#ECFEFF;border:1px solid #BAE6FD;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#0E7490;line-height:1;">${weeks}</div>
+                <div style="font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">weken</div>
               </div>
             </td>
             <td style="padding:0 6px;">
-              <div style="background:#f0faf6;border:1px solid #d1f0e3;border-radius:12px;padding:16px 22px;text-align:center;">
-                <div style="font-size:32px;font-weight:800;color:#386150;line-height:1;">${remainingDays}</div>
-                <div style="font-size:10px;color:#9a9588;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">dagen</div>
+              <div style="background:#ECFEFF;border:1px solid #BAE6FD;border-radius:12px;padding:16px 22px;text-align:center;">
+                <div style="font-size:32px;font-weight:800;color:#0E7490;line-height:1;">${remainingDays}</div>
+                <div style="font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-top:6px;">dagen</div>
               </div>
             </td>
           </tr>
         </table>
       </div>
 
-      <p style="margin:0 0 24px;color:#3D3522;font-size:15px;line-height:1.7;">${countdownText}</p>
+      <p style="margin:0 0 24px;color:#0F172A;font-size:15px;line-height:1.7;">${countdownText}</p>
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
         ${infoRow('Boeking', data.reference)}
@@ -506,7 +506,7 @@ export async function sendCountdownEmail(data: {
       </table>
 
       ${highlight(`
-        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
           <strong>💡 Tip:</strong> Bewaar onze contactgegevens voor je reis. Bij vragen kun je ons bereiken via info@caravanverhuurspanje.com of WhatsApp.
         </p>
       `, true)}

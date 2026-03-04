@@ -615,8 +615,8 @@ export default function HomePage() {
       <section className="py-14 sm:py-24 bg-gradient-to-br from-primary via-primary-dark to-primary text-white overflow-hidden relative">
         {/* Animated gradient mesh background */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_50%,rgba(202,247,226,0.3),transparent_50%)]" />
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_80%_20%,rgba(74,68,45,0.2),transparent_50%)]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_20%_50%,rgba(207,250,254,0.3),transparent_50%)]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_80%_20%,rgba(234,88,12,0.15),transparent_50%)]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
