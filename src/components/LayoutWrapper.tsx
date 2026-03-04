@@ -28,8 +28,18 @@ export function LayoutWrapper({
   const isAdmin = pathname.startsWith('/admin') || isAdminSubdomain;
   const isBorg = pathname.startsWith('/borg');
 
-  if (isAdmin || isBorg) {
+  // Admin pages: no header/footer/cookie, no LanguageProvider
+  if (isAdmin) {
     return <>{children}</>;
+  }
+
+  // Borg pages: need LanguageProvider for translations, but no header/footer
+  if (isBorg) {
+    return (
+      <LanguageProvider dictionaries={dictionaries}>
+        {children}
+      </LanguageProvider>
+    );
   }
 
   return (

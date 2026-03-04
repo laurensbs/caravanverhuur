@@ -9,9 +9,11 @@ import {
   Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, AlertCircle,
   CheckCircle, Loader2, Shield, Star, MapPin, Sun, Palmtree,
 } from 'lucide-react';
+import { useLanguage } from '@/i18n/context';
 
 export default function AccountPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +41,7 @@ export default function AccountPage() {
   }, [router]);
 
   const passwordStrength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 8 ? 2 : password.length < 12 ? 3 : 4;
-  const strengthLabels = ['', 'Zwak', 'Redelijk', 'Goed', 'Sterk'];
+  const strengthLabels = ['', t('account.strengthWeak'), t('account.strengthFair'), t('account.strengthGood'), t('account.strengthStrong')];
   const strengthColors = ['', 'bg-danger', 'bg-primary', 'bg-primary', 'bg-primary'];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,12 +52,12 @@ export default function AccountPage() {
 
     try {
       if (mode === 'register' && !acceptTerms) {
-        setError('Je moet akkoord gaan met de voorwaarden en het privacybeleid.');
+        setError(t('account.errorTerms'));
         setLoading(false);
         return;
       }
       if (mode === 'register' && password.length < 6) {
-        setError('Wachtwoord moet minimaal 6 tekens bevatten.');
+        setError(t('account.errorPasswordLength'));
         setLoading(false);
         return;
       }
@@ -71,14 +73,14 @@ export default function AccountPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Er is een fout opgetreden. Probeer het opnieuw.');
+        setError(data.error || t('account.errorGeneral'));
         return;
       }
 
-      setSuccess(mode === 'register' ? 'Account aangemaakt! Je wordt doorgestuurd...' : 'Welkom terug!');
+      setSuccess(mode === 'register' ? t('account.successRegister') : t('account.successLogin'));
       setTimeout(() => router.push('/mijn-account'), 800);
     } catch {
-      setError('Kan geen verbinding maken met de server. Controleer je internetverbinding.');
+      setError(t('account.errorConnection'));
     } finally {
       setLoading(false);
     }
@@ -123,20 +125,20 @@ export default function AccountPage() {
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
-                  Jouw vakantie,<br />
-                  <span className="text-primary-light">altijd bij de hand.</span>
+                  {t('account.heroTitle')}<br />
+                  <span className="text-primary-light">{t('account.heroTitleHighlight')}</span>
                 </h2>
                 <p className="text-white/70 mt-4 text-sm xl:text-base max-w-md leading-relaxed">
-                  Beheer je boekingen, volg betalingen, bekijk je borgchecklist en plan je volgende vakantie — alles op één plek.
+                  {t('account.heroDesc')}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 max-w-md">
                 {[
-                  { icon: <MapPin size={18} />, text: '8 bestemmingen' },
-                  { icon: <Sun size={18} />, text: '300+ zondagen/jaar' },
-                  { icon: <Shield size={18} />, text: 'Veilig boeken' },
-                  { icon: <Star size={18} />, text: '4.8/5 beoordeling' },
+                  { icon: <MapPin size={18} />, text: t('account.feat8Destinations') },
+                  { icon: <Sun size={18} />, text: t('account.feat300Sun') },
+                  { icon: <Shield size={18} />, text: t('account.featSafeBooking') },
+                  { icon: <Star size={18} />, text: t('account.feat48Rating') },
                 ].map((f, i) => (
                   <motion.div
                     key={i}
@@ -161,8 +163,8 @@ export default function AccountPage() {
                 ))}
               </div>
               <div>
-                <p className="text-white/90 text-sm font-medium">350+ tevreden gasten</p>
-                <p className="text-white/50 text-xs">gingen je voor in 2025</p>
+                <p className="text-white/90 text-sm font-medium">{t('account.socialProof')}</p>
+                <p className="text-white/50 text-xs">{t('account.socialProofSub')}</p>
               </div>
             </div>
           </div>
@@ -183,10 +185,10 @@ export default function AccountPage() {
               />
             </Link>
             <h1 className="text-2xl font-bold text-white">
-              {mode === 'login' ? 'Welkom terug!' : 'Account aanmaken'}
+              {mode === 'login' ? t('account.welcomeBack') : t('account.createAccount')}
             </h1>
             <p className="text-white/60 text-sm mt-1">
-              {mode === 'login' ? 'Log in om je boekingen te beheren' : 'Gratis registreren in 30 seconden'}
+              {mode === 'login' ? t('account.loginSubtitle') : t('account.registerSubtitle')}
             </p>
           </div>
 
@@ -196,12 +198,12 @@ export default function AccountPage() {
               {/* Desktop heading */}
               <div className="hidden lg:block mb-8">
                 <h1 className="text-2xl xl:text-3xl font-bold text-foreground">
-                  {mode === 'login' ? 'Welkom terug!' : 'Account aanmaken'}
+                  {mode === 'login' ? t('account.welcomeBack') : t('account.createAccount')}
                 </h1>
                 <p className="text-muted text-sm mt-1.5">
                   {mode === 'login'
-                    ? 'Log in om je boekingen en borgchecklists te bekijken'
-                    : 'Gratis registreren — beheer alles op één plek'}
+                    ? t('account.loginSubtitleDesktop')
+                    : t('account.registerSubtitleDesktop')}
                 </p>
               </div>
 
@@ -219,7 +221,7 @@ export default function AccountPage() {
                       mode === 'login' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-foreground-light'
                     }`}
                   >
-                    Inloggen
+                    {t('account.tabLogin')}
                   </button>
                   <button
                     onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
@@ -227,7 +229,7 @@ export default function AccountPage() {
                       mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-foreground-light'
                     }`}
                   >
-                    Registreren
+                    {t('account.tabRegister')}
                   </button>
                 </div>
 
@@ -262,10 +264,10 @@ export default function AccountPage() {
                   <AnimatePresence>
                     {mode === 'register' && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">Volledige naam</label>
+                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelName')}</label>
                         <div className="relative">
                           <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jan de Vries" required={mode === 'register'}
+                          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'}
                             className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
                       </motion.div>
@@ -274,21 +276,21 @@ export default function AccountPage() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">E-mailadres</label>
+                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelEmail')}</label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl" required autoComplete="email"
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email"
                         className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                     </div>
                   </div>
 
                   {/* Password */}
                   <div>
-                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">Wachtwoord</label>
+                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPassword')}</label>
                     <div className="relative">
                       <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                       <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                        placeholder={mode === 'register' ? 'Minimaal 6 tekens' : '••••••••'} required
+                        placeholder={mode === 'register' ? t('account.placeholderPasswordNew') : '••••••••'} required
                         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                         className="w-full pl-10 pr-12 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -298,8 +300,8 @@ export default function AccountPage() {
                     </div>
                     {mode === 'login' && (
                       <p className="text-[11px] text-muted mt-1.5">
-                        Wachtwoord vergeten?{' '}
-                        <Link href="/contact" className="text-primary hover:underline font-medium">Neem contact op</Link>
+                        {t('account.forgotPassword')}{' '}
+                        <Link href="/contact" className="text-primary hover:underline font-medium">{t('account.contactUs')}</Link>
                       </p>
                     )}
                     {mode === 'register' && password.length > 0 && (
@@ -320,7 +322,7 @@ export default function AccountPage() {
                   <AnimatePresence>
                     {mode === 'register' && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">Telefoonnummer <span className="text-muted font-normal">(optioneel)</span></label>
+                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPhone')} <span className="text-muted font-normal">{t('account.optional')}</span></label>
                         <div className="relative">
                           <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678"
@@ -337,10 +339,10 @@ export default function AccountPage() {
                         <input type="checkbox" id="acceptTerms" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
                           className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary/20 cursor-pointer" />
                         <label htmlFor="acceptTerms" className="text-xs text-muted leading-relaxed cursor-pointer">
-                          Ik ga akkoord met de{' '}
-                          <Link href="/voorwaarden" className="text-primary hover:underline font-medium" target="_blank">Algemene Voorwaarden</Link>{' '}
-                          en het{' '}
-                          <Link href="/privacy" className="text-primary hover:underline font-medium" target="_blank">Privacybeleid</Link>
+                          {t('account.agreeWith')}{' '}
+                          <Link href="/voorwaarden" className="text-primary hover:underline font-medium" target="_blank">{t('account.termsLink')}</Link>{' '}
+                          {t('account.andThe')}{' '}
+                          <Link href="/privacy" className="text-primary hover:underline font-medium" target="_blank">{t('account.privacyLink')}</Link>
                         </label>
                       </motion.div>
                     )}
@@ -350,7 +352,7 @@ export default function AccountPage() {
                   <button type="submit" disabled={loading}
                     className="w-full py-3.5 bg-primary hover:bg-primary-dark disabled:opacity-60 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2 shadow-sm shadow-primary/20">
                     {loading ? <Loader2 size={18} className="animate-spin" /> : (
-                      <>{mode === 'login' ? 'Inloggen' : 'Gratis account aanmaken'} <ArrowRight size={16} /></>
+                      <>{mode === 'login' ? t('account.btnLogin') : t('account.btnRegister')} <ArrowRight size={16} /></>
                     )}
                   </button>
                 </form>
@@ -358,9 +360,9 @@ export default function AccountPage() {
                 {/* Footer switch */}
                 <div className="mt-5 pt-4 border-t border-border/50 text-center text-sm text-muted">
                   {mode === 'login' ? (
-                    <p>Nog geen account?{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold hover:underline">Registreer gratis</button></p>
+                    <p>{t('account.noAccount')}{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold hover:underline">{t('account.registerFree')}</button></p>
                   ) : (
-                    <p>Al een account?{' '}<button onClick={() => { setMode('login'); setError(''); }} className="text-primary font-semibold hover:underline">Log in</button></p>
+                    <p>{t('account.hasAccount')}{' '}<button onClick={() => { setMode('login'); setError(''); }} className="text-primary font-semibold hover:underline">{t('account.loginLink')}</button></p>
                   )}
                 </div>
               </motion.div>
@@ -368,9 +370,9 @@ export default function AccountPage() {
               {/* Trust badges */}
               <div className="flex items-center justify-center gap-4 mt-5 flex-wrap">
                 {[
-                  { icon: <Shield size={13} />, text: 'SSL beveiligd' },
-                  { icon: <CheckCircle size={13} />, text: 'Gratis account' },
-                  { icon: <Palmtree size={13} />, text: 'Direct boeken' },
+                  { icon: <Shield size={13} />, text: t('account.trustSSL') },
+                  { icon: <CheckCircle size={13} />, text: t('account.trustFree') },
+                  { icon: <Palmtree size={13} />, text: t('account.trustDirect') },
                 ].map((badge, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-[11px] text-muted font-medium">
                     <span className="text-border">{badge.icon}</span>

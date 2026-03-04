@@ -81,10 +81,10 @@ export default function Header() {
     <div className="sticky top-0 z-50">
       <WeatherBar />
 
-        <header className="bg-white/95 backdrop-blur-md border-b border-border/60">
+        <header className={`${menuOpen ? 'bg-white' : 'bg-white/95 backdrop-blur-md'} border-b border-border/60`}>
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="shrink-0">
+          <Link href="/" className={`shrink-0 transition-opacity ${menuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur.png"
               alt="Caravans Costa Brava"
@@ -264,7 +264,7 @@ export default function Header() {
             <>
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 lg:hidden"
+                className="fixed inset-0 bg-black/50 z-50 lg:hidden"
                 onClick={() => setMenuOpen(false)}
               />
 

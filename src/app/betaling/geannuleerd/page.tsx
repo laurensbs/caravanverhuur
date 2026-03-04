@@ -5,10 +5,12 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { XCircle, ArrowRight, RefreshCw, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n/context';
 
 function GeannuleerdContent() {
   const searchParams = useSearchParams();
   const paymentId = searchParams.get('payment_id');
+  const { t } = useLanguage();
 
   const handleRetry = async () => {
     if (!paymentId) return;
@@ -42,16 +44,15 @@ function GeannuleerdContent() {
           </div>
 
           <h1 className="text-3xl font-bold text-foreground mb-3">
-            Betaling geannuleerd
+            {t('paymentPage.cancelledTitle')}
           </h1>
           <p className="text-muted text-lg mb-8">
-            Je iDEAL betaling is niet afgerond. Er is geen bedrag afgeschreven.
+            {t('paymentPage.cancelledDesc')}
           </p>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 mb-8">
             <p className="text-sm text-muted">
-              Je kunt het opnieuw proberen of later betalen via je account. 
-              De openstaande betaling blijft beschikbaar.
+              {t('paymentPage.cancelledInfo')}
             </p>
           </div>
 
@@ -61,14 +62,14 @@ function GeannuleerdContent() {
                 onClick={handleRetry}
                 className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
               >
-                <RefreshCw size={16} /> Opnieuw proberen
+                <RefreshCw size={16} /> {t('paymentPage.retry')}
               </button>
             )}
             <Link
               href="/mijn-account"
               className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold hover:bg-surface-alt transition-colors"
             >
-              Naar Mijn Account <ArrowRight size={16} />
+              {t('paymentPage.toMyAccount')} <ArrowRight size={16} />
             </Link>
           </div>
         </motion.div>

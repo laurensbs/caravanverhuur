@@ -20,6 +20,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from 'lucide-react';
+import { useLanguage } from '@/i18n/context';
 
 interface BorgItem {
   category: string;
@@ -67,14 +68,15 @@ const itemStatusIcons: Record<string, React.ReactNode> = {
 };
 
 const itemStatusLabels: Record<string, string> = {
-  'nvt': 'Niet beoordeeld',
-  'goed': 'In orde',
-  'beschadigd': 'Beschadigd',
-  'ontbreekt': 'Ontbreekt',
+  'nvt': 'N/A',
+  'goed': 'OK',
+  'beschadigd': 'Damaged',
+  'ontbreekt': 'Missing',
 };
 
 export default function CustomerBorgPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
+  const { t } = useLanguage();
   const [checklist, setChecklist] = useState<BorgChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -87,14 +89,14 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
       try {
         const res = await fetch(`/api/borg/${token}`);
         if (!res.ok) {
-          setError('Deze borgchecklist is niet gevonden of de link is ongeldig.');
+          setError(t('borgPage.errorNotFound'));
           return;
         }
         const data = await res.json();
         setChecklist(data);
         if (data.customer_notes) setCustomerNotes(data.customer_notes);
       } catch {
-        setError('Er is een fout opgetreden bij het ophalen van de checklist.');
+        setError(t('borgPage.errorLoading'));
       } finally {
         setLoading(false);
       }
@@ -120,7 +122,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
         } : null);
       }
     } catch {
-      alert('Er is een fout opgetreden. Probeer het opnieuw.');
+      alert(t('borgPage.errorSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -149,14 +151,14 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
       <div className="min-h-screen bg-surface flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
           <Shield className="w-16 h-16 text-danger/70 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-foreground mb-2">Checklist niet gevonden</h1>
-          <p className="text-muted text-sm mb-6">{error || 'De link is ongeldig of verlopen.'}</p>
+          <h1 className="text-xl font-bold text-foreground mb-2">{t('borgPage.notFoundTitle')}</h1>
+          <p className="text-muted text-sm mb-6">{error || t('borgPage.notFoundDesc')}</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
           >
             <ArrowLeft size={14} />
-            Terug naar website
+            {t('borgPage.backToWebsite')}
           </Link>
         </div>
       </div>
@@ -193,13 +195,13 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           >
             <div className="flex items-center gap-2 mb-2">
               <Shield size={20} />
-              <span className="text-white/80 text-sm font-medium">Borgchecklist</span>
+              <span className="text-white/80 text-sm font-medium">{t('borgPage.title')}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-1">
-              {checklist.type === 'INCHECKEN' ? 'Incheck-inspectie' : 'Uitcheck-inspectie'}
+              {checklist.type === 'INCHECKEN' ? t('borgPage.checkinInspection') : t('borgPage.checkoutInspection')}
             </h1>
             <p className="text-primary-light text-sm sm:text-base">
-              Boeking {checklist.booking_ref} — {checklist.guest_name}
+              {t('borgPage.bookingRef').replace('{ref}', checklist.booking_ref).replace('{name}', checklist.guest_name)}
             </p>
           </motion.div>
         </div>
@@ -220,15 +222,22 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           }`}
         >
           <p className="font-semibold text-sm">
-            Status: {statusLabels[checklist.status] || checklist.status}
+            Status: {
+              checklist.status === 'OPEN' ? t('borgPage.statusPreparing') :
+              checklist.status === 'IN_BEHANDELING' ? t('borgPage.statusFilling') :
+              checklist.status === 'AFGEROND' ? t('borgPage.statusReady') :
+              checklist.status === 'KLANT_AKKOORD' ? t('borgPage.statusAgreed') :
+              checklist.status === 'KLANT_BEZWAAR' ? t('borgPage.statusObjected') :
+              checklist.status
+            }
           </p>
           {checklist.status === 'OPEN' || checklist.status === 'IN_BEHANDELING' ? (
             <p className="text-xs text-muted mt-1">
-              De inspectie wordt momenteel uitgevoerd door ons team. U ontvangt een melding wanneer deze klaar is.
+              {t('borgPage.statusPreparingDesc')}
             </p>
           ) : checklist.status === 'AFGEROND' && !checklist.customer_agreed ? (
             <p className="text-xs text-muted mt-1">
-              De inspectie is afgerond. Bekijk de resultaten hieronder en geef uw akkoord of dien een bezwaar in.
+              {t('borgPage.statusReadyDesc')}
             </p>
           ) : null}
         </motion.div>
@@ -240,7 +249,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           transition={{ delay: 0.15, duration: 0.4 }}
           className="bg-white rounded-xl border border-border p-4"
         >
-          <h2 className="font-semibold text-sm text-foreground mb-3">Boekingsgegevens</h2>
+          <h2 className="font-semibold text-sm text-foreground mb-3">{t('borgPage.bookingDetails')}</h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2 text-muted">
               <Hash size={14} /> <span className="text-foreground font-medium">{checklist.booking_ref}</span>
@@ -252,20 +261,20 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
               <Car size={14} /> <span>{checklist.caravan_id}</span>
             </div>
             <div className="flex items-center gap-2 text-muted">
-              <Shield size={14} /> <span className="font-medium">&euro;{parseFloat(checklist.borg_amount).toFixed(2)} borg</span>
+              <Shield size={14} /> <span className="font-medium">&euro;{parseFloat(checklist.borg_amount).toFixed(2)} {t('borgPage.deposit')}</span>
             </div>
             <div className="flex items-center gap-2 text-muted">
-              <Calendar size={14} /> <span>In: {new Date(checklist.check_in).toLocaleDateString('nl-NL')}</span>
+              <Calendar size={14} /> <span>{t('borgPage.checkIn')} {new Date(checklist.check_in).toLocaleDateString('nl-NL')}</span>
             </div>
             <div className="flex items-center gap-2 text-muted">
-              <Calendar size={14} /> <span>Uit: {new Date(checklist.check_out).toLocaleDateString('nl-NL')}</span>
+              <Calendar size={14} /> <span>{t('borgPage.checkOut')} {new Date(checklist.check_out).toLocaleDateString('nl-NL')}</span>
             </div>
           </div>
           {checklist.staff_name && (
             <p className="text-xs text-muted mt-3 pt-3 border-t border-border">
-              Geïnspecteerd door: <span className="font-medium">{checklist.staff_name}</span>
+              {t('borgPage.inspectedBy')} <span className="font-medium">{checklist.staff_name}</span>
               {checklist.completed_at && (
-                <span> op {new Date(checklist.completed_at).toLocaleString('nl-NL')}</span>
+                <span> {t('borgPage.on')} {new Date(checklist.completed_at).toLocaleString('nl-NL')}</span>
               )}
             </p>
           )}
@@ -281,17 +290,17 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           <div className="bg-primary-50 rounded-xl p-4 text-center border border-primary-100">
             <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-1" />
             <div className="text-xl font-bold text-primary-dark">{goedItems}</div>
-            <div className="text-[10px] font-medium text-primary">In orde</div>
+            <div className="text-[10px] font-medium text-primary">{t('borgPage.inOrder')}</div>
           </div>
           <div className="bg-primary-50 rounded-xl p-4 text-center border border-primary-light">
             <AlertTriangle className="w-6 h-6 text-primary mx-auto mb-1" />
             <div className="text-xl font-bold text-accent">{beschadigdItems}</div>
-            <div className="text-[10px] font-medium text-accent">Beschadigd</div>
+            <div className="text-[10px] font-medium text-accent">{t('borgPage.damagedLabel')}</div>
           </div>
           <div className="bg-danger/5 rounded-xl p-4 text-center border border-danger/20">
             <XCircle className="w-6 h-6 text-danger mx-auto mb-1" />
             <div className="text-xl font-bold text-danger">{ontbreektItems}</div>
-            <div className="text-[10px] font-medium text-danger">Ontbreekt</div>
+            <div className="text-[10px] font-medium text-danger">{t('borgPage.missingLabel')}</div>
           </div>
         </motion.div>
 
@@ -320,7 +329,13 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                         item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
                         'bg-surface-alt text-muted'
                       }`}>
-                        {itemStatusLabels[item.status]}
+                        {
+                          item.status === 'nvt' ? t('borgPage.notAssessed') :
+                          item.status === 'goed' ? t('borgPage.inOrder') :
+                          item.status === 'beschadigd' ? t('borgPage.damagedLabel') :
+                          item.status === 'ontbreekt' ? t('borgPage.missingLabel') :
+                          itemStatusLabels[item.status]
+                        }
                       </span>
                     </div>
                     {item.notes && (
@@ -344,7 +359,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             transition={{ delay: 0.5, duration: 0.4 }}
             className="bg-primary-50 rounded-xl border border-primary p-4"
           >
-            <h3 className="font-semibold text-sm text-foreground mb-1">Opmerkingen van medewerker</h3>
+            <h3 className="font-semibold text-sm text-foreground mb-1">{t('borgPage.staffNotes')}</h3>
             <p className="text-sm text-muted">{checklist.general_notes}</p>
           </motion.div>
         )}
@@ -357,23 +372,23 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             transition={{ delay: 0.55, duration: 0.4 }}
             className="bg-white rounded-xl border-2 border-primary p-5"
           >
-            <h3 className="font-bold text-lg text-foreground mb-2">Uw beoordeling</h3>
+            <h3 className="font-bold text-lg text-foreground mb-2">{t('borgPage.yourAssessment')}</h3>
             <p className="text-sm text-muted mb-4">
               {hasIssues
-                ? 'Er zijn punten geconstateerd bij de inspectie. Bekijk de details hierboven. Als u het eens bent met de bevindingen, klik dan op "Akkoord". Bij bezwaar kunt u dit hieronder aangeven.'
-                : 'De inspectie is zonder bijzonderheden afgerond. Bevestig uw akkoord hieronder.'
+                ? t('borgPage.assessmentIssues')
+                : t('borgPage.assessmentOk')
               }
             </p>
             <div className="mb-4">
               <label className="block text-sm font-medium text-foreground mb-1">
-                Opmerkingen (optioneel)
+                {t('borgPage.commentsOptional')}
               </label>
               <textarea
                 value={customerNotes}
                 onChange={(e) => setCustomerNotes(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                placeholder="Heeft u opmerkingen over de inspectie? Voeg ze hier toe..."
+                placeholder={t('borgPage.commentsPlaceholder')}
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -383,7 +398,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50 text-sm"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <ThumbsUp size={16} />}
-                Akkoord — Ik ga akkoord
+                {t('borgPage.agreeBtn')}
               </button>
               <button
                 onClick={() => handleSubmit(false)}
@@ -391,7 +406,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-danger text-white rounded-xl font-semibold hover:bg-danger/80 transition-colors cursor-pointer disabled:opacity-50 text-sm"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <ThumbsDown size={16} />}
-                Bezwaar indienen
+                {t('borgPage.objectBtn')}
               </button>
             </div>
           </motion.div>
@@ -414,7 +429,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                 <ThumbsDown className="text-danger" size={20} />
               )}
               <h3 className="font-semibold text-lg">
-                {checklist.customer_agreed ? 'U bent akkoord gegaan' : 'U heeft bezwaar ingediend'}
+                {checklist.customer_agreed ? t('borgPage.agreedResponse') : t('borgPage.objectedResponse')}
               </h3>
             </div>
             {checklist.customer_agreed_at && (
@@ -429,8 +444,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             )}
             {checklist.customer_agreed && (
               <p className="text-sm text-primary-dark mt-3">
-                Uw borg van &euro;{parseFloat(checklist.borg_amount).toFixed(2)} wordt na check-out geretourneerd,
-                mits de uitcheck-inspectie geen nieuwe schade oplevert.
+                {t('borgPage.borgReturnNote').replace('{amount}', parseFloat(checklist.borg_amount).toFixed(2))}
               </p>
             )}
           </motion.div>
@@ -439,7 +453,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
         {/* Footer */}
         <div className="text-center py-6 border-t border-border">
           <Link href="/" className="text-sm text-primary hover:underline">
-            ← Terug naar Caravanverhuur Costa Brava
+            {t('borgPage.backToSite')}
           </Link>
           <p className="text-xs text-muted mt-2">
             &copy; {new Date().getFullYear()} Caravanverhuur Costa Brava

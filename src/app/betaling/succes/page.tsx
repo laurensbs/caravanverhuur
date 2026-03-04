@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n/context';
 
 function SuccesContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Short delay so the animation feels rewarding
@@ -22,7 +24,7 @@ function SuccesContent() {
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={36} className="animate-spin text-primary mx-auto" />
-          <p className="text-sm text-muted mt-4">Betaling verifiëren...</p>
+          <p className="text-sm text-muted mt-4">{t('paymentPage.verifying')}</p>
         </div>
       </div>
     );
@@ -65,10 +67,10 @@ function SuccesContent() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            Betaling geslaagd!
+            {t('paymentPage.successTitle')}
           </h1>
           <p className="text-muted text-lg mb-8">
-            Je iDEAL betaling is succesvol verwerkt. Je ontvangt een bevestiging per e-mail.
+            {t('paymentPage.successDesc')}
           </p>
 
           <motion.div
@@ -79,11 +81,10 @@ function SuccesContent() {
           >
             <div className="flex items-center gap-3 justify-center text-primary mb-3">
               <CheckCircle size={20} />
-              <span className="font-semibold">Betaling ontvangen</span>
+              <span className="font-semibold">{t('paymentPage.received')}</span>
             </div>
             <p className="text-sm text-muted">
-              De betaling is automatisch verwerkt en gekoppeld aan je boeking.
-              Je kunt de status bekijken in je account.
+              {t('paymentPage.receivedDesc')}
             </p>
           </motion.div>
 
@@ -92,13 +93,13 @@ function SuccesContent() {
               href="/mijn-account"
               className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
             >
-              Naar Mijn Account <ArrowRight size={16} />
+              {t('paymentPage.toMyAccount')} <ArrowRight size={16} />
             </Link>
             <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold hover:bg-surface-alt transition-colors"
             >
-              Terug naar home
+              {t('paymentPage.backToHome')}
             </Link>
           </div>
         </motion.div>
