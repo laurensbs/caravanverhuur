@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/'],
     },
-    sitemap: 'https://caravanscostabrava.nl/sitemap.xml',
+    sitemap: 'https://caravanverhuurspanje.com/sitemap.xml',
   };
 }

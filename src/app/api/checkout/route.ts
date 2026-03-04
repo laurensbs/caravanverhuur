@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
             currency: 'eur',
             product_data: {
               name: `${typeLabel} — ${booking.reference}`,
-              description: `Caravans Costa Brava — ${booking.guest_name}`,
+              description: `Caravanverhuur Spanje — ${booking.guest_name}`,
             },
             unit_amount: Math.round(parseFloat(payment.amount) * 100), // cents
           },

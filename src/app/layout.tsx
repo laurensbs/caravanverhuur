@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Caravans Costa Brava | Caravan Huren Spanje — Volledig Uitgerust",
+  title: "Caravanverhuur Spanje | Caravan Huren Costa Brava — Volledig Uitgerust",
   description:
     "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava. Beddengoed, kookgerei & inventaris inbegrepen. Vanaf €50/dag. Boek seizoen 2026!",
   keywords: [
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     "caravan met inventaris",
   ],
   openGraph: {
-    title: "Caravans Costa Brava — Zorgeloze Caravanvakantie",
+    title: "Caravanverhuur Spanje — Zorgeloze Caravanvakantie",
     description: "Volledig uitgeruste caravan op de Costa Brava. Uitstappen en genieten — wij regelen de rest. Vanaf €50/dag.",
-    url: "https://caravanscostabrava.nl",
-    siteName: "Caravans Costa Brava",
+    url: "https://caravanverhuurspanje.com",
+    siteName: "Caravanverhuur Spanje",
     locale: "nl_NL",
     type: "website",
     images: [
@@ -58,11 +58,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Caravans Costa Brava — Zorgeloze Caravanvakantie",
+    title: "Caravanverhuur Spanje — Zorgeloze Caravanvakantie",
     description: "Volledig uitgeruste caravan op de Costa Brava. Vanaf €50/dag. Boek seizoen 2026!",
     images: ["https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1200&q=80"],
   },
-  metadataBase: new URL("https://caravanscostabrava.nl"),
+  metadataBase: new URL("https://caravanverhuurspanje.com"),
   alternates: {
     canonical: "/",
   },
@@ -72,9 +72,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "Caravans Costa Brava",
+  name: "Caravanverhuur Spanje",
   description: "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava.",
-  url: "https://caravanscostabrava.nl",
+  url: "https://caravanverhuurspanje.com",
   logo: "https://u.cubeupload.com/laurensbos/Caravanverhuur1.png",
   image: "https://u.cubeupload.com/laurensbos/Caravanverhuur1.png",
   address: {
