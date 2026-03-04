@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { LanguageProvider } from '@/i18n/context';
 import { dictionaries } from '@/i18n/translations';
 
@@ -19,7 +19,13 @@ export function LayoutWrapper({
   cookieConsent: ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith('/admin');
+  const [isAdminSubdomain, setIsAdminSubdomain] = useState(false);
+
+  useEffect(() => {
+    setIsAdminSubdomain(window.location.hostname.startsWith('admin.'));
+  }, []);
+
+  const isAdmin = pathname.startsWith('/admin') || isAdminSubdomain;
   const isBorg = pathname.startsWith('/borg');
 
   if (isAdmin || isBorg) {
