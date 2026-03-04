@@ -17,6 +17,7 @@ import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings } from '@/data/campings';
 import { useLanguage } from '@/i18n/context';
+import type { Locale } from '@/i18n/context';
 
 // ===== TYPES =====
 interface Customer {
@@ -86,6 +87,8 @@ interface BorgChecklist {
 type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'profiel';
 
 // ===== HELPERS =====
+const localeMap: Record<Locale, string> = { nl: 'nl-NL', en: 'en-GB', es: 'es-ES' };
+
 const statusColors: Record<string, string> = {
   NIEUW: 'bg-primary-100 text-primary-dark',
   BEVESTIGD: 'bg-primary-light text-primary-dark',
@@ -108,11 +111,11 @@ const borgItemIcons: Record<string, React.ReactNode> = {
   ontbreekt: <XCircle size={14} className="text-danger" />,
 };
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+function formatDate(d: string, locale: string = 'nl-NL') {
+  return new Date(d).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
-function formatPrice(n: number) {
-  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
+function formatPrice(n: number, locale: string = 'nl-NL') {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(n);
 }
 function daysUntil(d: string) {
   return Math.max(0, Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -136,7 +139,10 @@ export default function MijnAccountPage() {
 function MijnAccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const dateLoc = localeMap[locale];
+  const fd = (d: string) => formatDate(d, dateLoc);
+  const fp = (n: number) => formatPrice(n, dateLoc);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -301,6 +307,12 @@ function MijnAccountContent() {
     KLANT_BEZWAAR: t('myAccount.statusBezwaar'),
   };
 
+  const paymentTypeLabels: Record<string, string> = {
+    AANBETALING: t('myAccount.payTypeDeposit'),
+    RESTBETALING: t('myAccount.payTypeRemaining'),
+    BORG: t('myAccount.payTypeBorg'),
+  };
+
   const getCaravan = (id: string) => staticCaravans.find(c => c.id === id) || customCaravansData.find(c => c.id === id);
   const getCamping = (id: string) => campings.find(c => c.id === id);
   const activeBookings = bookings.filter(b => !['GEANNULEERD', 'AFGEROND'].includes(b.status));
@@ -458,7 +470,7 @@ function MijnAccountContent() {
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
                       <div className="bg-white rounded-2xl overflow-hidden border border-border/40 shadow-sm">
-                        <div className="relative h-36 sm:h-44 bg-gradient-to-br from-primary-dark to-primary">
+                        <div className="relative h-36 sm:h-44 bg-foreground">
                           {caravan?.photos?.[0] && (
                             <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" unoptimized />
                           )}
@@ -468,7 +480,7 @@ function MijnAccountContent() {
                               <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{caravan?.name || 'Caravan'}</h3>
                               <div className="flex items-center gap-3 text-white/60 text-sm mt-1.5">
                                 <span className="flex items-center gap-1"><MapPin size={12} />{camping?.name}</span>
-                                <span className="flex items-center gap-1"><Calendar size={12} />{formatDate(upcomingBooking.check_in)}</span>
+                                <span className="flex items-center gap-1"><Calendar size={12} />{fd(upcomingBooking.check_in)}</span>
                               </div>
                             </div>
                             <div className="text-center bg-white/15 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/10">
@@ -481,7 +493,7 @@ function MijnAccountContent() {
                         </div>
                         <div className="p-4 sm:p-5 flex items-center justify-between bg-[#f8f7f4]/50">
                           <div className="flex items-center gap-3 text-sm text-muted flex-wrap">
-                            <span>{formatDate(upcomingBooking.check_in)} → {formatDate(upcomingBooking.check_out)}</span>
+                            <span>{fd(upcomingBooking.check_in)} → {fd(upcomingBooking.check_out)}</span>
                             <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
                               {statusLabelsNL[upcomingBooking.status] || upcomingBooking.status}
                             </span>
@@ -504,7 +516,7 @@ function MijnAccountContent() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
-                            <div className="text-xs text-muted">{formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
+                            <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
                           </div>
                           <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
                         </button>
@@ -629,7 +641,7 @@ function MijnAccountContent() {
                                   <h3 className="font-semibold text-foreground mt-1 text-sm">{caravan?.name || `Caravan`}</h3>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-bold text-foreground text-sm">{formatPrice(Number(booking.total_price))}</div>
+                                  <div className="font-bold text-foreground text-sm">{fp(Number(booking.total_price))}</div>
                                 </div>
                               </div>
                             )}
@@ -638,11 +650,11 @@ function MijnAccountContent() {
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                               <div className="flex items-center gap-2 text-muted">
                                 <Calendar size={13} className="text-primary shrink-0" />
-                                <span className="truncate">{formatDate(booking.check_in)}</span>
+                                <span className="truncate">{fd(booking.check_in)}</span>
                               </div>
                               <div className="flex items-center gap-2 text-muted">
                                 <Calendar size={13} className="text-primary shrink-0" />
-                                <span className="truncate">{formatDate(booking.check_out)}</span>
+                                <span className="truncate">{fd(booking.check_out)}</span>
                               </div>
                               <div className="flex items-center gap-2 text-muted">
                                 <Clock size={13} className="text-primary shrink-0" />
@@ -664,7 +676,7 @@ function MijnAccountContent() {
                                 return (
                                   <div>
                                     <div className="flex items-center justify-between text-xs mb-1.5">
-                                      <span className="text-muted">{t('myAccount.paidOf').replace('{paid}', formatPrice(paid)).replace('{total}', formatPrice(total))}</span>
+                                      <span className="text-muted">{t('myAccount.paidOf').replace('{paid}', fp(paid)).replace('{total}', fp(total))}</span>
                                       <span className="font-semibold text-foreground-light">{pct}%</span>
                                     </div>
                                     <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
@@ -679,7 +691,7 @@ function MijnAccountContent() {
                             {!isPast && caravan?.photos?.[0] && (
                               <div className="mt-3 flex items-center justify-between">
                                 <span className="font-mono text-[10px] text-muted">{booking.reference}</span>
-                                <span className="text-sm font-bold text-foreground">{formatPrice(Number(booking.total_price))}</span>
+                                <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
                               </div>
                             )}
                           </div>
@@ -704,19 +716,19 @@ function MijnAccountContent() {
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.paid')}</div>
                           <div className="text-lg font-bold text-primary">
-                            {formatPrice(payments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0))}
+                            {fp(payments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.outstanding')}</div>
                           <div className="text-lg font-bold text-accent">
-                            {formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}
+                            {fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.totalAmount')}</div>
                           <div className="text-lg font-bold text-foreground">
-                            {formatPrice(payments.reduce((s, p) => s + Number(p.amount), 0))}
+                            {fp(payments.reduce((s, p) => s + Number(p.amount), 0))}
                           </div>
                         </div>
                       </div>
@@ -739,11 +751,11 @@ function MijnAccountContent() {
                             {payment.status === 'BETAALD' ? <CheckCircle size={18} className="text-primary" /> : <Clock size={18} className="text-primary" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground">{payment.type}</div>
-                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? formatDate(payment.paid_at) : t('myAccount.notPaidYet')}</div>
+                            <div className="font-semibold text-sm text-foreground">{paymentTypeLabels[payment.type] || payment.type}</div>
+                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? fd(payment.paid_at) : t('myAccount.notPaidYet')}</div>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className="font-bold text-sm text-foreground">{formatPrice(Number(payment.amount))}</div>
+                            <div className="font-bold text-sm text-foreground">{fp(Number(payment.amount))}</div>
                             {payment.status === 'OPENSTAAND' ? (
                               <button
                                 onClick={() => handlePayment(payment.id)}
@@ -907,7 +919,10 @@ function MijnAccountContent() {
                                                   item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
                                                   'bg-surface-alt text-muted'
                                                 }`}>
-                                                  {item.status === 'nvt' ? 'N.v.t.' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                                  {item.status === 'nvt' ? t('myAccount.borgStatusNvt') :
+                                                   item.status === 'goed' ? t('myAccount.borgStatusGoed') :
+                                                   item.status === 'beschadigd' ? t('myAccount.borgStatusBeschadigd') :
+                                                   item.status === 'ontbreekt' ? t('myAccount.borgStatusOntbreekt') : item.status}
                                                 </span>
                                               </div>
                                               {item.notes && (
@@ -938,7 +953,7 @@ function MijnAccountContent() {
                                         <h4 className="font-semibold text-sm">{bc.customer_agreed ? t('myAccount.youAgreed') : t('myAccount.youObjected')}</h4>
                                       </div>
                                       {bc.customer_agreed_at && (
-                                        <p className="text-xs text-muted mb-1">Op {new Date(bc.customer_agreed_at).toLocaleString('nl-NL')}</p>
+                                        <p className="text-xs text-muted mb-1">{t('myAccount.respondedOn').replace('{date}', new Date(bc.customer_agreed_at).toLocaleString(dateLoc))}</p>
                                       )}
                                       {bc.customer_notes && (
                                         <p className="text-sm mt-2 bg-white/60 rounded-lg p-2">{bc.customer_notes}</p>
@@ -1046,7 +1061,7 @@ function MijnAccountContent() {
                         </div>
                         <div>
                           <h3 className="font-bold text-foreground text-lg">{customer.name}</h3>
-                          <p className="text-xs text-muted">{t('myAccount.customerSince').replace('{date}', customer.created_at ? new Date(customer.created_at).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : '2026')}</p>
+                          <p className="text-xs text-muted">{t('myAccount.customerSince').replace('{date}', customer.created_at ? new Date(customer.created_at).toLocaleDateString(dateLoc, { month: 'long', year: 'numeric' }) : '2026')}</p>
                         </div>
                       </div>
                       {!editingProfile && (
@@ -1143,7 +1158,7 @@ function MijnAccountContent() {
       </div>
 
       {/* Mobile bottom action bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border/40 px-4 py-3 safe-area-inset-bottom z-40">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border/40 px-4 pt-3 z-40" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         <div className="flex gap-2">
           <Link href="/boeken" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl">
             <Plus size={16} /> {t('myAccount.newBooking')}
@@ -1154,7 +1169,7 @@ function MijnAccountContent() {
         </div>
       </div>
       {/* Bottom spacer for mobile */}
-      <div className="h-20 lg:hidden" />
+      <div className="h-24 lg:hidden" />
     </div>
   );
 }

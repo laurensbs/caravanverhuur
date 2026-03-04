@@ -113,24 +113,23 @@ export default function HomePage() {
             unoptimized
           />
           {/* Layered gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-primary-dark/35 to-black/75 sm:bg-gradient-to-r sm:from-black/75 sm:via-primary-dark/45 sm:to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 via-transparent to-accent/10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/50 sm:to-transparent" />
         </motion.div>
 
         {/* Floating decorative particles */}
         <motion.div
-          className="absolute top-1/4 right-[15%] w-2 h-2 bg-primary-light/40 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -20, 0], opacity: [0.3, 0.8, 0.3] }}
+          className="absolute top-1/4 right-[15%] w-2 h-2 bg-white/30 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -20, 0], opacity: [0.2, 0.5, 0.2] }}
           transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute top-1/3 right-[25%] w-3 h-3 bg-white/20 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -15, 0], opacity: [0.2, 0.5, 0.2] }}
+          className="absolute top-1/3 right-[25%] w-3 h-3 bg-white/15 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -15, 0], opacity: [0.15, 0.4, 0.15] }}
           transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
         />
         <motion.div
-          className="absolute bottom-1/3 right-[20%] w-1.5 h-1.5 bg-primary/30 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -25, 0], opacity: [0.2, 0.6, 0.2] }}
+          className="absolute bottom-1/3 right-[20%] w-1.5 h-1.5 bg-white/20 rounded-full z-[5] hidden lg:block"
+          animate={{ y: [0, -25, 0], opacity: [0.15, 0.45, 0.15] }}
           transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut', delay: 2 }}
         />
 
@@ -156,7 +155,7 @@ export default function HomePage() {
               className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-4 sm:mb-6 tracking-tight"
             >
               {t('home.heroTitle1')}
-              <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-primary to-primary-light animate-gradient"> {t('home.heroTitle2')}</span>
+              <span className="block sm:inline text-white/95"> {t('home.heroTitle2')}</span>
               <br className="hidden sm:block" />
               <span className="text-white/90"> {t('home.heroTitle3')}</span>
             </motion.h1>
