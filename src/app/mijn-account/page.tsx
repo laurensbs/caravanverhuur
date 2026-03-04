@@ -147,6 +147,15 @@ export default function MijnAccountPage() {
   // Payment
   const [payingId, setPayingId] = useState<string | null>(null);
 
+  // Custom caravans (must be before any early returns to satisfy Rules of Hooks)
+  const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/caravans')
+      .then(res => res.json())
+      .then(data => setCustomCaravansData(data.caravans || []))
+      .catch(() => {});
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me');
@@ -244,14 +253,6 @@ export default function MijnAccountPage() {
       </div>
     );
   }
-
-  const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
-  useEffect(() => {
-    fetch('/api/admin/caravans')
-      .then(res => res.json())
-      .then(data => setCustomCaravansData(data.caravans || []))
-      .catch(() => {});
-  }, []);
 
   if (!customer) return null;
 
