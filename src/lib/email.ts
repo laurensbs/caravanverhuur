@@ -350,3 +350,69 @@ export async function sendBorgChecklistEmail(data: {
     `, `Borgchecklist klaar voor boeking ${data.reference} — bekijk en reageer`),
   });
 }
+
+// ===== NEWSLETTER EMAIL =====
+
+const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
+  activiteit: { label: 'Activiteit', emoji: '🎉' },
+  feestdag: { label: 'Feestdag', emoji: '🎊' },
+  markt: { label: 'Markt', emoji: '🛍️' },
+  evenement: { label: 'Evenement', emoji: '🎭' },
+  algemeen: { label: 'Nieuws', emoji: '📣' },
+};
+
+export async function sendNewsletterEmail(data: {
+  to: string;
+  title: string;
+  content: string;
+  category: string;
+  eventDate?: string | null;
+  eventLocation?: string | null;
+}) {
+  const cat = CATEGORY_LABELS[data.category] || CATEGORY_LABELS.algemeen;
+  const lines = data.content.split('\n').filter(l => l.trim());
+  const contentHtml = lines.map(l =>
+    `<p style="margin:0 0 14px;color:#3D3522;font-size:15px;line-height:1.7;">${l}</p>`
+  ).join('');
+
+  const hasDetails = data.eventDate || data.eventLocation;
+
+  return sendEmail({
+    to: data.to,
+    subject: `${cat.emoji} ${data.title}`,
+    html: emailWrapper(`
+      <div style="text-align:center;margin-bottom:8px;">
+        <span style="display:inline-block;background:#f0faf6;color:#386150;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;letter-spacing:0.3px;">${cat.emoji} ${cat.label}</span>
+      </div>
+
+      ${heading(data.title)}
+
+      ${hasDetails ? `
+        <div style="background:#f9f8f5;border:1px solid #eeece6;border-radius:10px;padding:16px 20px;margin:0 0 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            ${data.eventDate ? `<tr>
+              <td style="color:#9a9588;font-size:13px;padding:4px 0;">📅 Datum</td>
+              <td style="color:#3D3522;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventDate}</td>
+            </tr>` : ''}
+            ${data.eventLocation ? `<tr>
+              <td style="color:#9a9588;font-size:13px;padding:4px 0;">📍 Locatie</td>
+              <td style="color:#3D3522;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventLocation}</td>
+            </tr>` : ''}
+          </table>
+        </div>
+      ` : ''}
+
+      ${contentHtml}
+
+      ${divider()}
+
+      ${highlight(`
+        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+          Wil je de Costa Brava zelf ervaren? Bekijk onze beschikbare caravans en boek jouw perfecte vakantie.
+        </p>
+      `, true)}
+
+      ${button('Bekijk caravans →', `${SITE_URL}/caravans`)}
+    `, `${cat.emoji} ${data.title} — ${BRAND_NAME}`),
+  });
+}

@@ -1,0 +1,175 @@
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  getAllNewsletters,
+  createNewsletter,
+  updateNewsletter,
+  deleteNewsletter,
+  getNewsletterById,
+  markNewsletterSent,
+  getAllCustomerEmails,
+} from '@/lib/db';
+import { sendNewsletterEmail } from '@/lib/email';
+
+// GET - List all newsletters
+export async function GET() {
+  try {
+    const newsletters = await getAllNewsletters();
+    return NextResponse.json({ newsletters });
+  } catch (error) {
+    console.error('Error fetching newsletters:', error);
+    return NextResponse.json({ error: 'Fout bij ophalen nieuwsbrieven' }, { status: 500 });
+  }
+}
+
+// POST - Create or send newsletter
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { action } = body;
+
+    // Send existing newsletter
+    if (action === 'send') {
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
+      }
+
+      const newsletter = await getNewsletterById(id);
+      if (!newsletter) {
+        return NextResponse.json({ error: 'Nieuwsbrief niet gevonden' }, { status: 404 });
+      }
+
+      if (newsletter.status === 'verzonden') {
+        return NextResponse.json({ error: 'Nieuwsbrief is al verzonden' }, { status: 400 });
+      }
+
+      // Get all customer emails
+      const emails = await getAllCustomerEmails();
+      if (emails.length === 0) {
+        return NextResponse.json({ error: 'Geen e-mailadressen gevonden' }, { status: 400 });
+      }
+
+      // Format event date for display
+      let eventDateFormatted: string | null = null;
+      if (newsletter.event_date) {
+        const d = new Date(newsletter.event_date);
+        eventDateFormatted = d.toLocaleDateString('nl-NL', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+      }
+
+      // Send to all customers
+      let sentCount = 0;
+      const errors: string[] = [];
+
+      for (const email of emails) {
+        try {
+          const result = await sendNewsletterEmail({
+            to: email,
+            title: newsletter.title,
+            content: newsletter.content,
+            category: newsletter.category,
+            eventDate: eventDateFormatted,
+            eventLocation: newsletter.event_location,
+          });
+          if (result.success) {
+            sentCount++;
+          } else {
+            errors.push(`${email}: ${result.error}`);
+          }
+        } catch (err) {
+          errors.push(`${email}: ${String(err)}`);
+        }
+      }
+
+      // Mark as sent
+      await markNewsletterSent(id, sentCount);
+
+      return NextResponse.json({
+        success: true,
+        sentCount,
+        totalEmails: emails.length,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+    }
+
+    // Create new newsletter
+    const { title, content, category, eventDate, eventLocation } = body;
+
+    if (!title || !content) {
+      return NextResponse.json({ error: 'Titel en inhoud zijn verplicht' }, { status: 400 });
+    }
+
+    const result = await createNewsletter({
+      title: title.trim(),
+      content: content.trim(),
+      category: category || 'algemeen',
+      eventDate: eventDate || undefined,
+      eventLocation: eventLocation?.trim() || undefined,
+    });
+
+    return NextResponse.json({ success: true, id: result.id });
+  } catch (error) {
+    console.error('Error creating/sending newsletter:', error);
+    return NextResponse.json({ error: 'Fout bij verwerken nieuwsbrief' }, { status: 500 });
+  }
+}
+
+// PUT - Update newsletter
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, title, content, category, eventDate, eventLocation } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
+    }
+
+    const newsletter = await getNewsletterById(id);
+    if (!newsletter) {
+      return NextResponse.json({ error: 'Nieuwsbrief niet gevonden' }, { status: 404 });
+    }
+
+    if (newsletter.status === 'verzonden') {
+      return NextResponse.json({ error: 'Verzonden nieuwsbrieven kunnen niet worden bewerkt' }, { status: 400 });
+    }
+
+    const result = await updateNewsletter(id, {
+      title: title?.trim(),
+      content: content?.trim(),
+      category,
+      eventDate: eventDate !== undefined ? eventDate : undefined,
+      eventLocation: eventLocation !== undefined ? eventLocation?.trim() || null : undefined,
+    });
+
+    if (!result) {
+      return NextResponse.json({ error: 'Nieuwsbrief niet gevonden' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating newsletter:', error);
+    return NextResponse.json({ error: 'Fout bij bijwerken nieuwsbrief' }, { status: 500 });
+  }
+}
+
+// DELETE - Delete newsletter
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
+    }
+
+    await deleteNewsletter(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting newsletter:', error);
+    return NextResponse.json({ error: 'Fout bij verwijderen nieuwsbrief' }, { status: 500 });
+  }
+}

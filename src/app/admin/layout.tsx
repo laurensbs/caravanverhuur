@@ -19,6 +19,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Newspaper,
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { sub: '/caravans', label: 'Caravans', icon: CarFront },
   { sub: '/borg', label: 'Borgchecklist', icon: ClipboardCheck },
   { sub: '/klanten', label: 'Klanten', icon: Users },
+  { sub: '/nieuwsbrieven', label: 'Nieuwsbrieven', icon: Newspaper },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -38,6 +40,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mainSiteUrl, setMainSiteUrl] = useState('/');
   const pathname = usePathname();
@@ -47,7 +50,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = NAV_ITEMS.map(i => ({ ...i, href: p(i.sub) }));
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('admin_auth');
+    const stored = sessionStorage.getItem('admin_auth') || localStorage.getItem('admin_auth');
     if (stored === 'true') setAuthenticated(true);
     if (window.location.hostname.startsWith('admin.')) {
       setMainSiteUrl(`https://${window.location.hostname.replace('admin.', '')}`);
@@ -58,6 +61,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       sessionStorage.setItem('admin_auth', 'true');
+      if (rememberMe) {
+        localStorage.setItem('admin_auth', 'true');
+      }
       setAuthenticated(true);
       setError('');
     } else {
@@ -67,6 +73,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = () => {
     sessionStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_auth');
     setAuthenticated(false);
     setPassword('');
   };
@@ -149,9 +156,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 )}
               </AnimatePresence>
 
+              <label className="flex items-center gap-2 mt-4 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer accent-primary"
+                />
+                <span className="text-sm text-muted">Onthoud mij</span>
+              </label>
+
               <button
                 type="submit"
-                className="w-full mt-5 py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/25"
+                className="w-full mt-4 py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/25"
               >
                 Inloggen
               </button>

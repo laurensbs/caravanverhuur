@@ -160,6 +160,23 @@ export async function setupDatabase() {
     )
   `;
 
+  // Newsletters table
+  await sql`
+    CREATE TABLE IF NOT EXISTS newsletters (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'algemeen',
+      event_date DATE,
+      event_location TEXT,
+      status TEXT NOT NULL DEFAULT 'concept',
+      sent_at TIMESTAMP,
+      sent_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -806,4 +823,89 @@ export async function updateCustomCaravan(id: string, data: {
 
 export async function deleteCustomCaravan(id: string) {
   await sql`DELETE FROM custom_caravans WHERE id = ${id}`;
+}
+
+// ===== NEWSLETTER QUERIES =====
+
+export async function createNewsletter(data: {
+  title: string;
+  content: string;
+  category: string;
+  eventDate?: string;
+  eventLocation?: string;
+}) {
+  const id = generateId('NL');
+  await sql`
+    INSERT INTO newsletters (id, title, content, category, event_date, event_location)
+    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null})
+  `;
+  return { id };
+}
+
+export async function getAllNewsletters() {
+  const result = await sql`SELECT * FROM newsletters ORDER BY created_at DESC`;
+  return result.rows;
+}
+
+export async function getNewsletterById(id: string) {
+  const result = await sql`SELECT * FROM newsletters WHERE id = ${id}`;
+  return result.rows[0] || null;
+}
+
+export async function updateNewsletter(id: string, data: {
+  title?: string;
+  content?: string;
+  category?: string;
+  eventDate?: string | null;
+  eventLocation?: string | null;
+}) {
+  const existing = await getNewsletterById(id);
+  if (!existing) return null;
+
+  const title = data.title ?? existing.title;
+  const content = data.content ?? existing.content;
+  const category = data.category ?? existing.category;
+  const eventDate = data.eventDate !== undefined ? data.eventDate : existing.event_date;
+  const eventLocation = data.eventLocation !== undefined ? data.eventLocation : existing.event_location;
+
+  await sql`
+    UPDATE newsletters SET
+      title = ${title},
+      content = ${content},
+      category = ${category},
+      event_date = ${eventDate},
+      event_location = ${eventLocation},
+      updated_at = NOW()
+    WHERE id = ${id}
+  `;
+  return { success: true };
+}
+
+export async function markNewsletterSent(id: string, sentCount: number) {
+  await sql`
+    UPDATE newsletters SET
+      status = 'verzonden',
+      sent_at = NOW(),
+      sent_count = ${sentCount},
+      updated_at = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+export async function deleteNewsletter(id: string) {
+  await sql`DELETE FROM newsletters WHERE id = ${id}`;
+}
+
+export async function getAllCustomerEmails() {
+  // Get unique emails from both customers table and bookings
+  const result = await sql`
+    SELECT DISTINCT email FROM (
+      SELECT email FROM customers
+      UNION
+      SELECT guest_email AS email FROM bookings
+    ) AS all_emails
+    WHERE email IS NOT NULL AND email != ''
+    ORDER BY email
+  `;
+  return result.rows.map(r => r.email as string);
 }
