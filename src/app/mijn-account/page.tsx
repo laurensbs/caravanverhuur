@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,7 @@ import {
   Clock, CheckCircle, ArrowRight, FileText, Sun, Shield, Star,
   CheckCircle2, AlertTriangle, XCircle, Minus, MessageSquare,
   ThumbsUp, ThumbsDown, Trash2, ExternalLink, ChevronDown,
+  Home, Settings, Plus, Eye,
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -119,14 +120,30 @@ function daysUntil(d: string) {
 
 // ===== MAIN COMPONENT =====
 export default function MijnAccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f8f7f4] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin text-primary mx-auto" />
+        </div>
+      </div>
+    }>
+      <MijnAccountContent />
+    </Suspense>
+  );
+}
+
+function MijnAccountContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [borgChecklists, setBorgChecklists] = useState<BorgChecklist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>('overzicht');
+  const initialTab = (searchParams.get('tab') as Tab) || 'overzicht';
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   // Profile editing
   const [editingProfile, setEditingProfile] = useState(false);
@@ -175,6 +192,20 @@ export default function MijnAccountPage() {
   }, [router]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Sync tab with URL
+  useEffect(() => {
+    const urlTab = searchParams.get('tab') as Tab;
+    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'profiel'].includes(urlTab)) {
+      setTab(urlTab);
+    }
+  }, [searchParams]);
+
+  const switchTab = (newTab: Tab) => {
+    setTab(newTab);
+    const url = newTab === 'overzicht' ? '/mijn-account' : `/mijn-account?tab=${newTab}`;
+    window.history.replaceState(null, '', url);
+  };
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -279,139 +310,183 @@ export default function MijnAccountPage() {
   const firstName = customer.name.split(' ')[0];
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { key: 'overzicht', label: t('myAccount.tabOverview'), icon: <User size={18} /> },
+    { key: 'overzicht', label: t('myAccount.tabOverview'), icon: <Home size={18} /> },
     { key: 'boekingen', label: t('myAccount.tabBookings'), icon: <Calendar size={18} />, badge: activeBookings.length || undefined },
     { key: 'betalingen', label: t('myAccount.tabPayments'), icon: <CreditCard size={18} />, badge: openPayments.length || undefined },
     { key: 'borg', label: t('myAccount.tabBorg'), icon: <Shield size={18} />, badge: openBorg.length || undefined },
-    { key: 'profiel', label: t('myAccount.tabProfile'), icon: <Edit3 size={18} /> },
+    { key: 'profiel', label: t('myAccount.tabProfile'), icon: <Settings size={18} /> },
   ];
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-br from-primary-dark via-primary to-primary-light px-4 pt-6 pb-16 sm:pt-8 sm:pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <Image
-            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80"
-            alt=""
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white font-bold text-lg sm:text-xl">
-                {firstName.charAt(0).toUpperCase()}
+    <div className="min-h-screen bg-[#f8f7f4]">
+      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+
+          {/* ===== SIDEBAR (desktop) ===== */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-28 space-y-4">
+              {/* User card */}
+              <div className="bg-white rounded-2xl border border-border/40 p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    {firstName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-semibold text-foreground text-sm truncate">{customer.name}</h2>
+                    <p className="text-xs text-muted truncate">{customer.email}</p>
+                  </div>
+                </div>
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-1 bg-[#f8f7f4] rounded-xl p-2.5">
+                  {[
+                    { n: bookings.length, label: t('myAccount.statBookings') },
+                    { n: payments.filter(p => p.status === 'BETAALD').length, label: t('myAccount.statPaid') },
+                    { n: borgChecklists.length, label: t('myAccount.statChecklists') },
+                  ].map((s, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-base font-bold text-foreground">{s.n}</div>
+                      <div className="text-[9px] text-muted leading-tight">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-white">{t('myAccount.hello').replace('{name}', firstName)}</h1>
-                <p className="text-white/50 text-xs sm:text-sm">{customer.email}</p>
+
+              {/* Nav items */}
+              <nav className="bg-white rounded-2xl border border-border/40 p-2 space-y-0.5">
+                {tabs.map(tb => (
+                  <button
+                    key={tb.key}
+                    onClick={() => switchTab(tb.key)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      tab === tb.key
+                        ? 'bg-primary/8 text-primary'
+                        : 'text-foreground-light hover:bg-[#f8f7f4] hover:text-foreground'
+                    }`}
+                  >
+                    <span className={tab === tb.key ? 'text-primary' : 'text-muted'}>{tb.icon}</span>
+                    {tb.label}
+                    {tb.badge ? (
+                      <span className="ml-auto w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">{tb.badge}</span>
+                    ) : null}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Sidebar actions */}
+              <div className="bg-white rounded-2xl border border-border/40 p-2 space-y-0.5">
+                <Link href="/boeken" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-primary hover:bg-primary/5 transition-colors">
+                  <Plus size={18} />
+                  {t('myAccount.newBooking')}
+                </Link>
+                <Link href="/contact" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#f8f7f4] transition-colors">
+                  <Mail size={18} className="text-muted" />
+                  {t('myAccount.contactUs')}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#f8f7f4] hover:text-danger transition-colors"
+                >
+                  <LogOut size={18} className="text-muted" />
+                  {t('myAccount.logout')}
+                </button>
               </div>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-1.5 text-white/50 hover:text-white text-xs sm:text-sm transition-colors bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2">
-              <LogOut size={14} />
-              <span className="hidden sm:inline">{t('myAccount.logout')}</span>
-            </button>
-          </div>
+          </aside>
 
-          {/* Quick stats bar */}
-          {bookings.length > 0 && (
-            <div className="flex gap-4 mt-5">
-              {[
-                { n: bookings.length, label: t('myAccount.statBookings') },
-                { n: payments.filter(p => p.status === 'BETAALD').length, label: t('myAccount.statPaid') },
-                { n: borgChecklists.length, label: t('myAccount.statChecklists') },
-              ].map((s, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-lg sm:text-xl font-bold text-white">{s.n}</div>
-                  <div className="text-[10px] sm:text-xs text-white/40">{s.label}</div>
+          {/* ===== MOBILE TAB BAR ===== */}
+          <div className="lg:hidden">
+            {/* Mobile user greeting */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                  {firstName.charAt(0).toUpperCase()}
                 </div>
+                <div>
+                  <h2 className="font-semibold text-foreground text-sm">{t('myAccount.hello').replace('{name}', firstName)}</h2>
+                  <p className="text-xs text-muted">{customer.email}</p>
+                </div>
+              </div>
+            </div>
+            {/* Scrollable tabs */}
+            <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
+              {tabs.map(tb => (
+                <button
+                  key={tb.key}
+                  onClick={() => switchTab(tb.key)}
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold transition-all ${
+                    tab === tb.key
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-white text-foreground-light hover:bg-white border border-border/40'
+                  }`}
+                >
+                  {tb.icon}
+                  <span>{tb.label}</span>
+                  {tb.badge ? (
+                    <span className={`ml-0.5 w-4 h-4 text-[9px] font-bold rounded-full flex items-center justify-center ${
+                      tab === tb.key ? 'bg-white/25 text-white' : 'bg-primary text-white'
+                    }`}>{tb.badge}</span>
+                  ) : null}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* ===== TAB BAR ===== */}
-      <div className="-mt-8 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
-            {tabs.map(tb => (
-              <button
-                key={tb.key}
-                onClick={() => setTab(tb.key)}
-                className={`shrink-0 flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  tab === tb.key
-                    ? 'bg-white text-primary shadow-lg shadow-primary/10'
-                    : 'bg-white/80 text-muted hover:bg-white hover:shadow-sm'
-                }`}
-              >
-                {tb.icon}
-                <span className="hidden sm:inline">{tb.label}</span>
-                {tb.badge ? (
-                  <span className="ml-0.5 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">{tb.badge}</span>
-                ) : null}
-              </button>
-            ))}
           </div>
-        </div>
-      </div>
 
-      {/* ===== CONTENT ===== */}
-      <div className="px-4 py-6 sm:py-8">
-        <div className="max-w-5xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
+          {/* ===== MAIN CONTENT ===== */}
+          <main className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
 
               {/* ==================== OVERZICHT ==================== */}
               {tab === 'overzicht' && (
-                <div className="space-y-4">
+                <div className="space-y-5">
+                  {/* Page heading (desktop) */}
+                  <div className="hidden lg:block">
+                    <h1 className="text-2xl font-bold text-foreground tracking-tight">{t('myAccount.hello').replace('{name}', firstName)}</h1>
+                    <p className="text-sm text-muted mt-1">{t('myAccount.dashboardWelcome')}</p>
+                  </div>
+
                   {/* Upcoming trip hero card */}
                   {upcomingBooking && (() => {
                     const caravan = getCaravan(upcomingBooking.caravan_id);
                     const camping = getCamping(upcomingBooking.camping_id);
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
-                      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-                        <div className="relative h-32 sm:h-40 bg-gradient-to-r from-primary to-primary-light">
+                      <div className="bg-white rounded-2xl overflow-hidden border border-border/40 shadow-sm">
+                        <div className="relative h-36 sm:h-44 bg-gradient-to-br from-primary-dark to-primary">
                           {caravan?.photos?.[0] && (
-                            <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-30" unoptimized />
+                            <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" unoptimized />
                           )}
-                          <div className="absolute inset-0 flex items-center justify-between px-5 sm:px-6">
+                          <div className="absolute inset-0 flex items-end justify-between p-5 sm:p-6">
                             <div>
-                              <p className="text-white/60 text-xs font-medium uppercase tracking-wider">{t('myAccount.upcomingTrip')}</p>
-                              <h3 className="text-xl sm:text-2xl font-bold text-white mt-0.5">{caravan?.name || 'Caravan'}</h3>
-                              <div className="flex items-center gap-2 text-white/70 text-sm mt-1">
-                                <MapPin size={13} />
-                                <span>{camping?.name || 'Camping'}</span>
+                              <p className="text-white/50 text-[10px] font-semibold uppercase tracking-widest">{t('myAccount.upcomingTrip')}</p>
+                              <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{caravan?.name || 'Caravan'}</h3>
+                              <div className="flex items-center gap-3 text-white/60 text-sm mt-1.5">
+                                <span className="flex items-center gap-1"><MapPin size={12} />{camping?.name}</span>
+                                <span className="flex items-center gap-1"><Calendar size={12} />{formatDate(upcomingBooking.check_in)}</span>
                               </div>
                             </div>
-                            <div className="text-center bg-white/20 backdrop-blur-sm rounded-2xl px-5 py-3">
-                              <div className="text-3xl sm:text-4xl font-bold text-white">{days}</div>
-                              <div className="text-[10px] text-white/70 font-medium uppercase tracking-wider">
+                            <div className="text-center bg-white/15 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/10">
+                              <div className="text-3xl sm:text-4xl font-bold text-white leading-none">{days}</div>
+                              <div className="text-[10px] text-white/60 font-medium uppercase tracking-wider mt-1">
                                 {days === 1 ? t('myAccount.day') : t('myAccount.days')}
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-muted">
-                            <span className="flex items-center gap-1"><Calendar size={13} className="text-primary" /> {formatDate(upcomingBooking.check_in)}</span>
-                            <span className="text-border">→</span>
-                            <span>{formatDate(upcomingBooking.check_out)}</span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
+                        <div className="p-4 sm:p-5 flex items-center justify-between bg-[#f8f7f4]/50">
+                          <div className="flex items-center gap-3 text-sm text-muted flex-wrap">
+                            <span>{formatDate(upcomingBooking.check_in)} → {formatDate(upcomingBooking.check_out)}</span>
+                            <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
                               {statusLabelsNL[upcomingBooking.status] || upcomingBooking.status}
                             </span>
                           </div>
-                          <button onClick={() => setTab('boekingen')} className="text-primary text-sm font-medium flex items-center gap-1 hover:underline">
+                          <button onClick={() => switchTab('boekingen')} className="text-primary text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
                             {t('myAccount.details')} <ChevronRight size={14} />
                           </button>
                         </div>
@@ -420,57 +495,79 @@ export default function MijnAccountPage() {
                   })()}
 
                   {/* Alerts */}
-                  {openPayments.length > 0 && (
-                    <button onClick={() => setTab('betalingen')} className="w-full bg-primary-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-primary-light hover:border-primary transition-colors">
-                      <div className="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center shrink-0">
-                        <CreditCard size={18} className="text-accent" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-accent-dark text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
-                        <div className="text-xs text-accent">{t('myAccount.total')}: {formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
-                      </div>
-                      <ChevronRight size={18} className="text-primary shrink-0" />
-                    </button>
-                  )}
+                  {(openPayments.length > 0 || openBorg.length > 0) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {openPayments.length > 0 && (
+                        <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 hover:border-primary/30 transition-all group">
+                          <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
+                            <CreditCard size={18} className="text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
+                            <div className="text-xs text-muted">{formatPrice(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
+                          </div>
+                          <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      )}
 
-                  {openBorg.length > 0 && (
-                    <button onClick={() => setTab('borg')} className="w-full bg-primary-50 rounded-2xl p-4 flex items-center gap-3 text-left border border-primary-100 hover:border-primary transition-colors">
-                      <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
-                        <Shield size={18} className="text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-primary-dark text-sm">{t('myAccount.borgWaiting').replace('{count}', String(openBorg.length))}</div>
-                        <div className="text-xs text-primary">{t('myAccount.viewInspection')}</div>
-                      </div>
-                      <ChevronRight size={18} className="text-primary shrink-0" />
-                    </button>
+                      {openBorg.length > 0 && (
+                        <button onClick={() => switchTab('borg')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 hover:border-primary/30 transition-all group">
+                          <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
+                            <Shield size={18} className="text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-foreground text-sm">{t('myAccount.borgWaiting').replace('{count}', String(openBorg.length))}</div>
+                            <div className="text-xs text-muted">{t('myAccount.viewInspection')}</div>
+                          </div>
+                          <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {/* Quick actions */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link href="/boeken" className="bg-primary rounded-2xl p-5 text-white text-center hover:bg-primary-dark transition-colors group">
-                      <Sun size={24} className="mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                      <div className="text-sm font-semibold">{t('myAccount.newBooking')}</div>
-                      <div className="text-[10px] text-white/50 mt-0.5">{t('myAccount.season2026')}</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Link href="/boeken" className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                        <Plus size={20} className="text-primary" />
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">{t('myAccount.newBooking')}</div>
+                      <div className="text-[10px] text-muted mt-0.5">{t('myAccount.season2026')}</div>
                     </Link>
-                    <Link href="/contact" className="bg-white rounded-2xl p-5 text-foreground-light text-center hover:bg-surface transition-colors border border-border/50 group">
-                      <Mail size={24} className="mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />
-                      <div className="text-sm font-semibold">{t('myAccount.contactUs')}</div>
+                    <button onClick={() => switchTab('boekingen')} className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                        <Eye size={20} className="text-primary" />
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">{t('myAccount.myBookings')}</div>
+                      <div className="text-[10px] text-muted mt-0.5">{bookings.length} {t('myAccount.totalCount')}</div>
+                    </button>
+                    <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                        <CreditCard size={20} className="text-primary" />
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">{t('myAccount.paymentsTitle')}</div>
+                      <div className="text-[10px] text-muted mt-0.5">{payments.filter(p => p.status === 'BETAALD').length} {t('myAccount.statPaid').toLowerCase()}</div>
+                    </button>
+                    <Link href="/contact" className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                        <Mail size={20} className="text-primary" />
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">{t('myAccount.contactUs')}</div>
                       <div className="text-[10px] text-muted mt-0.5">{t('myAccount.needHelp')}</div>
                     </Link>
                   </div>
 
                   {/* Empty state */}
                   {bookings.length === 0 && (
-                    <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-border/50">
-                      <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="bg-white rounded-2xl p-10 sm:p-14 text-center border border-border/40">
+                      <div className="w-16 h-16 bg-primary/8 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Sun size={28} className="text-primary" />
                       </div>
                       <h3 className="font-bold text-foreground text-lg">{t('myAccount.noBookingsTitle')}</h3>
-                      <p className="text-sm text-muted mt-2 mb-5 max-w-sm mx-auto">
+                      <p className="text-sm text-muted mt-2 mb-6 max-w-sm mx-auto">
                         {t('myAccount.noBookingsDesc')}
                       </p>
-                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors">
+                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-7 py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm">
                         {t('myAccount.bookNow')} <ArrowRight size={14} />
                       </Link>
                     </div>
@@ -481,14 +578,14 @@ export default function MijnAccountPage() {
               {/* ==================== BOEKINGEN ==================== */}
               {tab === 'boekingen' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="text-lg font-bold text-foreground">{t('myAccount.myBookings')}</h2>
-                    <span className="text-xs text-muted">{bookings.length} {t('myAccount.totalCount')}</span>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.myBookings')}</h2>
+                    <span className="text-xs text-muted bg-white px-3 py-1 rounded-full border border-border/40">{bookings.length} {t('myAccount.totalCount')}</span>
                   </div>
 
                   {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-border/50">
-                      <Calendar size={40} className="mx-auto text-muted/30 mb-3" />
+                    <div className="bg-white rounded-2xl p-8 text-center border border-border/40">
+                      <Calendar size={40} className="mx-auto text-border mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noBookingsYet')}</p>
                       <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold mt-4 hover:bg-primary-dark transition-colors">
                         {t('myAccount.bookNow')} <ArrowRight size={14} />
@@ -500,7 +597,7 @@ export default function MijnAccountPage() {
                       const camping = getCamping(booking.camping_id);
                       const isPast = new Date(booking.check_out) < new Date();
                       return (
-                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-colors ${isPast ? 'border-border/50 opacity-75' : 'border-border/50 hover:border-primary/20'}`}>
+                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-all ${isPast ? 'border-border/40 opacity-60' : 'border-border/40 hover:shadow-md hover:-translate-y-0.5'}`}>
                           {/* Caravan image strip */}
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
@@ -558,7 +655,7 @@ export default function MijnAccountPage() {
                             </div>
 
                             {/* Payment progress */}
-                            <div className="mt-4 pt-3 border-t border-border/50">
+                            <div className="mt-4 pt-3 border-t border-border/40">
                               {(() => {
                                 const bookingPayments = payments.filter(p => p.booking_id === booking.id);
                                 const paid = bookingPayments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0);
@@ -596,13 +693,13 @@ export default function MijnAccountPage() {
               {/* ==================== BETALINGEN ==================== */}
               {tab === 'betalingen' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="text-lg font-bold text-foreground">{t('myAccount.paymentsTitle')}</h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.paymentsTitle')}</h2>
                   </div>
 
                   {/* Payment summary card */}
                   {payments.length > 0 && (
-                    <div className="bg-white rounded-2xl p-5 border border-border/50">
+                    <div className="bg-white rounded-2xl p-5 border border-border/40">
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.paid')}</div>
@@ -627,7 +724,7 @@ export default function MijnAccountPage() {
                   )}
 
                   {payments.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-border/50">
+                    <div className="bg-white rounded-2xl p-8 text-center border border-border/40">
                       <CreditCard size={40} className="mx-auto text-muted/30 mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noPayments')}</p>
                     </div>
@@ -635,7 +732,7 @@ export default function MijnAccountPage() {
                     payments.map(payment => {
                       const booking = bookings.find(b => b.id === payment.booking_id);
                       return (
-                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-border/50">
+                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-border/40">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                             payment.status === 'BETAALD' ? 'bg-primary-50' : 'bg-primary-50'
                           }`}>
@@ -685,13 +782,13 @@ export default function MijnAccountPage() {
               {/* ==================== BORG ==================== */}
               {tab === 'borg' && (
                 <div className="space-y-4">
-                  <div className="mb-1">
-                    <h2 className="text-lg font-bold text-foreground">{t('myAccount.borgTitle')}</h2>
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.borgTitle')}</h2>
                     <p className="text-xs text-muted mt-0.5">{t('myAccount.borgSubtitle')}</p>
                   </div>
 
                   {borgChecklists.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-border/50">
+                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-border/40">
                       <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Shield size={28} className="text-primary" />
                       </div>
@@ -727,7 +824,7 @@ export default function MijnAccountPage() {
                       });
 
                       return (
-                        <div key={bc.id} className="bg-white rounded-2xl border border-border/50 overflow-hidden">
+                        <div key={bc.id} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
                           {/* Header */}
                           <button
                             onClick={() => setExpandedBorgId(isExpanded ? null : bc.id)}
@@ -773,7 +870,7 @@ export default function MijnAccountPage() {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
-                                <div className="border-t border-border/50 p-4 sm:p-5 space-y-4">
+                                <div className="border-t border-border/40 p-4 sm:p-5 space-y-4">
                                   {/* Summary cards */}
                                   <div className="grid grid-cols-3 gap-2">
                                     <div className="bg-primary-50 rounded-xl p-3 text-center">
@@ -893,7 +990,7 @@ export default function MijnAccountPage() {
                                   )}
 
                                   {/* View full page link */}
-                                  <div className="pt-2 border-t border-border/50">
+                                  <div className="pt-2 border-t border-border/40">
                                     <Link
                                       href={`/borg/${bc.token}`}
                                       className="flex items-center gap-1.5 text-primary text-sm font-medium hover:underline"
@@ -913,7 +1010,7 @@ export default function MijnAccountPage() {
                   )}
 
                   {/* How borg works */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/50">
+                  <div className="bg-white rounded-2xl p-5 border border-border/40">
                     <h3 className="text-sm font-bold text-foreground mb-3">{t('myAccount.howBorgWorks')}</h3>
                     <div className="space-y-3">
                       {[
@@ -937,30 +1034,30 @@ export default function MijnAccountPage() {
 
               {/* ==================== PROFIEL ==================== */}
               {tab === 'profiel' && (
-                <div className="space-y-4">
-                  <h2 className="text-lg font-bold text-foreground mb-1">{t('myAccount.myProfile')}</h2>
+                <div className="space-y-5">
+                  <h2 className="text-xl font-bold text-foreground tracking-tight mb-4">{t('myAccount.myProfile')}</h2>
 
                   {/* Profile card */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/50">
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold text-xl">
+                  <div className="bg-white rounded-2xl p-6 border border-border/40">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
                           {firstName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <h3 className="font-bold text-foreground">{customer.name}</h3>
+                          <h3 className="font-bold text-foreground text-lg">{customer.name}</h3>
                           <p className="text-xs text-muted">{t('myAccount.customerSince').replace('{date}', customer.created_at ? new Date(customer.created_at).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }) : '2026')}</p>
                         </div>
                       </div>
                       {!editingProfile && (
-                        <button onClick={() => setEditingProfile(true)} className="text-primary text-sm font-medium flex items-center gap-1 hover:underline">
+                        <button onClick={() => setEditingProfile(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark bg-primary/8 hover:bg-primary/12 px-3.5 py-2 rounded-lg transition-colors">
                           <Edit3 size={13} /> {t('myAccount.edit')}
                         </button>
                       )}
                     </div>
 
                     {editingProfile ? (
-                      <div className="space-y-3 pt-3 border-t border-border/50">
+                      <div className="space-y-3 pt-3 border-t border-border/40">
                         <div>
                           <label className="text-xs font-semibold text-foreground-light mb-1.5 block">{t('myAccount.name')}</label>
                           <input value={editName} onChange={(e) => setEditName(e.target.value)}
@@ -983,7 +1080,7 @@ export default function MijnAccountPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-3 pt-3 border-t border-border/50">
+                      <div className="space-y-3 pt-3 border-t border-border/40">
                         {[
                           { icon: <User size={16} />, label: t('myAccount.name'), value: customer.name },
                           { icon: <Mail size={16} />, label: t('myAccount.email'), value: customer.email },
@@ -1001,17 +1098,8 @@ export default function MijnAccountPage() {
                     )}
                   </div>
 
-                  {/* Account actions */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/50 space-y-3">
-                    <h3 className="text-sm font-bold text-foreground">Account</h3>
-                    <button onClick={handleLogout}
-                      className="w-full py-3 border border-border text-foreground-light font-semibold rounded-xl text-sm hover:bg-surface transition-colors flex items-center justify-center gap-2">
-                      <LogOut size={15} /> {t('myAccount.logout')}
-                    </button>
-                  </div>
-
                   {/* GDPR / Danger zone */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/50">
+                  <div className="bg-white rounded-2xl p-5 border border-border/40">
                     <h3 className="text-sm font-bold text-foreground mb-1">{t('myAccount.privacyData')}</h3>
                     <p className="text-xs text-muted mb-3 leading-relaxed">
                       {t('myAccount.gdprText')}
@@ -1050,8 +1138,23 @@ export default function MijnAccountPage() {
 
             </motion.div>
           </AnimatePresence>
+          </main>
         </div>
       </div>
+
+      {/* Mobile bottom action bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border/40 px-4 py-3 safe-area-inset-bottom z-40">
+        <div className="flex gap-2">
+          <Link href="/boeken" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl">
+            <Plus size={16} /> {t('myAccount.newBooking')}
+          </Link>
+          <button onClick={handleLogout} className="px-4 py-2.5 border border-border text-foreground-light rounded-xl text-sm hover:bg-surface transition-colors">
+            <LogOut size={16} />
+          </button>
+        </div>
+      </div>
+      {/* Bottom spacer for mobile */}
+      <div className="h-20 lg:hidden" />
     </div>
   );
 }

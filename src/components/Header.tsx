@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
@@ -46,10 +46,32 @@ export default function Header() {
   const [megaMenu, setMegaMenu] = useState<'caravans' | 'bestemmingen' | null>(null);
   const [mobileSubmenu, setMobileSubmenu] = useState<'caravans' | 'bestemmingen' | null>(null);
   const [langDropdown, setLangDropdown] = useState(false);
+  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
   const langRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const accountTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, locale, setLocale } = useLanguage();
+
+  // Check login status
+  useEffect(() => {
+    fetch('/api/auth/me').then(res => {
+      if (res.ok) return res.json();
+      throw new Error('not logged in');
+    }).then(data => {
+      setLoggedInUser({ name: data.customer.name, email: data.customer.email });
+    }).catch(() => setLoggedInUser(null));
+  }, [pathname]);
+
+  const handleLogout = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setLoggedInUser(null);
+    setAccountDropdown(false);
+    router.push('/');
+  }, [router]);
 
   useEffect(() => { setMegaMenu(null); setMenuOpen(false); setMobileSubmenu(null); setLangDropdown(false); }, [pathname]);
 
@@ -61,10 +83,14 @@ export default function Header() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setLangDropdown(false);
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountDropdown(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const openAccount = () => { if (accountTimeout.current) clearTimeout(accountTimeout.current); setAccountDropdown(true); };
+  const closeAccount = () => { accountTimeout.current = setTimeout(() => setAccountDropdown(false), 150); };
 
   const openMega = (m: 'caravans' | 'bestemmingen') => {
     if (megaTimeout.current) clearTimeout(megaTimeout.current);
@@ -138,9 +164,75 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/account" className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-foreground hover:bg-surface-alt transition-colors" aria-label="Account">
-              <User size={17} />
-            </Link>
+            {/* Account dropdown */}
+            <div className="relative" ref={accountRef} onMouseEnter={openAccount} onMouseLeave={closeAccount}>
+              {loggedInUser ? (
+                <button
+                  onClick={() => setAccountDropdown(!accountDropdown)}
+                  className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs hover:bg-primary/20 transition-colors"
+                >
+                  {loggedInUser.name.charAt(0).toUpperCase()}
+                </button>
+              ) : (
+                <Link href="/account" className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-foreground hover:bg-surface-alt transition-colors" aria-label="Account">
+                  <User size={17} />
+                </Link>
+              )}
+              <AnimatePresence>
+                {accountDropdown && loggedInUser && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-border/80 w-64 z-50 overflow-hidden"
+                  >
+                    {/* User info */}
+                    <div className="px-4 py-3.5 border-b border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-sm">
+                          {loggedInUser.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{loggedInUser.name}</p>
+                          <p className="text-xs text-muted truncate">{loggedInUser.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Quick links */}
+                    <div className="py-1.5">
+                      {[
+                        { href: '/mijn-account', icon: <User size={15} />, label: t('nav.myDashboard') },
+                        { href: '/mijn-account?tab=boekingen', icon: <Calendar size={15} />, label: t('nav.myBookings') },
+                        { href: '/mijn-account?tab=betalingen', icon: <CreditCard size={15} />, label: t('nav.myPayments') },
+                        { href: '/mijn-account?tab=borg', icon: <Shield size={15} />, label: t('nav.myDeposit') },
+                        { href: '/mijn-account?tab=profiel', icon: <Settings size={15} />, label: t('nav.accountSettings') },
+                      ].map(item => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setAccountDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-light hover:bg-surface hover:text-foreground transition-colors"
+                        >
+                          <span className="text-muted">{item.icon}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                    {/* Logout */}
+                    <div className="border-t border-border/50 py-1.5">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger/70 hover:text-danger hover:bg-danger/5 transition-colors"
+                      >
+                        <LogOut size={15} />
+                        {t('myAccount.logout')}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-[15px] font-semibold rounded-full transition-all flex items-center gap-2 shadow-sm hover:shadow">
               {t('nav.bookNow')} <ArrowRight size={16} />
