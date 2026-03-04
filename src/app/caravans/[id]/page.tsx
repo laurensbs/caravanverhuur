@@ -9,6 +9,7 @@ import { Users, ArrowLeft, CheckCircle, ArrowRight, X, ChevronLeft, ChevronRight
 import { getCaravanById as getStaticCaravanById, caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useState, useRef, useEffect, TouchEvent } from 'react';
+import { useLanguage } from '@/i18n/context';
 
 const amenityIcons: Record<string, React.ReactNode> = {
   'Airco': <Wind size={16} />,
@@ -25,6 +26,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const touchStartX = useRef(0);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetch('/api/admin/caravans')
@@ -117,8 +119,8 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
           <div className="max-w-6xl mx-auto px-4 py-3">
             <Link href="/caravans" className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark transition-colors">
               <ArrowLeft size={16} />
-              <span className="sm:hidden">Terug</span>
-              <span className="hidden sm:inline">Terug naar caravans</span>
+              <span className="sm:hidden">{t('caravans.back')}</span>
+              <span className="hidden sm:inline">{t('caravans.backToCaravans')}</span>
             </Link>
           </div>
         </div>
@@ -136,7 +138,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   }`}>{caravan.type}</span>
                 </div>
                 <div className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
-                  {activePhoto + 1}/{caravan.photos.length} foto&apos;s
+                  {activePhoto + 1}/{caravan.photos.length} {t('caravans.photos')}
                 </div>
               </div>
             </button>
@@ -196,18 +198,18 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{caravan.name}</h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted mb-4">
-                  <span className="flex items-center gap-1"><Users size={15} /> Max {caravan.maxPersons} personen</span>
+                  <span className="flex items-center gap-1"><Users size={15} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span>
                   <span className="w-1 h-1 bg-border rounded-full" />
                   <span>{caravan.manufacturer}</span>
                   <span className="w-1 h-1 bg-border rounded-full" />
-                  <span>Bouwjaar {caravan.year}</span>
+                  <span>{t('caravans.yearBuilt')} {caravan.year}</span>
                 </div>
                 <p className="text-foreground-light text-sm sm:text-base leading-relaxed">{caravan.description}</p>
               </div>
 
               {/* Amenities */}
               <div className="bg-white rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg font-bold text-foreground mb-4">Voorzieningen</h2>
+                <h2 className="text-lg font-bold text-foreground mb-4">{t('caravans.amenities')}</h2>
                 <div className="grid grid-cols-2 gap-2.5">
                   {caravan.amenities.map(a => (
                     <div key={a} className="flex items-center gap-2.5 py-2 px-3 bg-surface rounded-xl">
@@ -220,8 +222,8 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
 
               {/* Inventory */}
               <div className="bg-white rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg font-bold text-foreground mb-1">Inventaris</h2>
-                <p className="text-xs text-muted mb-4">Alles inbegrepen in de huurprijs</p>
+                <h2 className="text-lg font-bold text-foreground mb-1">{t('caravans.inventory')}</h2>
+                <p className="text-xs text-muted mb-4">{t('caravans.inventoryIncluded')}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {caravan.inventory.map(item => (
                     <div key={item} className="flex items-center gap-2 text-sm text-foreground-light">
@@ -235,13 +237,13 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               {/* Trust signals */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { icon: <Shield size={20} className="text-primary" />, label: 'Veilig betalen' },
-                  { icon: <Calendar size={20} className="text-primary" />, label: 'Flexibel annuleren' },
-                  { icon: <MapPin size={20} className="text-primary" />, label: '30+ campings' },
-                ].map(t => (
-                  <div key={t.label} className="bg-white rounded-xl p-3 text-center">
-                    <div className="flex justify-center mb-1">{t.icon}</div>
-                    <span className="text-[11px] font-medium text-foreground-light">{t.label}</span>
+                  { icon: <Shield size={20} className="text-primary" />, label: t('caravans.trustSafe') },
+                  { icon: <Calendar size={20} className="text-primary" />, label: t('caravans.trustFlex') },
+                  { icon: <MapPin size={20} className="text-primary" />, label: t('caravans.trustCampings') },
+                ].map(t2 => (
+                  <div key={t2.label} className="bg-white rounded-xl p-3 text-center">
+                    <div className="flex justify-center mb-1">{t2.icon}</div>
+                    <span className="text-[11px] font-medium text-foreground-light">{t2.label}</span>
                   </div>
                 ))}
               </div>
@@ -250,24 +252,24 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
             {/* Sidebar - pricing & CTA */}
             <div className="space-y-4">
               <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32">
-                <h3 className="font-bold text-foreground mb-4">Prijzen</h3>
+                <h3 className="font-bold text-foreground mb-4">{t('caravans.prices')}</h3>
                 
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl">
-                    <span className="text-sm text-foreground-light">Per dag</span>
+                    <span className="text-sm text-foreground-light">{t('caravans.pricePerDay')}</span>
                     <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerDay}</span>
                   </div>
                   <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl">
-                    <span className="text-sm text-foreground-light">Per week</span>
+                    <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span>
                     <div className="text-right">
                       <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span>
                       <div className="text-[10px] text-muted">
-                        {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% korting
+                        {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between py-2.5 px-3 bg-surface rounded-xl">
-                    <span className="text-sm text-foreground-light">Borg (retour)</span>
+                    <span className="text-sm text-foreground-light">{t('caravans.depositReturn')}</span>
                     <span className="text-lg font-semibold text-foreground-light">&euro;{caravan.deposit}</span>
                   </div>
                 </div>
@@ -276,7 +278,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   href={`/boeken?caravan=${caravan.id}`}
                   className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors active:scale-[0.98] mb-3"
                 >
-                  Boek deze caravan
+                  {t('caravans.bookThisCaravan')}
                   <ArrowRight size={16} />
                 </Link>
 
@@ -284,12 +286,12 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   href="/contact"
                   className="flex items-center justify-center w-full py-3 border border-border text-foreground-light font-semibold rounded-xl hover:bg-surface transition-colors text-sm"
                 >
-                  Stel een vraag
+                  {t('caravans.askQuestion')}
                 </Link>
 
                 <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2 text-xs text-muted">
                   <Shield size={14} />
-                  <span>Veilig betalen via iDEAL. Borg retour na controle.</span>
+                  <span>{t('caravans.safePaymentNote')}</span>
                 </div>
               </div>
             </div>
@@ -297,11 +299,11 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Guest reviews */}
           <div className="mt-8 sm:mt-12">
-            <h2 className="text-xl font-bold text-foreground mb-4">Wat gasten zeggen</h2>
+            <h2 className="text-xl font-bold text-foreground mb-4">{t('caravans.guestReviews')}</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                { name: 'Linda & Peter', text: 'Fantastische caravan, alles was schoon en goed onderhouden. Precies zoals op de foto\'s.', rating: 5, date: 'Okt 2025' },
-                { name: 'Familie de Vries', text: 'De kinderen waren super blij! Ruime indeling en alles wat je nodig hebt was aanwezig.', rating: 5, date: 'Sep 2025' },
+                { name: t('caravans.review1Name'), text: t('caravans.review1Text'), rating: 5, date: 'Okt 2025' },
+                { name: t('caravans.review2Name'), text: t('caravans.review2Text'), rating: 5, date: 'Sep 2025' },
               ].map(review => (
                 <div key={review.name} className="bg-white rounded-2xl p-5 relative">
                   <Quote size={28} className="absolute top-4 right-4 text-primary/10" />
@@ -323,7 +325,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
           {/* Similar caravans */}
           {similarCaravans.length > 0 && (
             <div className="mt-8 sm:mt-12">
-              <h2 className="text-xl font-bold text-foreground mb-4">Vergelijkbare caravans</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">{t('caravans.similarCaravans')}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {similarCaravans.map(c => (
                   <Link key={c.id} href={`/caravans/${c.id}`} className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow group">
@@ -337,7 +339,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                       <h3 className="font-semibold text-foreground text-sm">{c.name}</h3>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-muted flex items-center gap-1"><Users size={12} /> Max {c.maxPersons}</span>
-                        <span className="font-bold text-primary">&euro;{c.pricePerDay}<span className="text-xs text-muted font-normal">/dag</span></span>
+                        <span className="font-bold text-primary">&euro;{c.pricePerDay}<span className="text-xs text-muted font-normal">/{t('caravans.perDay')}</span></span>
                       </div>
                     </div>
                   </Link>
@@ -350,14 +352,14 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
         {/* Mobile sticky CTA bar */}
         <div className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white border-t border-border px-4 py-3 flex items-center gap-3">
           <div className="flex-1">
-            <div className="text-lg font-bold text-primary">&euro;{caravan.pricePerDay}<span className="text-xs text-muted font-normal">/dag</span></div>
-            <div className="text-[10px] text-muted">&euro;{caravan.pricePerWeek}/week</div>
+            <div className="text-lg font-bold text-primary">&euro;{caravan.pricePerDay}<span className="text-xs text-muted font-normal">/{t('caravans.perDay')}</span></div>
+            <div className="text-[10px] text-muted">&euro;{caravan.pricePerWeek}/{t('caravans.perWeek')}</div>
           </div>
           <Link
             href={`/boeken?caravan=${caravan.id}`}
             className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-full text-sm transition-colors active:scale-[0.98]"
           >
-            Boeken <ArrowRight size={14} />
+            {t('caravans.bookButton')} <ArrowRight size={14} />
           </Link>
         </div>
       </div>

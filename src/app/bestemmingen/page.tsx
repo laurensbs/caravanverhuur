@@ -1,17 +1,10 @@
-import { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { destinations } from '@/data/destinations';
 import { MapPin, ArrowRight, Sun, Users, ChevronRight, Compass, Star, Waves, Camera, TreePine, Heart, Thermometer, Anchor, Palette } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Bestemmingen Costa Brava | Caravanverhuur Costa Brava',
-  description: 'Ontdek de mooiste plaatsen aan de Costa Brava. Van Cadaqués tot Lloret de Mar — vind jouw perfecte vakantiebestemming.',
-  openGraph: {
-    title: 'Bestemmingen – Caravanverhuur Costa Brava',
-    description: 'Ontdek 8 prachtige bestemmingen aan de Costa Brava voor je caravanvakantie.',
-  },
-};
+import { useLanguage } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
 /*  Data helpers                                                       */
@@ -63,26 +56,53 @@ const bestForIcons: Record<string, React.ReactNode> = {
 /* ------------------------------------------------------------------ */
 
 export default function DestinationsPage() {
+  const { t } = useLanguage();
+
+  const tagMap: Record<string, string> = {
+    Gezinnen: t('destinations.tagFamilies'),
+    Koppels: t('destinations.tagCouples'),
+    Cultuurliefhebbers: t('destinations.tagCulture'),
+    Strandvakantie: t('destinations.tagBeach'),
+    Duikers: t('destinations.tagDivers'),
+    Natuurliefhebbers: t('destinations.tagNature'),
+    Watersporters: t('destinations.tagWatersports'),
+    Jongeren: t('destinations.tagYouth'),
+    Fotografen: t('destinations.tagPhotographers'),
+    Surfers: t('destinations.tagSurfers'),
+    Strandliefhebbers: t('destinations.tagBeachLovers'),
+    Kunstenaars: t('destinations.tagArtists'),
+    Families: t('destinations.tagFamiliesAlt'),
+    Budgetvriendelijk: t('destinations.tagBudget'),
+    'Rust zoekers': t('destinations.tagPeaceSeekers'),
+    Culinair: t('destinations.tagCulinary'),
+  };
+
+  const regionDescMap: Record<string, string> = {
+    'Baix Empordà': t('destinations.regionBaixDesc'),
+    'Alt Empordà': t('destinations.regionAltDesc'),
+    'La Selva': t('destinations.regionSelvaDesc'),
+  };
+
   return (
     <div className="min-h-screen">
       {/* ===== IMMERSIVE HERO ===== */}
       <section className="relative h-[55vh] min-h-[400px] lg:h-[60vh] overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1920&q=80"
-          alt="Panoramisch uitzicht over de Costa Brava kustlijn"
+          alt="Costa Brava coastline"
           fill className="object-cover" priority unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/70" />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-semibold mb-4 uppercase tracking-wider">
-            <Compass size={14} /> Ontdek de Costa Brava
+            <Compass size={14} /> {t('destinations.discoverCostaBrava')}
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-            {destinations.length} Unieke <span className="text-accent">Bestemmingen</span>
+            {destinations.length} {t('destinations.uniqueDestinations')} <span className="text-accent">{t('destinations.destinationsWord')}</span>
           </h1>
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto drop-shadow mb-6">
-            Van middeleeuwse dorpjes tot bruisende badplaatsen. De Costa Brava biedt voor ieder wat wils — ontdek jouw perfecte vakantiebestemming.
+            {t('destinations.heroDesc')}
           </p>
 
           {/* Region quick links */}
@@ -112,7 +132,7 @@ export default function DestinationsPage() {
                 <Image src={featured.heroImage} alt={featured.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
                 <div className="absolute top-4 left-4">
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-accent text-white text-xs font-bold rounded-full shadow-md">
-                    <Star size={12} /> Aanrader
+                    <Star size={12} /> {t('destinations.recommended')}
                   </span>
                 </div>
               </div>
@@ -126,24 +146,24 @@ export default function DestinationsPage() {
                 <div className="flex flex-wrap gap-2 mb-5">
                   {featured.bestFor.map(tag => (
                     <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                      {bestForIcons[tag] || <Star size={12} />} {tag}
+                      {bestForIcons[tag] || <Star size={12} />} {tagMap[tag] || tag}
                     </span>
                   ))}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-primary-50 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Thermometer size={12} /> Zomer</div>
+                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Thermometer size={12} /> {t('destinations.summerTemp')}</div>
                     <p className="font-bold text-primary-dark">{featured.weather.summer}</p>
                   </div>
                   <div className="bg-primary-50 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Waves size={12} /> Watertemp.</div>
+                    <div className="flex items-center gap-1.5 text-xs text-primary mb-0.5"><Waves size={12} /> {t('destinations.waterTemp')}</div>
                     <p className="font-bold text-primary-dark">{featured.weather.water}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-primary font-semibold group-hover:gap-3 transition-all">
-                  Ontdek {featured.name} <ArrowRight size={18} />
+                  {t('destinations.discover')} {featured.name} <ArrowRight size={18} />
                 </div>
               </div>
             </div>
@@ -162,9 +182,9 @@ export default function DestinationsPage() {
                   {regionIcons[region]} {region}
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{region}</h2>
-                <p className="text-muted mt-1">{regionDescriptions[region]}</p>
+                <p className="text-muted mt-1">{regionDescMap[region] || regionDescriptions[region]}</p>
               </div>
-              <p className="text-sm text-muted mt-2 sm:mt-0">{items.length} bestemmingen</p>
+              <p className="text-sm text-muted mt-2 sm:mt-0">{items.length} {t('destinations.destinationsCount')}</p>
             </div>
 
             {/* Destinations grid */}
@@ -177,7 +197,7 @@ export default function DestinationsPage() {
                 >
                   {/* Image */}
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={dest.heroImage} alt={`Caravanvakantie in ${dest.name}`} fill className="object-cover group-hover:scale-110 transition-transform duration-700" unoptimized />
+                    <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" unoptimized />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                     {/* Weather badge */}
@@ -204,7 +224,7 @@ export default function DestinationsPage() {
                     <div className="flex flex-wrap gap-1.5 mb-4">
                       {dest.bestFor.map(tag => (
                         <span key={tag} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full">
-                          {bestForIcons[tag] || <Star size={10} />} {tag}
+                          {bestForIcons[tag] || <Star size={10} />} {tagMap[tag] || tag}
                         </span>
                       ))}
                     </div>
@@ -223,10 +243,10 @@ export default function DestinationsPage() {
                     <div className="flex items-center justify-between pt-4 border-t border-border/50">
                       <div className="flex items-center gap-3 text-xs text-muted">
                         <span className="flex items-center gap-1"><Waves size={13} className="text-primary" /> {dest.weather.water}</span>
-                        <span className="flex items-center gap-1"><Users size={13} className="text-muted" /> {dest.nearestCampings.length} campings</span>
+                        <span className="flex items-center gap-1"><Users size={13} className="text-muted" /> {dest.nearestCampings.length} {t('destinations.campings')}</span>
                       </div>
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
-                        Ontdek <ChevronRight size={14} />
+                        {t('destinations.discover')} <ChevronRight size={14} />
                       </span>
                     </div>
                   </div>
@@ -240,7 +260,7 @@ export default function DestinationsPage() {
       {/* ===== TRAVEL TIP BAR ===== */}
       <section className="bg-gradient-to-r from-primary-50 via-primary-100 to-primary-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Insider Tips van onze experts</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">{t('destinations.insiderTips')}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {destinations.slice(0, 4).map(d => (
               <div key={d.id} className="bg-white rounded-xl p-4 shadow-sm">
@@ -263,19 +283,19 @@ export default function DestinationsPage() {
       {/* ===== COMPARISON BAR ===== */}
       <section className="bg-white py-12 lg:py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Vergelijk bestemmingen</h2>
-          <p className="text-muted text-center mb-8">Op een rij: het weer, de campings en voor wie het geschikt is</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">{t('destinations.compareTitle')}</h2>
+          <p className="text-muted text-center mb-8">{t('destinations.compareSubtitle')}</p>
 
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full min-w-[640px] border-collapse">
               <thead>
                 <tr className="border-b border-border/50">
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Bestemming</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Regio</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Zomer &deg;C</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Water &deg;C</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Campings</th>
-                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">Best voor</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thDestination')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thRegion')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thSummer')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thWater')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thCampings')}</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thBestFor')}</th>
                   <th className="py-3 px-4"></th>
                 </tr>
               </thead>
@@ -305,7 +325,7 @@ export default function DestinationsPage() {
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">
                         {d.bestFor.slice(0, 2).map(tag => (
-                          <span key={tag} className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{tag}</span>
+                          <span key={tag} className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{tagMap[tag] || tag}</span>
                         ))}
                       </div>
                     </td>
@@ -329,16 +349,16 @@ export default function DestinationsPage() {
           <div className="absolute inset-0 bg-primary/85" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Klaar voor jouw Costa Brava avontuur?</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('destinations.ctaReady')}</h2>
           <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
-            Kies je droombestemming, wij zorgen dat je caravan klaarstaat. Boek vandaag nog en profiteer van vroegboekkorting.
+            {t('destinations.ctaDesc')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/boeken" className="inline-flex items-center gap-2 bg-accent hover:bg-accent-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl active:scale-95">
-              Boek nu <ArrowRight size={20} />
+              {t('destinations.bookNow')} <ArrowRight size={20} />
             </Link>
             <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white px-6 py-4 rounded-full font-semibold transition-all">
-              Bekijk caravans <ChevronRight size={18} />
+              {t('destinations.viewCaravans')} <ChevronRight size={18} />
             </Link>
           </div>
         </div>

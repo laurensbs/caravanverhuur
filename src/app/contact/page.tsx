@@ -4,8 +4,10 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle } from 'lucide-react';
+import { useLanguage } from '@/i18n/context';
 
 export default function ContactPage() {
+  const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -32,7 +34,7 @@ export default function ContactPage() {
       if (!res.ok) throw new Error('Submit failed');
       setSubmitted(true);
     } catch {
-      setSubmitError('Er ging iets mis. Probeer het opnieuw.');
+      setSubmitError(t('contact.errorText'));
     } finally {
       setSubmitting(false);
     }
@@ -46,9 +48,9 @@ export default function ContactPage() {
             <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="text-primary" size={40} />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">Bericht verzonden!</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-4">{t('contact.successTitle')}</h1>
             <p className="text-muted text-lg">
-              Bedankt, {form.name}! We nemen zo snel mogelijk contact met je op. Gemiddelde reactietijd: &lt;24 uur.
+              {t('contact.successText')}
             </p>
           </motion.div>
         </div>
@@ -72,10 +74,10 @@ export default function ContactPage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
-              Contact
+              {t('contact.heroTitle')}
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
-              Heb je vragen over onze caravans, het boekingsproces of iets anders? Neem gerust contact met ons op!
+              {t('contact.heroSubtitle')}
             </motion.p>
           </div>
         </div>
@@ -92,14 +94,14 @@ export default function ContactPage() {
               className="space-y-8"
             >
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-6">Direct bereikbaar</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.directlyAvailable')}</h2>
                 <div className="space-y-4">
                   <a href="mailto:info@caravanverhuurcostabrava.com" className="flex items-start gap-3 group">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                       <Mail size={18} className="text-primary" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted">E-mail</div>
+                      <div className="text-sm text-muted">{t('contact.emailLabel')}</div>
                       <div className="text-foreground font-medium">info@caravanverhuurcostabrava.com</div>
                     </div>
                   </a>
@@ -108,7 +110,7 @@ export default function ContactPage() {
                       <Phone size={18} className="text-primary" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted">Telefoon / WhatsApp</div>
+                      <div className="text-sm text-muted">{t('contact.phoneWhatsapp')}</div>
                       <div className="text-foreground font-medium">+34 600 000 000</div>
                     </div>
                   </a>
@@ -117,7 +119,7 @@ export default function ContactPage() {
                       <MapPin size={18} className="text-primary" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted">Locatie</div>
+                      <div className="text-sm text-muted">{t('contact.locationLabel')}</div>
                       <div className="text-foreground font-medium">Costa Brava, Spanje</div>
                     </div>
                   </div>
@@ -125,7 +127,7 @@ export default function ContactPage() {
               </div>
 
               <div className="bg-surface rounded-2xl p-6 border border-border">
-                <h3 className="font-semibold text-foreground mb-3">Onderdeel van</h3>
+                <h3 className="font-semibold text-foreground mb-3">{t('contact.partOf')}</h3>
                 <a
                   href="https://caravanstalling-spanje.com"
                   target="_blank"
@@ -136,17 +138,17 @@ export default function ContactPage() {
                   Caravanstalling-Spanje.com
                 </a>
                 <p className="text-sm text-muted mt-2">
-                  Voor transport, stalling en tweedehands caravans.
+                  {t('contact.partOfDesc')}
                 </p>
               </div>
 
               <div className="bg-accent/10 rounded-2xl p-6 border border-accent/20">
-                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-accent" />Bereikbaarheid</h3>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-accent" />{t('contact.availability')}</h3>
                 <div className="text-sm text-muted space-y-1">
-                  <p>Ma – Vr: 09:00 – 18:00</p>
-                  <p>Za: 10:00 – 14:00</p>
-                  <p>Zo: gesloten</p>
-                  <p className="text-xs mt-2 text-muted/70">Reactietijd e-mail: max 24 uur</p>
+                  <p>{t('contact.monFri')}</p>
+                  <p>{t('contact.sat')}</p>
+                  <p>{t('contact.sunClosed')}</p>
+                  <p className="text-xs mt-2 text-muted/70">{t('contact.emailResponseTime')}</p>
                 </div>
               </div>
 
@@ -158,8 +160,8 @@ export default function ContactPage() {
               >
                 <MessageCircle size={24} className="shrink-0" />
                 <div>
-                  <div className="font-semibold text-sm">Liever via WhatsApp?</div>
-                  <div className="text-white/80 text-xs">Direct antwoord op je vragen</div>
+                  <div className="font-semibold text-sm">{t('contact.whatsappPrefer')}</div>
+                  <div className="text-white/80 text-xs">{t('contact.whatsappDirect')}</div>
                 </div>
               </a>
             </motion.div>
@@ -172,11 +174,11 @@ export default function ContactPage() {
               className="lg:col-span-2"
             >
               <div className="bg-white rounded-2xl p-8 shadow-sm border border-border">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Stuur ons een bericht</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.sendMessage')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Naam *</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.nameLabel')} *</label>
                       <input
                         type="text"
                         required
@@ -187,7 +189,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">E-mail *</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.emailLabel')} *</label>
                       <input
                         type="email"
                         required
@@ -200,7 +202,7 @@ export default function ContactPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Telefoon</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.phoneLabel')}</label>
                       <input
                         type="tel"
                         value={form.phone}
@@ -210,30 +212,30 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Onderwerp *</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.subjectLabel')} *</label>
                       <select
                         required
                         value={form.subject}
                         onChange={e => setForm({ ...form, subject: e.target.value })}
                         className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
                       >
-                        <option value="">Selecteer onderwerp</option>
-                        <option value="boeking">Vraag over boeking</option>
-                        <option value="caravans">Vraag over caravans</option>
-                        <option value="prijzen">Vraag over prijzen</option>
-                        <option value="beschikbaarheid">Beschikbaarheid</option>
-                        <option value="transport">Transport</option>
-                        <option value="anders">Anders</option>
+                        <option value="">{t('contact.subjectPlaceholder')}</option>
+                        <option value="boeking">{t('contact.subjectBooking')}</option>
+                        <option value="caravans">{t('contact.subjectCaravans')}</option>
+                        <option value="prijzen">{t('contact.subjectPrices')}</option>
+                        <option value="beschikbaarheid">{t('contact.subjectAvailability')}</option>
+                        <option value="transport">{t('contact.subjectTransport')}</option>
+                        <option value="anders">{t('contact.subjectOther')}</option>
                       </select>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Bericht *</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">{t('contact.messageLabel')} *</label>
                     <textarea
                       required
                       value={form.message}
                       onChange={e => setForm({ ...form, message: e.target.value })}
-                      placeholder="Vertel ons hoe we je kunnen helpen..."
+                      placeholder={t('contact.messagePlaceholder')}
                       rows={5}
                       className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                     />
@@ -247,12 +249,12 @@ export default function ContactPage() {
                     {submitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Verzenden...
+                        {t('contact.sending')}
                       </>
                     ) : (
                       <>
                         <Send size={18} />
-                        Bericht versturen
+                        {t('contact.sendButton')}
                       </>
                     )}
                   </button>

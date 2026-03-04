@@ -1,21 +1,26 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/i18n/context';
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-white border-t border-border">
       {/* CTA strip */}
       <div className="bg-primary">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-white font-semibold text-sm sm:text-base text-center sm:text-left">
-            Klaar om te boeken? Seizoen 2026 beschikbaar!
+            {t('footer.ctaText')}
           </p>
           <Link
             href="/boeken"
             className="flex items-center gap-2 px-5 py-2.5 bg-white text-primary font-bold rounded-full text-sm hover:bg-surface transition-colors active:scale-95 shrink-0"
           >
-            Boek nu
+            {t('nav.bookNow')}
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -34,10 +39,10 @@ export default function Footer() {
             unoptimized
           />
           <p className="text-muted text-sm leading-relaxed max-w-xs">
-            Zorgeloze caravanvakantie op de mooiste campings van de Costa Brava.
+            {t('footer.tagline')}
           </p>
           <div className="mt-3 text-muted text-xs">
-            Onderdeel van{' '}
+            {t('footer.partOf')}{' '}
             <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">
               Caravanstalling-Spanje.com
             </a>
@@ -56,10 +61,10 @@ export default function Footer() {
               unoptimized
             />
             <p className="text-muted text-sm leading-relaxed">
-              Zorgeloze caravanvakantie op de mooiste campings van de Costa Brava. Wij regelen alles, jij geniet.
+              {t('footer.taglineLong')}
             </p>
             <div className="text-muted text-xs">
-              Onderdeel van{' '}
+              {t('footer.partOf')}{' '}
               <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">
                 Caravanstalling-Spanje.com
               </a>
@@ -68,16 +73,16 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">Links</h3>
+            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
             <ul className="space-y-2">
               {[
-                { href: '/caravans', label: 'Onze Caravans' },
-                { href: '/bestemmingen', label: 'Bestemmingen' },
-                { href: '/boeken', label: 'Direct Boeken' },
-                { href: '/over-ons', label: 'Over Ons' },
-                { href: '/faq', label: 'FAQ' },
-                { href: '/contact', label: 'Contact' },
-                { href: '/account', label: 'Mijn Account' },
+                { href: '/caravans', label: t('footer.ourCaravans') },
+                { href: '/bestemmingen', label: t('nav.destinations') },
+                { href: '/boeken', label: t('footer.directBooking') },
+                { href: '/over-ons', label: t('nav.about') },
+                { href: '/faq', label: t('nav.faq') },
+                { href: '/contact', label: t('nav.contact') },
+                { href: '/account', label: t('footer.myAccount') },
               ].map(link => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-muted hover:text-primary transition-colors text-sm">
@@ -88,15 +93,15 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Juridisch */}
+          {/* Legal */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">Juridisch</h3>
+            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {[
-                { href: '/voorwaarden', label: 'Voorwaarden' },
-                { href: '/privacy', label: 'Privacy' },
-                { href: '/voorwaarden#annulering', label: 'Annulering' },
-                { href: '/voorwaarden#borg', label: 'Borg & Verzekering' },
+                { href: '/voorwaarden', label: t('footer.terms') },
+                { href: '/privacy', label: t('footer.privacy') },
+                { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
+                { href: '/voorwaarden#borg', label: t('footer.deposit') },
               ].map(link => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-muted hover:text-primary transition-colors text-sm">
@@ -109,7 +114,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">Contact</h3>
+            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
             <ul className="space-y-2.5">
               <li>
                 <a href="mailto:info@caravanverhuurcostabrava.com" className="text-muted hover:text-primary transition-colors text-sm flex items-start gap-2">
@@ -125,7 +130,7 @@ export default function Footer() {
               </li>
               <li className="text-muted text-sm flex items-center gap-2">
                 <MapPin size={14} className="text-primary shrink-0" />
-                Costa Brava, Spanje
+                {t('footer.location')}
               </li>
               <li>
                 <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-primary transition-colors text-sm flex items-center gap-2">
@@ -143,8 +148,8 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">
           <p>&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
           <div className="flex gap-4">
-            <Link href="/voorwaarden" className="hover:text-foreground-light transition-colors">Voorwaarden</Link>
-            <Link href="/privacy" className="hover:text-foreground-light transition-colors">Privacy</Link>
+            <Link href="/voorwaarden" className="hover:text-foreground-light transition-colors">{t('footer.terms')}</Link>
+            <Link href="/privacy" className="hover:text-foreground-light transition-colors">{t('footer.privacy')}</Link>
           </div>
         </div>
       </div>

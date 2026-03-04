@@ -14,20 +14,13 @@ import {
 import { caravans as staticCaravans, getCaravanById as getStaticCaravanById } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings } from '@/data/campings';
+import { useLanguage } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
 type Step = 1 | 2 | 3 | 4 | 5;
-
-const stepConfig = [
-  { label: 'Datum', icon: CalendarDays, desc: 'Wanneer ga je?' },
-  { label: 'Bestemming', icon: MapPin, desc: 'Waar wil je heen?' },
-  { label: 'Reizigers & Caravan', icon: Users, desc: 'Wie gaat er mee?' },
-  { label: 'Gegevens', icon: User, desc: 'Bijna klaar!' },
-  { label: 'Bevestiging', icon: PartyPopper, desc: 'Overzicht' },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Main                                                               */
@@ -37,7 +30,7 @@ export default function BoekenPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-pulse text-muted">Laden...</div>
+        <div className="animate-pulse text-muted">...</div>
       </div>
     }>
       <BoekenContent />
@@ -50,8 +43,17 @@ export default function BoekenPage() {
 /* ------------------------------------------------------------------ */
 
 function BoekenContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const preselectedCaravan = searchParams.get('caravan');
+
+  const stepConfig = [
+    { label: t('booking.stepDate'), icon: CalendarDays, desc: t('booking.stepDateDesc') },
+    { label: t('booking.stepDest'), icon: MapPin, desc: t('booking.stepDestDesc') },
+    { label: t('booking.stepTravelers'), icon: Users, desc: t('booking.stepTravelersDesc') },
+    { label: t('booking.stepDetails'), icon: User, desc: t('booking.stepDetailsDesc') },
+    { label: t('booking.stepConfirm'), icon: PartyPopper, desc: t('booking.stepConfirmDesc') },
+  ];
 
   const [step, setStep] = useState<Step>(1);
   const [direction, setDirection] = useState(1);
@@ -151,7 +153,7 @@ function BoekenContent() {
       setBookingRef(data.reference);
       setSubmitted(true);
     } catch {
-      setSubmitError('Er ging iets mis. Probeer het opnieuw of neem contact met ons op.');
+      setSubmitError(t('booking.errorSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -191,9 +193,9 @@ function BoekenContent() {
               ))}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Boekingsaanvraag ontvangen!</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t('booking.successTitle')}</h1>
             <p className="text-muted text-lg mb-2">
-              Bedankt, <span className="font-semibold text-foreground-light">{name}</span>! We nemen zo snel mogelijk contact met je op.
+              {t('booking.successThank')} <span className="font-semibold text-foreground-light">{name}</span>! {t('booking.successText')}
             </p>
             {bookingRef && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full font-semibold mb-8">
@@ -215,24 +217,24 @@ function BoekenContent() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">Aankomst</p><p className="font-semibold">{checkIn}</p></div>
-                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">Vertrek</p><p className="font-semibold">{checkOut}</p></div>
-                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">Nachten</p><p className="font-semibold">{nights}</p></div>
-                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">Personen</p><p className="font-semibold">{adults} + {children} kind.</p></div>
+                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.arrival')}</p><p className="font-semibold">{checkIn}</p></div>
+                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.departure')}</p><p className="font-semibold">{checkOut}</p></div>
+                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.nightsLabel')}</p><p className="font-semibold">{nights}</p></div>
+                <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.personsLabel')}</p><p className="font-semibold">{adults} + {children} {t('booking.child')}</p></div>
               </div>
               <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
-                <div className="flex justify-between"><span className="text-muted">Totaalprijs</span><span className="font-bold text-primary text-lg">&euro;{totalPrice}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">Aanbetaling (30%)</span><span className="font-semibold text-accent">&euro;{deposit}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">Borg</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{totalPrice}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-accent">&euro;{deposit}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
               </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
-              <strong>Volgende stap:</strong> Je ontvangt een e-mail met betaalinstructies voor de aanbetaling van &euro;{deposit}.
+              <strong>{t('booking.nextStep')}</strong> {t('booking.nextStepText')} &euro;{deposit}.
             </motion.div>
 
             <Link href="/" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
-              Terug naar home <ArrowRight size={16} />
+              {t('booking.backToHome')} <ArrowRight size={16} />
             </Link>
           </motion.div>
         </div>
@@ -254,22 +256,22 @@ function BoekenContent() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-semibold mb-4">
-              <Sparkles size={14} /> Plan jouw droomvakantie
+              <Sparkles size={14} /> {t('booking.planDream')}
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-              Boek jouw <span className="text-accent">caravan</span>
+              {t('booking.bookYour')} <span className="text-accent">{t('booking.caravan')}</span>
             </h1>
             <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto drop-shadow">
-              In 5 simpele stappen naar een onvergetelijke vakantie aan de Costa Brava
+              {t('booking.heroDesc')}
             </p>
           </motion.div>
 
           {/* Trust pills */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-wrap justify-center gap-3 mt-6">
             {[
-              { icon: <Shield size={14} />, text: 'Gratis annuleren' },
-              { icon: <Clock size={14} />, text: 'Binnen 24u bevestiging' },
-              { icon: <Star size={14} />, text: '4.8/5 beoordeling' },
+              { icon: <Shield size={14} />, text: t('booking.pillCancel') },
+              { icon: <Clock size={14} />, text: t('booking.pill24h') },
+              { icon: <Star size={14} />, text: t('booking.pillRating') },
             ].map(pill => (
               <span key={pill.text} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 backdrop-blur-md rounded-full text-white text-xs font-medium">
                 {pill.icon} {pill.text}
@@ -285,7 +287,7 @@ function BoekenContent() {
           {/* Mobile progress */}
           <div className="lg:hidden py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-foreground">Stap {step} van 5</span>
+              <span className="text-sm font-bold text-foreground">{t('booking.stepXofY', { step: String(step) })}</span>
               <span className="text-xs text-muted">{stepConfig[step - 1].desc}</span>
             </div>
             <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
@@ -345,8 +347,8 @@ function BoekenContent() {
                   {step === 1 && (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Wanneer wil je op vakantie?</h2>
-                        <p className="text-muted">Kies je gewenste aankomst- en vertrekdatum</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h2>
+                        <p className="text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6">
@@ -354,7 +356,7 @@ function BoekenContent() {
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <div className="w-6 h-6 bg-primary-100 rounded-md flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
-                              Aankomst
+                              {t('booking.arrivalLabel')}
                             </label>
                             <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
                               className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
@@ -362,7 +364,7 @@ function BoekenContent() {
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <div className="w-6 h-6 bg-primary-100 rounded-md flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
-                              Vertrek
+                              {t('booking.departureLabel')}
                             </label>
                             <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
                               className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
@@ -375,10 +377,10 @@ function BoekenContent() {
                               <Sun size={20} className="text-primary" />
                             </div>
                             <div>
-                              <p className="font-bold text-foreground">{nights} {nights === 1 ? 'nacht' : 'nachten'}</p>
+                              <p className="font-bold text-foreground">{nights} {nights === 1 ? t('booking.night') : t('booking.nightPlural')}</p>
                               <p className="text-sm text-muted">
-                                {Math.floor(nights / 7)} {Math.floor(nights / 7) === 1 ? 'week' : 'weken'}
-                                {nights % 7 > 0 ? ` en ${nights % 7} ${nights % 7 === 1 ? 'dag' : 'dagen'}` : ''}
+                                {Math.floor(nights / 7)} {Math.floor(nights / 7) === 1 ? t('booking.week') : t('booking.weeks')}
+                                {nights % 7 > 0 ? ` ${t('booking.and')} ${nights % 7} ${nights % 7 === 1 ? t('booking.day') : t('booking.days')}` : ''}
                               </p>
                             </div>
                           </motion.div>
@@ -387,19 +389,19 @@ function BoekenContent() {
                         {nights > 0 && nights < 7 && (
                           <div className="mt-3 flex items-start gap-2 text-accent text-xs bg-primary-50 rounded-lg p-3">
                             <Info size={14} className="shrink-0 mt-0.5" />
-                            We raden minimaal 7 nachten aan voor de beste ervaring en prijs.
+                            {t('booking.minAdvice')}
                           </div>
                         )}
                       </div>
 
                       {/* Quick pick */}
                       <div>
-                        <p className="text-sm font-semibold text-muted mb-3">Populaire periodes</p>
+                        <p className="text-sm font-semibold text-muted mb-3">{t('booking.popularPeriods')}</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                           {[
-                            { label: '1 week', days: 7, icon: '🌴' },
-                            { label: '2 weken', days: 14, icon: '☀️' },
-                            { label: '3 weken', days: 21, icon: '🏖️' },
+                            { label: t('booking.oneWeek'), days: 7, icon: '🌴' },
+                            { label: t('booking.twoWeeks'), days: 14, icon: '☀️' },
+                            { label: t('booking.threeWeeks'), days: 21, icon: '🏖️' },
                           ].map(q => {
                             const start = new Date();
                             start.setMonth(start.getMonth() + 4); // Suggest summer dates
@@ -417,7 +419,7 @@ function BoekenContent() {
                               >
                                 <span className="text-2xl mb-1 block">{q.icon}</span>
                                 <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{q.label}</p>
-                                <p className="text-xs text-muted mt-0.5">{q.days} nachten</p>
+                                <p className="text-xs text-muted mt-0.5">{q.days} {t('booking.nightPlural')}</p>
                               </button>
                             );
                           })}
@@ -430,22 +432,22 @@ function BoekenContent() {
                   {step === 2 && (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Op welke camping wil je staan?</h2>
-                        <p className="text-muted">Zoek of selecteer een camping aan de Costa Brava</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s2Title')}</h2>
+                        <p className="text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-5">
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <div className="relative flex-1">
                             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                            <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder="Zoek op campingnaam of stad..."
+                            <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
                               className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-hide">
                           <button onClick={() => setLocationFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light hover:bg-surface-alt'}`}>
-                            Alle locaties
+                            {t('booking.allLocations')}
                           </button>
                           {locations.map(loc => (
                             <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light hover:bg-surface-alt'}`}>
@@ -489,7 +491,7 @@ function BoekenContent() {
                           );
                         })}
                         {filteredCampings.length === 0 && (
-                          <div className="text-center py-10 text-muted">Geen campings gevonden.</div>
+                          <div className="text-center py-10 text-muted">{t('booking.noCampings')}</div>
                         )}
                       </div>
 
@@ -498,11 +500,11 @@ function BoekenContent() {
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-border/50 shadow-sm p-5">
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <Hash size={14} className="text-primary" />
-                            Voorkeursplek (optioneel)
+                            {t('booking.preferredSpot')}
                           </label>
-                          <input type="text" value={spotNumber} onChange={e => setSpotNumber(e.target.value)} placeholder="Bijv. 42 of A12"
+                          <input type="text" value={spotNumber} onChange={e => setSpotNumber(e.target.value)} placeholder={t('booking.spotPlaceholder')}
                             className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                          <p className="text-xs text-muted mt-1.5">Wij doen ons best om je voorkeursplek te reserveren.</p>
+                          <p className="text-xs text-muted mt-1.5">{t('booking.spotNote')}</p>
                         </motion.div>
                       )}
                     </div>
@@ -512,8 +514,8 @@ function BoekenContent() {
                   {step === 3 && (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Wie gaat er mee?</h2>
-                        <p className="text-muted">Kies het aantal reizigers en je caravan</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s3Title')}</h2>
+                        <p className="text-muted">{t('booking.s3Subtitle')}</p>
                       </div>
 
                       {/* Person counters */}
@@ -521,8 +523,8 @@ function BoekenContent() {
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-semibold text-foreground">Volwassenen</p>
-                              <p className="text-xs text-muted">18+ jaar</p>
+                              <p className="font-semibold text-foreground">{t('booking.adultsLabel')}</p>
+                              <p className="text-xs text-muted">{t('booking.adultsAge')}</p>
                             </div>
                             <div className="flex items-center gap-3">
                               <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
@@ -536,8 +538,8 @@ function BoekenContent() {
                           </div>
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-semibold text-foreground">Kinderen</p>
-                              <p className="text-xs text-muted">0 - 17 jaar</p>
+                              <p className="font-semibold text-foreground">{t('booking.childrenLabel')}</p>
+                              <p className="text-xs text-muted">{t('booking.childrenAge')}</p>
                             </div>
                             <div className="flex items-center gap-3">
                               <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
@@ -552,14 +554,14 @@ function BoekenContent() {
                         </div>
                         <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
                           <Users size={16} className="text-primary" />
-                          <span className="text-sm font-medium text-foreground-light">Totaal: {totalPersons} {totalPersons === 1 ? 'persoon' : 'personen'}</span>
+                          <span className="text-sm font-medium text-foreground-light">{t('booking.totalPersons')} {totalPersons} {totalPersons === 1 ? t('booking.person') : t('booking.persons')}</span>
                         </div>
                       </div>
 
                       {/* Caravan selection */}
                       <div>
-                        <h3 className="text-lg font-bold text-foreground mb-1">Kies je caravan</h3>
-                        <p className="text-sm text-muted mb-4">{availableCaravans.length} beschikbaar voor {totalPersons} personen</p>
+                        <h3 className="text-lg font-bold text-foreground mb-1">{t('booking.chooseCaravan')}</h3>
+                        <p className="text-sm text-muted mb-4">{availableCaravans.length} {t('booking.availableFor')} {totalPersons} {t('booking.persons')}</p>
 
                         <div className="space-y-4">
                           {availableCaravans.map(c => {
@@ -595,7 +597,7 @@ function BoekenContent() {
                                     </div>
                                     <div className="p-5 flex-1">
                                       <h4 className="font-bold text-lg text-foreground mb-1">{c.name}</h4>
-                                      <p className="text-sm text-muted mb-3">{c.maxPersons} personen &bull; {c.manufacturer} &bull; {c.year}</p>
+                                      <p className="text-sm text-muted mb-3">{c.maxPersons} {t('booking.persons')} &bull; {c.manufacturer} &bull; {c.year}</p>
                                       <div className="flex flex-wrap gap-1.5 mb-3">
                                         {c.amenities.slice(0, 5).map(a => (
                                           <span key={a} className="text-[11px] font-medium bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">{a}</span>
@@ -606,15 +608,15 @@ function BoekenContent() {
                                       </div>
                                       <div className="flex items-end justify-between">
                                         <div>
-                                          <p className="text-xs text-muted">Vanaf</p>
+                                          <p className="text-xs text-muted">{t('booking.from')}</p>
                                           <div className="flex items-baseline gap-2">
                                             <span className="text-2xl font-bold text-primary">&euro;{c.pricePerWeek}</span>
-                                            <span className="text-sm text-muted">/week</span>
+                                            <span className="text-sm text-muted">{t('booking.perWeek')}</span>
                                           </div>
                                         </div>
                                         {nights > 0 && (
                                           <div className="text-right">
-                                            <p className="text-xs text-muted">Totaal voor {nights} nachten</p>
+                                            <p className="text-xs text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
                                             <p className="text-lg font-bold text-accent">&euro;{price}</p>
                                           </div>
                                         )}
@@ -636,7 +638,7 @@ function BoekenContent() {
                                       <div className="border-t border-border/50 p-5 space-y-4">
                                         {/* Photo gallery */}
                                         <div>
-                                          <p className="text-sm font-semibold text-foreground mb-3">Foto&apos;s</p>
+                                          <p className="text-sm font-semibold text-foreground mb-3">{t('booking.photosLabel')}</p>
                                           <div className="grid grid-cols-3 gap-2">
                                             {c.photos.map((photo, idx) => (
                                               <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
@@ -647,12 +649,12 @@ function BoekenContent() {
                                         </div>
                                         {/* Description */}
                                         <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">Beschrijving</p>
+                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.descriptionLabel')}</p>
                                           <p className="text-sm text-muted leading-relaxed">{c.description}</p>
                                         </div>
                                         {/* All amenities */}
                                         <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">Voorzieningen</p>
+                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.amenitiesLabel')}</p>
                                           <div className="flex flex-wrap gap-1.5">
                                             {c.amenities.map(a => (
                                               <span key={a} className="text-xs font-medium bg-primary-50 text-primary-dark px-2.5 py-1 rounded-full flex items-center gap-1">
@@ -663,7 +665,7 @@ function BoekenContent() {
                                         </div>
                                         {/* Inventory */}
                                         <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">Inventaris</p>
+                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.inventoryLabel')}</p>
                                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                                             {c.inventory.map(item => (
                                               <span key={item} className="text-xs text-muted bg-surface rounded-lg px-2.5 py-1.5">{item}</span>
@@ -675,8 +677,8 @@ function BoekenContent() {
                                           <div className="bg-primary-50 rounded-xl p-4">
                                             <div className="flex items-center justify-between">
                                               <div>
-                                                <p className="text-sm font-semibold text-foreground">Totaalprijs</p>
-                                                <p className="text-xs text-muted">{nights} nachten &bull; borg €{c.deposit}</p>
+                                                <p className="text-sm font-semibold text-foreground">{t('booking.totalPriceLabel')}</p>
+                                                <p className="text-xs text-muted">{nights} {t('booking.nightsBorg')} €{c.deposit}</p>
                                               </div>
                                               <p className="text-2xl font-bold text-primary">&euro;{price}</p>
                                             </div>
@@ -698,14 +700,14 @@ function BoekenContent() {
                   {step === 4 && (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Jouw gegevens</h2>
-                        <p className="text-muted">Vul je contactgegevens in zodat we je boeking kunnen bevestigen</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s4Title')}</h2>
+                        <p className="text-muted">{t('booking.s4Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6 space-y-5">
                         <div>
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                            <User size={14} className="text-primary" /> Volledige naam
+                            <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
                           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jan Jansen"
                             className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
@@ -713,14 +715,14 @@ function BoekenContent() {
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <Mail size={14} className="text-primary" /> E-mailadres
+                              <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl"
                               className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <Phone size={14} className="text-primary" /> Telefoonnummer
+                              <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+31 6 12345678"
                               className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
@@ -728,9 +730,9 @@ function BoekenContent() {
                         </div>
                         <div>
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                            <MessageSquare size={14} className="text-primary" /> Speciale verzoeken <span className="text-muted font-normal">(optioneel)</span>
+                            <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
                           </label>
-                          <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder="Schaduwplek gewenst, kinderstoel nodig, etc."
+                          <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
                             rows={3} className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
                         </div>
                       </div>
@@ -742,10 +744,10 @@ function BoekenContent() {
                         </div>
                         <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} className="sr-only" />
                         <span className="text-sm text-foreground-light">
-                          Ik ga akkoord met de{' '}
-                          <a href="/voorwaarden" target="_blank" className="text-primary underline font-medium">Algemene Voorwaarden</a>,{' '}
-                          het <a href="/privacy" target="_blank" className="text-primary underline font-medium">Privacybeleid</a> en het{' '}
-                          <a href="/voorwaarden#annulering" target="_blank" className="text-primary underline font-medium">Annuleringsbeleid</a>.
+                          {t('booking.agreeTerms')}{' '}
+                          <a href="/voorwaarden" target="_blank" className="text-primary underline font-medium">{t('booking.termsLink')}</a>{t('booking.andThe')}{' '}
+                          <a href="/privacy" target="_blank" className="text-primary underline font-medium">{t('booking.privacyLink')}</a> {t('booking.andThe2')}{' '}
+                          <a href="/voorwaarden#annulering" target="_blank" className="text-primary underline font-medium">{t('booking.cancellationLink')}</a>.
                         </span>
                       </label>
                     </div>
@@ -755,8 +757,8 @@ function BoekenContent() {
                   {step === 5 && (
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Overzicht jouw boeking</h2>
-                        <p className="text-muted">Controleer alle gegevens en verstuur je aanvraag</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s5Title')}</h2>
+                        <p className="text-muted">{t('booking.s5Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden">
@@ -779,39 +781,39 @@ function BoekenContent() {
                         <div className="p-6 space-y-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">Aankomst</p>
+                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.arrival')}</p>
                               <p className="font-semibold text-sm">{checkIn}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">Vertrek</p>
+                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.departure')}</p>
                               <p className="font-semibold text-sm">{checkOut}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">Nachten</p>
+                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.nightsLabel')}</p>
                               <p className="font-semibold text-sm">{nights}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">Personen</p>
+                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.personsLabel')}</p>
                               <p className="font-semibold text-sm">{adults} + {children}</p>
                             </div>
                           </div>
 
                           <div className="bg-surface rounded-xl p-4">
-                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">Camping</p>
+                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">{t('booking.campingLabel')}</p>
                             <p className="font-semibold">{chosenCamping?.name}, {chosenCamping?.location}</p>
-                            {spotNumber && <p className="text-sm text-muted mt-0.5">Plek: {spotNumber}</p>}
+                            {spotNumber && <p className="text-sm text-muted mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>}
                           </div>
 
                           <div className="bg-surface rounded-xl p-4">
-                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">Contactgegevens</p>
+                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">{t('booking.contactDetails')}</p>
                             <p className="font-semibold">{name}</p>
                             <p className="text-sm text-muted">{email} &bull; {phone}</p>
                           </div>
 
                           <div className="border-t border-border/50 pt-4 space-y-2">
-                            <div className="flex justify-between"><span className="text-muted">Totaalprijs</span><span className="font-bold text-xl text-primary">&euro;{totalPrice}</span></div>
-                            <div className="flex justify-between text-sm"><span className="text-muted">Aanbetaling (30%)</span><span className="font-bold text-accent">&euro;{deposit}</span></div>
-                            <div className="flex justify-between text-sm"><span className="text-muted">Borg (retour na inspectie)</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{totalPrice}</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-bold text-accent">&euro;{deposit}</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
                           </div>
                         </div>
                       </div>
@@ -830,20 +832,20 @@ function BoekenContent() {
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
                 {step > 1 ? (
                   <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 border border-border rounded-full text-foreground-light font-medium hover:bg-surface transition-all active:scale-95">
-                    <ArrowLeft size={18} /> Vorige
+                    <ArrowLeft size={18} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
                   <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary hover:bg-primary-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg active:scale-95 disabled:shadow-none">
-                    Volgende <ArrowRight size={18} />
+                    {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
                   <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95 text-base">
                     {submitting ? (
-                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verwerken...</>
+                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
                     ) : (
-                      <><CreditCard size={20} /> Boekingsaanvraag versturen</>
+                      <><CreditCard size={20} /> {t('booking.submitBooking')}</>
                     )}
                   </button>
                 ) : null}
@@ -856,15 +858,15 @@ function BoekenContent() {
                 {/* Live summary card */}
                 <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden">
                   <div className="bg-gradient-to-r from-primary to-primary-dark p-5 text-white">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> Jouw boeking</h3>
+                    <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> {t('booking.yourBooking')}</h3>
                   </div>
                   <div className="p-5 space-y-3 text-sm">
                     {/* Dates */}
                     <div className="flex items-start gap-3">
                       <CalendarDays size={16} className="text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground">{checkIn && checkOut ? `${checkIn} – ${checkOut}` : 'Nog geen datum'}</p>
-                        {nights > 0 && <p className="text-xs text-muted">{nights} nachten</p>}
+                        <p className="font-medium text-foreground">{checkIn && checkOut ? `${checkIn} – ${checkOut}` : t('booking.noDate')}</p>
+                        {nights > 0 && <p className="text-xs text-muted">{nights} {t('booking.nightPlural')}</p>}
                       </div>
                     </div>
 
@@ -872,7 +874,7 @@ function BoekenContent() {
                     <div className="flex items-start gap-3">
                       <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground">{chosenCamping ? chosenCamping.name : 'Nog geen camping'}</p>
+                        <p className="font-medium text-foreground">{chosenCamping ? chosenCamping.name : t('booking.noCamping')}</p>
                         {chosenCamping && <p className="text-xs text-muted">{chosenCamping.location}</p>}
                       </div>
                     </div>
@@ -880,7 +882,7 @@ function BoekenContent() {
                     {/* Persons */}
                     <div className="flex items-start gap-3">
                       <Users size={16} className="text-primary shrink-0 mt-0.5" />
-                      <p className="font-medium text-foreground">{totalPersons} personen ({adults} volw.{children > 0 ? `, ${children} kind.` : ''})</p>
+                      <p className="font-medium text-foreground">{totalPersons} {t('booking.persons')} ({adults} {t('booking.personsAdults')}{children > 0 ? `, ${children} ${t('booking.child')}` : ''})</p>
                     </div>
 
                     {/* Caravan */}
@@ -900,11 +902,11 @@ function BoekenContent() {
                     {totalPrice > 0 && (
                       <div className="border-t border-border/50 pt-3 mt-3">
                         <div className="flex justify-between items-baseline mb-1">
-                          <span className="text-muted">Totaal</span>
+                          <span className="text-muted">{t('booking.total')}</span>
                           <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#58B09C' }} animate={{ scale: 1, color: '#386150' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-muted">Aanbetaling (30%)</span>
+                          <span className="text-muted">{t('booking.depositPercent')}</span>
                           <span className="font-semibold text-accent">&euro;{deposit}</span>
                         </div>
                       </div>
@@ -915,9 +917,9 @@ function BoekenContent() {
                 {/* Trust signals */}
                 <div className="bg-primary-50 rounded-2xl p-5 space-y-3">
                   {[
-                    { icon: <Shield size={16} className="text-primary" />, text: 'Gratis annuleren tot 14 dagen voor vertrek' },
-                    { icon: <Star size={16} className="text-primary" />, text: '350+ tevreden gasten, 4.8/5 beoordeling' },
-                    { icon: <Clock size={16} className="text-primary" />, text: 'Bevestiging binnen 24 uur' },
+                    { icon: <Shield size={16} className="text-primary" />, text: t('booking.trustCancel') },
+                    { icon: <Star size={16} className="text-primary" />, text: t('booking.trustGuests') },
+                    { icon: <Clock size={16} className="text-primary" />, text: t('booking.trustConfirm') },
                   ].map(item => (
                     <div key={item.text} className="flex items-start gap-2.5">
                       <div className="shrink-0 mt-0.5">{item.icon}</div>
@@ -928,8 +930,8 @@ function BoekenContent() {
 
                 {/* Need help */}
                 <div className="bg-white rounded-2xl border border-border/50 p-5 text-center">
-                  <p className="text-sm font-semibold text-foreground mb-1">Hulp nodig?</p>
-                  <p className="text-xs text-muted mb-3">Wij helpen je graag met je boeking</p>
+                  <p className="text-sm font-semibold text-foreground mb-1">{t('booking.needHelp')}</p>
+                  <p className="text-xs text-muted mb-3">{t('booking.helpText')}</p>
                   <a href="https://wa.me/34600000000" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-semibold transition-colors">
                     <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                     WhatsApp
@@ -946,7 +948,7 @@ function BoekenContent() {
         <div className="lg:hidden fixed bottom-20 left-4 right-4 z-30">
           <div className="bg-white rounded-2xl shadow-xl border border-border/50 px-4 py-3 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted">Totaalprijs</p>
+              <p className="text-xs text-muted">{t('booking.totalPriceLabel')}</p>
               <p className="text-lg font-bold text-primary">&euro;{totalPrice}</p>
             </div>
             {chosenCaravan && (

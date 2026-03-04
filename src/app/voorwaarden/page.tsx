@@ -1,12 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import {
   FileText, CreditCard, XCircle, Shield, UserCheck, Package,
   Scale, Clock, Gavel, Mail, ChevronRight, AlertTriangle,
 } from 'lucide-react';
-
-export const metadata = {
-  title: 'Algemene Voorwaarden | Caravanverhuur Costa Brava',
-};
+import { useLanguage } from '@/i18n/context';
 
 const sections = [
   {
@@ -211,6 +210,8 @@ const sections = [
 ];
 
 export default function VoorwaardenPage() {
+  const { t } = useLanguage();
+
   return (
     <>
       {/* Hero */}
@@ -220,10 +221,10 @@ export default function VoorwaardenPage() {
           <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight size={14} />
-            <span>Algemene Voorwaarden</span>
+            <span>{t('legal.terms')}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold mb-3">Algemene Voorwaarden</h1>
-          <p className="text-primary-light text-lg">Laatst bijgewerkt: 1 februari 2026</p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold mb-3">{t('legal.terms')}</h1>
+          <p className="text-primary-light text-lg">{t('legal.lastUpdated')}</p>
         </div>
       </section>
 
@@ -264,10 +265,10 @@ export default function VoorwaardenPage() {
 
           <div className="pt-4 flex items-center justify-between">
             <Link href="/" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
-              ← Terug naar home
+              ← {t('legal.backToHome')}
             </Link>
             <Link href="/privacy" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
-              Privacybeleid →
+              {t('legal.privacy')} →
             </Link>
           </div>
         </div>

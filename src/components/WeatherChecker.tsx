@@ -2,16 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Sun, Cloud, CloudRain, ExternalLink, Thermometer } from 'lucide-react';
-
-const weatherData = [
-  { month: 'Apr', temp: 18, icon: 'sun-cloud', rain: 5 },
-  { month: 'Mei', temp: 22, icon: 'sun', rain: 4 },
-  { month: 'Jun', temp: 26, icon: 'sun', rain: 2 },
-  { month: 'Jul', temp: 30, icon: 'sun', rain: 1 },
-  { month: 'Aug', temp: 30, icon: 'sun', rain: 2 },
-  { month: 'Sep', temp: 26, icon: 'sun-cloud', rain: 4 },
-  { month: 'Okt', temp: 21, icon: 'sun-cloud', rain: 6 },
-];
+import { useLanguage } from '@/i18n/context';
 
 function WeatherIcon({ type, className }: { type: string; className?: string }) {
   switch (type) {
@@ -25,6 +16,18 @@ function WeatherIcon({ type, className }: { type: string; className?: string }) 
 }
 
 export default function WeatherChecker() {
+  const { t } = useLanguage();
+
+  const weatherData = [
+    { month: t('weather.apr'), temp: 18, icon: 'sun-cloud', rain: 5 },
+    { month: t('weather.may'), temp: 22, icon: 'sun', rain: 4 },
+    { month: t('weather.jun'), temp: 26, icon: 'sun', rain: 2 },
+    { month: t('weather.jul'), temp: 30, icon: 'sun', rain: 1 },
+    { month: t('weather.aug'), temp: 30, icon: 'sun', rain: 2 },
+    { month: t('weather.sep'), temp: 26, icon: 'sun-cloud', rain: 4 },
+    { month: t('weather.oct'), temp: 21, icon: 'sun-cloud', rain: 6 },
+  ];
+
   return (
     <section className="py-12 sm:py-20">
       <div className="max-w-7xl mx-auto px-4">
@@ -35,12 +38,12 @@ export default function WeatherChecker() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <span className="text-accent font-semibold text-sm uppercase tracking-wider">Weer Costa Brava</span>
+          <span className="text-accent font-semibold text-sm uppercase tracking-wider">{t('weather.title')}</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
-            Wanneer is het beste weer?
+            {t('weather.bestWeather')}
           </h2>
           <p className="text-muted mt-3 max-w-xl mx-auto text-sm sm:text-base">
-            De Costa Brava geniet van een mediterraan klimaat met warme zomers en milde winters. Ideaal voor een caravanvakantie!
+            {t('weather.checkerDesc')}
           </p>
         </motion.div>
 
@@ -72,7 +75,7 @@ export default function WeatherChecker() {
                 <Thermometer size={12} className="text-accent" />
                 <span className="text-lg sm:text-xl font-bold text-foreground">{w.temp}°</span>
               </div>
-              <div className="text-[10px] text-muted">{w.rain} regendagen</div>
+              <div className="text-[10px] text-muted">{w.rain} {t('weather.rainDays')}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -92,10 +95,10 @@ export default function WeatherChecker() {
             className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary/5 hover:bg-primary/10 text-primary font-medium rounded-full transition-all duration-300 text-sm group"
           >
             <Sun size={16} className="group-hover:rotate-45 transition-transform duration-300" />
-            Bekijk het actuele weer
+            {t('weather.viewCurrentWeather')}
             <ExternalLink size={14} />
           </a>
-          <p className="text-xs text-muted mt-2">Via Google Weer — live en actueel</p>
+          <p className="text-xs text-muted mt-2">{t('weather.viaGoogle')}</p>
         </motion.div>
       </div>
     </section>

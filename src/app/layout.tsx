@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80",
+        url: "https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1200&q=80",
         width: 1200,
         height: 630,
         alt: "Caravanvakantie op de Costa Brava",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Caravans Costa Brava — Zorgeloze Caravanvakantie",
     description: "Volledig uitgeruste caravan op de Costa Brava. Vanaf €50/dag. Boek seizoen 2026!",
-    images: ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80"],
+    images: ["https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1200&q=80"],
   },
   metadataBase: new URL("https://caravanscostabrava.nl"),
   alternates: {

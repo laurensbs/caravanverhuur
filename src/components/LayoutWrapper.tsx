@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
+import { LanguageProvider } from '@/i18n/context';
+import { dictionaries } from '@/i18n/translations';
 
 export function LayoutWrapper({
   children,
@@ -25,12 +27,12 @@ export function LayoutWrapper({
   }
 
   return (
-    <>
+    <LanguageProvider dictionaries={dictionaries}>
       {header}
       <main className="min-h-screen">{children}</main>
       {footer}
       {scrollToTop}
       {cookieConsent}
-    </>
+    </LanguageProvider>
   );
 }

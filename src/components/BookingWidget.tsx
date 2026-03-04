@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CalendarDays, MapPin, Users, Minus, Plus, Search, ChevronDown, X } from 'lucide-react';
 import { campings } from '@/data/campings';
+import { useLanguage } from '@/i18n/context';
 
 export default function BookingWidget() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [campingId, setCampingId] = useState('');
@@ -75,7 +77,7 @@ export default function BookingWidget() {
             onClick={openCheckIn}
             className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
           >
-            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Aankomst</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.arrivalLabel')}</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
@@ -94,7 +96,7 @@ export default function BookingWidget() {
             onClick={openCheckOut}
             className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r border-border cursor-pointer hover:bg-surface/50 rounded-xl transition-colors"
           >
-            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Vertrek</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.departureLabel')}</span>
             <div className="flex items-center gap-2">
               <CalendarDays size={16} className="text-primary shrink-0" />
               <input
@@ -114,13 +116,13 @@ export default function BookingWidget() {
             ref={campingRef}
             onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }}
           >
-            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Camping</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetCamping')}</span>
             <button
               className="flex items-center gap-2 w-full text-left min-w-0"
             >
               <MapPin size={16} className="text-primary shrink-0" />
               <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
-                <span className="block truncate">{selectedCamping ? selectedCamping.name : 'Kies camping'}</span>
+                <span className="block truncate">{selectedCamping ? selectedCamping.name : t('booking.widgetChoose')}</span>
               </span>
               <ChevronDown size={14} className={`text-muted transition-transform ${campingOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -139,7 +141,7 @@ export default function BookingWidget() {
                       type="text"
                       value={campingSearch}
                       onChange={e => setCampingSearch(e.target.value)}
-                      placeholder="Zoek camping of stad..."
+                      placeholder={t('booking.widgetSearchCamping')}
                       className="flex-1 bg-transparent text-sm outline-none"
                       autoFocus
                     />
@@ -152,7 +154,7 @@ export default function BookingWidget() {
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {filteredCampings.length === 0 ? (
-                    <div className="p-4 text-sm text-muted text-center">Geen campings gevonden</div>
+                    <div className="p-4 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div>
                   ) : (
                     filteredCampings.map(c => (
                       <button
@@ -183,13 +185,13 @@ export default function BookingWidget() {
             ref={guestsRef}
             onClick={() => { setGuestsOpen(!guestsOpen); setCampingOpen(false); }}
           >
-            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">Gasten</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetGuests')}</span>
             <button
               className="flex items-center gap-2 w-full text-left"
             >
               <Users size={16} className="text-primary shrink-0" />
               <span className="text-sm font-medium text-foreground">
-                {adults} volw.{children > 0 ? `, ${children} kind.` : ''}
+                {adults} {t('booking.widgetAdultsShort')}{children > 0 ? `, ${children} ${t('booking.widgetChildrenShort')}` : ''}
               </span>
               <ChevronDown size={14} className={`text-muted transition-transform ${guestsOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -203,8 +205,8 @@ export default function BookingWidget() {
               >
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Volwassenen</div>
-                    <div className="text-xs text-muted">18 jaar en ouder</div>
+                    <div className="text-sm font-medium text-foreground">{t('booking.widgetAdults')}</div>
+                    <div className="text-xs text-muted">{t('booking.widgetAdultsAge')}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
@@ -226,8 +228,8 @@ export default function BookingWidget() {
                 </div>
                 <div className="flex items-center justify-between py-3 border-t border-border">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Kinderen</div>
-                    <div className="text-xs text-muted">0-17 jaar</div>
+                    <div className="text-sm font-medium text-foreground">{t('booking.widgetChildren')}</div>
+                    <div className="text-xs text-muted">{t('booking.widgetChildrenAge')}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
@@ -258,7 +260,7 @@ export default function BookingWidget() {
               className="w-full lg:w-auto px-6 lg:px-8 py-3.5 lg:py-4 bg-accent hover:bg-accent-dark text-white font-bold rounded-xl lg:rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
             >
               <Search size={18} />
-              <span>Zoeken</span>
+              <span>{t('booking.widgetSearch')}</span>
             </button>
           </div>
         </div>

@@ -28,6 +28,7 @@ import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import BookingWidget from '@/components/BookingWidget';
 import WeatherChecker from '@/components/WeatherChecker';
+import { useLanguage } from '@/i18n/context';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -82,6 +83,7 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function HomePage() {
+  const { t } = useLanguage();
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
   useEffect(() => {
     fetch('/api/admin/caravans')
@@ -102,8 +104,8 @@ export default function HomePage() {
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
-            src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600&q=80"
-            alt="Familie geniet van caravanvakantie aan de Costa Brava"
+            src="https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1600&q=80"
+            alt={t('home.heroAlt')}
             fill
             className="object-cover"
             sizes="100vw"
@@ -141,10 +143,10 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/25"
             >
               <Sun size={14} className="text-primary-light animate-pulse-soft" />
-              <span className="hidden sm:inline">Seizoen 2026 – nu boeken!</span>
-              <span className="sm:hidden">Seizoen 2026</span>
+              <span className="hidden sm:inline">{t('nav.season')}</span>
+              <span className="sm:hidden">{t('nav.seasonShort')}</span>
               <span className="w-1 h-1 bg-white/40 rounded-full" />
-              <span className="text-primary-light text-xs font-semibold">Populair deze week</span>
+              <span className="text-primary-light text-xs font-semibold">{t('nav.popularThisWeek')}</span>
             </motion.div>
 
             <motion.h1
@@ -153,10 +155,10 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-4 sm:mb-6 tracking-tight"
             >
-              Zorgeloze
-              <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-primary to-primary-light animate-gradient"> caravanvakantie</span>
+              {t('home.heroTitle1')}
+              <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-primary-light via-primary to-primary-light animate-gradient"> {t('home.heroTitle2')}</span>
               <br className="hidden sm:block" />
-              <span className="text-white/90"> op de Costa Brava</span>
+              <span className="text-white/90"> {t('home.heroTitle3')}</span>
             </motion.h1>
 
             <motion.p
@@ -165,7 +167,7 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light"
             >
-              Jouw caravan staat klaar op de camping. Volledig ingericht met inventaris, beddengoed en kookgerei. <span className="text-white font-medium">Geen transport, geen gedoe</span> – alleen genieten.
+              {t('home.heroSubtitle')} <span className="text-white font-medium">{t('home.heroHighlight')}</span> {t('home.heroSuffix')}
             </motion.p>
 
             {/* Mobile stats */}
@@ -176,9 +178,9 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
             >
               {[
-                { value: '6+', label: 'Caravans', color: 'text-primary-light' },
-                { value: '30+', label: 'Campings', color: 'text-white/80' },
-                { value: '100%', label: 'Ontzorgd', color: 'text-primary-light' },
+                { value: '6+', label: t('home.statCaravans'), color: 'text-primary-light' },
+                { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
+                { value: '100%', label: t('home.statRelaxed'), color: 'text-primary-light' },
               ].map(stat => (
                 <div key={stat.label} className="text-center">
                   <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -199,9 +201,9 @@ export default function HomePage() {
             className="hidden lg:flex gap-8 mt-8 max-w-md"
           >
             {[
-              { value: '6+', label: 'Caravans beschikbaar', color: 'text-primary-light' },
-              { value: '30+', label: 'Campings Costa Brava', color: 'text-white/80' },
-              { value: '100%', label: 'Volledig ontzorgd', color: 'text-primary-light' },
+              { value: '6+', label: t('home.statCaravansAvailable'), color: 'text-primary-light' },
+              { value: '30+', label: t('home.statCampingsCB'), color: 'text-white/80' },
+              { value: '100%', label: t('home.statFullyRelaxed'), color: 'text-primary-light' },
             ].map(stat => (
               <div key={stat.label}>
                 <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -246,13 +248,13 @@ export default function HomePage() {
             className="text-center mb-12 sm:mb-20"
           >
             <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>Waarom kiezen voor ons</SectionLabel>
+              <SectionLabel>{t('home.whyUs')}</SectionLabel>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
-              Volledig ontzorgd op vakantie
+              {t('home.whyUsTitle')}
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-2xl mx-auto text-sm sm:text-lg leading-relaxed">
-              Wij regelen alles zodat jij alleen maar hoeft te genieten van de zon, zee en strand op de Costa Brava.
+              {t('home.whyUsSubtitle')}
             </motion.p>
           </motion.div>
 
@@ -266,38 +268,38 @@ export default function HomePage() {
             {[
               {
                 icon: <Tent size={24} />,
-                title: 'Klaar op de camping',
-                desc: 'Je caravan staat al klaar op de camping van je keuze. Gewoon uitstappen en genieten.',
+                title: t('home.uspReady'),
+                desc: t('home.uspReadyDesc'),
                 color: 'from-primary to-primary-dark',
               },
               {
                 icon: <Package size={24} />,
-                title: 'Volledige inventaris',
-                desc: 'Beddengoed, kookgerei, servies, handdoeken – alles aanwezig. Niets meenemen.',
+                title: t('home.uspInventory'),
+                desc: t('home.uspInventoryDesc'),
                 color: 'from-primary-dark to-accent-dark',
               },
               {
                 icon: <Camera size={24} />,
-                title: "Foto's vooraf",
-                desc: "Foto's van exact jouw caravan of een vergelijkbare. Geen verrassingen.",
+                title: t('home.uspPhotos'),
+                desc: t('home.uspPhotosDesc'),
                 color: 'from-accent to-accent-dark',
               },
               {
                 icon: <Wallet size={24} />,
-                title: 'Flexibel betalen',
-                desc: '30% aanbetaling, restbedrag vlak voor je vakantie. Veilig via iDEAL.',
+                title: t('home.uspPayment'),
+                desc: t('home.uspPaymentDesc'),
                 color: 'from-primary to-accent',
               },
               {
                 icon: <Shield size={24} />,
-                title: 'Borg bescherming',
-                desc: 'Duidelijke borgvoorwaarden. Na controle krijg je je borg volledig retour.',
+                title: t('home.uspDeposit'),
+                desc: t('home.uspDepositDesc'),
                 color: 'from-accent-dark to-primary-dark',
               },
               {
                 icon: <Truck size={24} />,
-                title: 'Transport mogelijk',
-                desc: 'Via Caravanstalling-Spanje kun je optioneel transport boeken.',
+                title: t('home.uspTransport'),
+                desc: t('home.uspTransportDesc'),
                 color: 'from-primary-dark to-primary',
               },
             ].map((item, i) => (
@@ -331,13 +333,13 @@ export default function HomePage() {
             className="text-center mb-12 sm:mb-20"
           >
             <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>Hoe het werkt</SectionLabel>
+              <SectionLabel>{t('home.howItWorks')}</SectionLabel>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
-              In 5 stappen op vakantie
+              {t('home.howItWorksTitle')}
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
-              Van kiezen tot genieten — wij maken het simpel.
+              {t('home.howItWorksSubtitle')}
             </motion.p>
           </motion.div>
 
@@ -351,17 +353,17 @@ export default function HomePage() {
               className="grid grid-cols-5 gap-4 lg:gap-6"
             >
               {[
-                { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={22} /> },
-                { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={22} /> },
-                { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling via iDEAL.', icon: <CreditCard size={22} /> },
-                { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via iDEAL.', icon: <CheckCircle size={22} /> },
-                { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar. Uitstappen en genieten!', icon: <Star size={22} /> },
+                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={22} /> },
+                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={22} /> },
+                { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={22} /> },
+                { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <CheckCircle size={22} /> },
+                { step: '5', title: t('home.step5'), desc: t('home.step5Desc'), icon: <Star size={22} /> },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative group">
                   <div className="w-14 h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
                     {item.icon}
                   </div>
-                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Stap {item.step}</div>
+                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">{t('home.step')} {item.step}</div>
                   <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
                   <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
                   {i < 4 && (
@@ -375,11 +377,11 @@ export default function HomePage() {
           {/* Mobile: vertical timeline */}
           <div className="md:hidden space-y-0">
             {[
-              { step: '1', title: 'Caravan kiezen', desc: 'Bekijk ons aanbod en kies de caravan die bij je past.', icon: <Heart size={18} /> },
-              { step: '2', title: 'Datum & camping', desc: 'Kies je datum en camping op de Costa Brava.', icon: <CalendarDays size={18} /> },
-              { step: '3', title: 'Aanbetalen', desc: 'Betaal 30% aanbetaling via iDEAL.', icon: <CreditCard size={18} /> },
-              { step: '4', title: 'Restbedrag', desc: 'Betaal het restbedrag via iDEAL.', icon: <CheckCircle size={18} /> },
-              { step: '5', title: 'Genieten!', desc: 'Je caravan staat klaar!', icon: <Star size={18} /> },
+              { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
+              { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
+              { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={18} /> },
+              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <CheckCircle size={18} /> },
+              { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
@@ -397,7 +399,7 @@ export default function HomePage() {
                   {item.icon}
                 </div>
                 <div className="pb-6">
-                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider">Stap {item.step}</div>
+                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
                   <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
                   <p className="text-xs text-muted mt-0.5">{item.desc}</p>
                 </div>
@@ -420,13 +422,13 @@ export default function HomePage() {
             className="text-center mb-12 sm:mb-20"
           >
             <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>Ons aanbod</SectionLabel>
+              <SectionLabel>{t('home.featuredCaravans')}</SectionLabel>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
-              Uitgelichte caravans
+              {t('home.featuredCaravansTitle')}
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-xl mx-auto text-sm sm:text-lg">
-              Goed onderhouden, volledig uitgerust en klaar voor jouw vakantie.
+              {t('home.featuredCaravansSubtitle')}
             </motion.p>
           </motion.div>
 
@@ -461,7 +463,7 @@ export default function HomePage() {
                     </span>
                   </div>
                   <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md">
-                    <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
+                    <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">{t('home.perWeek')}</span></span>
                   </div>
                 </div>
                 <div className="p-4 sm:p-6">
@@ -484,13 +486,13 @@ export default function HomePage() {
                       href={`/caravans/${caravan.id}`}
                       className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary hover:text-white transition-all duration-200 text-xs sm:text-sm"
                     >
-                      Details
+                      {t('caravans.details')}
                     </Link>
                     <Link
                       href={`/boeken?caravan=${caravan.id}`}
                       className="flex-1 text-center py-2 sm:py-2.5 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm active:scale-95 shadow-md"
                     >
-                      Boek Nu
+                      {t('nav.bookNow')}
                     </Link>
                   </div>
                 </div>
@@ -509,7 +511,7 @@ export default function HomePage() {
               href="/caravans"
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm active:scale-95"
             >
-              Bekijk alle caravans
+              {t('home.allCaravans')}
               <ArrowRight size={16} />
             </Link>
           </motion.div>
@@ -528,23 +530,23 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              <SectionLabel>Volledig uitgerust</SectionLabel>
+              <SectionLabel>{t('home.inventoryLabel')}</SectionLabel>
               <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 mb-4 sm:mb-6 tracking-tight">
-                Alles inbegrepen in elke caravan
+                {t('home.inventoryTitle')}
               </h2>
               <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed">
-                Je hoeft niets mee te nemen. Al onze caravans zijn voorzien van een complete inventaris.
+                {t('home.inventorySubtitle')}
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 {[
-                  'Dekbedden & kussens',
-                  'Volledig servies',
-                  'Kookgerei & pannen',
-                  'Handdoeken',
-                  'Verwarming & gas',
-                  'Elektra & accu',
-                  'Rolgordijnen & horren',
-                  'Schoonmaakmiddelen',
+                  t('home.inventoryItem1'),
+                  t('home.inventoryItem2'),
+                  t('home.inventoryItem3'),
+                  t('home.inventoryItem4'),
+                  t('home.inventoryItem5'),
+                  t('home.inventoryItem6'),
+                  t('home.inventoryItem7'),
+                  t('home.inventoryItem8'),
                 ].map((item, i) => (
                   <motion.div
                     key={item}
@@ -563,7 +565,7 @@ export default function HomePage() {
                 href="/caravans"
                 className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95 shadow-lg"
               >
-                Bekijk onze caravans
+                {t('home.inventoryViewCaravans')}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
@@ -577,7 +579,7 @@ export default function HomePage() {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <Image
-                  src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=800&q=80"
+                  src="https://images.unsplash.com/photo-1599889917438-211ac4924647?w=800&q=80"
                   alt="Caravan interieur volledig ingericht"
                   width={600}
                   height={400}
@@ -600,8 +602,8 @@ export default function HomePage() {
                     <CheckCircle className="text-white" size={18} />
                   </div>
                   <div>
-                    <div className="font-semibold text-foreground text-xs sm:text-base">100% Compleet</div>
-                    <div className="text-[10px] sm:text-sm text-muted">Inventaris gecontroleerd</div>
+                    <div className="font-semibold text-foreground text-xs sm:text-base">{t('home.inventoryComplete')}</div>
+                    <div className="text-[10px] sm:text-sm text-muted">{t('home.inventoryChecked')}</div>
                   </div>
                 </div>
               </motion.div>
@@ -628,18 +630,18 @@ export default function HomePage() {
           >
             <span className="inline-flex items-center gap-1.5 text-white/60 font-bold text-[11px] sm:text-xs uppercase tracking-[0.15em]">
               <span className="w-8 h-[2px] bg-white/30 rounded-full" />
-              De voordelen
+              {t('home.advantagesLabel')}
               <span className="w-8 h-[2px] bg-white/30 rounded-full" />
             </span>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">Waarom bij ons huren?</h2>
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">{t('home.advantagesTitle')}</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
-              { icon: <Clock size={22} />, title: 'Geen gedoe', desc: 'Geen transport, geen opbouwen. Alles staat klaar.' },
-              { icon: <ThumbsUp size={22} />, title: 'Betrouwbaar', desc: 'Onderdeel van Caravanstalling-Spanje. Bewezen kwaliteit.' },
-              { icon: <Wallet size={22} />, title: 'Betaalbaar', desc: 'Eerlijke prijzen inclusief volledige inventaris.' },
-              { icon: <Shield size={22} />, title: 'Veilig betalen', desc: 'iDEAL betaling via je eigen bank. Veilig en vertrouwd.' },
+              { icon: <Clock size={22} />, title: t('home.advNoHassle'), desc: t('home.advNoHassleDesc') },
+              { icon: <ThumbsUp size={22} />, title: t('home.advReliable'), desc: t('home.advReliableDesc') },
+              { icon: <Wallet size={22} />, title: t('home.advAffordable'), desc: t('home.advAffordableDesc') },
+              { icon: <Shield size={22} />, title: t('home.advSafePayment'), desc: t('home.advSafePaymentDesc') },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -668,8 +670,7 @@ export default function HomePage() {
             className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 text-center"
           >
             <p className="text-sm sm:text-base text-primary-light/80 leading-relaxed">
-              <span className="text-white font-bold">Meer dan 20 jaar actief</span> in de caravansbranche in de Costa Brava.
-              Onderdeel van{' '}
+              <span className="text-white font-bold">{t('home.advExperience')}</span> {t('home.advExperienceDesc')}{' '}
               <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary-light underline underline-offset-2 hover:text-white transition-colors">
                 caravanstalling-spanje.com
               </a>
@@ -710,59 +711,59 @@ export default function HomePage() {
             className="text-center mb-12 sm:mb-20"
           >
             <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>Ervaringen</SectionLabel>
+              <SectionLabel>{t('home.reviewsLabel')}</SectionLabel>
             </motion.div>
             <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
-              Wat onze gasten zeggen
+              {t('home.reviewsTitle2')}
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
-              Meer dan 100 tevreden gasten gingen je voor.
+              {t('home.reviewsSubtitle2')}
             </motion.p>
           </motion.div>
 
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
             {[
               {
-                name: 'Familie de Vries',
-                location: 'Utrecht',
+                name: t('home.review1Name'),
+                location: t('home.review1Location'),
                 rating: 5,
-                text: 'Fantastische ervaring! De caravan stond helemaal klaar met alles erop en eraan. De kinderen vonden het geweldig. Zeker een aanrader!',
-                date: 'Oktober 2025',
+                text: t('home.review1Text'),
+                date: t('home.review1Date'),
               },
               {
-                name: 'Mark & Lisa',
-                location: 'Amsterdam',
+                name: t('home.review2Name'),
+                location: t('home.review2Location'),
                 rating: 5,
-                text: 'Super makkelijk geboekt en alles was perfect geregeld. Geen stress met transport of opbouwen. Gewoon uitstappen en genieten van de zon.',
-                date: 'September 2025',
+                text: t('home.review2Text'),
+                date: t('home.review2Date'),
               },
               {
-                name: 'Familie Bakker',
-                location: 'Rotterdam',
+                name: t('home.review3Name'),
+                location: t('home.review3Location'),
                 rating: 4,
-                text: 'De camping was prachtig en de caravan was schoon en compleet ingericht. De communicatie verliep heel vlot. Volgend jaar boeken we weer!',
-                date: 'September 2025',
+                text: t('home.review3Text'),
+                date: t('home.review3Date'),
               },
               {
-                name: 'Jan & Petra',
-                location: 'Den Haag',
+                name: t('home.review4Name'),
+                location: t('home.review4Location'),
                 rating: 5,
-                text: 'Wat een service! Alles was tot in de puntjes geregeld. De inventaris was compleet en de locatie op de camping was top.',
-                date: 'Juni 2025',
+                text: t('home.review4Text'),
+                date: t('home.review4Date'),
               },
               {
-                name: 'Familie Jansen',
-                location: 'Eindhoven',
+                name: t('home.review5Name'),
+                location: t('home.review5Location'),
                 rating: 5,
-                text: 'Onze derde keer en weer helemaal tevreden. De kinderen vragen elk jaar opnieuw om een caravanvakantie aan de Costa Brava.',
-                date: 'Oktober 2025',
+                text: t('home.review5Text'),
+                date: t('home.review5Date'),
               },
               {
-                name: 'Sophie & Tom',
-                location: 'Groningen',
+                name: t('home.review6Name'),
+                location: t('home.review6Location'),
                 rating: 5,
-                text: 'Beste vakantie ooit! Geen gedoe met slepen, alles stond al klaar. Het voelde als thuiskomen. Absolute aanrader!',
-                date: 'November 2025',
+                text: t('home.review6Text'),
+                date: t('home.review6Date'),
               },
             ].map((review, i) => (
               <motion.div
@@ -788,7 +789,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-[10px] text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
-                    <span className="text-[9px] text-primary flex items-center gap-0.5"><CheckCircle size={10} />Geverifieerd</span>
+                    <span className="text-[9px] text-primary flex items-center gap-0.5"><CheckCircle size={10} />{t('home.reviewVerified')}</span>
                   </div>
                 </div>
               </motion.div>
@@ -804,11 +805,11 @@ export default function HomePage() {
             className="mt-10 sm:mt-14 flex overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:justify-center sm:overflow-visible scrollbar-hide"
           >
             {[
-              { icon: <Shield size={18} className="text-primary" />, text: 'Veilig betalen via iDEAL' },
-              { icon: <CheckCircle size={18} className="text-primary" />, text: 'Volledige inventaris' },
-              { icon: <Star size={18} className="text-primary fill-primary" />, text: '4.8/5 beoordeling' },
-              { icon: <Users size={18} className="text-primary" />, text: '100+ tevreden gasten' },
-              { icon: <Clock size={18} className="text-primary" />, text: '20+ jaar ervaring' },
+              { icon: <Shield size={18} className="text-primary" />, text: t('home.trustSafePayment') },
+              { icon: <CheckCircle size={18} className="text-primary" />, text: t('home.trustFullInventory') },
+              { icon: <Star size={18} className="text-primary fill-primary" />, text: t('home.trustRating') },
+              { icon: <Users size={18} className="text-primary" />, text: t('home.trustGuests') },
+              { icon: <Clock size={18} className="text-primary" />, text: t('home.trustExperience') },
             ].map(badge => (
               <div key={badge.text} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
                 {badge.icon}
@@ -842,24 +843,24 @@ export default function HomePage() {
               <Sun className="text-white" size={28} />
             </motion.div>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-3 sm:mb-5 tracking-tight">
-              Klaar voor jouw <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark">zorgeloze vakantie</span>?
+              {t('home.ctaTitle')}
             </h2>
             <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
-              Boek nu je caravan op de Costa Brava. Seizoen 2026 is beschikbaar!
+              {t('home.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/boeken"
                 className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
               >
-                Start met boeken
+                {t('home.ctaBookNow')}
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/contact"
                 className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95"
               >
-                Neem contact op
+                {t('nav.contact')}
               </Link>
             </div>
           </motion.div>
@@ -879,7 +880,7 @@ export default function HomePage() {
       >
         <WhatsAppIcon size={26} />
         <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none border border-border/50">
-          WhatsApp ons!
+          {t('home.whatsappTooltip')}
         </span>
       </motion.a>
     </>

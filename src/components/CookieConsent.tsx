@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { X, Cookie } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/i18n/context';
 
 export default function CookieConsent() {
   const [show, setShow] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const accepted = localStorage.getItem('cookie-consent');
@@ -42,11 +44,11 @@ export default function CookieConsent() {
                 <Cookie className="text-accent" size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1">Cookies & Privacy</h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1">{t('cookie.title')}</h3>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed">
-                  Wij gebruiken cookies om je ervaring te verbeteren en onze website te analyseren. Door akkoord te gaan, stem je in met ons{' '}
+                  {t('cookie.text')}{' '}
                   <Link href="/privacy" className="text-primary underline hover:text-primary-dark">
-                    privacybeleid
+                    {t('cookie.privacyPolicy')}
                   </Link>.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
@@ -54,20 +56,20 @@ export default function CookieConsent() {
                     onClick={accept}
                     className="px-4 sm:px-6 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full text-xs sm:text-sm transition-colors active:scale-95"
                   >
-                    Akkoord
+                    {t('cookie.accept')}
                   </button>
                   <button
                     onClick={decline}
                     className="px-4 sm:px-6 py-2 border border-border text-muted hover:text-foreground font-medium rounded-full text-xs sm:text-sm transition-colors active:scale-95"
                   >
-                    Alleen noodzakelijk
+                    {t('cookie.essentialOnly')}
                   </button>
                 </div>
               </div>
               <button
                 onClick={decline}
                 className="p-1 hover:bg-surface rounded-lg transition-colors shrink-0"
-                aria-label="Sluiten"
+                aria-label={t('cookie.close')}
               >
                 <X size={18} className="text-muted" />
               </button>

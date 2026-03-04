@@ -1,108 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle, ArrowRight } from 'lucide-react';
-
-const faqCategories = [
-  {
-    category: 'Boeken & Betalen',
-    items: [
-      {
-        q: 'Hoe boek ik een caravan?',
-        a: 'Je kunt eenvoudig boeken via onze website. Kies een datum, camping en caravan, vul je gegevens in en verstuur je boekingsaanvraag. Je ontvangt direct een bevestiging per e-mail.',
-      },
-      {
-        q: 'Hoeveel aanbetaling moet ik doen?',
-        a: 'Bij boeking betaal je 30% aanbetaling via iDEAL. Het restbedrag (70%) betaal je uiterlijk 1 week voor aanvang, ook via iDEAL.',
-      },
-      {
-        q: 'Welke betaalmethodes accepteren jullie?',
-        a: 'Alle betalingen verlopen veilig via iDEAL. Je wordt doorgestuurd naar je eigen bank om de betaling te voltooien. Snel, veilig en vertrouwd.',
-      },
-      {
-        q: 'Hoe werkt de borgregeling?',
-        a: 'Bij aankomst wordt een borg van €250-€500 (afhankelijk van de caravan) gereserveerd via iDEAL. Na controle bij vertrek wordt de borg binnen 7 dagen teruggestort als er geen schade is.',
-      },
-      {
-        q: 'Kan ik annuleren?',
-        a: 'Ja, annuleren is mogelijk. Tot 30 dagen voor aankomst krijg je 100% van je aanbetaling terug. Tussen 14-30 dagen 50%. Minder dan 14 dagen voor aankomst is de aanbetaling niet restitueerbaar. Zie onze Algemene Voorwaarden voor details.',
-      },
-    ],
-  },
-  {
-    category: 'De Caravans',
-    items: [
-      {
-        q: 'Zijn dit nieuwe caravans?',
-        a: 'Nee, wij verhuren goed onderhouden tweedehands caravans van bekende merken als Dethleffs, Tabbert en Knaus. Ze zijn 5-15 jaar oud maar in uitstekende staat.',
-      },
-      {
-        q: 'Wat zit er allemaal in de caravan?',
-        a: 'Elke caravan is voorzien van: dekbedden, kussens, volledig servies, kookgerei, handdoeken, toiletpapier, schoonmaakmiddelen, rolgordijnen en horren. Luxe caravans hebben ook airco, warmtepomp en TV.',
-      },
-      {
-        q: 'Krijg ik precies de caravan die ik zie op de foto\'s?',
-        a: 'We tonen foto\'s van de caravan of een vergelijkbaar model. De exacte caravan kan enigszins afwijken, maar is altijd van gelijkwaardig type en kwaliteitsniveau.',
-      },
-      {
-        q: 'Mag ik huisdieren meenemen?',
-        a: 'Dit is afhankelijk van de camping en de caravan. Neem contact met ons op om dit te bespreken. In sommige gevallen is het mogelijk tegen een kleine toeslag.',
-      },
-    ],
-  },
-  {
-    category: 'Op de Camping',
-    items: [
-      {
-        q: 'Op welke campings staan jullie caravans?',
-        a: 'Wij werken samen met meer dan 30 campings verspreid over de volledige Costa Brava, van Blanes tot Cadaqués. Je kunt bij het boeken je gewenste camping selecteren.',
-      },
-      {
-        q: 'Staat de caravan al klaar bij aankomst?',
-        a: 'Ja! Dat is ons concept. De caravan is al geplaatst, schoongemaakt en volledig ingericht met inventaris. Je hoeft alleen in te checken en te genieten.',
-      },
-      {
-        q: 'Hoe laat kan ik inchecken en uitchecken?',
-        a: 'Check-in is vanaf 15:00 uur, check-out voor 11:00 uur. Afwijkende tijden zijn in overleg mogelijk.',
-      },
-      {
-        q: 'Wat als er een probleem is met de caravan?',
-        a: 'Je kunt ons 7 dagen per week bereiken via WhatsApp of telefoon. We zorgen zo snel mogelijk voor een oplossing, vaak al dezelfde dag.',
-      },
-      {
-        q: 'Is er WiFi op de camping?',
-        a: 'De meeste campings bieden WiFi aan, soms gratis bij het campingplaats en soms tegen een kleine toeslag. Informeer bij je gekozen camping naar de beschikbaarheid.',
-      },
-      {
-        q: 'Hoe zit het met elektriciteit en gas?',
-        a: 'Elektriciteit is inbegrepen bij de campingplaats. Gasfles voor koken is aanwezig bij aankomst. Mocht deze leeg raken, kun je bij de campingreceptie een nieuwe kopen.',
-      },
-      {
-        q: 'Moet ik de caravan schoonmaken bij vertrek?',
-        a: 'We vragen je de caravan bezemschoon op te leveren: afwas doen, vuilnis meenemen en de vloer aanvegen. Diepte-reiniging is niet nodig — dat doen wij.',
-      },
-    ],
-  },
-  {
-    category: 'Transport & Extra\'s',
-    items: [
-      {
-        q: 'Kan ik transport boeken voor mijn eigen caravan?',
-        a: 'Ja, via ons moederbedrijf Caravanstalling-Spanje kun je transport boeken. Bezoek caravanstalling-spanje.com voor meer informatie.',
-      },
-      {
-        q: 'Zijn er extra opties beschikbaar?',
-        a: 'In de toekomst bieden we extra opties aan zoals fietsverhuur, BBQ-pakket en strandspullen. Neem contact op voor de huidige mogelijkheden.',
-      },
-    ],
-  },
-];
+import { useLanguage } from '@/i18n/context';
 
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const { t } = useLanguage();
+
+  const faqCategories = useMemo(() => [
+    {
+      category: t('faq.cat1'),
+      items: [
+        { q: t('faq.q1_1'), a: t('faq.a1_1') },
+        { q: t('faq.q1_2'), a: t('faq.a1_2') },
+        { q: t('faq.q1_3'), a: t('faq.a1_3') },
+        { q: t('faq.q1_4'), a: t('faq.a1_4') },
+        { q: t('faq.q1_5'), a: t('faq.a1_5') },
+      ],
+    },
+    {
+      category: t('faq.cat2'),
+      items: [
+        { q: t('faq.q2_1'), a: t('faq.a2_1') },
+        { q: t('faq.q2_2'), a: t('faq.a2_2') },
+        { q: t('faq.q2_3'), a: t('faq.a2_3') },
+        { q: t('faq.q2_4'), a: t('faq.a2_4') },
+      ],
+    },
+    {
+      category: t('faq.cat3'),
+      items: [
+        { q: t('faq.q3_1'), a: t('faq.a3_1') },
+        { q: t('faq.q3_2'), a: t('faq.a3_2') },
+        { q: t('faq.q3_3'), a: t('faq.a3_3') },
+        { q: t('faq.q3_4'), a: t('faq.a3_4') },
+        { q: t('faq.q3_5'), a: t('faq.a3_5') },
+        { q: t('faq.q3_6'), a: t('faq.a3_6') },
+        { q: t('faq.q3_7'), a: t('faq.a3_7') },
+      ],
+    },
+    {
+      category: t('faq.cat4'),
+      items: [
+        { q: t('faq.q4_1'), a: t('faq.a4_1') },
+        { q: t('faq.q4_2'), a: t('faq.a4_2') },
+      ],
+    },
+  ], [t]);
 
   const toggle = (key: string) => {
     const next = new Set(openItems);
@@ -136,7 +84,7 @@ export default function FAQPage() {
       {/* Header */}
       <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80"
+          src="https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1920&q=80"
           alt="Camping bij zonsondergang"
           fill
           className="object-cover"
@@ -147,10 +95,10 @@ export default function FAQPage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4">
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
-              Veelgestelde vragen
+              {t('faq.heroTitle')}
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
-              Vind snel antwoord op de meest gestelde vragen over onze caravans, het boekingsproces en meer.
+              {t('faq.heroSubtitle')}
             </motion.p>
           </div>
         </div>
@@ -211,14 +159,14 @@ export default function FAQPage() {
 
           {/* CTA */}
           <div className="bg-surface rounded-2xl p-8 text-center border border-border mt-12">
-            <h3 className="text-xl font-bold text-foreground mb-2">Vraag niet gevonden?</h3>
-            <p className="text-muted mb-6">Neem gerust contact met ons op. We helpen je graag verder!</p>
+            <h3 className="text-xl font-bold text-foreground mb-2">{t('faq.notFoundTitle')}</h3>
+            <p className="text-muted mb-6">{t('faq.notFoundText')}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/contact"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white font-semibold rounded-full transition-all shadow-md"
               >
-                Neem contact op
+                {t('faq.contactUs')}
                 <ArrowRight size={18} />
               </Link>
               <a

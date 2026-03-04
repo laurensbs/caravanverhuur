@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
 import WeatherBar from './WeatherBar';
+import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -44,15 +45,26 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [megaMenu, setMegaMenu] = useState<'caravans' | 'bestemmingen' | null>(null);
   const [mobileSubmenu, setMobileSubmenu] = useState<'caravans' | 'bestemmingen' | null>(null);
+  const [langDropdown, setLangDropdown] = useState(false);
   const pathname = usePathname();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
+  const langRef = useRef<HTMLDivElement>(null);
+  const { t, locale, setLocale } = useLanguage();
 
-  useEffect(() => { setMegaMenu(null); setMenuOpen(false); setMobileSubmenu(null); }, [pathname]);
+  useEffect(() => { setMegaMenu(null); setMenuOpen(false); setMobileSubmenu(null); setLangDropdown(false); }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangDropdown(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const openMega = (m: 'caravans' | 'bestemmingen') => {
     if (megaTimeout.current) clearTimeout(megaTimeout.current);
@@ -84,34 +96,53 @@ export default function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center">
-            <Link href="/" className={navCls('/')}>Home</Link>
+            <Link href="/" className={navCls('/')}>{t('nav.home')}</Link>
 
             <div className="relative" onMouseEnter={() => openMega('caravans')} onMouseLeave={closeMega}>
               <button className={`flex items-center gap-1 ${navCls('/caravans')}`}>
-                Caravans
+                {t('nav.caravans')}
                 <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'caravans' ? 'rotate-180' : ''}`} />
               </button>
             </div>
 
             <div className="relative" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <button className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
-                Bestemmingen
+                {t('nav.destinations')}
                 <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
               </button>
             </div>
 
-            <Link href="/over-ons" className={navCls('/over-ons')}>Over Ons</Link>
-            <Link href="/faq" className={navCls('/faq')}>FAQ</Link>
-            <Link href="/contact" className={navCls('/contact')}>Contact</Link>
+            <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link>
+            <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link>
+            <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link>
 
             <div className="w-px h-5 bg-border mx-3" />
+
+            {/* Language switcher */}
+            <div className="relative" ref={langRef}>
+              <button onClick={() => setLangDropdown(!langDropdown)} className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-foreground hover:bg-surface-alt transition-colors" aria-label="Language">
+                <Globe size={17} />
+              </button>
+              <AnimatePresence>
+                {langDropdown && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-border py-1 min-w-[140px] z-50">
+                    {(['nl', 'en', 'es'] as Locale[]).map(l => (
+                      <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 hover:bg-surface transition-colors ${locale === l ? 'text-primary font-semibold' : 'text-foreground-light'}`}>
+                        <span className="text-base">{localeFlags[l]}</span>
+                        {l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link href="/account" className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-foreground hover:bg-surface-alt transition-colors" aria-label="Account">
               <User size={17} />
             </Link>
 
             <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-[15px] font-semibold rounded-full transition-all flex items-center gap-2 shadow-sm hover:shadow">
-              Boek Nu <ArrowRight size={16} />
+              {t('nav.bookNow')} <ArrowRight size={16} />
             </Link>
           </nav>
 
@@ -141,16 +172,16 @@ export default function Header() {
               {megaMenu === 'caravans' && (
                 <div className="max-w-6xl mx-auto px-8 py-7">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-bold text-foreground">Onze Caravans</h3>
+                    <h3 className="text-sm font-bold text-foreground">{t('nav.ourCaravans')}</h3>
                     <Link href="/caravans" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium">
-                      Bekijk alles <ArrowRight size={12} />
+                      {t('nav.viewAll')} <ArrowRight size={12} />
                     </Link>
                   </div>
                   <div className="grid grid-cols-4 gap-8">
                     {(['LUXE', 'FAMILIE', 'COMPACT'] as const).map(type => (
                       <div key={type}>
                         <p className={`text-[11px] font-bold uppercase tracking-wider mb-3 ${typeLabel[type].color}`}>
-                          {typeLabel[type].name}
+                          {type === 'LUXE' ? t('nav.luxe') : type === 'FAMILIE' ? t('nav.familie') : t('nav.compact')}
                         </p>
                         <div className="space-y-0.5">
                           {caravansByType[type].map(c => (
@@ -172,10 +203,10 @@ export default function Header() {
                       <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" unoptimized />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-1">Uitgelicht</p>
+                        <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-1">{t('nav.featured')}</p>
                         <p className="text-white font-bold text-sm mb-3">{featuredCaravan.name}</p>
                         <Link href={`/caravans/${featuredCaravan.id}`} className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-white transition-colors">
-                          Bekijken <ArrowRight size={11} />
+                          {t('nav.view')} <ArrowRight size={11} />
                         </Link>
                       </div>
                     </div>
@@ -187,9 +218,9 @@ export default function Header() {
               {megaMenu === 'bestemmingen' && (
                 <div className="max-w-6xl mx-auto px-8 py-7">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-bold text-foreground">Bestemmingen</h3>
+                    <h3 className="text-sm font-bold text-foreground">{t('nav.destinations')}</h3>
                     <Link href="/bestemmingen" className="text-xs text-primary hover:underline flex items-center gap-1 font-medium">
-                      Bekijk alles <ArrowRight size={12} />
+                      {t('nav.viewAll')} <ArrowRight size={12} />
                     </Link>
                   </div>
                   <div className="grid grid-cols-4 gap-8">
@@ -216,7 +247,7 @@ export default function Header() {
                         <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wider mb-1">{featuredDest.region}</p>
                         <p className="text-white font-bold text-sm mb-3">{featuredDest.name}</p>
                         <Link href={`/bestemmingen/${featuredDest.slug}`} className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-white transition-colors">
-                          Ontdekken <ArrowRight size={11} />
+                          {t('home.explore')} <ArrowRight size={11} />
                         </Link>
                       </div>
                     </div>
@@ -254,14 +285,14 @@ export default function Header() {
 
                 {/* Nav */}
                 <nav className="flex-1 overflow-y-auto py-2 px-2">
-                  <MobLink href="/" label="Home" on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
+                  <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
 
                   {/* Caravans — expandable */}
                   <button
                     onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/caravans') ? 'text-primary' : 'text-foreground-light'}`}
                   >
-                    Caravans
+                    {t('nav.caravans')}
                     <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
                   </button>
                   <AnimatePresence>
@@ -269,7 +300,7 @@ export default function Header() {
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pl-4 pr-1 pb-2">
                           <Link href="/caravans" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
-                            Alle caravans →
+                            {t('home.allCaravans')} →
                           </Link>
                           {caravans.map(c => (
                             <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
@@ -289,7 +320,7 @@ export default function Header() {
                     onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/bestemmingen') ? 'text-primary' : 'text-foreground-light'}`}
                   >
-                    Bestemmingen
+                    {t('nav.destinations')}
                     <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
                   </button>
                   <AnimatePresence>
@@ -297,7 +328,7 @@ export default function Header() {
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pl-4 pr-1 pb-2">
                           <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
-                            Alle bestemmingen →
+                            {t('home.allDestinations')} →
                           </Link>
                           {destinations.map(d => (
                             <Link key={d.id} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-surface text-sm text-foreground-light">
@@ -312,19 +343,27 @@ export default function Header() {
                     )}
                   </AnimatePresence>
 
-                  <MobLink href="/boeken" label="Boeken" on={active('/boeken')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/over-ons" label="Over Ons" on={active('/over-ons')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/faq" label="FAQ" on={active('/faq')} close={() => setMenuOpen(false)} />
-                  <MobLink href="/contact" label="Contact" on={active('/contact')} close={() => setMenuOpen(false)} />
+                  <MobLink href="/boeken" label={t('nav.bookNow')} on={active('/boeken')} close={() => setMenuOpen(false)} />
+                  <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
+                  <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
+                  <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
                 </nav>
 
                 {/* Bottom CTA */}
                 <div className="p-4 border-t border-border space-y-2">
+                  {/* Mobile language switcher */}
+                  <div className="flex items-center justify-center gap-1 mb-2">
+                    {(['nl', 'en', 'es'] as Locale[]).map(l => (
+                      <button key={l} onClick={() => setLocale(l)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${locale === l ? 'bg-primary text-white' : 'bg-surface-alt text-foreground-light hover:bg-surface'}`}>
+                        {localeFlags[l]}
+                      </button>
+                    ))}
+                  </div>
                   <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl text-sm active:scale-[0.98] transition-transform">
-                    Boek Nu <ArrowRight size={16} />
+                    {t('nav.bookNow')} <ArrowRight size={16} />
                   </Link>
                   <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 border border-border text-foreground-light font-medium rounded-xl text-sm hover:bg-surface transition-colors">
-                    <User size={15} /> Mijn Account
+                    <User size={15} /> {t('footer.myAccount')}
                   </Link>
                 </div>
               </motion.div>
