@@ -305,3 +305,48 @@ export async function sendContactAcknowledgmentEmail(to: string, name: string, s
     `, `We hebben je bericht ontvangen — ${subject}`),
   });
 }
+
+export async function sendBorgChecklistEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  type: 'INCHECKEN' | 'UITCHECKEN';
+  token: string;
+  caravanName?: string;
+  checkIn?: string;
+  checkOut?: string;
+}) {
+  const firstName = data.guestName.split(' ')[0];
+  const typeLabel = data.type === 'INCHECKEN' ? 'check-in' : 'check-out';
+  const checklistUrl = `${SITE_URL}/borg/${data.token}`;
+  const dashboardUrl = `${SITE_URL}/mijn-account?tab=borg`;
+
+  return sendEmail({
+    to: data.to,
+    subject: `Borgchecklist klaar — ${data.reference}`,
+    html: emailWrapper(`
+      ${heading('Inspectie afgerond')}
+      ${subtext(`Hallo ${firstName}, de ${typeLabel}-inspectie voor je boeking is afgerond. Bekijk de resultaten en geef je akkoord.`)}
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        ${infoRow('Boeking', data.reference)}
+        ${data.caravanName ? infoRow('Caravan', data.caravanName) : ''}
+        ${infoRow('Type', data.type === 'INCHECKEN' ? 'Incheck-inspectie' : 'Uitcheck-inspectie')}
+        ${data.checkIn ? infoRow('Check-in', data.checkIn) : ''}
+        ${data.checkOut ? infoRow('Check-out', data.checkOut) : ''}
+      </table>
+
+      ${highlight(`
+        <p style="margin:0;color:#3D3522;font-size:14px;line-height:1.6;">
+          Bekijk de checklist en geef je akkoord of dien eventueel bezwaar in. Dit kan via onderstaande link of via je account.
+        </p>
+      `)}
+
+      ${button('Bekijk checklist & reageer →', checklistUrl)}
+
+      <div style="text-align:center;margin-top:12px;">
+        <a href="${dashboardUrl}" style="color:#58B09C;font-size:13px;text-decoration:none;">Of bekijk via je account →</a>
+      </div>
+    `, `Borgchecklist klaar voor boeking ${data.reference} — bekijk en reageer`),
+  });
+}

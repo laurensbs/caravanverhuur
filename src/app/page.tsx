@@ -777,7 +777,7 @@ export default function HomePage() {
                 <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: review.rating }).map((_, s) => (
-                    <Star key={s} size={16} className="fill-primary text-primary" />
+                    <Star key={s} size={16} className="fill-amber-400 text-amber-400" />
                   ))}
                 </div>
                 <p className="text-sm text-foreground leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
@@ -806,7 +806,7 @@ export default function HomePage() {
             {[
               { icon: <Shield size={18} className="text-primary" />, text: t('home.trustSafePayment') },
               { icon: <CheckCircle size={18} className="text-primary" />, text: t('home.trustFullInventory') },
-              { icon: <Star size={18} className="text-primary fill-primary" />, text: t('home.trustRating') },
+              { icon: <Star size={18} className="text-amber-400 fill-amber-400" />, text: t('home.trustRating') },
               { icon: <Users size={18} className="text-primary" />, text: t('home.trustGuests') },
               { icon: <Clock size={18} className="text-primary" />, text: t('home.trustExperience') },
             ].map((badge, bi) => (

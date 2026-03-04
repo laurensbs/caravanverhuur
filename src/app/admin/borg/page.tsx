@@ -21,6 +21,9 @@ import {
   Hash,
   StickyNote,
   Shield,
+  Trash2,
+  Mail,
+  PlusCircle,
 } from 'lucide-react';
 
 interface BorgItem {
@@ -97,6 +100,9 @@ export default function AdminBorgPage() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
+  const [newItemCategory, setNewItemCategory] = useState('');
+  const [newItemName, setNewItemName] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -211,6 +217,25 @@ export default function AdminBorgPage() {
     navigator.clipboard.writeText(url);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
+  };
+
+  const handleAddItem = (checklistId: string) => {
+    if (!newItemCategory.trim() || !newItemName.trim()) return;
+    setChecklists(prev => prev.map(cl => {
+      if (cl.id !== checklistId) return cl;
+      const newItems = [...cl.items, { category: newItemCategory.trim(), item: newItemName.trim(), status: 'nvt' as const, notes: '' }];
+      return { ...cl, items: newItems };
+    }));
+    setNewItemName('');
+    setAddingItemTo(null);
+  };
+
+  const handleRemoveItem = (checklistId: string, itemIndex: number) => {
+    setChecklists(prev => prev.map(cl => {
+      if (cl.id !== checklistId) return cl;
+      const newItems = cl.items.filter((_, i) => i !== itemIndex);
+      return { ...cl, items: newItems };
+    }));
   };
 
   const filtered = filter === 'all' ? checklists : checklists.filter(c => c.status === filter);
@@ -523,6 +548,15 @@ export default function AdminBorgPage() {
                                         disabled={!isEditable}
                                         className="flex-1 px-2 py-1 border border-border rounded text-xs focus:outline-none focus:border-primary disabled:bg-surface-alt"
                                       />
+                                      {isEditable && (
+                                        <button
+                                          onClick={() => handleRemoveItem(checklist.id, globalIdx)}
+                                          className="shrink-0 p-1 text-muted hover:text-danger transition-colors cursor-pointer"
+                                          title="Item verwijderen"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -530,6 +564,65 @@ export default function AdminBorgPage() {
                             </div>
                           );
                         })}
+
+                        {/* Add custom item */}
+                        {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
+                          <div className="border border-dashed border-border rounded-lg p-3">
+                            {addingItemTo === checklist.id ? (
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <select
+                                  value={newItemCategory}
+                                  onChange={(e) => setNewItemCategory(e.target.value)}
+                                  className="px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                >
+                                  <option value="">Categorie...</option>
+                                  {[...new Set(checklist.items.map(i => i.category))].map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
+                                  <option value="__new">+ Nieuwe categorie</option>
+                                </select>
+                                {newItemCategory === '__new' && (
+                                  <input
+                                    type="text"
+                                    placeholder="Categorienaam..."
+                                    onChange={(e) => setNewItemCategory(e.target.value === '' ? '__new' : e.target.value)}
+                                    className="px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                  />
+                                )}
+                                <input
+                                  type="text"
+                                  value={newItemName}
+                                  onChange={(e) => setNewItemName(e.target.value)}
+                                  placeholder="Item naam..."
+                                  className="flex-1 px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary"
+                                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
+                                />
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => handleAddItem(checklist.id)}
+                                    disabled={!newItemCategory || newItemCategory === '__new' || !newItemName.trim()}
+                                    className="px-3 py-1.5 bg-primary text-white rounded text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                                  >
+                                    Toevoegen
+                                  </button>
+                                  <button
+                                    onClick={() => { setAddingItemTo(null); setNewItemName(''); setNewItemCategory(''); }}
+                                    className="px-3 py-1.5 bg-surface-alt text-muted rounded text-xs cursor-pointer"
+                                  >
+                                    Annuleer
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => { setAddingItemTo(checklist.id); setNewItemCategory(''); setNewItemName(''); }}
+                                className="flex items-center gap-2 text-xs text-primary font-medium cursor-pointer hover:text-primary-dark transition-colors"
+                              >
+                                <PlusCircle size={14} /> Item toevoegen aan checklist
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                         {/* General notes */}
                         <div>
@@ -570,7 +663,7 @@ export default function AdminBorgPage() {
                               <button
                                 onClick={() => handleSave(checklist)}
                                 disabled={saving}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 bg-surface-alt text-foreground rounded-lg text-sm font-semibold hover:bg-surface transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                                 Opslaan
@@ -580,10 +673,19 @@ export default function AdminBorgPage() {
                                 disabled={saving}
                                 className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
                               >
-                                <Send size={14} />
-                                Afronden & versturen naar klant
+                                {saving ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                Klaarzetten & versturen
                               </button>
+                              <p className="w-full text-[11px] text-muted flex items-center gap-1 mt-0.5">
+                                <Mail size={11} /> De klant ontvangt automatisch een e-mail en ziet de checklist direct in het klantenportaal.
+                              </p>
                             </>
+                          )}
+                          {checklist.status === 'AFGEROND' && (
+                            <div className="flex items-center gap-2 text-xs text-primary">
+                              <Mail size={13} />
+                              <span className="font-medium">E-mail verstuurd naar klant — wacht op reactie</span>
+                            </div>
                           )}
                           <button
                             onClick={() => copyLink(checklist.token)}

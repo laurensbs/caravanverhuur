@@ -6,6 +6,7 @@ import {
   getBorgChecklistsByBooking,
   updateBorgChecklist,
 } from '@/lib/db';
+import { sendBorgChecklistEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,6 +68,27 @@ export async function PUT(request: NextRequest) {
       staffName,
       completedAt,
     });
+
+    // Send email notification to customer when checklist is completed
+    if (status === 'AFGEROND') {
+      try {
+        const checklist = await getBorgChecklistById(id);
+        if (checklist && checklist.guest_email) {
+          await sendBorgChecklistEmail({
+            to: checklist.guest_email,
+            guestName: checklist.guest_name || 'Klant',
+            reference: checklist.booking_ref || '',
+            type: checklist.type as 'INCHECKEN' | 'UITCHECKEN',
+            token: checklist.token,
+            caravanName: checklist.caravan_id,
+            checkIn: checklist.check_in ? new Date(checklist.check_in).toLocaleDateString('nl-NL') : undefined,
+            checkOut: checklist.check_out ? new Date(checklist.check_out).toLocaleDateString('nl-NL') : undefined,
+          });
+        }
+      } catch (emailErr) {
+        console.error('Borg email error (non-fatal):', emailErr);
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,17 +1,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sun, Cloud, CloudRain, ExternalLink, Thermometer } from 'lucide-react';
+import { Sun, Cloud, CloudRain, ExternalLink, Thermometer, Droplets } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
-function WeatherIcon({ type, className }: { type: string; className?: string }) {
+function WeatherIcon({ type, size = 24 }: { type: string; size?: number }) {
   switch (type) {
     case 'sun':
-      return <Sun className={className} />;
+      return <Sun size={size} className="text-amber-400" />;
     case 'rain':
-      return <CloudRain className={className} />;
+      return <CloudRain size={size} className="text-blue-400" />;
+    case 'sun-cloud':
+      return (
+        <span className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+          <Sun size={size * 0.7} className="text-amber-400 absolute -top-0.5 -right-0.5" />
+          <Cloud size={size * 0.75} className="text-slate-300 absolute -bottom-0.5 -left-0.5" />
+        </span>
+      );
     default:
-      return <Cloud className={className} />;
+      return <Cloud size={size} className="text-slate-300" />;
   }
 }
 
@@ -65,17 +72,15 @@ export default function WeatherChecker() {
               className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
             >
               <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{w.month}</div>
-              <WeatherIcon
-                type={w.icon}
-                className={`mx-auto mb-2 ${
-                  w.icon === 'sun' ? 'text-primary' : 'text-primary'
-                }`}
-              />
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Thermometer size={12} className="text-accent" />
+              <WeatherIcon type={w.icon} size={28} />
+              <div className="flex items-center justify-center gap-1 mt-2 mb-1">
+                <Thermometer size={12} className="text-orange-400" />
                 <span className="text-lg sm:text-xl font-bold text-foreground">{w.temp}°</span>
               </div>
-              <div className="text-[10px] text-muted">{w.rain} {t('weather.rainDays')}</div>
+              <div className="text-[10px] text-muted flex items-center justify-center gap-0.5">
+                <Droplets size={9} className="text-blue-300" />
+                {w.rain} {t('weather.rainDays')}
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -94,7 +99,7 @@ export default function WeatherChecker() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary/5 hover:bg-primary/10 text-primary font-medium rounded-full transition-all duration-300 text-sm group"
           >
-            <Sun size={16} className="group-hover:rotate-45 transition-transform duration-300" />
+            <Sun size={16} className="text-amber-400 group-hover:rotate-45 transition-transform duration-300" />
             {t('weather.viewCurrentWeather')}
             <ExternalLink size={14} />
           </a>
