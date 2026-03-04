@@ -44,10 +44,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Ongeldig wachtwoord' }, { status: 403 });
     }
 
-    await purgeAllTestData();
-    return NextResponse.json({ success: true, message: 'Alle testdata is verwijderd' });
+    const result = await purgeAllTestData();
+    return NextResponse.json({ message: 'Alle testdata is verwijderd', ...result });
   } catch (error) {
     console.error('Purge error:', error);
-    return NextResponse.json({ error: 'Fout bij verwijderen testdata' }, { status: 500 });
+    return NextResponse.json({ error: 'Fout bij verwijderen testdata', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

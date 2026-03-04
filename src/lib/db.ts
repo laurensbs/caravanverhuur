@@ -981,16 +981,20 @@ export async function getNewsletterSubscriptionStatus(email: string) {
 // ===== DATA PURGE =====
 
 export async function purgeAllTestData() {
-  // Delete in correct order for FK constraints
-  await sql`DELETE FROM delete_confirmations`;
-  await sql`DELETE FROM customer_sessions`;
-  await sql`DELETE FROM borg_checklists`;
-  await sql`DELETE FROM payments`;
-  await sql`DELETE FROM bookings`;
-  await sql`DELETE FROM contacts`;
-  await sql`DELETE FROM newsletters`;
-  await sql`DELETE FROM customers`;
-  return { success: true };
+  // Delete in correct order for FK constraints, each wrapped to be resilient
+  const errors: string[] = [];
+  const deleteTables = async () => {
+    try { await sql`DELETE FROM delete_confirmations`; } catch (e) { errors.push(`delete_confirmations: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM customer_sessions`; } catch (e) { errors.push(`customer_sessions: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM borg_checklists`; } catch (e) { errors.push(`borg_checklists: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM payments`; } catch (e) { errors.push(`payments: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM bookings`; } catch (e) { errors.push(`bookings: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM contacts`; } catch (e) { errors.push(`contacts: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM newsletters`; } catch (e) { errors.push(`newsletters: ${e instanceof Error ? e.message : String(e)}`); }
+    try { await sql`DELETE FROM customers`; } catch (e) { errors.push(`customers: ${e instanceof Error ? e.message : String(e)}`); }
+  };
+  await deleteTables();
+  return { success: errors.length === 0, errors: errors.length > 0 ? errors : undefined };
 }
 
 // ===== DELETE CONFIRMATION =====
