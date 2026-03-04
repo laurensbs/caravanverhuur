@@ -1,27 +1,28 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #0891B2;
-  --color-primary-light: #CFFAFE;
-  --color-primary-dark: #0E7490;
-  --color-primary-50: #ECFEFF;
-  --color-primary-100: #A5F3FC;
-  --color-accent: #EA580C;
-  --color-accent-light: #FB923C;
-  --color-accent-dark: #C2410C;
+  --color-primary: #2563EB;
+  --color-primary-light: #DBEAFE;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #BFDBFE;
+  --color-accent: #D97706;
+  --color-accent-light: #F59E0B;
+  --color-accent-dark: #B45309;
   --color-background: #ffffff;
   --color-foreground: #0F172A;
   --color-foreground-light: #334155;
   --color-muted: #64748B;
-  --color-surface: #F8FAFC;
-  --color-surface-alt: #F1F5F9;
-  --color-border: #E2E8F0;
-  --color-warm: #ECFEFF;
-  --color-warm-dark: #CFFAFE;
-  --color-success: #10B981;
-  --color-danger: #EF4444;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: #FAFAF9;
+  --color-surface-alt: #F5F5F4;
+  --color-border: #E7E5E4;
+  --color-warm: #FFFBEB;
+  --color-warm-dark: #FEF3C7;
+  --color-success: #059669;
+  --color-danger: #DC2626;
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-playfair);
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
 }
 
 * {
@@ -31,10 +32,19 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Premium serif headings for brand personality */
+h1, h2, h3 {
+  font-family: var(--font-heading), 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading), 'Playfair Display', Georgia, 'Times New Roman', serif;
 }
 
 /* Custom animation keyframes */

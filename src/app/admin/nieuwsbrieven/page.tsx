@@ -271,7 +271,7 @@ export default function AdminNieuwsbrieven() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Totaal', value: totalCount, icon: Newspaper, color: 'text-[#0891B2]', bg: 'bg-[#0891B2]/10' },
+          { label: 'Totaal', value: totalCount, icon: Newspaper, color: 'text-[#2563EB]', bg: 'bg-[#2563EB]/10' },
           { label: 'Concepten', value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Verzonden', value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Totaal ontvangers', value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -369,7 +369,7 @@ export default function AdminNieuwsbrieven() {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#F8FAFC] text-foreground border border-border">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FAFAF9] text-foreground border border-border">
                       {cat.emoji} {cat.label}
                     </span>
                     {isSent ? (
@@ -417,7 +417,7 @@ export default function AdminNieuwsbrieven() {
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => openPreview(n)}
-                    className="p-2 rounded-lg hover:bg-[#F8FAFC] transition cursor-pointer"
+                    className="p-2 rounded-lg hover:bg-[#FAFAF9] transition cursor-pointer"
                     title="Voorbeeld"
                   >
                     <Eye className="w-4 h-4 text-muted" />
@@ -426,7 +426,7 @@ export default function AdminNieuwsbrieven() {
                     <>
                       <button
                         onClick={() => openEdit(n)}
-                        className="p-2 rounded-lg hover:bg-[#F8FAFC] transition cursor-pointer"
+                        className="p-2 rounded-lg hover:bg-[#FAFAF9] transition cursor-pointer"
                         title="Bewerken"
                       >
                         <Pencil className="w-4 h-4 text-muted" />
@@ -500,7 +500,7 @@ export default function AdminNieuwsbrieven() {
                             className={`px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer border ${
                               formCategory === c.value
                                 ? 'bg-primary/10 border-primary text-primary'
-                                : 'bg-[#F8FAFC] border-border text-muted hover:text-foreground'
+                                : 'bg-[#FAFAF9] border-border text-muted hover:text-foreground'
                             }`}
                           >
                             {c.emoji} {c.label}
@@ -576,7 +576,7 @@ export default function AdminNieuwsbrieven() {
                     <div className="flex gap-3 pt-2">
                       <button
                         onClick={() => { setModal(null); resetForm(); }}
-                        className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#F8FAFC] transition cursor-pointer"
+                        className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                         disabled={saving}
                       >
                         Annuleren
@@ -614,19 +614,19 @@ export default function AdminNieuwsbrieven() {
 
                   {/* Email preview */}
                   <div className="border border-border rounded-xl overflow-hidden">
-                    <div className="bg-[#F8FAFC] px-5 py-3 border-b border-border text-sm text-muted">
+                    <div className="bg-[#FAFAF9] px-5 py-3 border-b border-border text-sm text-muted">
                       <span className="font-medium text-foreground">Onderwerp:</span> {getCategoryInfo(selected.category).emoji} {selected.title}
                     </div>
                     <div className="p-6 bg-white">
                       <div className="text-center mb-4">
-                        <span className="inline-block bg-[#ECFEFF] text-[#0E7490] text-xs font-semibold px-3 py-1 rounded-full">
+                        <span className="inline-block bg-[#EFF6FF] text-[#1D4ED8] text-xs font-semibold px-3 py-1 rounded-full">
                           {getCategoryInfo(selected.category).emoji} {getCategoryInfo(selected.category).label}
                         </span>
                       </div>
                       <h3 className="text-xl font-bold text-foreground text-center mb-4">{selected.title}</h3>
 
                       {(selected.event_date || selected.event_location) && (
-                        <div className="bg-[#F8FAFC] border border-border rounded-lg p-4 mb-4">
+                        <div className="bg-[#FAFAF9] border border-border rounded-lg p-4 mb-4">
                           {selected.event_date && (
                             <div className="flex justify-between text-sm mb-1">
                               <span className="text-muted">📅 Datum</span>
@@ -648,14 +648,14 @@ export default function AdminNieuwsbrieven() {
 
                       <hr className="my-4 border-border" />
 
-                      <div className="bg-[#ECFEFF] border border-[#BAE6FD] rounded-xl p-4 mb-4">
+                      <div className="bg-[#EFF6FF] border border-[#93C5FD] rounded-xl p-4 mb-4">
                         <p className="text-sm text-foreground">
                           Wil je de Costa Brava zelf ervaren? Bekijk onze beschikbare caravans en boek jouw perfecte vakantie.
                         </p>
                       </div>
 
                       <div className="text-center">
-                        <span className="inline-block bg-[#0E7490] text-white px-6 py-3 rounded-xl font-semibold text-sm">
+                        <span className="inline-block bg-[#1D4ED8] text-white px-6 py-3 rounded-xl font-semibold text-sm">
                           Bekijk caravans →
                         </span>
                       </div>
@@ -665,7 +665,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex gap-3 mt-5">
                     <button
                       onClick={() => setModal(null)}
-                      className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#F8FAFC] transition cursor-pointer"
+                      className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                     >
                       Sluiten
                     </button>
@@ -709,7 +709,7 @@ export default function AdminNieuwsbrieven() {
                         </div>
                       </div>
 
-                      <div className="bg-[#F8FAFC] border border-border rounded-xl p-4 mb-5">
+                      <div className="bg-[#FAFAF9] border border-border rounded-xl p-4 mb-5">
                         <p className="text-sm font-semibold text-foreground mb-1">{selected.title}</p>
                         <p className="text-xs text-muted">{getCategoryInfo(selected.category).emoji} {getCategoryInfo(selected.category).label}</p>
                       </div>
@@ -724,7 +724,7 @@ export default function AdminNieuwsbrieven() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => { setModal(null); resetForm(); }}
-                          className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#F8FAFC] transition cursor-pointer"
+                          className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                           disabled={saving}
                         >
                           Annuleren
@@ -806,7 +806,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setModal(null)}
-                      className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#F8FAFC] transition cursor-pointer"
+                      className="flex-1 px-4 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                       disabled={saving}
                     >
                       Annuleren

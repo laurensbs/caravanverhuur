@@ -903,7 +903,7 @@ function BoekenContent() {
                       <div className="border-t border-border/50 pt-3 mt-3">
                         <div className="flex justify-between items-baseline mb-1">
                           <span className="text-muted">{t('booking.total')}</span>
-                          <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#0891B2' }} animate={{ scale: 1, color: '#0E7490' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
+                          <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#2563EB' }} animate={{ scale: 1, color: '#1D4ED8' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted">{t('booking.depositPercent')}</span>

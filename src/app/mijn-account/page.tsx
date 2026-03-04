@@ -125,7 +125,7 @@ function daysUntil(d: string) {
 export default function MijnAccountPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={32} className="animate-spin text-primary mx-auto" />
         </div>
@@ -331,7 +331,7 @@ function MijnAccountContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#FAFAF9]">
       <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
 
@@ -350,7 +350,7 @@ function MijnAccountContent() {
                   </div>
                 </div>
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-1 bg-[#F8FAFC] rounded-xl p-2.5">
+                <div className="grid grid-cols-3 gap-1 bg-[#FAFAF9] rounded-xl p-2.5">
                   {[
                     { n: bookings.length, label: t('myAccount.statBookings') },
                     { n: payments.filter(p => p.status === 'BETAALD').length, label: t('myAccount.statPaid') },
@@ -373,7 +373,7 @@ function MijnAccountContent() {
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       tab === tb.key
                         ? 'bg-primary/8 text-primary'
-                        : 'text-foreground-light hover:bg-[#F8FAFC] hover:text-foreground'
+                        : 'text-foreground-light hover:bg-[#FAFAF9] hover:text-foreground'
                     }`}
                   >
                     <span className={tab === tb.key ? 'text-primary' : 'text-muted'}>{tb.icon}</span>
@@ -391,13 +391,13 @@ function MijnAccountContent() {
                   <Plus size={18} />
                   {t('myAccount.newBooking')}
                 </Link>
-                <Link href="/contact" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#F8FAFC] transition-colors">
+                <Link href="/contact" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#FAFAF9] transition-colors">
                   <Mail size={18} className="text-muted" />
                   {t('myAccount.contactUs')}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#F8FAFC] hover:text-danger transition-colors"
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#FAFAF9] hover:text-danger transition-colors"
                 >
                   <LogOut size={18} className="text-muted" />
                   {t('myAccount.logout')}
@@ -492,7 +492,7 @@ function MijnAccountContent() {
                             </div>
                           </div>
                         </div>
-                        <div className="p-4 sm:p-5 flex items-center justify-between bg-[#F8FAFC]/50">
+                        <div className="p-4 sm:p-5 flex items-center justify-between bg-[#FAFAF9]/50">
                           <div className="flex items-center gap-3 text-sm text-muted flex-wrap">
                             <span>{fd(upcomingBooking.check_in)} → {fd(upcomingBooking.check_out)}</span>
                             <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>

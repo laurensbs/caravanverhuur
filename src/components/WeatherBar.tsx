@@ -12,7 +12,7 @@ export default function WeatherBar() {
   if (!visible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-primary-dark via-primary to-sky-500 text-white text-xs sm:text-sm relative">
+    <div className="bg-gradient-to-r from-primary-dark via-primary to-primary/80 text-white text-xs sm:text-sm relative">
       <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3">
         <Sun size={14} className="text-primary-light shrink-0 hidden sm:block" />
         <p className="text-center">
