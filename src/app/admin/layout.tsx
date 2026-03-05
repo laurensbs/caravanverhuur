@@ -25,6 +25,7 @@ import {
   Tag,
   Globe,
   User,
+  ArrowRight,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -115,163 +116,236 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   /* ── Login Screen ───────────────────────────────── */
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-[#0C4A6E] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Animated background circles */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-primary/5 rounded-full blur-2xl" />
-        </div>
-        {/* Dot pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1.5\' fill=\'white\'/%3E%3C/svg%3E")' }} />
-        </div>
-
-        {/* Language toggle (top-right) */}
-        <button
-          onClick={() => { const next = loginLocale === 'nl' ? 'en' : 'nl'; setLoginLocale(next); localStorage.setItem('admin_locale', next); }}
-          className="absolute top-4 right-4 z-10 flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors cursor-pointer bg-white/10 px-3 py-1.5 rounded-full"
-        >
-          <Globe className="w-4 h-4" />
-          {loginLocale === 'nl' ? 'EN' : 'NL'}
-        </button>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md relative"
-        >
-          {/* Glowing effect */}
-          <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 rounded-[28px] blur-sm" />
-
-          <form
-            onSubmit={handleLogin}
-            className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl"
-          >
-            {/* Logo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
-              className="text-center mb-4"
-            >
-              <div className="mx-auto relative">
+      <div className="min-h-screen bg-surface">
+        <div className="flex min-h-screen">
+          {/* ====== LEFT HERO (desktop only) ====== */}
+          <div className="hidden lg:flex lg:w-1/2 relative bg-[#0C4A6E] overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <Image
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
+                alt="Costa Brava"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0C4A6E]/80 via-[#0C4A6E]/60 to-[#0C4A6E]/90" />
+            <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
+              <div>
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
                   alt="Caravanverhuur Spanje"
-                  width={280}
-                  height={80}
-                  className="mx-auto w-56 sm:w-64 h-auto"
+                  width={240}
+                  height={70}
+                  className="w-44 xl:w-52 h-auto brightness-0 invert"
                   unoptimized
                 />
               </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.4 }}
-              className="space-y-4"
-            >
-              {/* Role selector */}
-              <div>
-                <div className="grid grid-cols-2 gap-3">
-                  {(['admin', 'staff'] as const).map((u) => (
-                    <button
-                      key={u}
-                      type="button"
-                      onClick={() => { setUsername(u); setError(''); }}
-                      className={`py-3 rounded-xl font-semibold text-base transition-all cursor-pointer ${
-                        username === u
-                          ? 'bg-primary text-white shadow-lg shadow-primary/25 ring-2 ring-primary'
-                          : 'bg-surface text-muted hover:bg-gray-100'
-                      }`}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
+                    {lt('auth.heroTitle')}
+                  </h2>
+                  <p className="text-white/60 mt-3 text-sm xl:text-base max-w-md leading-relaxed">
+                    {lt('auth.heroDesc')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-w-md">
+                  {[
+                    { icon: <LayoutDashboard size={18} />, text: lt('auth.featDashboard') },
+                    { icon: <CalendarCheck size={18} />, text: lt('auth.featBookings') },
+                    { icon: <ClipboardCheck size={18} />, text: lt('auth.featDeposit') },
+                    { icon: <Users size={18} />, text: lt('auth.featCustomers') },
+                  ].map((f, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 + i * 0.1 }}
+                      className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl px-3.5 py-2.5 text-white/90 text-sm"
                     >
-                      {u === 'admin' ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Shield className="w-4 h-4" />
-                          Admin
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <User className="w-4 h-4" />
-                          Staff
-                        </span>
-                      )}
-                    </button>
+                      <span className="text-sky-300">{f.icon}</span>
+                      {f.text}
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
-              {/* Password field */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">
-                  <Lock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                  {lt('auth.password')}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                    className="w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-base bg-surface"
-                    placeholder={lt('auth.enterPassword')}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground cursor-pointer transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
+              <p className="text-white/30 text-xs">© {new Date().getFullYear()} Caravanverhuur Spanje</p>
+            </div>
+          </div>
 
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="flex items-center gap-2 text-red-500 text-sm font-medium bg-red-50 px-3 py-2.5 rounded-lg border-red-100"
-                  >
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary/30 cursor-pointer accent-primary"
+          {/* ====== RIGHT SIDE — FORM ====== */}
+          <div className="w-full lg:w-1/2 flex flex-col">
+            {/* Mobile hero header */}
+            <div className="lg:hidden bg-[#0C4A6E] px-5 pt-6 pb-10 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <Image
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
+                  alt="Costa Brava"
+                  fill
+                  className="object-cover"
+                  unoptimized
                 />
-                <span className="text-sm text-muted">{lt('auth.rememberMe')}</span>
-              </label>
+              </div>
+              <div className="relative z-10">
+                <Image
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                  alt="Caravanverhuur Spanje"
+                  width={200}
+                  height={60}
+                  className="w-40 h-auto brightness-0 invert mb-3"
+                  unoptimized
+                />
+                <h1 className="text-xl font-bold text-white">{lt('auth.welcomeBack')}</h1>
+                <p className="text-white/60 text-sm mt-1">{lt('auth.loginSubtitle')}</p>
+              </div>
+            </div>
 
+            {/* Language toggle */}
+            <div className="absolute top-4 right-4 z-10">
               <button
-                type="submit"
-                className="w-full py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                onClick={() => { const next = loginLocale === 'nl' ? 'en' : 'nl'; setLoginLocale(next); localStorage.setItem('admin_locale', next); }}
+                className="flex items-center gap-1.5 text-muted hover:text-foreground text-sm transition-colors cursor-pointer bg-surface px-3 py-1.5 rounded-full shadow-sm lg:bg-white/10 lg:text-white/70 lg:hover:text-white"
               >
-                <Lock className="w-4 h-4" />
-                {lt('auth.login')}
+                <Globe className="w-4 h-4" />
+                {loginLocale === 'nl' ? 'EN' : 'NL'}
               </button>
-            </motion.div>
+            </div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-              <a
-                href={mainSiteUrl}
-                className="block text-center text-sm text-muted mt-5 hover:text-primary transition-colors"
-              >
-                {lt('auth.backToWebsite')}
-              </a>
-            </motion.div>
-          </form>
-        </motion.div>
+            {/* Form container */}
+            <div className="flex-1 flex items-start lg:items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-16 -mt-4 lg:mt-0">
+              <div className="w-full max-w-[420px] py-6 lg:py-0">
+                {/* Desktop heading */}
+                <div className="hidden lg:block mb-8">
+                  <h1 className="text-2xl xl:text-3xl font-bold text-foreground">
+                    {lt('auth.welcomeBack')}
+                  </h1>
+                  <p className="text-muted text-sm mt-1.5">
+                    {lt('auth.loginSubtitle')}
+                  </p>
+                </div>
+
+                {/* Form card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl shadow-sm p-5 sm:p-7"
+                >
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    {/* Role selector (tab style) */}
+                    <div>
+                      <label className="block text-xs font-semibold text-muted mb-2 uppercase tracking-wide">
+                        {lt('auth.selectRole')}
+                      </label>
+                      <div className="flex bg-surface rounded-xl p-1">
+                        {(['admin', 'staff'] as const).map((u) => (
+                          <button
+                            key={u}
+                            type="button"
+                            onClick={() => { setUsername(u); setError(''); }}
+                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                              username === u
+                                ? 'bg-white text-primary shadow-sm'
+                                : 'text-muted hover:text-foreground'
+                            }`}
+                          >
+                            {u === 'admin' ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                            {u.charAt(0).toUpperCase() + u.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Password field */}
+                    <div>
+                      <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
+                        {lt('auth.password')}
+                      </label>
+                      <div className="relative">
+                        <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                          className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all"
+                          placeholder={lt('auth.enterPassword')}
+                          autoFocus
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Error */}
+                    <AnimatePresence>
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          className="flex items-start gap-2.5 bg-red-50 text-red-600 text-sm p-3 rounded-xl"
+                        >
+                          <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                          <span>{error}</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Remember me */}
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded text-primary focus:ring-primary/20 cursor-pointer accent-primary"
+                      />
+                      <span className="text-sm text-muted">{lt('auth.rememberMe')}</span>
+                    </label>
+
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] cursor-pointer"
+                    >
+                      {lt('auth.login')}
+                      <ArrowRight size={16} />
+                    </button>
+                  </form>
+                </motion.div>
+
+                {/* Trust badges */}
+                <div className="flex items-center justify-center gap-4 mt-5 flex-wrap">
+                  {[
+                    { icon: <Shield size={13} />, text: lt('auth.trustSecure') },
+                    { icon: <Lock size={13} />, text: lt('auth.trustEncrypted') },
+                  ].map((badge, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-xs text-muted font-medium">
+                      <span className="text-muted">{badge.icon}</span>
+                      {badge.text}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Back to website */}
+                <a
+                  href={mainSiteUrl}
+                  className="block text-center text-sm text-muted mt-4 hover:text-primary transition-colors"
+                >
+                  ← {lt('auth.backToWebsite')}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
