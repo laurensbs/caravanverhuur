@@ -798,23 +798,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-
-      {/* ===== WHATSAPP FLOATING BUTTON ===== */}
-      <motion.a
-        href="https://wa.me/34650036755?text=Hallo%2C%20ik%20heb%20interesse%20in%20het%20huren%20van%20een%20caravan%20op%20de%20Costa%20Brava."
-        target="_blank"
-        rel="noopener noreferrer"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.3, type: 'spring', stiffness: 300 }}
-        className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group"
-        aria-label="Chat via WhatsApp"
-      >
-        <WhatsAppIcon size={26} />
-        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-150 whitespace-nowrap pointer-events-none">
-          {t('home.whatsappTooltip')}
-        </span>
-      </motion.a>
     </>
   );
 }

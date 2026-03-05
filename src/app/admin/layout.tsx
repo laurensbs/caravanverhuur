@@ -27,6 +27,7 @@ import {
   User,
   ArrowRight,
   ClipboardList,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -44,6 +45,7 @@ const NAV_ITEMS: { sub: string; key: string; icon: typeof LayoutDashboard; roles
   { sub: '/boekingen', key: 'nav.bookings', icon: CalendarCheck, roles: ['admin', 'staff'] },
   { sub: '/betalingen', key: 'nav.payments', icon: CreditCard, roles: ['admin'] },
   { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },
+  { sub: '/chat', key: 'nav.chat', icon: MessageCircle, roles: ['admin', 'staff'] },
   { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
   { sub: '/borg', key: 'nav.deposit', icon: ClipboardCheck, roles: ['admin', 'staff'] },
   { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin'] },

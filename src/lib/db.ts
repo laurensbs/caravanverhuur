@@ -244,6 +244,33 @@ export async function setupDatabase() {
     )
   `;
 
+  // Chat conversations table
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_conversations (
+      id TEXT PRIMARY KEY,
+      visitor_name TEXT,
+      visitor_email TEXT,
+      visitor_phone TEXT,
+      status TEXT NOT NULL DEFAULT 'ACTIVE',
+      needs_human BOOLEAN DEFAULT false,
+      assigned_to TEXT,
+      locale TEXT DEFAULT 'nl',
+      created_at TIMESTAMP DEFAULT NOW(),
+      last_message_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Chat messages table
+  await sql`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      role TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1295,5 +1322,76 @@ export async function ensureAllBookingTasks() {
   `;
   for (const booking of bookings.rows) {
     await ensureTasksForBooking(booking.id, booking.check_in, booking.check_out);
+  }
+}
+
+// ===== CHAT CONVERSATIONS =====
+
+export async function createChatConversation(data: {
+  visitorName?: string;
+  visitorEmail?: string;
+  visitorPhone?: string;
+  locale?: string;
+}) {
+  const id = generateId('chat');
+  await sql`
+    INSERT INTO chat_conversations (id, visitor_name, visitor_email, visitor_phone, locale)
+    VALUES (${id}, ${data.visitorName || null}, ${data.visitorEmail || null}, ${data.visitorPhone || null}, ${data.locale || 'nl'})
+  `;
+  return { id };
+}
+
+export async function addChatMessage(data: {
+  conversationId: string;
+  role: string;
+  message: string;
+}) {
+  const id = generateId('msg');
+  await sql`
+    INSERT INTO chat_messages (id, conversation_id, role, message)
+    VALUES (${id}, ${data.conversationId}, ${data.role}, ${data.message})
+  `;
+  await sql`
+    UPDATE chat_conversations SET last_message_at = NOW() WHERE id = ${data.conversationId}
+  `;
+  return { id };
+}
+
+export async function getChatConversation(id: string) {
+  const conv = await sql`SELECT * FROM chat_conversations WHERE id = ${id}`;
+  if (!conv.rows[0]) return null;
+  const msgs = await sql`SELECT * FROM chat_messages WHERE conversation_id = ${id} ORDER BY created_at ASC`;
+  return { ...conv.rows[0], messages: msgs.rows };
+}
+
+export async function getAllChatConversations() {
+  const result = await sql`
+    SELECT c.*, 
+      (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id = c.id) as message_count,
+      (SELECT message FROM chat_messages m WHERE m.conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
+      (SELECT role FROM chat_messages m WHERE m.conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_role
+    FROM chat_conversations c
+    ORDER BY c.last_message_at DESC
+  `;
+  return result.rows;
+}
+
+export async function markConversationNeedsHuman(id: string) {
+  await sql`
+    UPDATE chat_conversations SET needs_human = true WHERE id = ${id}
+  `;
+}
+
+export async function updateConversationVisitor(id: string, data: { name?: string; email?: string; phone?: string }) {
+  if (data.name) await sql`UPDATE chat_conversations SET visitor_name = ${data.name} WHERE id = ${id}`;
+  if (data.email) await sql`UPDATE chat_conversations SET visitor_email = ${data.email} WHERE id = ${id}`;
+  if (data.phone) await sql`UPDATE chat_conversations SET visitor_phone = ${data.phone} WHERE id = ${id}`;
+}
+
+export async function updateConversationStatus(id: string, status: string, assignedTo?: string) {
+  if (assignedTo !== undefined) {
+    await sql`UPDATE chat_conversations SET status = ${status}, assigned_to = ${assignedTo} WHERE id = ${id}`;
+  } else {
+    await sql`UPDATE chat_conversations SET status = ${status} WHERE id = ${id}`;
   }
 }

@@ -1,0 +1,415 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  MessageCircle,
+  Search,
+  Send,
+  User,
+  Clock,
+  CheckCircle2,
+  ArrowLeft,
+  Loader2,
+  Phone,
+  Mail,
+  Globe,
+  Circle,
+} from 'lucide-react';
+import { useAdmin } from '@/i18n/admin-context';
+
+/* ── Types ────────────────────────────────────── */
+interface ChatConversation {
+  id: string;
+  visitor_name: string | null;
+  visitor_email: string | null;
+  visitor_phone: string | null;
+  status: string;
+  needs_human: boolean;
+  assigned_to: string | null;
+  locale: string;
+  created_at: string;
+  last_message_at: string;
+  message_count: number;
+  last_message: string | null;
+  last_message_role: string | null;
+}
+
+interface ChatMessage {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'bot' | 'staff';
+  message: string;
+  created_at: string;
+}
+
+/* ── Component ────────────────────────────────── */
+export default function AdminChatPage() {
+  const { t, locale } = useAdmin();
+  const isNl = locale === 'nl';
+
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [activeConv, setActiveConv] = useState<ChatConversation | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [reply, setReply] = useState('');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'needs_human' | 'active' | 'closed'>('all');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  /* ── Fetch conversations ────────────── */
+  const fetchConversations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/chat');
+      const data = await res.json();
+      if (Array.isArray(data)) setConversations(data);
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchConversations().finally(() => setLoading(false));
+  }, [fetchConversations]);
+
+  /* ── Poll conversations every 5s ──── */
+  useEffect(() => {
+    const interval = setInterval(fetchConversations, 5000);
+    return () => clearInterval(interval);
+  }, [fetchConversations]);
+
+  /* ── Fetch messages for active conversation ── */
+  const fetchMessages = useCallback(async (convId: string) => {
+    try {
+      const res = await fetch(`/api/admin/chat?id=${convId}`);
+      const data = await res.json();
+      if (data.messages) setMessages(data.messages);
+    } catch { /* silent */ }
+  }, []);
+
+  /* ── Poll messages every 3s when chat is open ── */
+  useEffect(() => {
+    if (!activeConv) {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      return;
+    }
+
+    fetchMessages(activeConv.id);
+    pollingRef.current = setInterval(() => fetchMessages(activeConv.id), 3000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [activeConv, fetchMessages]);
+
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
+
+  /* ── Send reply ──────────────────── */
+  const handleSend = async () => {
+    if (!reply.trim() || !activeConv) return;
+    setSending(true);
+    try {
+      await fetch('/api/admin/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: activeConv.id,
+          message: reply.trim(),
+          staffName: isNl ? 'Medewerker' : 'Staff',
+        }),
+      });
+      setReply('');
+      fetchMessages(activeConv.id);
+      fetchConversations();
+    } catch { /* silent */ }
+    setSending(false);
+  };
+
+  /* ── Close conversation ─────────── */
+  const handleClose = async (convId: string) => {
+    try {
+      await fetch('/api/admin/chat', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId: convId, status: 'CLOSED' }),
+      });
+      fetchConversations();
+      if (activeConv?.id === convId) setActiveConv(null);
+    } catch { /* silent */ }
+  };
+
+  /* ── Filtering ──────────────────── */
+  const filtered = conversations.filter(c => {
+    if (filter === 'needs_human' && !c.needs_human) return false;
+    if (filter === 'active' && c.status !== 'ACTIVE') return false;
+    if (filter === 'closed' && c.status !== 'CLOSED') return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        (c.visitor_name?.toLowerCase().includes(q)) ||
+        (c.visitor_email?.toLowerCase().includes(q)) ||
+        (c.last_message?.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  });
+
+  const needsHumanCount = conversations.filter(c => c.needs_human && c.status === 'ACTIVE').length;
+
+  const getStatusBadge = (conv: ChatConversation) => {
+    if (conv.status === 'CLOSED') return { color: 'bg-gray-100 text-gray-600', label: isNl ? 'Gesloten' : 'Closed' };
+    if (conv.needs_human) return { color: 'bg-red-100 text-red-700', label: isNl ? 'Hulp nodig' : 'Needs help' };
+    if (conv.last_message_role === 'user') return { color: 'bg-amber-100 text-amber-700', label: isNl ? 'Wacht' : 'Waiting' };
+    return { color: 'bg-green-100 text-green-700', label: isNl ? 'Actief' : 'Active' };
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60_000);
+    if (mins < 1) return isNl ? 'Zojuist' : 'Just now';
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d`;
+  };
+
+  /* ── Render ─────────────────────── */
+  return (
+    <div className="flex h-[calc(100vh-4rem)] bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* ── Sidebar: Conversation List ── */}
+      <div className={`${activeConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-[360px] md:border-r border-gray-200 bg-gray-50`}>
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-primary" />
+              {isNl ? 'Live Chat' : 'Live Chat'}
+              {needsHumanCount > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                  {needsHumanCount}
+                </span>
+              )}
+            </h1>
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={t('common.search')}
+              className="w-full pl-9 pr-3 py-2 bg-gray-50 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none border border-gray-200"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-1.5">
+            {([
+              { key: 'all', label: isNl ? 'Alles' : 'All' },
+              { key: 'needs_human', label: isNl ? 'Hulp nodig' : 'Needs help' },
+              { key: 'active', label: isNl ? 'Actief' : 'Active' },
+              { key: 'closed', label: isNl ? 'Gesloten' : 'Closed' },
+            ] as { key: typeof filter; label: string }[]).map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer ${
+                  filter === f.key
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {f.label}
+                {f.key === 'needs_human' && needsHumanCount > 0 && (
+                  <span className="ml-1 bg-white/30 px-1 rounded-full">{needsHumanCount}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Conversation list */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 text-sm">
+              {isNl ? 'Geen gesprekken gevonden' : 'No conversations found'}
+            </div>
+          ) : (
+            filtered.map(conv => {
+              const badge = getStatusBadge(conv);
+              const isActive = activeConv?.id === conv.id;
+              return (
+                <button
+                  key={conv.id}
+                  onClick={() => setActiveConv(conv)}
+                  className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors cursor-pointer ${
+                    isActive ? 'bg-primary/5 border-l-2 border-l-primary' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {conv.visitor_name || (isNl ? 'Bezoeker' : 'Visitor')}
+                        </p>
+                        <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {conv.last_message || (isNl ? 'Nieuw gesprek' : 'New conversation')}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                        {conv.visitor_email && <Mail className="w-3 h-3 text-gray-400" />}
+                        {conv.visitor_phone && <Phone className="w-3 h-3 text-gray-400" />}
+                        <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                          <Globe className="w-2.5 h-2.5" />
+                          {conv.locale?.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    {conv.needs_human && conv.status === 'ACTIVE' && (
+                      <Circle className="w-2.5 h-2.5 text-red-500 fill-red-500 shrink-0 mt-2 animate-pulse" />
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ── Main: Chat View ── */}
+      <div className={`${activeConv ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white`}>
+        {activeConv ? (
+          <>
+            {/* Chat header */}
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3 bg-white">
+              <button
+                onClick={() => setActiveConv(null)}
+                className="md:hidden w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">
+                  {activeConv.visitor_name || (isNl ? 'Bezoeker' : 'Visitor')}
+                </p>
+                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                  {activeConv.visitor_email && (
+                    <span className="flex items-center gap-0.5"><Mail className="w-3 h-3" />{activeConv.visitor_email}</span>
+                  )}
+                  {activeConv.visitor_phone && (
+                    <span className="flex items-center gap-0.5"><Phone className="w-3 h-3" />{activeConv.visitor_phone}</span>
+                  )}
+                  <span className="flex items-center gap-0.5"><Clock className="w-3 h-3" />{new Date(activeConv.created_at).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {activeConv.status === 'ACTIVE' && (
+                  <button
+                    onClick={() => handleClose(activeConv.id)}
+                    className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {isNl ? 'Sluiten' : 'Close'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
+              {messages.map(msg => (
+                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-start' : msg.role === 'staff' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] ${
+                    msg.role === 'user'
+                      ? 'bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-sm border border-gray-100'
+                      : msg.role === 'staff'
+                      ? 'bg-primary text-white rounded-2xl rounded-br-sm px-4 py-2.5'
+                      : 'bg-gray-100 text-gray-500 rounded-xl px-3 py-2 text-xs italic'
+                  }`}>
+                    {msg.role === 'staff' && (
+                      <p className="text-[10px] text-white/60 mb-0.5 font-medium">
+                        {isNl ? 'Jij' : 'You'}
+                      </p>
+                    )}
+                    {msg.role === 'user' && (
+                      <p className="text-[10px] text-gray-400 mb-0.5 font-medium">
+                        {activeConv.visitor_name || (isNl ? 'Bezoeker' : 'Visitor')}
+                      </p>
+                    )}
+                    {msg.role === 'bot' && (
+                      <p className="text-[10px] text-gray-400 mb-0.5 font-medium">Luna (bot)</p>
+                    )}
+                    <p className="text-sm leading-relaxed whitespace-pre-line">{msg.message}</p>
+                    <p className={`text-[10px] mt-1 ${msg.role === 'staff' ? 'text-white/50' : 'text-gray-400'}`}>
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Reply input */}
+            {activeConv.status === 'ACTIVE' && (
+              <div className="border-t border-gray-200 bg-white px-3 py-2.5 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={reply}
+                  onChange={e => setReply(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                  placeholder={isNl ? 'Typ je antwoord...' : 'Type your reply...'}
+                  className="flex-1 bg-gray-50 rounded-full px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-gray-200"
+                  disabled={sending}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!reply.trim() || sending}
+                  className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-95 cursor-pointer"
+                >
+                  {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                </button>
+              </div>
+            )}
+
+            {activeConv.status === 'CLOSED' && (
+              <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm text-gray-400">
+                {isNl ? 'Dit gesprek is gesloten' : 'This conversation is closed'}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+            <MessageCircle className="w-12 h-12 text-gray-300" />
+            <p className="text-sm">{isNl ? 'Selecteer een gesprek om te beginnen' : 'Select a conversation to start'}</p>
+            {needsHumanCount > 0 && (
+              <p className="text-xs text-red-500 font-medium animate-pulse">
+                {needsHumanCount} {isNl ? 'gesprek(ken) wachten op hulp' : 'conversation(s) need help'}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
