@@ -571,139 +571,6 @@ function MijnAccountContent() {
                           <Plane size={12} className="text-primary" />
                           {t('myAccount.arrivalOn').replace('{date}', fd(upcomingBooking.check_in))}
                         </p>
-
-                        {/* Caravan preparation timeline */}
-                        <div className="mt-5 pt-4">
-                          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <ClipboardCheck size={13} className="text-primary" />
-                            Caravan klaarzetten
-                          </h4>
-                          <div className="space-y-0">
-                            {[
-                              { daysB: 7, label: 'Grondige reiniging caravan', icon: '🧹', desc: 'Interieur & exterieur worden schoongemaakt' },
-                              { daysB: 5, label: 'Inventaris controle', icon: '📋', desc: 'Alle spullen worden gecontroleerd en aangevuld' },
-                              { daysB: 3, label: 'Technische inspectie', icon: '🔧', desc: 'Gas, water, elektra worden getest' },
-                              { daysB: 1, label: 'Finale check & beddengoed', icon: '🛏️', desc: 'Alles wordt klaargelegd voor aankomst' },
-                              { daysB: 0, label: 'Klaar voor ontvangst!', icon: '🔑', desc: 'Sleutels klaargezet, welkomstpakket gereed' },
-                            ].map((step, i) => {
-                              const completed = days <= step.daysB;
-                              const current = days <= step.daysB && (i === 0 || days > [7, 5, 3, 1, 0][i - 1] === false);
-                              return (
-                                <div key={i} className="flex gap-3">
-                                  <div className="flex flex-col items-center">
-                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                                      completed ? 'bg-primary text-white' : 'bg-stone-200/30 text-muted'
-                                    }`}>
-                                      {completed ? <Check size={12} /> : <span>{step.icon}</span>}
-                                    </div>
-                                    {i < 4 && (
-                                      <div className={`w-0.5 h-6 ${completed ? 'bg-primary/30' : 'bg-stone-200/30'}`} />
-                                    )}
-                                  </div>
-                                  <div className={`pb-3 ${current ? '' : ''}`}>
-                                    <div className={`text-xs font-semibold ${completed ? 'text-primary' : 'text-foreground-light'}`}>
-                                      {step.icon} {step.label}
-                                    </div>
-                                    <div className="text-xs text-muted">{step.desc}</div>
-                                    <div className="text-xs text-muted/60 mt-0.5">
-                                      {step.daysB === 0 ? 'Check-in dag' : `${step.daysB} ${step.daysB === 1 ? 'dag' : 'dagen'} voor aankomst`}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* ===== ACTIVITEITEN TIPS (personalized) ===== */}
-                  {upcomingBooking && (() => {
-                    const camping = getCamping(upcomingBooking.camping_id);
-                    if (!camping) return null;
-                    const activities = getActivitiesForLocation(camping.location);
-                    const grouped = groupActivitiesByCategory(activities);
-                    const categoryOrder: Activity['category'][] = ['strand', 'sport', 'natuur', 'cultuur', 'kinderen', 'culinair', 'uitstap'];
-                    const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
-
-                    return (
-                      <div className="bg-white rounded-2xl overflow-hidden">
-                        <div className="p-5 sm:p-6 pb-0 sm:pb-0">
-                          <div className="flex items-center gap-3 mb-1">
-                            <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
-                              <Compass size={20} className="text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-foreground text-sm">Tips & activiteiten bij {camping.location}</h3>
-                              <p className="text-xs text-muted">Ontdek de mooiste plekken in de buurt van je vakantieadres</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-5 sm:p-6 pt-4 sm:pt-4 space-y-4">
-                          {sortedCategories.map((cat) => (
-                            <div key={cat}>
-                              <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <span className="w-1 h-1 rounded-full bg-primary" />
-                                {getCategoryLabel(cat, locale)}
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {grouped[cat].map((act) => (
-                                  <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3 transition-colors group">
-                                    <div className="flex items-start gap-2.5">
-                                      <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
-                                      <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
-                                          {act.distance && (
-                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
-                                              {act.distance}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
-                                        {act.tip && (
-                                          <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
-                                            <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
-                                            <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-
-                          {/* General tips */}
-                          <div className="pt-4">
-                            <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                              <Star size={10} className="text-primary" />
-                              Algemene tips Costa Brava
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {generalTips.slice(0, 4).map((act) => (
-                                <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3">
-                                  <div className="flex items-start gap-2.5">
-                                    <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
-                                    <div className="min-w-0">
-                                      <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
-                                      <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
-                                      {act.tip && (
-                                        <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
-                                          <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
-                                          <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     );
                   })()}
@@ -780,6 +647,96 @@ function MijnAccountContent() {
                       <div className="text-xs text-muted mt-0.5">{t('myAccount.needHelp')}</div>
                     </Link>
                   </div>
+
+                  {/* ===== TIPS & ACTIVITEITEN (separate section) ===== */}
+                  {upcomingBooking && (() => {
+                    const camping = getCamping(upcomingBooking.camping_id);
+                    if (!camping) return null;
+                    const activities = getActivitiesForLocation(camping.location);
+                    const grouped = groupActivitiesByCategory(activities);
+                    const categoryOrder: Activity['category'][] = ['strand', 'sport', 'natuur', 'cultuur', 'kinderen', 'culinair', 'uitstap'];
+                    const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
+                            <Compass size={20} className="text-primary" />
+                          </div>
+                          <div>
+                            <h2 className="font-bold text-foreground text-base">Tips & activiteiten</h2>
+                            <p className="text-xs text-muted">Ontdek de mooiste plekken bij {camping.location}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl overflow-hidden">
+                          <div className="p-5 sm:p-6 space-y-4">
+                            {sortedCategories.map((cat) => (
+                              <div key={cat}>
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                  <span className="w-1 h-1 rounded-full bg-primary" />
+                                  {getCategoryLabel(cat, locale)}
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {grouped[cat].map((act) => (
+                                    <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3 transition-colors group">
+                                      <div className="flex items-start gap-2.5">
+                                        <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
+                                        <div className="min-w-0">
+                                          <div className="flex items-center gap-2">
+                                            <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
+                                            {act.distance && (
+                                              <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
+                                                {act.distance}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
+                                          {act.tip && (
+                                            <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
+                                              <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
+                                              <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* General tips */}
+                            <div className="pt-4">
+                              <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <Star size={10} className="text-primary" />
+                                Algemene tips Costa Brava
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {generalTips.slice(0, 4).map((act) => (
+                                  <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3">
+                                    <div className="flex items-start gap-2.5">
+                                      <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
+                                      <div className="min-w-0">
+                                        <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
+                                        <p className="text-xs text-muted mt-0.5 leading-relaxed">{act.description}</p>
+                                        {act.tip && (
+                                          <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
+                                            <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
+                                            <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Empty state */}
                   {bookings.length === 0 && (
