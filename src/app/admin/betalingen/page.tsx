@@ -210,7 +210,7 @@ export default function BetalingenPage() {
 
               <div className="col-span-1">
                 <span className="text-xs text-muted">
-                  {payment.method === 'ideal' ? 'iDEAL' : payment.method === 'stripe' ? 'iDEAL' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
+                  {payment.method === 'ideal' ? 'iDEAL/Wero' : payment.method === 'stripe' ? 'iDEAL/Wero' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
                 </span>
               </div>
 

@@ -14,6 +14,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hintVisible, setHintVisible] = useState(true);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -39,7 +40,8 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
         fadeAnimation: true,
         zoomAnimation: true,
         markerZoomAnimation: true,
-      }).setView(center, isSingle ? 12 : 9);
+        dragging: !L.default.Browser.mobile, // disable drag on mobile (use two fingers)
+      } as L.MapOptions).setView(center, isSingle ? 12 : 9);
 
       // Attribution in bottom-right (subtle)
       L.default.control.attribution({ position: 'bottomright', prefix: '' }).addTo(map);
@@ -55,8 +57,14 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       }).addTo(map);
 
       // Custom SVG marker
+      // On mobile, re-enable dragging after first interaction
+      if (L.default.Browser.mobile) {
+        map.on('click', () => { map.dragging.enable(); });
+      }
+
       const makeSvgIcon = (active: boolean) => {
-        const size = active ? 42 : 32;
+        const isMobile = window.innerWidth < 640;
+        const size = active ? (isMobile ? 36 : 42) : (isMobile ? 28 : 32);
         const color = active ? '#c4650c' : '#0EA5E9';
         return L.default.divIcon({
           className: '',
@@ -84,17 +92,18 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           }
         ).addTo(map);
 
+        const isMobile = window.innerWidth < 640;
         marker.bindPopup(`
           <div class="map-popup-card">
             <img src="${dest.heroImage}" alt="${dest.name}" class="map-popup-img" loading="lazy" />
             <div class="map-popup-body">
               <h3 class="map-popup-title">${dest.name}</h3>
               <p class="map-popup-region">${dest.region}</p>
-              <p class="map-popup-desc">${dest.description.substring(0, 90)}…</p>
+              <p class="map-popup-desc">${dest.description.substring(0, isMobile ? 60 : 90)}…</p>
               <a href="/bestemmingen/${dest.slug}" class="map-popup-btn">Ontdek meer →</a>
             </div>
           </div>
-        `, { maxWidth: 280, className: 'pretty-popup' });
+        `, { maxWidth: isMobile ? 220 : 280, className: 'pretty-popup' });
 
         marker.on('click', () => {
           onMarkerClick?.(dest.slug);
@@ -124,6 +133,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
 
       mapInstanceRef.current = map;
       setIsLoaded(true);
+      setTimeout(() => setHintVisible(false), 4000);
 
       setTimeout(() => { map.invalidateSize(); }, 150);
     });
@@ -147,7 +157,13 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           </div>
         </div>
       )}
-      <div ref={mapRef} className="w-full h-[420px] sm:h-[500px] md:h-[560px]" />
+      <div ref={mapRef} className="w-full h-[300px] sm:h-[420px] md:h-[500px] lg:h-[560px] touch-pan-y" />
+      {/* Mobile gesture hint */}
+      {hintVisible && (
+        <div className="sm:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none animate-pulse z-20">
+          Tik op een marker voor info
+        </div>
+      )}
       <style jsx global>{`
         /* ---- zoom controls ---- */
         .leaflet-control-zoom {
@@ -205,14 +221,29 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           object-fit: cover;
           display: block;
         }
+        @media (max-width: 639px) {
+          .map-popup-img {
+            height: 100px;
+          }
+        }
         .map-popup-body {
           padding: 14px 16px 16px;
+        }
+        @media (max-width: 639px) {
+          .map-popup-body {
+            padding: 10px 12px 12px;
+          }
         }
         .map-popup-title {
           margin: 0 0 2px;
           font-size: 16px;
           font-weight: 700;
           color: #1a1a2e;
+        }
+        @media (max-width: 639px) {
+          .map-popup-title {
+            font-size: 14px;
+          }
         }
         .map-popup-region {
           margin: 0 0 6px;

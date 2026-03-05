@@ -285,7 +285,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          <strong>Volgende stap:</strong> betaal de aanbetaling van ${formatPrice(data.depositAmount)} via iDEAL in je account om de boeking definitief te maken.
+          <strong>Volgende stap:</strong> betaal de aanbetaling van ${formatPrice(data.depositAmount)} via iDEAL/Wero in je account om de boeking definitief te maken.
         </p>
       `, true)}
 

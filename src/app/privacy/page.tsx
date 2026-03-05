@@ -21,7 +21,7 @@ const sections = [
             'E-mailadres',
             'Telefoonnummer',
             'Adresgegevens (indien nodig voor facturatie)',
-            'Betaalgegevens (via iDEAL/Stripe, niet door ons opgeslagen)',
+            'Betaalgegevens (via iDEAL/Wero/Stripe, niet door ons opgeslagen)',
             'Boekingsgegevens (datum, camping, personen, caravankeuze)',
             'Communicatie (berichten via contactformulier)',
           ].map((item, i) => (
@@ -59,7 +59,7 @@ const sections = [
   {
     id: 'betalingen',
     icon: CreditCard,
-    title: '3. Betalingsverwerking', content: ( <div className="space-y-4"> <p className="text-muted leading-relaxed"> Betalingen worden verwerkt via iDEAL, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker. </p> <div className="bg-primary-50 border-primary-light rounded-xl p-4 flex gap-3"> <Shield size={18} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground leading-relaxed"> Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL. </p> </div> </div> ), }, { id:'bewaartermijn',
+    title: '3. Betalingsverwerking', content: ( <div className="space-y-4"> <p className="text-muted leading-relaxed"> Betalingen worden verwerkt via iDEAL/Wero, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker. </p> <div className="bg-primary-50 border-primary-light rounded-xl p-4 flex gap-3"> <Shield size={18} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground leading-relaxed"> Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL/Wero. </p> </div> </div> ), }, { id:'bewaartermijn',
     icon: Clock,
     title: '4. Bewaartermijn',
     content: (
@@ -139,7 +139,7 @@ const sections = [
         <p className="text-muted leading-relaxed">Wij delen uw gegevens niet met derden, behalve:</p>
         <div className="grid sm:grid-cols-2 gap-3">
           {[
-            { party: 'Stripe / iDEAL', reason: 'Betalingsverwerking' },
+            { party: 'Stripe / iDEAL/Wero', reason: 'Betalingsverwerking' },
             { party: 'E-maildienstverlener', reason: 'Boekingsbevestigingen' },
             { party: 'Campingbeheerders', reason: 'Voor uw reservering' },
             { party: 'Overheid', reason: 'Wanneer wettelijk verplicht' },

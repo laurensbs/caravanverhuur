@@ -196,7 +196,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                 <div>
                   <p className="font-medium text-foreground">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
                   <p className="text-xs text-muted">
-                    {p.method === 'ideal' ? 'iDEAL' : p.method === 'stripe' ? 'iDEAL' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
+                    {p.method === 'ideal' ? 'iDEAL/Wero' : p.method === 'stripe' ? 'iDEAL/Wero' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
                     {p.stripe_id && ` (${p.stripe_id})`}
                   </p>
                   {p.paid_at && <p className="text-xs text-primary">{t('bookings.paidOn', { date: formatDateTime(p.paid_at) })}</p>}
