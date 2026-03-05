@@ -108,7 +108,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
           {/* Brand - desktop only */}
           <div className="hidden lg:block space-y-3">
             <Image
@@ -179,7 +179,7 @@ export default function Footer() {
               <li>
                 <a href="mailto:info@caravanverhuurspanje.com" className="text-muted transition-colors text-sm flex items-start gap-2">
                   <Mail size={14} className="text-primary shrink-0 mt-0.5" />
-                  <span className="break-all">info@caravanverhuur<wbr />spanje.com</span>
+                  <span>info@caravanverhuurspanje.com</span>
                 </a>
               </li>
               <li>

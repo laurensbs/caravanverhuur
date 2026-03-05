@@ -144,7 +144,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
+                  <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight whitespace-pre-line">
                     {lt('auth.heroTitle')}
                   </h2>
                   <p className="text-white/60 mt-3 text-sm xl:text-base max-w-md leading-relaxed">
@@ -196,7 +196,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   alt="Caravanverhuur Spanje"
                   width={200}
                   height={60}
-                  className="w-40 h-auto brightness-0 invert mb-3"
+                  className="w-40 h-auto mb-3"
                   unoptimized
                 />
                 <h1 className="text-xl font-bold text-white">{lt('auth.welcomeBack')}</h1>
