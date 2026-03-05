@@ -4,25 +4,37 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const { pathname } = request.nextUrl;
   const isAdminSubdomain = hostname.startsWith('admin.');
+  const isStaffSubdomain = hostname.startsWith('staff.');
 
   /* ── Admin subdomain ──────────────────────────────────── */
   if (isAdminSubdomain) {
-    // Let API routes and Next.js internals pass through unchanged
     if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
       return NextResponse.next();
     }
 
-    // /admin/… on the subdomain → strip prefix and redirect to clean URL
     if (pathname.startsWith('/admin')) {
       const clean = pathname.replace(/^\/admin/, '') || '/';
       return NextResponse.redirect(new URL(clean, request.url));
     }
 
-    // Rewrite clean URLs to the /admin/* file-system routes
-    // e.g.  /             → /admin
-    //       /boekingen    → /admin/boekingen
     const url = request.nextUrl.clone();
     url.pathname = `/admin${pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  /* ── Staff subdomain ──────────────────────────────────── */
+  if (isStaffSubdomain) {
+    if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
+      return NextResponse.next();
+    }
+
+    if (pathname.startsWith('/staff')) {
+      const clean = pathname.replace(/^\/staff/, '') || '/';
+      return NextResponse.redirect(new URL(clean, request.url));
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = `/staff${pathname}`;
     return NextResponse.rewrite(url);
   }
 
@@ -36,6 +48,19 @@ export function middleware(request: NextRequest) {
     const adminPath = pathname.replace(/^\/admin/, '') || '/';
     return NextResponse.redirect(
       new URL(`https://admin.${baseDomain}${adminPath}`),
+    );
+  }
+
+  /* ── Main domain: redirect /staff/* to staff subdomain ─ */
+  if (
+    pathname.startsWith('/staff') &&
+    !hostname.includes('localhost') &&
+    !hostname.includes('127.0.0.1')
+  ) {
+    const baseDomain = hostname.replace(/:\d+$/, '');
+    const staffPath = pathname.replace(/^\/staff/, '') || '/';
+    return NextResponse.redirect(
+      new URL(`https://staff.${baseDomain}${staffPath}`),
     );
   }
 
