@@ -606,8 +606,8 @@ function BoekenContent() {
                               <motion.div
                                 key={c.id}
                                 layout
-                                className={`w-full text-left rounded-2xl border-2 overflow-hidden transition-all ${
-                                  isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'bg-white'
+                                className={`w-full text-left rounded-2xl overflow-hidden transition-all ${
+                                  isSelected ? 'border-2 border-primary shadow-lg ring-2 ring-primary/20' : 'bg-white shadow-sm'
                                 }`}
                               >
                                 <button
