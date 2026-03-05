@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Tag,
 } from 'lucide-react';
+import { useAdmin } from '@/i18n/admin-context';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -44,6 +45,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   onNotesChange: (id: string, notes: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const { t, ts, role } = useAdmin();
   const caravan = getBookingCaravan(booking);
   const camping = getBookingCamping(booking);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -100,7 +102,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
     <div className="bg-surface rounded-2xl p-5 mt-2 space-y-5">
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <User className="w-4 h-4" /> Gastgegevens
+          <User className="w-4 h-4" /> {t('bookings.guestDetails')}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -116,7 +118,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
           </div>
           <div>
             <p className="text-xs text-muted">
-              <strong>{booking.adults}</strong> volwassenen, <strong>{booking.children}</strong> kinderen
+              <strong>{booking.adults}</strong> {t('bookings.adults')}, <strong>{booking.children}</strong> {t('bookings.children')}
             </p>
             {booking.special_requests && (
               <div className="mt-1 flex items-start gap-1.5">
@@ -130,7 +132,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
 
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <Calendar className="w-4 h-4" /> Verblijf
+          <Calendar className="w-4 h-4" /> {t('bookings.stay')}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex items-start gap-2">
@@ -150,43 +152,43 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         </div>
         <div className="mt-2 bg-white rounded-xl p-3 text-xs text-muted">
           <p>
-            <strong>Check-in:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
-            <strong>Check-out:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
-            <strong>Nachten:</strong> {booking.nights}
+            <strong>{t('bookings.checkIn')}:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
+            <strong>{t('bookings.checkOut')}:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
+            <strong>{t('bookings.nightsLabel')}:</strong> {booking.nights}
           </p>
         </div>
       </div>
 
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <CreditCard className="w-4 h-4" /> Financieel
+          <CreditCard className="w-4 h-4" /> {t('bookings.financial')}
         </h4>
         <div className="bg-white rounded-xl p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted">Totaalprijs</span>
+            <span className="text-muted">{t('bookings.totalPrice')}</span>
             <span className="font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted">Aanbetaling (30%)</span>
+            <span className="text-muted">{t('bookings.deposit30')}</span>
             <span className="text-foreground">{formatCurrency(Number(booking.deposit_amount))}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted">Restbedrag</span>
+            <span className="text-muted">{t('bookings.remainingAmount')}</span>
             <span className="text-foreground">{formatCurrency(Number(booking.remaining_amount))}</span>
           </div>
           <div className="flex justify-between text-sm pt-2">
-            <span className="text-muted">Borg</span>
+            <span className="text-muted">{t('bookings.securityDeposit')}</span>
             <span className="text-foreground">{formatCurrency(Number(booking.borg_amount))}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">Betalingen</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">{t('bookings.paymentsTitle')}</h4>
         {loadingPayments ? (
-          <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" /> Laden...</div>
+          <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" /> {t('common.loading')}</div>
         ) : payments.length === 0 ? (
-          <p className="text-sm text-muted">Geen betalingen</p>
+          <p className="text-sm text-muted">{t('bookings.noPayments')}</p>
         ) : (
           <div className="space-y-2">
             {payments.map((p) => (
@@ -194,12 +196,12 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                 <div>
                   <p className="font-medium text-foreground">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
                   <p className="text-xs text-muted">
-                    {p.method === 'ideal' ? 'iDEAL' : p.method === 'stripe' ? 'iDEAL' : p.method === 'bank' ? 'Bank' : 'Contant'}
+                    {p.method === 'ideal' ? 'iDEAL' : p.method === 'stripe' ? 'iDEAL' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
                     {p.stripe_id && ` (${p.stripe_id})`}
                   </p>
-                  {p.paid_at && <p className="text-xs text-primary">Betaald op {formatDateTime(p.paid_at)}</p>}
+                  {p.paid_at && <p className="text-xs text-primary">{t('bookings.paidOn', { date: formatDateTime(p.paid_at) })}</p>}
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(p.status)}`}>{p.status}</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(p.status)}`}>{ts(p.status)}</span>
               </div>
             ))}
           </div>
@@ -208,7 +210,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">Status wijzigen</label>
+          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
           <select
             value={newStatus}
             onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
@@ -220,13 +222,13 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">Admin Notities</label>
+          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             className="w-full px-3 py-2 bg-white rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
-            placeholder="Interne notities..."
+            placeholder={t('bookings.notesPlaceholder')}
           />
         </div>
       </div>
@@ -238,35 +240,35 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
           className="flex items-center gap-2 text-sm font-medium text-primary cursor-pointer"
         >
           <Tag className="w-4 h-4" />
-          {showDiscount ? 'Korting annuleren' : 'Korting toekennen'}
+          {showDiscount ? t('bookings.cancelDiscount') : t('bookings.applyDiscount')}
         </button>
         {showDiscount && (
           <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
             {discountSuccess ? (
-              <div className="text-sm text-primary font-medium">Korting succesvol toegepast! Bedragen zijn bijgewerkt.</div>
+              <div className="text-sm text-primary font-medium">{t('bookings.discountApplied')}</div>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1">Kortingsbedrag (€)</label>
+                    <label className="text-xs font-semibold text-muted block mb-1">{t('bookings.discountAmount')}</label>
                     <input type="number" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} placeholder="50"
                       className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1">Reden / Code</label>
+                    <label className="text-xs font-semibold text-muted block mb-1">{t('bookings.discountReason')}</label>
                     <input type="text" value={discountCode} onChange={e => setDiscountCode(e.target.value)} placeholder="ADMIN"
                       className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> Wachtwoord</label>
-                    <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder="Admin wachtwoord"
+                    <label className="text-xs font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> {t('auth.password')}</label>
+                    <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder={t('dashboard.adminPassword')}
                       className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
                 {discountError && <p className="text-xs text-red-500">{discountError}</p>}
                 <button
                   onClick={async () => {
-                    if (!discountAmount || !discountPassword) { setDiscountError('Vul alle velden in'); return; }
+                    if (!discountAmount || !discountPassword) { setDiscountError(t('bookings.fillAllFields')); return; }
                     setDiscountSaving(true); setDiscountError('');
                     try {
                       const res = await fetch('/api/admin/discount-codes', {
@@ -280,13 +282,13 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                           discountAmount: parseFloat(discountAmount),
                         }),
                       });
-                      if (res.status === 403) { setDiscountError('Onjuist wachtwoord'); setDiscountSaving(false); return; }
-                      if (!res.ok) { setDiscountError('Korting toepassen mislukt'); setDiscountSaving(false); return; }
+                      if (res.status === 403) { setDiscountError(t('bookings.wrongPassword')); setDiscountSaving(false); return; }
+                      if (!res.ok) { setDiscountError(t('bookings.discountFailed')); setDiscountSaving(false); return; }
                       setDiscountSuccess(true);
                       // Refresh payments
                       fetch(`/api/payments?bookingId=${booking.id}`).then(r => r.json()).then(d => setPayments(d.payments || [])).catch(() => {});
                     } catch {
-                      setDiscountError('Er ging iets mis');
+                      setDiscountError(t('common.error'));
                     }
                     setDiscountSaving(false);
                   }}
@@ -294,7 +296,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 transition-colors"
                 >
                   {discountSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
-                  Korting toepassen
+                  {t('bookings.applyDiscountBtn')}
                 </button>
               </>
             )}
@@ -310,26 +312,26 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#1E40AF] transition-colors cursor-pointer disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Opslaan
+            {t('common.save')}
           </button>
         )}
-        <button
+        {role === 'admin' && (<button
           onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }}
           className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer ml-auto"
         >
           <Trash2 className="w-4 h-4" />
-          Verwijderen
-        </button>
+          {t('bookings.deleteBooking')}
+        </button>)}
       </div>
 
       {showDeleteConfirm && (
         <div className="bg-red-50 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2 text-red-700">
             <AlertTriangle className="w-5 h-5" />
-            <p className="text-sm font-semibold">Boeking permanent verwijderen?</p>
+            <p className="text-sm font-semibold">{t('bookings.deleteConfirm')}</p>
           </div>
           <p className="text-xs text-red-600">
-            Dit verwijdert de boeking, alle betalingen en borgchecklists. Dit kan niet ongedaan worden gemaakt.
+            {t('bookings.deleteWarning')}
           </p>
           {deleteError && (
             <p className="text-xs text-red-700 bg-red-100 px-3 py-1.5 rounded-lg">{deleteError}</p>
@@ -340,14 +342,14 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
               type="password"
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder="Admin wachtwoord"
+              placeholder={t('dashboard.adminPassword')}
               className="flex-1 px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={async () => {
-                if (!deletePassword) { setDeleteError('Voer het wachtwoord in'); return; }
+                if (!deletePassword) { setDeleteError(t('bookings.enterPassword')); return; }
                 setDeleting(true);
                 setDeleteError('');
                 try {
@@ -356,11 +358,11 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: booking.id, password: deletePassword }),
                   });
-                  if (res.status === 403) { setDeleteError('Onjuist wachtwoord'); setDeleting(false); return; }
-                  if (!res.ok) { setDeleteError('Verwijderen mislukt'); setDeleting(false); return; }
+                  if (res.status === 403) { setDeleteError(t('bookings.wrongPassword')); setDeleting(false); return; }
+                  if (!res.ok) { setDeleteError(t('bookings.deleteFailed')); setDeleting(false); return; }
                   onDelete(booking.id);
                 } catch {
-                  setDeleteError('Er ging iets mis');
+                  setDeleteError(t('common.error'));
                 }
                 setDeleting(false);
               }}
@@ -368,13 +370,13 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50"
             >
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-              Definitief verwijderen
+              {t('bookings.permanentDelete')}
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
               className="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
             >
-              Annuleren
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -384,6 +386,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
 }
 
 export default function BookingenPage() {
+  const { t, ts, dateLocale } = useAdmin();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -449,7 +452,7 @@ export default function BookingenPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Zoek op naam, e-mail, referentie..."
+            placeholder={t('bookings.searchPlaceholder')}
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
@@ -460,7 +463,7 @@ export default function BookingenPage() {
             onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'ALLE')}
             className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
-            <option value="ALLE">Alle statussen</option>
+            <option value="ALLE">{t('status.allStatuses')}</option>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
             ))}
@@ -469,7 +472,7 @@ export default function BookingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} boeking{filtered.length !== 1 ? 'en' : ''} gevonden
+        {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
       </p>
 
       <div className="space-y-2">
@@ -489,7 +492,7 @@ export default function BookingenPage() {
                     {new Date(booking.check_in).getDate()}
                   </p>
                   <p className="text-xs text-muted uppercase">
-                    {new Date(booking.check_in).toLocaleDateString('nl-NL', { month: 'short' })}
+                    {new Date(booking.check_in).toLocaleDateString(dateLocale, { month: 'short' })}
                   </p>
                 </div>
 
@@ -510,7 +513,7 @@ export default function BookingenPage() {
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(booking.status)}`}
                   >
-                    {booking.status.replace('_', ' ')}
+                    {ts(booking.status)}
                   </span>
                   {isExpanded ? (
                     <ChevronUp className="w-4 h-4 text-muted" />
@@ -536,8 +539,8 @@ export default function BookingenPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted">
-            <p className="text-lg">Geen boekingen gevonden</p>
-            <p className="text-sm mt-1">Pas je zoekopdracht of filters aan</p>
+            <p className="text-lg">{t('bookings.noBookings')}</p>
+            <p className="text-sm mt-1">{t('bookings.adjustSearch')}</p>
           </div>
         )}
       </div>

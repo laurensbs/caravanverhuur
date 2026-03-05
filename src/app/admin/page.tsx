@@ -16,6 +16,7 @@ import {
   Trash2,
   ShieldAlert,
 } from 'lucide-react';
+import { useAdmin } from '@/i18n/admin-context';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -85,6 +86,7 @@ function StatCard({
 export default function AdminDashboard() {
   const pathname = usePathname();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+  const { t, ts, role, dateLocale } = useAdmin();
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,7 +112,7 @@ export default function AdminDashboard() {
         if (d.error) throw new Error(d.error);
         setData(d);
       })
-      .catch(() => setError('Kon dashboard data niet laden'))
+      .catch(() => setError('Could not load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -125,9 +127,9 @@ export default function AdminDashboard() {
   if (error || !data) {
     return (
       <div className="text-center py-20">
-        <p className="text-danger">{error || 'Er ging iets mis'}</p>
+        <p className="text-danger">{error || t('dashboard.somethingWrong')}</p>
         <p className="text-sm text-muted mt-2">
-          Controleer of de database is opgezet via <code>/api/setup</code>
+          {t('dashboard.checkSetup')}
         </p>
       </div>
     );
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
   const bookingsThisMonth = parseInt(stats.monthly?.bookings_this_month || '0');
   const revenueThisMonth = parseFloat(stats.monthly?.revenue_this_month || '0');
 
-  const monthName = new Date().toLocaleDateString('nl-NL', { month: 'long' });
+  const monthName = new Date().toLocaleDateString(dateLocale, { month: 'long' });
 
   return (
     <div className="space-y-6">
@@ -159,20 +161,20 @@ export default function AdminDashboard() {
         className="bg-primary-dark rounded-2xl p-5 text-white"
       >
         <p className="text-sm text-white/70 font-medium uppercase tracking-wider">
-          Overzicht {monthName} {new Date().getFullYear()}
+          {t('dashboard.overview', { month: monthName, year: String(new Date().getFullYear()) })}
         </p>
         <div className="flex flex-wrap gap-6 mt-3">
           <div>
             <p className="text-3xl font-bold">{bookingsThisMonth}</p>
-            <p className="text-sm text-white/60">boekingen deze maand</p>
+            <p className="text-sm text-white/60">{t('dashboard.bookingsThisMonth')}</p>
           </div>
           <div>
             <p className="text-3xl font-bold">{formatCurrency(revenueThisMonth)}</p>
-            <p className="text-sm text-white/60">omzet deze maand</p>
+            <p className="text-sm text-white/60">{t('dashboard.revenueThisMonth')}</p>
           </div>
           <div>
             <p className="text-3xl font-bold">{formatCurrency(totalOpen)}</p>
-            <p className="text-sm text-white/60">openstaand</p>
+            <p className="text-sm text-white/60">{t('dashboard.outstanding')}</p>
           </div>
         </div>
       </motion.div>
@@ -180,38 +182,38 @@ export default function AdminDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Actieve Boekingen"
+          label={t('dashboard.activeBookings')}
           value={String(activeBookings)}
-          sub={`${totalBookings} totaal • ${newBookings} nieuw`}
+          sub={t('dashboard.totalNew', { total: String(totalBookings), new: String(newBookings) })}
           icon={CalendarCheck}
           color="bg-primary-100 text-primary"
           href={p('/boekingen')}
           index={0}
         />
         <StatCard
-          label="Ontvangen"
+          label={t('dashboard.received')}
           value={formatCurrency(totalPaid)}
-          sub={`${paidCount} betalingen`}
+          sub={t('dashboard.paymentsCount', { count: String(paidCount) })}
           icon={TrendingUp}
           color="bg-primary-light text-primary-dark"
           href={p('/betalingen')}
           index={1}
         />
         <StatCard
-          label="Openstaand"
+          label={t('dashboard.openPayments')}
           value={formatCurrency(totalOpen)}
-          sub={`${openCount} betalingen`}
+          sub={t('dashboard.paymentsCount', { count: String(openCount) })}
           icon={CreditCard}
           color="bg-primary-50 text-primary"
           href={p('/betalingen')}
           index={2}
         />
         <StatCard
-          label="Berichten"
+          label={t('dashboard.messages')}
           value={String(totalMessages)}
-          sub={`${newMessages} ongelezen`} icon={Mail} color="bg-primary-100 text-primary-dark" href={p('/berichten')} index={3} /> </div> {/* Action items */} {(newBookings > 0 || openCount > 0 || newMessages > 0) && ( <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3"> Actiepunten </h3> <div className="space-y-2"> {newBookings > 0 && ( <Link href={p('/boekingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <AlertCircle className="w-4 h-4 shrink-0" /> <span> <strong>{newBookings}</strong> nieuwe boeking(en) wacht(en) op bevestiging </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {openCount > 0 && ( <Link href={p('/betalingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary" > <Clock className="w-4 h-4 shrink-0" /> <span> <strong>{openCount}</strong> openstaande betaling(en) ({formatCurrency(totalOpen)}) </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {newMessages > 0 && ( <Link href={p('/berichten')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <Mail className="w-4 h-4 shrink-0" /> <span> <strong>{newMessages}</strong> ongelezen bericht(en) </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} </div> </motion.div> )} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6" > {/* Recent bookings */} <div className="lg:col-span-2 bg-white rounded-2xl p-5"> <div className="flex items-center justify-between mb-4"> <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider"> Recente Boekingen </h3> <Link href={p('/boekingen')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1" > Alles bekijken <ArrowRight className="w-3 h-3" /> </Link> </div> {recentBookings.length === 0 ? ( <p className="text-sm text-muted py-8 text-center">Nog geen boekingen</p> ) : ( <div className=""> {recentBookings.map((booking) => { const caravan = getBookingCaravan(booking); const camping = getBookingCamping(booking); return ( <Link key={booking.id} href={p('/boekingen')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors" > <div className="flex-1 min-w-0"> <p className="font-medium text-sm text-foreground truncate"> {booking.guest_name} </p> <p className="text-xs text-muted truncate"> {caravan?.name} • {camping?.name} </p> </div> <div className="text-right shrink-0"> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
+          sub={t('dashboard.unread', { count: String(newMessages) })} icon={Mail} color="bg-primary-100 text-primary-dark" href={p('/berichten')} index={3} /> </div> {/* Action items */} {(newBookings > 0 || openCount > 0 || newMessages > 0) && ( <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3"> {t('dashboard.actionItems')} </h3> <div className="space-y-2"> {newBookings > 0 && ( <Link href={p('/boekingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <AlertCircle className="w-4 h-4 shrink-0" /> <span> {t('dashboard.newBookingsWaiting', { count: String(newBookings) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {openCount > 0 && ( <Link href={p('/betalingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary" > <Clock className="w-4 h-4 shrink-0" /> <span> {t('dashboard.openPaymentsAmount', { count: String(openCount), amount: formatCurrency(totalOpen) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {newMessages > 0 && ( <Link href={p('/berichten')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <Mail className="w-4 h-4 shrink-0" /> <span> {t('dashboard.unreadMessages', { count: String(newMessages) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} </div> </motion.div> )} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6" > {/* Recent bookings */} <div className="lg:col-span-2 bg-white rounded-2xl p-5"> <div className="flex items-center justify-between mb-4"> <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider"> {t('dashboard.recentBookings')} </h3> <Link href={p('/boekingen')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1" > {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" /> </Link> </div> {recentBookings.length === 0 ? ( <p className="text-sm text-muted py-8 text-center">{t('dashboard.noBookings')}</p> ) : ( <div className=""> {recentBookings.map((booking) => { const caravan = getBookingCaravan(booking); const camping = getBookingCamping(booking); return ( <Link key={booking.id} href={p('/boekingen')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors" > <div className="flex-1 min-w-0"> <p className="font-medium text-sm text-foreground truncate"> {booking.guest_name} </p> <p className="text-xs text-muted truncate"> {caravan?.name} • {camping?.name} </p> </div> <div className="text-right shrink-0"> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
                       >
-                        {booking.status.replace('_', ' ')}
+                        {ts(booking.status)}
                       </span>
                       <p className="text-xs text-muted mt-0.5">
                         {formatDate(booking.created_at)}
@@ -228,7 +230,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              Berichten
+              {t('dashboard.messages')}
             </h3>
             <Link
               href={p('/berichten')}
@@ -238,7 +240,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
           {recentContacts.length === 0 ? (
-            <p className="text-sm text-muted py-8 text-center">Nog geen berichten</p>
+            <p className="text-sm text-muted py-8 text-center">{t('dashboard.noMessages')}</p>
           ) : (
             <div className="space-y-3">
               {recentContacts.map((contact) => (
@@ -252,7 +254,7 @@ export default function AdminDashboard() {
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${getContactStatusColor(contact.status as 'NIEUW' | 'GELEZEN' | 'BEANTWOORD')}`}
                     >
-                      {contact.status}
+                      {ts(contact.status)}
                     </span>
                   </div>
                   <p className="text-xs font-medium text-foreground">{contact.subject}</p>
@@ -273,10 +275,10 @@ export default function AdminDashboard() {
         className="bg-white rounded-2xl p-5"
       >
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
-          Aankomende Verblijven
+          {t('dashboard.upcomingStays')}
         </h3>
         {upcomingStays.length === 0 ? (
-          <p className="text-sm text-muted py-8 text-center">Geen aankomende verblijven</p>
+          <p className="text-sm text-muted py-8 text-center">{t('dashboard.noUpcoming')}</p>
         ) : (
           <div className="space-y-3">
             {upcomingStays.map((b) => {
@@ -292,7 +294,7 @@ export default function AdminDashboard() {
                       {new Date(b.check_in).getDate()}
                     </p>
                     <p className="text-xs text-muted uppercase">
-                      {new Date(b.check_in).toLocaleDateString('nl-NL', { month: 'short' })}
+                      {new Date(b.check_in).toLocaleDateString(dateLocale, { month: 'short' })}
                     </p>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -301,26 +303,27 @@ export default function AdminDashboard() {
                       {caravan?.name} → {camping?.name}
                     </p>
                     <p className="text-xs text-muted">
-                      {formatDate(b.check_in)} – {formatDate(b.check_out)} ({b.nights} nachten)
+                      {formatDate(b.check_in)} – {formatDate(b.check_out)} ({b.nights} {t('common.nights')})
                     </p>
                   </div>
                   <div className="shrink-0">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {b.status.replace('_', ' ')} </span> </div> </div> ); })} </div> )} </motion.div> {/* Test data purge */} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-5 h-5 text-red-500" /> </div> <div> <h3 className="text-sm font-semibold text-foreground">Database opschonen</h3> <p className="text-xs text-muted">Verwijder alle testdata (boekingen, betalingen, berichten, checklists)</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> Wis alle testdata </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ Dit verwijdert ALLE boekingen, betalingen, berichten, borgchecklists en nieuwsbrieven uit de database. Dit is onomkeerbaar! </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">Bevestig met admin wachtwoord</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder="Admin wachtwoord" className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {ts(b.status)} </span> </div> </div> ); })} </div> )} </motion.div> {/* Test data purge — admin only */}
+      {role === 'admin' && (<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-5 h-5 text-red-500" /> </div> <div> <h3 className="text-sm font-semibold text-foreground">{t('dashboard.cleanDatabase')}</h3> <p className="text-xs text-muted">{t('dashboard.cleanDatabaseDesc')}</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> {t('dashboard.wipeTestData')} </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ {t('dashboard.wipeWarning')} </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">{t('dashboard.confirmAdminPassword')}</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
                           method: 'DELETE',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ adminPassword: purgePassword }),
                         });
                         const d = await res.json();
                         if (res.ok) {
-                          setPurgeResult({ success: true, message: 'Alle testdata is succesvol verwijderd. Herlaad de pagina.' });
+                          setPurgeResult({ success: true, message: t('dashboard.dataDeleted') });
                           // Refresh data after purge
                           setTimeout(() => window.location.reload(), 2000);
                         } else {
-                          setPurgeResult({ success: false, message: d.error || 'Fout bij verwijderen' });
+                          setPurgeResult({ success: false, message: d.error || t('dashboard.deleteError') });
                         }
                       } catch {
-                        setPurgeResult({ success: false, message: 'Netwerkfout' });
+                        setPurgeResult({ success: false, message: t('dashboard.networkError') });
                       }
                       setPurging(false);
                     }}
@@ -328,20 +331,20 @@ export default function AdminDashboard() {
                     className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {purging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    Definitief verwijderen
+                    {t('dashboard.permanentDelete')}
                   </button>
                   <button
                     onClick={() => { setShowPurge(false); setPurgePassword(''); setPurgeResult(null); }}
                     className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-surface transition-colors cursor-pointer"
                   >
-                    Annuleren
+                    {t('common.cancel')}
                   </button>
                 </div>
               </>
             )}
           </motion.div>
         )}
-      </motion.div>
+      </motion.div>)}
     </div>
   );
 }

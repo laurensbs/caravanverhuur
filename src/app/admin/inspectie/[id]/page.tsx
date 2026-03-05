@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useAdmin } from '@/i18n/admin-context';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -65,6 +66,7 @@ const statusConfig = {
 export default function InspectiePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t, ts } = useAdmin();
   const [checklist, setChecklist] = useState<BorgChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -99,7 +101,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       <div className="fixed inset-0 z-[100] overflow-auto bg-[#FAFAF9] flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={32} className="animate-spin text-primary mx-auto" />
-          <p className="text-sm text-gray-500 mt-3">Laden...</p>
+          <p className="text-sm text-gray-500 mt-3">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -110,10 +112,10 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       <div className="fixed inset-0 z-[100] overflow-auto bg-[#FAFAF9] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
           <Shield size={40} className="text-gray-300 mx-auto mb-4" />
-          <h1 className="text-lg font-bold text-gray-900 mb-2">Niet gevonden</h1>
-          <p className="text-sm text-gray-500 mb-4">Deze checklist bestaat niet.</p>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">{t('inspection.notFound')}</h1>
+          <p className="text-sm text-gray-500 mb-4">{t('inspection.notFoundDesc')}</p>
           <button onClick={() => router.back()} className="text-primary text-sm font-semibold">
-            ← Terug
+            {t('common.back')}
           </button>
         </div>
       </div>
@@ -204,14 +206,14 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         setStep('done');
       }
     } catch {
-      alert('Opslaan mislukt. Probeer opnieuw.');
+      alert(t('inspection.saveFailed'));
     } finally {
       setSaving(false);
     }
   };
 
   const isCheckIn = checklist.type === 'INCHECKEN';
-  const typeLabel = isCheckIn ? 'Check-in' : 'Check-out';
+  const typeLabel = isCheckIn ? t('inspection.checkInInspection').split(' ')[0] : t('inspection.checkOutInspection').split(' ')[0];
   const typeEmoji = isCheckIn ? '📋' : '🏁';
 
   // ==================== RENDER ====================
@@ -224,11 +226,11 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         <div className={`${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white`}>
           <div className="max-w-lg mx-auto px-5 py-8">
             <button onClick={() => router.back()} className="flex items-center gap-1 text-white/70 text-sm mb-6 hover:text-white transition">
-              <ArrowLeft size={16} /> Terug
+              <ArrowLeft size={16} /> {t('common.back')}
             </button>
             <div className="text-4xl mb-3">{typeEmoji}</div>
-            <h1 className="text-2xl font-bold mb-1">{typeLabel} inspectie</h1>
-            <p className="text-white/80 text-sm">Looptijd door: gebruik je telefoon als checklist</p>
+            <h1 className="text-2xl font-bold mb-1">{isCheckIn ? t('inspection.checkInInspection') : t('inspection.checkOutInspection')}</h1>
+            <p className="text-white/80 text-sm">{t('inspection.subtitle')}</p>
           </div>
         </div>
 
@@ -241,7 +243,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   <Hash size={14} className="text-primary" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">Ref</div>
+                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">{t('inspection.ref')}</div>
                   <div className="font-semibold text-gray-900">{checklist.booking_ref}</div>
                 </div>
               </div>
@@ -250,7 +252,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   <User size={14} className="text-primary" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">Gast</div>
+                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">{t('inspection.guest')}</div>
                   <div className="font-semibold text-gray-900">{checklist.guest_name}</div>
                 </div>
               </div>
@@ -259,7 +261,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   <Car size={14} className="text-primary" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">Caravan</div>
+                  <div className="text-[11px] text-gray-400 uppercase tracking-wider">{t('inspection.caravan')}</div>
                   <div className="font-semibold text-gray-900">{checklist.caravan_id}</div>
                 </div>
               </div>
@@ -280,19 +282,19 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
 
           {/* Staff name */}
           <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">Wie voert de inspectie uit?</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">{t('inspection.whoInspects')}</label>
             <input
               type="text"
               value={staffName}
               onChange={(e) => setStaffName(e.target.value)}
-              placeholder="Jouw naam"
+              placeholder={t("inspection.yourName")}
               className="w-full px-4 py-3 bg-[#FAFAF9] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           {/* Category preview */}
           <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Categorieën ({categories.length})</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">{t('inspection.categories', { count: String(categories.length) })}</h3>
             <div className="space-y-2">
               {categories.map((cat, i) => (
                 <div key={cat.name} className="flex items-center justify-between py-2">
@@ -300,12 +302,12 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                     <div className={`w-2 h-2 rounded-full ${isCheckIn ? 'bg-primary' : 'bg-emerald-500'}`} />
                     <span className="text-sm text-gray-700">{cat.name}</span>
                   </div>
-                  <span className="text-xs text-gray-400">{cat.items.length} items</span>
+                  <span className="text-xs text-gray-400">{cat.items.length} {t('inspection.itemsLabel')}</span>
                 </div>
               ))}
             </div>
             <div className="mt-3 pt-3 border-t border-gray-100 text-center">
-              <span className="text-xs text-gray-400">{totalItems} items totaal</span>
+              <span className="text-xs text-gray-400">{totalItems} {t('inspection.itemsTotal')}</span>
             </div>
           </div>
 
@@ -318,7 +320,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
             }}
             className={`w-full py-4 ${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white rounded-2xl text-base font-bold shadow-lg transition-transform active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2`}
           >
-            Start inspectie
+            {t('inspection.startInspection')}
             <ChevronRight size={20} />
           </button>
           <div className="h-8" />
@@ -342,7 +344,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                 }}
                 className="flex items-center gap-1 text-gray-500 text-sm cursor-pointer"
               >
-                <ChevronLeft size={16} /> Vorige
+                <ChevronLeft size={16} /> {t('common.previous')}
               </button>
               <span className="text-xs text-gray-400 font-medium">
                 {currentFlatIndex + 1} / {totalFlat}
@@ -351,7 +353,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                 onClick={goNext}
                 className="flex items-center gap-1 text-primary text-sm font-semibold cursor-pointer"
               >
-                {currentFlatIndex === totalFlat - 1 ? 'Afronden' : 'Volgende'} <ChevronRight size={16} />
+                {currentFlatIndex === totalFlat - 1 ? t('inspection.finalize') : t('common.next')} <ChevronRight size={16} />
               </button>
             </div>
             {/* Progress bar */}
@@ -410,7 +412,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                       }`}
                     >
                       <Icon size={28} className={isActive ? 'text-white' : ''} />
-                      <span className={`text-sm font-semibold mt-2 ${isActive ? 'text-white' : ''}`}>{config.label}</span>
+                      <span className={`text-sm font-semibold mt-2 ${isActive ? 'text-white' : ''}`}>{status === 'goed' ? t('deposit.good') : status === 'beschadigd' ? t('deposit.damaged') : status === 'ontbreekt' ? t('deposit.missing') : t('deposit.na')}</span>
                     </button>
                   );
                 })}
@@ -422,7 +424,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-gray-500 flex items-center gap-1">
-                        <MessageSquare size={12} /> Opmerking
+                        <MessageSquare size={12} /> {t('inspection.remark')}
                       </span>
                       <button onClick={() => setActiveNote(null)} className="text-gray-400 cursor-pointer">
                         <X size={16} />
@@ -431,7 +433,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                     <textarea
                       value={currentItem.item.notes || ''}
                       onChange={(e) => updateItemNotes(currentItem.globalIndex, e.target.value)}
-                      placeholder="Beschrijf het probleem..."
+                      placeholder={t("inspection.describeProblem")}
                       rows={2}
                       autoFocus
                       className="w-full px-3 py-2 bg-[#FAFAF9] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -446,7 +448,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                     className="w-full py-3 text-sm text-gray-400 flex items-center justify-center gap-2 cursor-pointer hover:text-gray-600 transition"
                   >
                     <StickyNote size={14} />
-                    {currentItem.item.notes ? 'Opmerking bewerken' : 'Opmerking toevoegen'}
+                    {currentItem.item.notes ? t('inspection.editRemark') : t('inspection.addRemark')}
                   </button>
                 )}
               </div>
@@ -457,7 +459,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         {/* Bottom: save progress button */}
         <div className="sticky bottom-0 bg-white/90 backdrop-blur-md px-5 py-3 max-w-lg mx-auto w-full">
           <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span>{completedCount} van {totalItems} beoordeeld</span>
+            <span>{completedCount} / {totalItems} {t('inspection.assessed')}</span>
             <span>{progressPct}%</span>
           </div>
           <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
@@ -482,9 +484,9 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               }}
               className="flex items-center gap-1 text-gray-500 text-sm cursor-pointer"
             >
-              <ChevronLeft size={16} /> Terug
+              <ChevronLeft size={16} /> {t('common.back')}
             </button>
-            <span className="text-sm font-semibold text-gray-900">Afronden</span>
+            <span className="text-sm font-semibold text-gray-900">{t('inspection.finalize')}</span>
             <div className="w-16" />
           </div>
         </div>
@@ -492,24 +494,24 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         <div className="max-w-lg mx-auto px-5 py-6 space-y-5">
           {/* Quick summary */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">Samenvatting</h3>
+            <h3 className="text-sm font-bold text-gray-900 mb-3">{t('inspection.summary')}</h3>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-emerald-50 rounded-xl p-3 text-center">
                 <div className="text-xl font-bold text-emerald-600">{goedCount}</div>
-                <div className="text-[11px] font-medium text-emerald-600">Goed</div>
+                <div className="text-[11px] font-medium text-emerald-600">{t('deposit.good')}</div>
               </div>
               <div className="bg-amber-50 rounded-xl p-3 text-center">
                 <div className="text-xl font-bold text-amber-600">{beschadigdCount}</div>
-                <div className="text-[11px] font-medium text-amber-600">Beschadigd</div>
+                <div className="text-[11px] font-medium text-amber-600">{t('deposit.damaged')}</div>
               </div>
               <div className="bg-red-50 rounded-xl p-3 text-center">
                 <div className="text-xl font-bold text-red-600">{ontbreektCount}</div>
-                <div className="text-[11px] font-medium text-red-600">Ontbreekt</div>
+                <div className="text-[11px] font-medium text-red-600">{t('deposit.missing')}</div>
               </div>
             </div>
             {totalItems - completedCount > 0 && (
               <p className="text-xs text-amber-600 mt-3 text-center font-medium">
-                ⚠ {totalItems - completedCount} items nog niet beoordeeld
+                {t('inspection.notAssessed', { count: String(totalItems - completedCount) })}
               </p>
             )}
           </div>
@@ -517,7 +519,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
           {/* Items with issues */}
           {(beschadigdCount > 0 || ontbreektCount > 0) && (
             <div className="bg-white rounded-2xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-900 mb-3">Problemen gevonden</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-3">{t('inspection.problemsFound')}</h3>
               <div className="space-y-2">
                 {checklist.items.filter(i => i.status === 'beschadigd' || i.status === 'ontbreekt').map((item, i) => (
                   <div key={i} className="flex items-start gap-2.5 py-2">
@@ -539,11 +541,11 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
 
           {/* General notes */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <label className="block text-sm font-bold text-gray-900 mb-2">Algemene opmerkingen</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">{t('inspection.generalNotes')}</label>
             <textarea
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
-              placeholder="Eventuele opmerkingen over de inspectie..."
+              placeholder={t("inspection.notesPlaceholder")}
               rows={3}
               className="w-full px-4 py-3 bg-[#FAFAF9] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             />
@@ -557,14 +559,14 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               className={`w-full py-4 ${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white rounded-2xl text-base font-bold shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2`}
             >
               {saving ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-              Afronden & versturen naar klant
+              {t('inspection.completeAndSend')}
             </button>
             <button
               onClick={() => handleSave(false)}
               disabled={saving}
               className="w-full py-3 text-sm text-gray-500 font-medium cursor-pointer hover:text-gray-700 transition"
             >
-              Opslaan als concept
+              {t('inspection.saveAsDraft')}
             </button>
           </div>
           <div className="h-4" />
@@ -591,27 +593,27 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
           >
             <Check size={40} className="text-white" />
           </motion.div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Inspectie voltooid! 🎉</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('inspection.inspectionComplete')}</h2>
           <p className="text-sm text-gray-500 mb-2">
-            {typeLabel} inspectie voor <strong>{checklist.booking_ref}</strong> is afgerond.
+            {t('inspection.inspectionCompleteDesc', { type: typeLabel, ref: checklist.booking_ref || '' })}
           </p>
           <p className="text-xs text-gray-400 mb-6">
-            De klant ontvangt een e-mail en kan de checklist bekijken in het klantenportaal.
+            {t('inspection.customerNotified')}
           </p>
 
           {/* Results summary */}
           <div className="grid grid-cols-3 gap-2 mb-6">
             <div className="bg-emerald-50 rounded-xl py-2">
               <div className="text-lg font-bold text-emerald-600">{goedCount}</div>
-              <div className="text-[10px] text-emerald-600">Goed</div>
+              <div className="text-[10px] text-emerald-600">{t('deposit.good')}</div>
             </div>
             <div className="bg-amber-50 rounded-xl py-2">
               <div className="text-lg font-bold text-amber-600">{beschadigdCount}</div>
-              <div className="text-[10px] text-amber-600">Beschadigd</div>
+              <div className="text-[10px] text-amber-600">{t('deposit.damaged')}</div>
             </div>
             <div className="bg-red-50 rounded-xl py-2">
               <div className="text-lg font-bold text-red-600">{ontbreektCount}</div>
-              <div className="text-[10px] text-red-600">Ontbreekt</div>
+              <div className="text-[10px] text-red-600">{t('deposit.missing')}</div>
             </div>
           </div>
 
@@ -619,7 +621,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
             onClick={() => router.push('/admin/borg')}
             className={`w-full py-3 ${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white rounded-xl text-sm font-bold cursor-pointer transition-transform active:scale-[0.98]`}
           >
-            Terug naar overzicht
+            {t('inspection.backToOverview')}
           </button>
         </motion.div>
       </div>

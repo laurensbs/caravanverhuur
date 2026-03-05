@@ -10,6 +10,7 @@ import {
   ArrowUpDown,
   Loader2,
 } from 'lucide-react';
+import { useAdmin } from '@/i18n/admin-context';
 import {
   getPaymentStatusColor,
   formatDateTime,
@@ -25,6 +26,7 @@ const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUG
 const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'BORG', 'BORG_RETOUR'];
 
 export default function BetalingenPage() {
+  const { t, ts } = useAdmin();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -112,9 +114,9 @@ export default function BetalingenPage() {
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">Ontvangen</p>
+            <p className="text-xs text-muted font-medium">{t('payments.received')}</p>
             <p className="text-xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
-            <p className="text-xs text-muted">{paid.length} betalingen</p>
+            <p className="text-xs text-muted">{paid.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
@@ -122,9 +124,9 @@ export default function BetalingenPage() {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">Openstaand</p>
+            <p className="text-xs text-muted font-medium">{t('payments.openPayments')}</p>
             <p className="text-xl font-bold text-foreground">{formatCurrency(totalOpen)}</p>
-            <p className="text-xs text-muted">{open.length} betalingen</p>
+            <p className="text-xs text-muted">{open.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
@@ -132,9 +134,9 @@ export default function BetalingenPage() {
             <RotateCcw className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">Terugbetaald</p>
+            <p className="text-xs text-muted font-medium">{t('payments.refunded')}</p>
             <p className="text-xl font-bold text-foreground">{formatCurrency(totalRefunded)}</p>
-            <p className="text-xs text-muted">{refunded.length} betalingen</p>
+            <p className="text-xs text-muted">{refunded.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
       </div>
@@ -147,7 +149,7 @@ export default function BetalingenPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Zoek op naam, referentie, betaal-ID..."
+            placeholder={t('payments.searchPlaceholder')}
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
@@ -158,9 +160,9 @@ export default function BetalingenPage() {
             onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'ALLE')}
             className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
-            <option value="ALLE">Alle statussen</option>
+            <option value="ALLE">{t('status.allStatuses')}</option>
             {PAYMENT_STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>{ts(s)}</option>
             ))}
           </select>
         </div>
@@ -171,16 +173,16 @@ export default function BetalingenPage() {
             onChange={(e) => setTypeFilter(e.target.value as PaymentType | 'ALLE')}
             className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
-            <option value="ALLE">Alle types</option>
-            {PAYMENT_TYPE_OPTIONS.map((t) => (
-              <option key={t} value={t}>{t.replace('_', ' ')}</option>
+            <option value="ALLE">{t('status.allTypes')}</option>
+            {PAYMENT_TYPE_OPTIONS.map((t2) => (
+              <option key={t2} value={t2}>{ts(t2)}</option>
             ))}
           </select>
         </div>
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} betaling{filtered.length !== 1 ? 'en' : ''} gevonden </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">Gast / Boeking</div> <div className="col-span-2">Type</div> <div className="col-span-2">Bedrag</div> <div className="col-span-2">Status</div> <div className="col-span-1">Methode</div> <div className="col-span-2">Datum</div> </div> <div className=""> {filtered.map((payment) => ( <div key={payment.id} className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> </div> <div className="col-span-2"> <span className="text-sm text-foreground">{payment.type.replace('_', ' ')}</span>
+        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-2">{t('payments.date')}</div> </div> <div className=""> {filtered.map((payment) => ( <div key={payment.id} className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
               </div>
 
               <div className="col-span-2">
@@ -193,7 +195,7 @@ export default function BetalingenPage() {
                 <span
                   className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(payment.status)}`}
                 >
-                  {payment.status}
+                  {ts(payment.status)}
                 </span>
                 {payment.status === 'OPENSTAAND' && (
                   <button
@@ -201,14 +203,14 @@ export default function BetalingenPage() {
                     disabled={updatingId === payment.id}
                     className="text-xs text-primary-dark bg-primary-50 hover:bg-primary-50 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    {updatingId === payment.id ? '...' : 'Markeer betaald'}
+                    {updatingId === payment.id ? '...' : t('payments.markPaid')}
                   </button>
                 )}
               </div>
 
               <div className="col-span-1">
                 <span className="text-xs text-muted">
-                  {payment.method === 'ideal' ? 'iDEAL' : payment.method === 'stripe' ? 'iDEAL' : payment.method === 'bank' ? 'Bank' : 'Contant'}
+                  {payment.method === 'ideal' ? 'iDEAL' : payment.method === 'stripe' ? 'iDEAL' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
                 </span>
               </div>
 
@@ -224,8 +226,8 @@ export default function BetalingenPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted">
-            <p className="text-lg">Geen betalingen gevonden</p>
-            <p className="text-sm mt-1">Pas je filters aan</p>
+            <p className="text-lg">{t('payments.noPayments')}</p>
+            <p className="text-sm mt-1">{t('payments.adjustFilters')}</p>
           </div>
         )}
       </div>

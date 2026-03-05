@@ -22,6 +22,7 @@ import {
   ImageIcon,
   UserMinus,
 } from 'lucide-react';
+import { useAdmin } from '@/i18n/admin-context';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface Newsletter {
@@ -41,13 +42,7 @@ interface Newsletter {
 
 type ModalType = 'create' | 'edit' | 'preview' | 'send' | 'delete' | null;
 
-const CATEGORIES = [
-  { value: 'algemeen', label: 'Algemeen nieuws', emoji: '📣' },
-  { value: 'activiteit', label: 'Activiteit', emoji: '🎉' },
-  { value: 'feestdag', label: 'Feestdag', emoji: '🎊' },
-  { value: 'markt', label: 'Markt', emoji: '🛍️' },
-  { value: 'evenement', label: 'Evenement', emoji: '🎭' },
-];
+
 
 const CATEGORY_DRAFTS: Record<string, { title: string; content: string }> = {
   algemeen: {
@@ -72,22 +67,18 @@ const CATEGORY_DRAFTS: Record<string, { title: string; content: string }> = {
   },
 };
 
-function getCategoryInfo(cat: string) {
-  return CATEGORIES.find(c => c.value === cat) || CATEGORIES[0];
-}
-
-function formatDate(d: string | null) {
+function formatDate(d: string | null, locale = 'nl-NL') {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('nl-NL', {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
 }
 
-function formatDateTime(d: string | null) {
+function formatDateTime(d: string | null, locale = 'nl-NL') {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('nl-NL', {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -97,6 +88,15 @@ function formatDateTime(d: string | null) {
 }
 
 export default function AdminNieuwsbrieven() {
+  const { t, ts, dateLocale } = useAdmin();
+  const CATEGORIES = [
+    { value: 'algemeen', label: t('newsletters.generalNews'), emoji: '📣' },
+    { value: 'activiteit', label: t('newsletters.activity'), emoji: '🎉' },
+    { value: 'feestdag', label: t('newsletters.holiday'), emoji: '🎊' },
+    { value: 'markt', label: t('newsletters.market'), emoji: '🛍️' },
+    { value: 'evenement', label: t('newsletters.event'), emoji: '🎭' },
+  ];
+  const getCategoryInfo = (cat: string) => CATEGORIES.find(c => c.value === cat) || CATEGORIES[0];
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -206,7 +206,7 @@ export default function AdminNieuwsbrieven() {
 
   const handleSave = async () => {
     if (!formTitle.trim() || !formContent.trim()) {
-      setError('Titel en inhoud zijn verplicht');
+      setError(t('newsletters.titleContentRequired'));
       return;
     }
 
@@ -265,7 +265,7 @@ export default function AdminNieuwsbrieven() {
       if (!res.ok) throw new Error(data.error);
 
       setSendResult({ sentCount: data.sentCount, totalEmails: data.totalEmails });
-      setSuccess(`Nieuwsbrief verzonden naar ${data.sentCount} van ${data.totalEmails} ontvangers`);
+      setSuccess(t('newsletters.sentSuccessfully', { sent: String(data.sentCount), total: String(data.totalEmails) }));
       fetchNewsletters();
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));
@@ -312,10 +312,10 @@ export default function AdminNieuwsbrieven() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Totaal', value: totalCount, icon: Newspaper, color: 'text-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10' },
-          { label: 'Concepten', value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Verzonden', value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Totaal ontvangers', value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: t('newsletters.total'), value: totalCount, icon: Newspaper, color: 'text-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10' },
+          { label: t('newsletters.drafts'), value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: t('newsletters.sent'), value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: t('newsletters.totalRecipients'), value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -338,7 +338,7 @@ export default function AdminNieuwsbrieven() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Zoeken..."
+              placeholder={t("newsletters.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 w-48"
@@ -350,9 +350,9 @@ export default function AdminNieuwsbrieven() {
             onChange={(e) => setFilterStatus(e.target.value as 'all' | 'concept' | 'verzonden')}
             className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
-            <option value="all">Alle statussen</option>
-            <option value="concept">Concepten</option>
-            <option value="verzonden">Verzonden</option>
+            <option value="all">{t('newsletters.allStatuses')}</option>
+            <option value="concept">{t('newsletters.draftsFilter')}</option>
+            <option value="verzonden">{t('newsletters.sentFilter')}</option>
           </select>
 
           <select
@@ -360,7 +360,7 @@ export default function AdminNieuwsbrieven() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
-            <option value="all">Alle categorieën</option>
+            <option value="all">{t('newsletters.allCategories')}</option>
             {CATEGORIES.map(c => (
               <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
             ))}
@@ -372,7 +372,7 @@ export default function AdminNieuwsbrieven() {
           className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer text-sm"
         >
           <Plus className="w-4 h-4" />
-          Nieuwe nieuwsbrief
+          {t('newsletters.newNewsletter')}
         </button>
       </div>
 
@@ -380,9 +380,9 @@ export default function AdminNieuwsbrieven() {
       {filtered.length === 0 && (
         <div className="text-center py-16 bg-white rounded-xl">
           <Newspaper className="w-12 h-12 text-muted mx-auto mb-3" />
-          <p className="text-lg font-semibold text-foreground">Geen nieuwsbrieven gevonden</p>
+          <p className="text-lg font-semibold text-foreground">{t('newsletters.noNewsletters')}</p>
           <p className="text-sm text-muted mt-1">
-            {newsletters.length === 0 ? 'Maak je eerste nieuwsbrief aan' : 'Pas je zoekopdracht aan'}
+            {newsletters.length === 0 ? t('newsletters.createFirst') : t('newsletters.adjustSearch')}
           </p>
           {newsletters.length === 0 && (
             <button
@@ -390,7 +390,7 @@ export default function AdminNieuwsbrieven() {
               className="mt-4 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer text-sm"
             >
               <Plus className="w-4 h-4 inline -mt-0.5 mr-1" />
-              Nieuwsbrief aanmaken
+              {t('newsletters.createNewsletter')}
             </button>
           )}
         </div>
@@ -416,12 +416,12 @@ export default function AdminNieuwsbrieven() {
                     {isSent ? (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
                         <CheckCircle2 className="w-3 h-3 inline -mt-0.5 mr-0.5" />
-                        Verzonden
+                        {t('newsletters.sent')}
                       </span>
                     ) : (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                         <Clock className="w-3 h-3 inline -mt-0.5 mr-0.5" />
-                        Concept
+                        {t('newsletters.draft')}
                       </span>
                     )}
                   </div>
@@ -433,7 +433,7 @@ export default function AdminNieuwsbrieven() {
                     {n.event_date && (
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {formatDate(n.event_date)}
+                        {formatDate(n.event_date, dateLocale)}
                       </span>
                     )}
                     {n.event_location && (
@@ -444,12 +444,12 @@ export default function AdminNieuwsbrieven() {
                     )}
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {formatDateTime(n.created_at)}
+                      {formatDateTime(n.created_at, dateLocale)}
                     </span>
                     {isSent && (
                       <span className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
-                        {n.sent_count} ontvangers
+                        {n.sent_count} {t('newsletters.recipients')}
                       </span>
                     )}
                   </div>
@@ -459,7 +459,7 @@ export default function AdminNieuwsbrieven() {
                   <button
                     onClick={() => openPreview(n)}
                     className="p-2 rounded-lg hover:bg-[#FAFAF9] transition cursor-pointer"
-                    title="Voorbeeld"
+                    title={t("newsletters.preview")}
                   >
                     <Eye className="w-4 h-4 text-muted" />
                   </button>
@@ -468,14 +468,14 @@ export default function AdminNieuwsbrieven() {
                       <button
                         onClick={() => openEdit(n)}
                         className="p-2 rounded-lg hover:bg-[#FAFAF9] transition cursor-pointer"
-                        title="Bewerken"
+                        title={t("common.edit")}
                       >
                         <Pencil className="w-4 h-4 text-muted" />
                       </button>
                       <button
                         onClick={() => openSend(n)}
                         className="p-2 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                        title="Verzenden"
+                        title={t("common.send")}
                       >
                         <Send className="w-4 h-4 text-emerald-600" />
                       </button>
@@ -484,7 +484,7 @@ export default function AdminNieuwsbrieven() {
                   <button
                     onClick={() => openDelete(n)}
                     className="p-2 rounded-lg hover:bg-red-50 transition cursor-pointer"
-                    title="Verwijderen"
+                    title={t("common.delete")}
                   >
                     <Trash2 className="w-4 h-4 text-red-400" />
                   </button>
@@ -519,7 +519,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                       {modal === 'create' ? <Plus className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
-                      {modal === 'create' ? 'Nieuwe nieuwsbrief' : 'Nieuwsbrief bewerken'}
+                      {modal === 'create' ? t('newsletters.createNewsletter') : t('newsletters.editNewsletter')}
                     </h2>
                     <button onClick={() => { setModal(null); resetForm(); }} className="p-1.5 hover:bg-muted/10 rounded-lg cursor-pointer">
                       <X className="w-5 h-5" />
@@ -530,7 +530,7 @@ export default function AdminNieuwsbrieven() {
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         <Tag className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                        Categorie
+                        {t('newsletters.categoryLabel')}
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {CATEGORIES.map(c => (
@@ -563,14 +563,14 @@ export default function AdminNieuwsbrieven() {
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         <Newspaper className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                        Titel *
+                        {t('newsletters.titleRequired')}
                       </label>
                       <input
                         type="text"
                         value={formTitle}
                         onChange={(e) => setFormTitle(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="bijv. Zomermarkt in Lloret de Mar"
+                        placeholder={t("newsletters.titlePlaceholder")}
                       />
                     </div>
 
@@ -578,7 +578,7 @@ export default function AdminNieuwsbrieven() {
                       <div>
                         <label className="block text-sm font-medium text-foreground mb-1.5">
                           <Calendar className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                          Datum evenement
+                          {t('newsletters.eventDate')}
                         </label>
                         <input
                           type="date"
@@ -590,14 +590,14 @@ export default function AdminNieuwsbrieven() {
                       <div>
                         <label className="block text-sm font-medium text-foreground mb-1.5">
                           <MapPin className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                          Locatie
+                          {t('newsletters.location')}
                         </label>
                         <input
                           type="text"
                           value={formEventLocation}
                           onChange={(e) => setFormEventLocation(e.target.value)}
                           className="w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                          placeholder="bijv. Lloret de Mar"
+                          placeholder={t("newsletters.locationPlaceholder")}
                         />
                       </div>
                     </div>
@@ -605,23 +605,23 @@ export default function AdminNieuwsbrieven() {
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         <FileText className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                        Inhoud *
+                        {t('newsletters.contentLabel')}
                       </label>
                       <textarea
                         value={formContent}
                         onChange={(e) => setFormContent(e.target.value)}
                         rows={8}
                         className="w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y"
-                        placeholder="Schrijf hier de inhoud van je nieuwsbrief. Elke regel wordt een aparte paragraaf in de e-mail."
+                        placeholder={t("newsletters.contentPlaceholder")}
                       />
-                      <p className="text-xs text-muted mt-1">Elke nieuwe regel wordt een aparte paragraaf in de e-mail</p>
+                      <p className="text-xs text-muted mt-1">{t('newsletters.paragraphHint')}</p>
                     </div>
 
                     {/* Photos */}
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         <ImageIcon className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                        Foto&apos;s (URL&apos;s)
+                        {t('newsletters.photosLabel')}
                       </label>
                       {formPhotos.length > 0 && (
                         <div className="space-y-2 mb-2">
@@ -657,7 +657,7 @@ export default function AdminNieuwsbrieven() {
                           type="url"
                           value={newPhotoUrl}
                           onChange={(e) => setNewPhotoUrl(e.target.value)}
-                          placeholder="https://voorbeeld.com/foto.jpg"
+                          placeholder={t("newsletters.photoPlaceholder")}
                           className="flex-1 px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                         <button
@@ -673,7 +673,7 @@ export default function AdminNieuwsbrieven() {
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-xs text-muted mt-1">Voeg foto-URL&apos;s toe die in de nieuwsbrief worden getoond</p>
+                      <p className="text-xs text-muted mt-1">{t('newsletters.photosHint')}</p>
                     </div>
 
                     {error && (
@@ -689,7 +689,7 @@ export default function AdminNieuwsbrieven() {
                         className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                         disabled={saving}
                       >
-                        Annuleren
+                        {t('common.cancel')}
                       </button>
                       <button
                         onClick={handleSave}
@@ -699,9 +699,9 @@ export default function AdminNieuwsbrieven() {
                         {saving ? (
                           <Loader2 className="w-4 h-4 animate-spin mx-auto" />
                         ) : modal === 'create' ? (
-                          'Opslaan als concept'
+                          t('newsletters.saveAsDraft')
                         ) : (
-                          'Wijzigingen opslaan'
+                          t('newsletters.saveChanges')
                         )}
                       </button>
                     </div>
@@ -715,7 +715,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                       <Eye className="w-5 h-5" />
-                      Voorbeeld
+                      {t('newsletters.preview')}
                     </h2>
                     <button onClick={() => setModal(null)} className="p-1.5 hover:bg-muted/10 rounded-lg cursor-pointer">
                       <X className="w-5 h-5" />
@@ -725,7 +725,7 @@ export default function AdminNieuwsbrieven() {
                   {/* Email preview */}
                   <div className="rounded-xl overflow-hidden">
                     <div className="bg-[#FAFAF9] px-5 py-3 text-sm text-muted">
-                      <span className="font-medium text-foreground">Onderwerp:</span> {getCategoryInfo(selected.category).emoji} {selected.title}
+                      <span className="font-medium text-foreground">{t('newsletters.subject')}</span> {getCategoryInfo(selected.category).emoji} {selected.title}
                     </div>
                     <div className="p-6 bg-white">
                       <div className="text-center mb-4">
@@ -740,7 +740,7 @@ export default function AdminNieuwsbrieven() {
                           {selected.event_date && (
                             <div className="flex justify-between text-sm mb-1">
                               <span className="text-muted">📅 Datum</span>
-                              <span className="font-semibold">{formatDate(selected.event_date)}</span>
+                              <span className="font-semibold">{formatDate(selected.event_date, dateLocale)}</span>
                             </div>
                           )}
                           {selected.event_location && (
@@ -772,13 +772,13 @@ export default function AdminNieuwsbrieven() {
 
                       <div className="bg-[#F0F9FF] rounded-xl p-4 mb-4">
                         <p className="text-sm text-foreground">
-                          Wil je de Costa Brava zelf ervaren? Bekijk onze beschikbare caravans en boek jouw perfecte vakantie.
+                          {t('newsletters.ctaText')}
                         </p>
                       </div>
 
                       <div className="text-center">
                         <span className="inline-block bg-[#0284C7] text-white px-6 py-3 rounded-xl font-semibold text-sm">
-                          Bekijk caravans →
+                          {t('newsletters.ctaButton')}
                         </span>
                       </div>
                     </div>
@@ -789,7 +789,7 @@ export default function AdminNieuwsbrieven() {
                       onClick={() => setModal(null)}
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                     >
-                      Sluiten
+                      {t('common.close')}
                     </button>
                     {selected.status !== 'verzonden' && (
                       <button
@@ -797,7 +797,7 @@ export default function AdminNieuwsbrieven() {
                         className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Send className="w-4 h-4" />
-                        Verzenden
+                        {t('common.send')}
                       </button>
                     )}
                   </div>
@@ -810,7 +810,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                       <Send className="w-5 h-5 text-emerald-600" />
-                      Nieuwsbrief verzenden
+                      {t('newsletters.sendNewsletter')}
                     </h2>
                     <button onClick={() => { setModal(null); resetForm(); }} className="p-1.5 hover:bg-muted/10 rounded-lg cursor-pointer">
                       <X className="w-5 h-5" />
@@ -823,9 +823,9 @@ export default function AdminNieuwsbrieven() {
                         <div className="flex items-start gap-3">
                           <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
                           <div>
-                            <p className="text-sm font-semibold text-amber-800 mb-1">Let op!</p>
+                            <p className="text-sm font-semibold text-amber-800 mb-1">{t('newsletters.sendWarning')}</p>
                             <p className="text-sm text-amber-700">
-                              Deze nieuwsbrief wordt naar alle ingeschreven klanten gestuurd (uitgeschreven klanten worden automatisch overgeslagen). Dit kan niet ongedaan worden gemaakt.
+                              {t('newsletters.sendWarningText')}
                             </p>
                           </div>
                         </div>
@@ -840,7 +840,7 @@ export default function AdminNieuwsbrieven() {
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-foreground mb-1.5">
                           <UserMinus className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-                          Klanten uitsluiten (optioneel)
+                          {t('newsletters.excludeCustomers')}
                         </label>
                         {excludeEmails.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -871,7 +871,7 @@ export default function AdminNieuwsbrieven() {
                                 setExcludeInput('');
                               }
                             }}
-                            placeholder="email@voorbeeld.com"
+                            placeholder={t("newsletters.excludePlaceholder")}
                             className="flex-1 px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
                           <button
@@ -884,10 +884,10 @@ export default function AdminNieuwsbrieven() {
                             }}
                             className="px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
                           >
-                            Uitsluiten
+                            {t('newsletters.excludeBtn')}
                           </button>
                         </div>
-                        <p className="text-xs text-muted mt-1">Typ een e-mailadres en druk Enter om die klant uit te sluiten</p>
+                        <p className="text-xs text-muted mt-1">{t('newsletters.excludeHint')}</p>
                       </div>
 
                       {error && (
@@ -903,7 +903,7 @@ export default function AdminNieuwsbrieven() {
                           className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                           disabled={saving}
                         >
-                          Annuleren
+                          {t('common.cancel')}
                         </button>
                         <button
                           onClick={handleSend}
@@ -913,12 +913,12 @@ export default function AdminNieuwsbrieven() {
                           {saving ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Bezig met verzenden...
+                              {t('newsletters.sendingInProgress')}
                             </>
                           ) : (
                             <>
                               <Send className="w-4 h-4" />
-                              Ja, verzenden
+                              {t('newsletters.yesSend')}
                             </>
                           )}
                         </button>
@@ -930,9 +930,9 @@ export default function AdminNieuwsbrieven() {
                         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                           <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                         </div>
-                        <h3 className="text-lg font-bold text-foreground mb-1">Nieuwsbrief verzonden!</h3>
+                        <h3 className="text-lg font-bold text-foreground mb-1">{t('newsletters.newsletterSent')}</h3>
                         <p className="text-sm text-muted">
-                          Succesvol verzonden naar <span className="font-semibold text-foreground">{sendResult.sentCount}</span> van {sendResult.totalEmails} ontvangers
+                          {t('newsletters.sentSuccessfully', { sent: String(sendResult.sentCount), total: String(sendResult.totalEmails) })}
                         </p>
                       </div>
 
@@ -947,7 +947,7 @@ export default function AdminNieuwsbrieven() {
                         onClick={() => { setModal(null); resetForm(); }}
                         className="w-full px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition cursor-pointer"
                       >
-                        Sluiten
+                        {t('common.close')}
                       </button>
                     </>
                   )}
@@ -960,7 +960,7 @@ export default function AdminNieuwsbrieven() {
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-red-600 flex items-center gap-2">
                       <Trash2 className="w-5 h-5" />
-                      Nieuwsbrief verwijderen
+                      {t('newsletters.deleteNewsletter')}
                     </h2>
                     <button onClick={() => setModal(null)} className="p-1.5 hover:bg-muted/10 rounded-lg cursor-pointer">
                       <X className="w-5 h-5" />
@@ -968,8 +968,7 @@ export default function AdminNieuwsbrieven() {
                   </div>
 
                   <p className="text-sm text-muted mb-4">
-                    Weet je zeker dat je <span className="font-semibold text-foreground">&ldquo;{selected.title}&rdquo;</span> wilt verwijderen?
-                    Dit kan niet ongedaan worden gemaakt.
+                    {t('newsletters.deleteConfirm', { title: selected.title })} {t('newsletters.cannotUndo')}
                   </p>
 
                   {error && (
@@ -985,14 +984,14 @@ export default function AdminNieuwsbrieven() {
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#FAFAF9] transition cursor-pointer"
                       disabled={saving}
                     >
-                      Annuleren
+                      {t('common.cancel')}
                     </button>
                     <button
                       onClick={handleDelete}
                       disabled={saving}
                       className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition cursor-pointer disabled:opacity-50"
                     >
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Verwijderen'}
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t('common.delete')}
                     </button>
                   </div>
                 </div>

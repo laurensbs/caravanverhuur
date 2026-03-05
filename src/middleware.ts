@@ -4,7 +4,6 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const { pathname } = request.nextUrl;
   const isAdminSubdomain = hostname.startsWith('admin.');
-  const isStaffSubdomain = hostname.startsWith('staff.');
 
   /* ── Admin subdomain ──────────────────────────────────── */
   if (isAdminSubdomain) {
@@ -22,22 +21,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  /* ── Staff subdomain ──────────────────────────────────── */
-  if (isStaffSubdomain) {
-    if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
-      return NextResponse.next();
-    }
-
-    if (pathname.startsWith('/staff')) {
-      const clean = pathname.replace(/^\/staff/, '') || '/';
-      return NextResponse.redirect(new URL(clean, request.url));
-    }
-
-    const url = request.nextUrl.clone();
-    url.pathname = `/staff${pathname}`;
-    return NextResponse.rewrite(url);
-  }
-
   /* ── Main domain: redirect /admin/* to admin subdomain ─ */
   if (
     pathname.startsWith('/admin') &&
@@ -48,19 +31,6 @@ export function middleware(request: NextRequest) {
     const adminPath = pathname.replace(/^\/admin/, '') || '/';
     return NextResponse.redirect(
       new URL(`https://admin.${baseDomain}${adminPath}`),
-    );
-  }
-
-  /* ── Main domain: redirect /staff/* to staff subdomain ─ */
-  if (
-    pathname.startsWith('/staff') &&
-    !hostname.includes('localhost') &&
-    !hostname.includes('127.0.0.1')
-  ) {
-    const baseDomain = hostname.replace(/:\d+$/, '');
-    const staffPath = pathname.replace(/^\/staff/, '') || '/';
-    return NextResponse.redirect(
-      new URL(`https://staff.${baseDomain}${staffPath}`),
     );
   }
 
