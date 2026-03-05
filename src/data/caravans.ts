@@ -70,7 +70,7 @@ export const caravans: Caravan[] = [
     maxPersons: 5,
     manufacturer: 'Hobby',
     year: 2002,
-    description: 'Een Hobby 650 met kleine punten tot verbetering. Er zit geen toiletruimte in deze caravan. Het is een caravan uit Engeland waardoor er geen kenteken op zit. Caravan kan door ons elk jaar op de camping worden gezet. Caravan kan tegen een kleine vergoeding worden uitgerust met een inventaris. Opbouw: 650.',
+    description: 'Ruime Hobby Prestige 650 met rondzit, treinzit en vast bed. Ideaal voor grote gezinnen die veel ruimte nodig hebben. Deze caravan heeft geen toiletruimte. Wordt door ons elk jaar op de camping geplaatst. Tegen een kleine vergoeding uit te rusten met een volledige inventaris. Opbouw: 650.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/hobby-650.jpg',
     ],
