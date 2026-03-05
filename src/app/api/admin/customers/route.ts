@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer } from '@/lib/db';
+import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId } from '@/lib/db';
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
 
@@ -13,9 +13,18 @@ async function hashPassword(password: string): Promise<string> {
   return `${salt}:${hashHex}`;
 }
 
-// GET - List all customers
-export async function GET() {
+// GET - List all customers or get chats for a specific customer
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const customerId = searchParams.get('customerId');
+    const action = searchParams.get('action');
+
+    if (action === 'chats' && customerId) {
+      const chats = await getChatConversationsByCustomerId(customerId);
+      return NextResponse.json({ chats });
+    }
+
     const customers = await getAllCustomers();
     return NextResponse.json({ customers });
   } catch (error) {

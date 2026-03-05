@@ -19,6 +19,10 @@ import {
   EyeOff,
   Copy,
   Shield,
+  MessageCircle,
+  ChevronRight,
+  ArrowLeft,
+  FileText,
 } from 'lucide-react';
 
 import { useAdmin } from '@/i18n/admin-context';
@@ -32,10 +36,22 @@ interface Customer {
   last_login: string | null;
 }
 
+interface ChatHistory {
+  id: string;
+  visitor_name: string | null;
+  status: string;
+  summary: string | null;
+  created_at: string;
+  last_message_at: string;
+  message_count: number;
+  last_message: string | null;
+}
+
 type ModalType = 'create' | 'edit' | 'delete' | null;
 
 export default function AdminKlanten() {
-  const { t, role } = useAdmin();
+  const { t, role, locale } = useAdmin();
+  const isNl = locale === 'nl';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,6 +78,11 @@ export default function AdminKlanten() {
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Customer detail view with communication
+  const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
+  const [customerChats, setCustomerChats] = useState<ChatHistory[]>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
+
   const fetchCustomers = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/customers');
@@ -77,6 +98,20 @@ export default function AdminKlanten() {
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
+
+  const openCustomerDetail = async (customer: Customer) => {
+    setDetailCustomer(customer);
+    setLoadingChats(true);
+    try {
+      const res = await fetch(`/api/admin/customers?action=chats&customerId=${customer.id}`);
+      const data = await res.json();
+      setCustomerChats(data.chats || []);
+    } catch {
+      setCustomerChats([]);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
   const filtered = customers.filter(c => {
     const q = search.toLowerCase();
@@ -321,7 +356,7 @@ export default function AdminKlanten() {
                     </td>
                     <td className="px-4 py-3 text-muted">{customer.email}</td>
                     <td className="px-4 py-3 text-muted">
-                      {customer.phone || '—'} </td> <td className="px-4 py-3 text-muted"> {formatDate(customer.created_at)} </td> <td className="px-4 py-3"> <div className="flex items-center gap-1.5 text-muted"> <Clock size={14} /> <span>{formatDateTime(customer.last_login)}</span> </div> </td> <td className="px-4 py-3"> <div className="flex items-center justify-end gap-1"> <button onClick={() => openEditModal(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={t("common.edit")} > <Pencil size={15} /> </button> <button onClick={() => openDeleteModal(customer)} className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title={t("common.delete")} > <Trash2 size={15} /> </button> </div> </td> </tr> ))} </tbody> </table> </div> {/* Mobile cards */} <div className="md:hidden"> {filtered.map(customer => ( <div key={customer.id} className="p-3 sm:p-4 space-y-1.5 sm:space-y-2"> <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm"> {customer.name ? customer.name .split(' ')
+                      {customer.phone || '—'} </td> <td className="px-4 py-3 text-muted"> {formatDate(customer.created_at)} </td> <td className="px-4 py-3"> <div className="flex items-center gap-1.5 text-muted"> <Clock size={14} /> <span>{formatDateTime(customer.last_login)}</span> </div> </td> <td className="px-4 py-3"> <div className="flex items-center justify-end gap-1"> <button onClick={() => openCustomerDetail(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={isNl ? 'Communicatie' : 'Communication'} > <MessageCircle size={15} /> </button> <button onClick={() => openEditModal(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={t("common.edit")} > <Pencil size={15} /> </button> <button onClick={() => openDeleteModal(customer)} className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title={t("common.delete")} > <Trash2 size={15} /> </button> </div> </td> </tr> ))} </tbody> </table> </div> {/* Mobile cards */} <div className="md:hidden"> {filtered.map(customer => ( <div key={customer.id} className="p-3 sm:p-4 space-y-1.5 sm:space-y-2"> <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm"> {customer.name ? customer.name .split(' ')
                             .map(n => n[0])
                             .join('')
                             .toUpperCase()
@@ -338,6 +373,12 @@ export default function AdminKlanten() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => openCustomerDetail(customer)}
+                      className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                    >
+                      <MessageCircle size={16} />
+                    </button>
                     <button
                       onClick={() => openEditModal(customer)}
                       className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
@@ -376,6 +417,125 @@ export default function AdminKlanten() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== CUSTOMER DETAIL PANEL ===== */}
+      {detailCustomer && (
+        <div className="fixed inset-0 z-50 flex items-stretch">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDetailCustomer(null)} />
+
+          {/* Panel */}
+          <div className="relative ml-auto w-full max-w-lg bg-white shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between">
+                <button onClick={() => setDetailCustomer(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 cursor-pointer">
+                  <ArrowLeft size={18} />
+                </button>
+                <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <User size={18} className="text-primary" />
+                  {detailCustomer.name || detailCustomer.email}
+                </h2>
+                <button onClick={() => setDetailCustomer(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 cursor-pointer">
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {/* Customer info */}
+              <div className="px-5 py-4 bg-gray-50 border-b border-gray-200">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    {detailCustomer.name
+                      ? detailCustomer.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      : detailCustomer.email[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">{detailCustomer.name || '—'}</p>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                      <Mail size={12} />
+                      <span>{detailCustomer.email}</span>
+                    </div>
+                    {detailCustomer.phone && (
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                        <Phone size={12} />
+                        <span>{detailCustomer.phone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                      <Clock size={12} />
+                      <span>{t('customers.registered')} {formatDate(detailCustomer.created_at)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Communication section */}
+              <div className="px-5 py-4">
+                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-3">
+                  <MessageCircle size={16} className="text-primary" />
+                  {isNl ? 'Communicatie' : 'Communication'}
+                  <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    {customerChats.length}
+                  </span>
+                </h3>
+
+                {loadingChats ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                  </div>
+                ) : customerChats.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <MessageCircle size={32} className="mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">{isNl ? 'Geen chatgesprekken gevonden' : 'No chat conversations found'}</p>
+                    <p className="text-xs mt-1">{isNl ? 'Gesprekken worden automatisch gekoppeld wanneer de klant ingelogd is' : 'Conversations are auto-linked when the customer is logged in'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {customerChats.map(chat => (
+                      <div key={chat.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100 hover:border-gray-200 transition-colors">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                                chat.status === 'CLOSED' ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'
+                              }`}>
+                                {chat.status === 'CLOSED' ? (isNl ? 'Gesloten' : 'Closed') : (isNl ? 'Actief' : 'Active')}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {new Date(chat.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {chat.message_count} {isNl ? 'berichten' : 'messages'}
+                              </span>
+                            </div>
+                            {chat.last_message && (
+                              <p className="text-xs text-gray-500 mt-1.5 truncate">
+                                {chat.last_message}
+                              </p>
+                            )}
+                            {chat.summary && (
+                              <div className="mt-2 bg-white rounded-lg p-2.5 border border-gray-100">
+                                <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-400 mb-1 flex items-center gap-1">
+                                  <FileText size={10} />
+                                  {isNl ? 'Samenvatting' : 'Summary'}
+                                </p>
+                                <p className="text-xs text-gray-600 whitespace-pre-line leading-relaxed">{chat.summary}</p>
+                              </div>
+                            )}
+                          </div>
+                          <ChevronRight size={14} className="text-gray-300 mt-1 shrink-0" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

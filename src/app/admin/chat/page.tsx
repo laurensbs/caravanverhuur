@@ -14,6 +14,9 @@ import {
   Mail,
   Globe,
   Circle,
+  Trash2,
+  Link2,
+  FileText,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 
@@ -23,6 +26,8 @@ interface ChatConversation {
   visitor_name: string | null;
   visitor_email: string | null;
   visitor_phone: string | null;
+  customer_id: string | null;
+  summary: string | null;
   status: string;
   needs_human: boolean;
   assigned_to: string | null;
@@ -136,6 +141,17 @@ export default function AdminChatPage() {
   /* ── Close conversation ─────────── */
   const handleClose = async (convId: string) => {
     try {
+      // Generate summary from user messages before closing
+      const conv = messages.filter(m => m.role === 'user').map(m => m.message);
+      if (conv.length > 0) {
+        const summary = conv.slice(0, 10).map((msg, i) => `${i + 1}. ${msg.length > 80 ? msg.slice(0, 80) + '...' : msg}`).join('\n');
+        await fetch('/api/admin/chat', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversationId: convId, summary }),
+        });
+      }
+
       await fetch('/api/admin/chat', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -143,6 +159,21 @@ export default function AdminChatPage() {
       });
       fetchConversations();
       if (activeConv?.id === convId) setActiveConv(null);
+    } catch { /* silent */ }
+  };
+
+  /* ── Delete conversation ────────── */
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const handleDelete = async (convId: string) => {
+    try {
+      await fetch(`/api/admin/chat?id=${convId}`, { method: 'DELETE' });
+      fetchConversations();
+      if (activeConv?.id === convId) {
+        setActiveConv(null);
+        setMessages([]);
+      }
+      setDeleteConfirm(null);
     } catch { /* silent */ }
   };
 
@@ -254,44 +285,78 @@ export default function AdminChatPage() {
               const badge = getStatusBadge(conv);
               const isActive = activeConv?.id === conv.id;
               return (
-                <button
+                <div
                   key={conv.id}
-                  onClick={() => setActiveConv(conv)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors cursor-pointer ${
+                  className={`relative w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors ${
                     isActive ? 'bg-primary/5 border-l-2 border-l-primary' : ''
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <User className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
-                          {conv.visitor_name || (isNl ? 'Bezoeker' : 'Visitor')}
+                  <button
+                    onClick={() => setActiveConv(conv)}
+                    className="w-full text-left cursor-pointer"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <User className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1.5">
+                            {conv.visitor_name || (isNl ? 'Bezoeker' : 'Visitor')}
+                            {conv.customer_id && (
+                              <span title={isNl ? 'Gekoppelde klant' : 'Linked customer'}><Link2 className="w-3 h-3 text-green-600" /></span>
+                            )}
+                          </p>
+                          <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                          {conv.last_message || (isNl ? 'Nieuw gesprek' : 'New conversation')}
                         </p>
-                        <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
+                            {badge.label}
+                          </span>
+                          {conv.visitor_email && <Mail className="w-3 h-3 text-gray-400" />}
+                          {conv.visitor_phone && <Phone className="w-3 h-3 text-gray-400" />}
+                          {conv.summary && <span title={isNl ? 'Samenvatting beschikbaar' : 'Summary available'}><FileText className="w-3 h-3 text-blue-400" /></span>}
+                          <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                            <Globe className="w-2.5 h-2.5" />
+                            {conv.locale?.toUpperCase()}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">
-                        {conv.last_message || (isNl ? 'Nieuw gesprek' : 'New conversation')}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
-                          {badge.label}
-                        </span>
-                        {conv.visitor_email && <Mail className="w-3 h-3 text-gray-400" />}
-                        {conv.visitor_phone && <Phone className="w-3 h-3 text-gray-400" />}
-                        <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
-                          <Globe className="w-2.5 h-2.5" />
-                          {conv.locale?.toUpperCase()}
-                        </span>
-                      </div>
+                      {conv.needs_human && conv.status === 'ACTIVE' && (
+                        <Circle className="w-2.5 h-2.5 text-red-500 fill-red-500 shrink-0 mt-2 animate-pulse" />
+                      )}
                     </div>
-                    {conv.needs_human && conv.status === 'ACTIVE' && (
-                      <Circle className="w-2.5 h-2.5 text-red-500 fill-red-500 shrink-0 mt-2 animate-pulse" />
-                    )}
-                  </div>
-                </button>
+                  </button>
+                  {/* Delete button */}
+                  {deleteConfirm === conv.id ? (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-white rounded-lg shadow-md border border-gray-200 p-1.5 z-10">
+                      <button
+                        onClick={() => handleDelete(conv.id)}
+                        className="px-2 py-1 text-[10px] font-medium bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                      >
+                        {isNl ? 'Verwijder' : 'Delete'}
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200 cursor-pointer"
+                      >
+                        {isNl ? 'Annuleer' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteConfirm(conv.id); }}
+                      className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      style={{ opacity: isActive ? 1 : undefined }}
+                      title={isNl ? 'Verwijder gesprek' : 'Delete conversation'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               );
             })
           )}
@@ -328,6 +393,12 @@ export default function AdminChatPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {activeConv.customer_id && (
+                  <span className="px-2 py-1 text-[10px] font-medium bg-green-50 text-green-700 rounded-full flex items-center gap-1">
+                    <Link2 className="w-3 h-3" />
+                    {isNl ? 'Klant' : 'Customer'}
+                  </span>
+                )}
                 {activeConv.status === 'ACTIVE' && (
                   <button
                     onClick={() => handleClose(activeConv.id)}
@@ -337,6 +408,13 @@ export default function AdminChatPage() {
                     {isNl ? 'Sluiten' : 'Close'}
                   </button>
                 )}
+                <button
+                  onClick={() => setDeleteConfirm(activeConv.id)}
+                  className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {isNl ? 'Verwijder' : 'Delete'}
+                </button>
               </div>
             </div>
 
@@ -399,6 +477,46 @@ export default function AdminChatPage() {
             {activeConv.status === 'CLOSED' && (
               <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm text-gray-400">
                 {isNl ? 'Dit gesprek is gesloten' : 'This conversation is closed'}
+                {activeConv.summary && (
+                  <div className="mt-2 text-left bg-white rounded-lg p-3 border border-gray-200">
+                    <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                      <FileText className="w-3 h-3" />
+                      {isNl ? 'Samenvatting' : 'Summary'}
+                    </p>
+                    <p className="text-xs text-gray-600 whitespace-pre-line">{activeConv.summary}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Delete confirmation overlay */}
+            {deleteConfirm === activeConv.id && (
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-10">
+                <div className="bg-white rounded-xl shadow-xl p-5 max-w-xs mx-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Trash2 className="w-5 h-5 text-red-500" />
+                    <h3 className="font-bold text-gray-900 text-sm">
+                      {isNl ? 'Gesprek verwijderen?' : 'Delete conversation?'}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-4">
+                    {isNl ? 'Dit gesprek en alle berichten worden permanent verwijderd. Dit kan niet ongedaan worden gemaakt.' : 'This conversation and all messages will be permanently deleted.'}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDeleteConfirm(null)}
+                      className="flex-1 px-3 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 cursor-pointer"
+                    >
+                      {isNl ? 'Annuleer' : 'Cancel'}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(activeConv.id)}
+                      className="flex-1 px-3 py-2 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer"
+                    >
+                      {isNl ? 'Verwijder' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </>

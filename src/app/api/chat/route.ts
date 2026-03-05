@@ -5,6 +5,8 @@ import {
   getChatConversation,
   markConversationNeedsHuman,
   updateConversationVisitor,
+  linkChatToCustomer,
+  getCustomerBySessionToken,
   setupDatabase,
 } from '@/lib/db';
 
@@ -15,20 +17,49 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === 'create') {
-      // Create new conversation
+      // Check if there's a logged-in customer
+      const sessionToken = request.cookies.get('customer_session')?.value;
+      let customer = null;
+      if (sessionToken) {
+        try {
+          customer = await getCustomerBySessionToken(sessionToken);
+        } catch { /* ignore */ }
+      }
+
       try {
         const result = await createChatConversation({
-          visitorName: body.visitorName,
+          visitorName: customer?.name || body.visitorName,
+          visitorEmail: customer?.email,
+          visitorPhone: customer?.phone,
           locale: body.locale || 'nl',
         });
-        return NextResponse.json(result, { status: 201 });
+
+        // Link to customer if logged in
+        if (customer) {
+          await linkChatToCustomer(result.id, customer.id);
+        }
+
+        return NextResponse.json({
+          ...result,
+          customer: customer ? { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone } : null,
+        }, { status: 201 });
       } catch {
         await setupDatabase();
         const result = await createChatConversation({
-          visitorName: body.visitorName,
+          visitorName: customer?.name || body.visitorName,
+          visitorEmail: customer?.email,
+          visitorPhone: customer?.phone,
           locale: body.locale || 'nl',
         });
-        return NextResponse.json(result, { status: 201 });
+
+        if (customer) {
+          await linkChatToCustomer(result.id, customer.id);
+        }
+
+        return NextResponse.json({
+          ...result,
+          customer: customer ? { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone } : null,
+        }, { status: 201 });
       }
     }
 

@@ -713,6 +713,7 @@ export default function ChatBot() {
   const [humanWaitStart, setHumanWaitStart] = useState<number | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
   const [showContactForm, setShowContactForm] = useState(false);
+  const [loggedInCustomer, setLoggedInCustomer] = useState<{ id: string; name: string; email: string; phone?: string } | null>(null);
   const [convContext, setConvContext] = useState<ConversationContext>({
     lastTopic: null,
     mentionedPersons: null,
@@ -744,20 +745,53 @@ export default function ChatBot() {
   // Init conversation
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const greeting = isNl
-        ? 'Hoi! 👋 Ik ben **Luna**, je persoonlijke assistent bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je beter helpen! 😊'
-        : isEs
-        ? '¡Hola! 👋 Soy **Luna**, tu asistente personal. ¿Como te llamas? 😊'
-        : "Hi! 👋 I'm **Luna**, your personal assistant at Caravanverhuur Spanje.\n\nWhat's your name? 😊";
-      setMessages([{ id: '1', role: 'bot', text: greeting, timestamp: new Date() }]);
       fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create', locale }),
       })
         .then(r => r.json())
-        .then(data => { if (data.id) setConversationId(data.id); })
-        .catch(() => {});
+        .then(data => {
+          if (data.id) setConversationId(data.id);
+          // If the customer is logged in, auto-fill their data
+          if (data.customer) {
+            setLoggedInCustomer(data.customer);
+            setUserName(data.customer.name || '');
+            setContactForm({
+              name: data.customer.name || '',
+              email: data.customer.email || '',
+              phone: data.customer.phone || '',
+            });
+            const greeting = isNl
+              ? `Hoi **${data.customer.name}**! 👋 Welkom terug! Ik ben **Luna**, je persoonlijke assistent.\n\nJe bent ingelogd, dus ik heb je gegevens al. Waar kan ik je mee helpen? 😊`
+              : isEs
+              ? `¡Hola **${data.customer.name}**! 👋 ¡Bienvenido de nuevo! Soy **Luna**. ¿En qué puedo ayudarte? 😊`
+              : `Hi **${data.customer.name}**! 👋 Welcome back! I'm **Luna**. How can I help you? 😊`;
+            setMessages([{
+              id: '1', role: 'bot', text: greeting,
+              quickReplies: isNl
+                ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+                : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+                : ['What does it cost?', 'Which caravans?', 'How to book?'],
+              timestamp: new Date(),
+            }]);
+          } else {
+            const greeting = isNl
+              ? 'Hoi! 👋 Ik ben **Luna**, je persoonlijke assistent bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je beter helpen! 😊'
+              : isEs
+              ? '¡Hola! 👋 Soy **Luna**, tu asistente personal. ¿Como te llamas? 😊'
+              : "Hi! 👋 I'm **Luna**, your personal assistant at Caravanverhuur Spanje.\n\nWhat's your name? 😊";
+            setMessages([{ id: '1', role: 'bot', text: greeting, timestamp: new Date() }]);
+          }
+        })
+        .catch(() => {
+          const greeting = isNl
+            ? 'Hoi! 👋 Ik ben **Luna**, je persoonlijke assistent bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je beter helpen! 😊'
+            : isEs
+            ? '¡Hola! 👋 Soy **Luna**, tu asistente personal. ¿Como te llamas? 😊'
+            : "Hi! 👋 I'm **Luna**, your personal assistant at Caravanverhuur Spanje.\n\nWhat's your name? 😊";
+          setMessages([{ id: '1', role: 'bot', text: greeting, timestamp: new Date() }]);
+        });
     }
   }, [isOpen, locale, messages.length, isNl, isEs]);
 

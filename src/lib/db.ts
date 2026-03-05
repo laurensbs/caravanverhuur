@@ -251,6 +251,8 @@ export async function setupDatabase() {
       visitor_name TEXT,
       visitor_email TEXT,
       visitor_phone TEXT,
+      customer_id TEXT,
+      summary TEXT,
       status TEXT NOT NULL DEFAULT 'ACTIVE',
       needs_human BOOLEAN DEFAULT false,
       assigned_to TEXT,
@@ -259,6 +261,14 @@ export async function setupDatabase() {
       last_message_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Migration: add customer_id and summary to chat_conversations
+  try {
+    await sql`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS customer_id TEXT`;
+    await sql`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS summary TEXT`;
+  } catch {
+    // ignore
+  }
 
   // Chat messages table
   await sql`
@@ -1394,4 +1404,46 @@ export async function updateConversationStatus(id: string, status: string, assig
   } else {
     await sql`UPDATE chat_conversations SET status = ${status} WHERE id = ${id}`;
   }
+}
+
+export async function deleteChatConversation(id: string) {
+  // Messages are deleted via CASCADE
+  await sql`DELETE FROM chat_conversations WHERE id = ${id}`;
+}
+
+export async function linkChatToCustomer(conversationId: string, customerId: string) {
+  await sql`UPDATE chat_conversations SET customer_id = ${customerId} WHERE id = ${conversationId}`;
+}
+
+export async function getChatConversationsByCustomerId(customerId: string) {
+  const result = await sql`
+    SELECT c.*, 
+      (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id = c.id) as message_count,
+      (SELECT message FROM chat_messages m WHERE m.conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message
+    FROM chat_conversations c
+    WHERE c.customer_id = ${customerId}
+    ORDER BY c.created_at DESC
+  `;
+  return result.rows;
+}
+
+export async function getChatSummaryForCustomer(customerId: string) {
+  // Get all user messages from conversations linked to this customer
+  const result = await sql`
+    SELECT m.message, m.created_at, c.id as conversation_id
+    FROM chat_messages m
+    JOIN chat_conversations c ON m.conversation_id = c.id
+    WHERE c.customer_id = ${customerId} AND m.role = 'user'
+    ORDER BY m.created_at ASC
+  `;
+  return result.rows;
+}
+
+export async function updateChatSummary(conversationId: string, summary: string) {
+  await sql`UPDATE chat_conversations SET summary = ${summary} WHERE id = ${conversationId}`;
+}
+
+export async function getCustomerByEmailSimple(email: string) {
+  const result = await sql`SELECT id, email, name, phone FROM customers WHERE LOWER(email) = LOWER(${email})`;
+  return result.rows[0] || null;
 }

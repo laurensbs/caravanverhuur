@@ -4,6 +4,8 @@ import {
   getChatConversation,
   addChatMessage,
   updateConversationStatus,
+  deleteChatConversation,
+  updateChatSummary,
   setupDatabase,
 } from '@/lib/db';
 
@@ -59,20 +61,45 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: Update conversation status
+// PATCH: Update conversation status or summary
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { conversationId, status, assignedTo } = body;
+    const { conversationId, status, assignedTo, summary } = body;
 
     if (!conversationId) {
       return NextResponse.json({ error: 'Missing conversationId' }, { status: 400 });
     }
 
-    await updateConversationStatus(conversationId, status || 'CLOSED', assignedTo);
+    if (summary !== undefined) {
+      await updateChatSummary(conversationId, summary);
+    }
+
+    if (status) {
+      await updateConversationStatus(conversationId, status, assignedTo);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('PATCH /api/admin/chat error:', error);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  }
+}
+
+// DELETE: Delete a chat conversation
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    }
+
+    await deleteChatConversation(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/admin/chat error:', error);
     return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }
