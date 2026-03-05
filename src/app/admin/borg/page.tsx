@@ -703,6 +703,15 @@ export default function AdminBorgPage() {
                             <ExternalLink size={14} />
                             Bekijk klantpagina
                           </a>
+                          {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
+                            <a
+                              href={`/admin/inspectie/${checklist.id}`}
+                              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors"
+                            >
+                              <ClipboardCheck size={14} />
+                              📱 Mobiele inspectie
+                            </a>
+                          )}
                         </div>
                       </div>
                     </motion.div>

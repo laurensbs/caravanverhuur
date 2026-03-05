@@ -173,6 +173,11 @@ function MijnAccountContent() {
   // Payment
   const [payingId, setPayingId] = useState<string | null>(null);
 
+  // Cancel booking
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ refundPercentage: number; refundMessage: string } | null>(null);
+
   // Newsletter subscription
   const [newsletterUnsubscribed, setNewsletterUnsubscribed] = useState(false);
   const [togglingNewsletter, setTogglingNewsletter] = useState(false);
@@ -298,6 +303,29 @@ function MijnAccountContent() {
       }
     } catch { /* ignore */ }
     setPayingId(null);
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    setCancellingBookingId(bookingId);
+    try {
+      const res = await fetch('/api/bookings/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCancelResult({ refundPercentage: data.refundPercentage, refundMessage: data.refundMessage });
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'GEANNULEERD' } : b));
+      } else {
+        alert(data.error || 'Er is een fout opgetreden');
+      }
+    } catch {
+      alert('Er is een fout opgetreden');
+    } finally {
+      setCancellingBookingId(null);
+      setCancelConfirmId(null);
+    }
   };
 
   if (loading) {
@@ -771,7 +799,29 @@ function MijnAccountContent() {
                             {!isPast && caravan?.photos?.[0] && (
                               <div className="mt-3 flex items-center justify-between">
                                 <span className="font-mono text-xs text-muted">{booking.reference}</span>
-                                <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
+                                <div className="flex items-center gap-3">
+                                  {booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
+                                    <button
+                                      onClick={() => setCancelConfirmId(booking.id)}
+                                      className="text-[11px] text-muted hover:text-danger transition-colors cursor-pointer"
+                                    >
+                                      Annuleren
+                                    </button>
+                                  )}
+                                  <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Cancel button for past/no-image cards */}
+                            {(isPast || !caravan?.photos?.[0]) && booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
+                              <div className="mt-3 pt-2">
+                                <button
+                                  onClick={() => setCancelConfirmId(booking.id)}
+                                  className="text-[11px] text-muted hover:text-danger transition-colors cursor-pointer"
+                                >
+                                  Boeking annuleren
+                                </button>
                               </div>
                             )}
                           </div>
@@ -1392,27 +1442,32 @@ function MijnAccountContent() {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className={`text-sm font-medium ${newsletterUnsubscribed ? 'text-muted' : 'text-primary'}`}>
-                          {newsletterUnsubscribed ? 'Uitgeschreven' : 'Ingeschreven'}
+                          {togglingNewsletter ? 'Even geduld...' : newsletterUnsubscribed ? 'Uitgeschreven' : 'Ingeschreven'}
                         </span>
                       </div>
                       <button
                         onClick={async () => {
                           setTogglingNewsletter(true);
+                          const newValue = !newsletterUnsubscribed;
                           try {
                             const res = await fetch('/api/auth/me', {
                               method: 'PATCH',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ newsletterUnsubscribed: !newsletterUnsubscribed }),
+                              body: JSON.stringify({ newsletterUnsubscribed: newValue }),
                             });
                             if (res.ok) {
-                              setNewsletterUnsubscribed(!newsletterUnsubscribed);
+                              setNewsletterUnsubscribed(newValue);
+                            } else {
+                              alert('Kon nieuwsbrief voorkeur niet opslaan. Probeer opnieuw.');
                             }
-                          } catch { /* ignore */ }
+                          } catch {
+                            alert('Netwerkfout. Probeer opnieuw.');
+                          }
                           setTogglingNewsletter(false);
                         }}
                         disabled={togglingNewsletter}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
-                          !newsletterUnsubscribed ? 'bg-primary' : 'bg-muted'
+                          !newsletterUnsubscribed ? 'bg-primary' : 'bg-gray-300'
                         }`}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
@@ -1496,6 +1551,103 @@ function MijnAccountContent() {
       </div>
       {/* Bottom spacer for mobile */}
       <div className="h-24 lg:hidden" />
+
+      {/* Cancel booking confirmation modal */}
+      <AnimatePresence>
+        {cancelConfirmId && !cancelResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setCancelConfirmId(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 bg-danger/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <XCircle size={24} className="text-danger" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground text-center mb-2">Boeking annuleren?</h3>
+              {(() => {
+                const booking = bookings.find(b => b.id === cancelConfirmId);
+                if (!booking) return null;
+                const checkIn = new Date(booking.check_in);
+                const daysUntil = Math.ceil((checkIn.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                let refundText = '';
+                let refundColor = '';
+                if (daysUntil > 30) { refundText = '100% restitutie aanbetaling'; refundColor = 'text-primary'; }
+                else if (daysUntil >= 14) { refundText = '50% restitutie aanbetaling'; refundColor = 'text-primary'; }
+                else { refundText = 'Geen restitutie mogelijk'; refundColor = 'text-danger'; }
+                return (
+                  <div className="text-center space-y-2 mb-5">
+                    <p className="text-sm text-muted">
+                      Boeking <strong className="text-foreground">{booking.reference}</strong> ({daysUntil} dagen voor aankomst)
+                    </p>
+                    <p className={`text-sm font-semibold ${refundColor}`}>{refundText}</p>
+                    <p className="text-xs text-muted">Dit kan niet ongedaan worden gemaakt.</p>
+                  </div>
+                );
+              })()}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCancelConfirmId(null)}
+                  className="flex-1 py-2.5 text-sm font-semibold text-foreground bg-surface rounded-xl transition-colors cursor-pointer"
+                >
+                  Terug
+                </button>
+                <button
+                  onClick={() => handleCancelBooking(cancelConfirmId)}
+                  disabled={cancellingBookingId === cancelConfirmId}
+                  className="flex-1 py-2.5 text-sm font-semibold text-white bg-danger rounded-xl transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {cancellingBookingId === cancelConfirmId ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  Annuleren
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel result modal */}
+      <AnimatePresence>
+        {cancelResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setCancelResult(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={24} className="text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-2">Boeking geannuleerd</h3>
+              <p className="text-sm text-muted mb-4">{cancelResult.refundMessage}</p>
+              <button
+                onClick={() => setCancelResult(null)}
+                className="w-full py-2.5 text-sm font-semibold text-white bg-primary rounded-xl transition-colors cursor-pointer"
+              >
+                Sluiten
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
