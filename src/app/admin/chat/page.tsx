@@ -67,7 +67,11 @@ export default function AdminChatPage() {
     try {
       const res = await fetch('/api/admin/chat');
       const data = await res.json();
-      if (Array.isArray(data)) setConversations(data);
+      if (Array.isArray(data)) {
+        setConversations(data);
+      } else if (data.conversations && Array.isArray(data.conversations)) {
+        setConversations(data.conversations);
+      }
     } catch { /* silent */ }
   }, []);
 
