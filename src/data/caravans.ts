@@ -1,4 +1,4 @@
-export type CaravanType = 'FAMILIE' | 'COMPACT' | 'LUXE';
+export type CaravanType = 'FAMILIE' | 'COMPACT';
 
 export interface Caravan {
   id: string;

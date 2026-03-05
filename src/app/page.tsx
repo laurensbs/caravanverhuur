@@ -455,7 +455,6 @@ export default function HomePage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/20" />
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs sm:text-xs font-semibold text-white shadow-md ${
-                      caravan.type === 'LUXE' ? 'bg-primary-dark' :
                       caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
                     }`}>
                       {caravan.type}

@@ -16,13 +16,11 @@ import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
 /* ------------------------------------------------------------------ */
 
 const caravansByType = {
-  LUXE: caravans.filter(c => c.type === 'LUXE'),
   FAMILIE: caravans.filter(c => c.type === 'FAMILIE'),
   COMPACT: caravans.filter(c => c.type === 'COMPACT'),
 };
 
 const typeLabel: Record<string, { name: string; color: string }> = {
-  LUXE: { name: 'Luxe', color: 'text-primary-dark' },
   FAMILIE: { name: 'Familie', color: 'text-primary' },
   COMPACT: { name: 'Compact', color: 'text-primary-dark' },
 };
@@ -34,7 +32,7 @@ destinations.forEach(d => {
 });
 const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'];
 
-const featuredCaravan = caravansByType.LUXE[0] || caravans[0];
+const featuredCaravan = caravansByType.FAMILIE[0] || caravans[0];
 const featuredDest = destinations.find(d => d.slug === 'tossa-de-mar') || destinations[0];
 
 /* ------------------------------------------------------------------ */
@@ -251,11 +249,11 @@ export default function Header() {
                       {t('nav.viewAll')} <ArrowRight size={12} />
                     </Link>
                   </div>
-                  <div className="grid grid-cols-4 gap-8">
-                    {(['LUXE', 'FAMILIE', 'COMPACT'] as const).map(type => (
+                  <div className="grid grid-cols-3 gap-8">
+                    {(['FAMILIE', 'COMPACT'] as const).map(type => (
                       <div key={type}>
                         <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${typeLabel[type].color}`}>
-                          {type === 'LUXE' ? t('nav.luxe') : type === 'FAMILIE' ? t('nav.familie') : t('nav.compact')}
+                          {type === 'FAMILIE' ? t('nav.familie') : t('nav.compact')}
                         </p>
                         <div className="space-y-0.5">
                           {caravansByType[type].map(c => (

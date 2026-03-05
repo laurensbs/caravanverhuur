@@ -619,7 +619,6 @@ function BoekenContent() {
                                       <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
                                       <div className="absolute top-3 left-3">
                                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md ${
-                                          c.type === 'LUXE' ? 'bg-primary' :
                                           c.type === 'FAMILIE' ? 'bg-primary' :
                                           'bg-primary'
                                         }`}>{c.type}</span>
@@ -804,7 +803,6 @@ function BoekenContent() {
                             <div className="absolute inset-0 bg-black/40" />
                             <div className="absolute bottom-4 left-5 right-5">
                               <span className={`inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 ${
-                                chosenCaravan.type === 'LUXE' ? 'bg-primary' :
                                 chosenCaravan.type === 'FAMILIE' ? 'bg-primary' :
                                 'bg-primary'
                               }`}>{chosenCaravan.type}</span>
