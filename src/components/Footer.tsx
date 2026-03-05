@@ -7,7 +7,7 @@ import { useLanguage } from '@/i18n/context';
 
 const GOOGLE_REVIEW_URL = 'https://www.google.com/maps/place/Caravan+storage+spain/@41.9512941,3.091582,17z/data=!4m6!3m5!1s0x12baff513f9bfd3b:0xd29f4672d9b15353!8m2!3d41.9512941!4d3.091582!16s%2Fg%2F11cs3nd4xr';
 
-const GoogleStars = ({ size = 14, rating = 5.0, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
+const GoogleStars = ({ size = 14, rating = 4.7, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
   <a
     href={GOOGLE_REVIEW_URL}
     target="_blank"
@@ -21,9 +21,19 @@ const GoogleStars = ({ size = 14, rating = 5.0, showLabel = true }: { size?: num
       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
     </svg>
     <span className="flex items-center gap-0.5">
-      {[...Array(5)].map((_, i) => (
-        <Star key={i} size={size} className="text-amber-400 fill-amber-400" />
-      ))}
+      {[...Array(5)].map((_, i) => {
+        const fill = Math.min(1, Math.max(0, rating - i));
+        if (fill >= 1) return <Star key={i} size={size} className="text-amber-400 fill-amber-400" />;
+        if (fill <= 0) return <Star key={i} size={size} className="text-amber-400/30" />;
+        return (
+          <span key={i} className="relative" style={{ width: size, height: size }}>
+            <Star size={size} className="absolute text-amber-400/30" />
+            <span className="absolute overflow-hidden" style={{ width: `${fill * 100}%` }}>
+              <Star size={size} className="text-amber-400 fill-amber-400" />
+            </span>
+          </span>
+        );
+      })}
     </span>
     {showLabel && <span className="font-bold text-foreground text-xs ml-0.5">{rating}</span>}
   </a>

@@ -26,10 +26,20 @@ export default function WeatherBar() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-0.5 transition-opacity hover:opacity-80"
           >
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={11} className="text-amber-400 fill-amber-400" />
-            ))}
-            <span className="text-white/90 font-semibold text-xs ml-0.5">5.0</span>
+            {[...Array(5)].map((_, i) => {
+              const fill = Math.min(1, Math.max(0, 4.7 - i));
+              if (fill >= 1) return <Star key={i} size={11} className="text-amber-400 fill-amber-400" />;
+              if (fill <= 0) return <Star key={i} size={11} className="text-amber-400/30" />;
+              return (
+                <span key={i} className="relative" style={{ width: 11, height: 11 }}>
+                  <Star size={11} className="absolute text-amber-400/30" />
+                  <span className="absolute overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                    <Star size={11} className="text-amber-400 fill-amber-400" />
+                  </span>
+                </span>
+              );
+            })}
+            <span className="text-white/90 font-semibold text-xs ml-0.5">4.7</span>
           </a>
           <span className="text-white/50 mx-0.5 hidden sm:inline">·</span>
           <span className="text-white/85 hidden sm:inline">{t('weather.barCta')}</span>
