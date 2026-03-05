@@ -180,10 +180,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             >
               {/* Role selector */}
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">
-                  <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                  {lt('auth.username')}
-                </label>
                 <div className="grid grid-cols-2 gap-3">
                   {(['admin', 'staff'] as const).map((u) => (
                     <button
