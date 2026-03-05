@@ -126,7 +126,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-2xl p-6 border">
+              <div className="bg-surface rounded-2xl p-6">
                 <h3 className="font-semibold text-foreground mb-3">{t('contact.partOf')}</h3>
                 <a
                   href="https://caravanstalling-spanje.com"
@@ -138,12 +138,7 @@ export default function ContactPage() {
                   Caravanstalling-Spanje.com
                 </a>
                 <p className="text-sm text-muted mt-2">
-                  {t('contact.partOfDesc')}
-                </p>
-              </div>
-
-              <div className="bg-primary/10 rounded-2xl p-6 border border-primary/20">
-                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-primary" />{t('contact.availability')}</h3>
+                  {t('contact.partOfDesc')} </p> </div> <div className="bg-primary/10 rounded-2xl p-6 border-primary/20"> <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Clock size={18} className="text-primary" />{t('contact.availability')}</h3>
                 <div className="text-sm text-muted space-y-1">
                   <p>{t('contact.monFri')}</p>
                   <p>{t('contact.sat')}</p>
@@ -173,53 +168,12 @@ export default function ContactPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="lg:col-span-2"
             >
-              <div className="bg-white rounded-2xl p-8 shadow-sm border">
+              <div className="bg-white rounded-2xl p-8 shadow-sm">
                 <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.sendMessage')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.nameLabel')} *</label>
-                      <input
-                        type="text"
-                        required
-                        value={form.name}
-                        onChange={e => setForm({ ...form, name: e.target.value })}
-                        placeholder="Jan Jansen"
-                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.emailLabel')} *</label>
-                      <input
-                        type="email"
-                        required
-                        value={form.email}
-                        onChange={e => setForm({ ...form, email: e.target.value })}
-                        placeholder="jan@voorbeeld.nl"
-                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.phoneLabel')}</label>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={e => setForm({ ...form, phone: e.target.value })}
-                        placeholder="+31 6 12345678"
-                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.subjectLabel')} *</label>
-                      <select
-                        required
-                        value={form.subject}
-                        onChange={e => setForm({ ...form, subject: e.target.value })}
-                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
-                      >
-                        <option value="">{t('contact.subjectPlaceholder')}</option>
+                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.nameLabel')} *</label> <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Jan Jansen" className="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" /> </div> <div> <label className="block text-sm font-medium text-foreground mb-2">{t('contact.emailLabel')} *</label> <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@voorbeeld.nl" className="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" /> </div> </div> <div className="grid grid-cols-1 sm:grid-cols-2 gap-5"> <div> <label className="block text-sm font-medium text-foreground mb-2">{t('contact.phoneLabel')}</label> <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+31 6 12345678" className="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" /> </div> <div> <label className="block text-sm font-medium text-foreground mb-2">{t('contact.subjectLabel')} *</label> <select required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white" > <option value="">{t('contact.subjectPlaceholder')}</option>
                         <option value="boeking">{t('contact.subjectBooking')}</option>
                         <option value="caravans">{t('contact.subjectCaravans')}</option>
                         <option value="prijzen">{t('contact.subjectPrices')}</option>
@@ -235,21 +189,7 @@ export default function ContactPage() {
                       required
                       value={form.message}
                       onChange={e => setForm({ ...form, message: e.target.value })}
-                      placeholder={t('contact.messagePlaceholder')}
-                      rows={5}
-                      className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
-                    />
-                  </div>
-                  {submitError && <p className="text-danger text-sm mb-2">{submitError}</p>}
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-primary disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md"
-                  >
-                    {submitting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        {t('contact.sending')}
+                      placeholder={t('contact.messagePlaceholder')} rows={5} className="w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" /> </div> {submitError && <p className="text-danger text-sm mb-2">{submitError}</p>} <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md" > {submitting ? ( <> <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('contact.sending')}
                       </>
                     ) : (
                       <>

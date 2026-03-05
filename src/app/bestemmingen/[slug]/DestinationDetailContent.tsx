@@ -168,26 +168,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             </div>
 
             <div className="bg-white rounded-2xl p-5">
-              <h3 className="font-bold text-foreground mb-3">{t('destinations.allDestinations')}</h3>
-              <div className="space-y-2">
-                {otherDestinations.map(d => (
-                  <Link
-                    key={d.id}
-                    href={`/bestemmingen/${d.slug}`}
-                    className="flex items-center gap-3 py-2 rounded-lg px-2 -mx-2 transition-colors"
-                  >
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
-                      <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover" unoptimized />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-foreground">{d.name}</div>
-                      <div className="text-xs text-muted">{d.region}</div>
-                    </div>
-                    <ChevronRight size={14} className="text-border shrink-0" />
-                  </Link>
-                ))}
-                <Link href="/bestemmingen" className="block text-center text-sm text-primary font-medium pt-2">
-                  {t('destinations.allDestinations')} →
+              <h3 className="font-bold text-foreground mb-3">{t('destinations.allDestinations')}</h3> <div className="space-y-2"> {otherDestinations.map(d => ( <Link key={d.id} href={`/bestemmingen/${d.slug}`} className="flex items-center gap-3 py-2 rounded-lg px-2 -mx-2 transition-colors" > <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0"> <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover" unoptimized /> </div> <div className="flex-1 min-w-0"> <div className="text-sm font-semibold text-foreground">{d.name}</div> <div className="text-xs text-muted">{d.region}</div> </div> <ChevronRight size={14} className="text-muted shrink-0" /> </Link> ))} <Link href="/bestemmingen" className="block text-center text-sm text-primary font-medium pt-2"> {t('destinations.allDestinations')} →
                 </Link>
               </div>
             </div>

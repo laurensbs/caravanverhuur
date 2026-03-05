@@ -44,7 +44,7 @@ function MobileSheet({ open, onClose, title, children }: {
               <div className="w-10 h-1 bg-gray-300 rounded-full" />
             </div>
             {/* Header */}
-            <div className="flex items-center justify-between px-5 pb-3 border-b">
+            <div className="flex items-center justify-between px-5 pb-3">
               <h3 className="text-base font-bold text-foreground">{title}</h3>
               <button onClick={onClose} className="w-8 h-8 rounded-full bg-surface flex items-center justify-center">
                 <X size={16} className="text-muted" />
@@ -134,7 +134,7 @@ export default function BookingWidget() {
   /* ---- Shared camping list content ---- */
   const campingListContent = (
     <>
-      <div className="p-3 border-b">
+      <div className="p-3">
         <div className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2.5">
           <Search size={16} className="text-muted shrink-0" />
           <input
@@ -154,19 +154,7 @@ export default function BookingWidget() {
       </div>
       <div>
         {filteredCampings.length === 0 ? (
-          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div>
-        ) : (
-          filteredCampings.map(c => {
-            const isSelected = campingId === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => { setCampingId(c.id); setCampingOpen(false); setCampingSearch(''); }}
-                className={`w-full text-left px-5 py-3.5 flex items-center justify-between border-b border-surface last:border-0 ${
-                  isSelected ? 'bg-primary/5' : ''
-                }`}
-              >
-                <div className="min-w-0">
+          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div> ) : ( filteredCampings.map(c => { const isSelected = campingId === c.id; return ( <button key={c.id} onClick={() => { setCampingId(c.id); setCampingOpen(false); setCampingSearch(''); }} className={`w-full text-left px-5 py-3.5 flex items-center justify-between ${ isSelected ?'bg-primary/5' : '' }`} > <div className="min-w-0">
                   <div className="text-sm font-semibold text-foreground truncate">{c.name}</div>
                   <div className="text-xs text-muted mt-0.5">{c.location}</div>
                 </div>
@@ -194,7 +182,7 @@ export default function BookingWidget() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setAdults(Math.max(1, adults - 1))}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
             disabled={adults <= 1}
           >
             <Minus size={16} />
@@ -202,14 +190,14 @@ export default function BookingWidget() {
           <span className="w-8 text-center text-lg font-bold">{adults}</span>
           <button
             onClick={() => setAdults(Math.min(6, adults + 1))}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
             disabled={adults >= 6}
           >
             <Plus size={16} />
           </button>
         </div>
       </div>
-      <div className="flex items-center justify-between py-4 border-t">
+      <div className="flex items-center justify-between py-4">
         <div>
           <div className="text-sm font-semibold text-foreground">{t('booking.widgetChildren')}</div>
           <div className="text-xs text-muted">{t('booking.widgetChildrenAge')}</div>
@@ -217,7 +205,7 @@ export default function BookingWidget() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setChildren(Math.max(0, children - 1))}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
             disabled={children <= 0}
           >
             <Minus size={16} />
@@ -225,7 +213,7 @@ export default function BookingWidget() {
           <span className="w-8 text-center text-lg font-bold">{children}</span>
           <button
             onClick={() => setChildren(Math.min(6, children + 1))}
-            className="w-11 h-11 rounded-full border-2 flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
             disabled={children >= 6}
           >
             <Plus size={16} />
@@ -269,17 +257,7 @@ export default function BookingWidget() {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' as const }}
-        className="w-full"
-      >
-        <div className="bg-white/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl border border-white/20 p-3 lg:p-2">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0">
-            {/* Check-in */}
-            <div
-              onClick={openCheckIn}
-              className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r cursor-pointer rounded-xl"
-            >
-              <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.arrivalLabel')}</span>
+        transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut'as const }} className="w-full" > <div className="bg-white/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl p-3 lg:p-2"> <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0"> {/* Check-in */} <div onClick={openCheckIn} className="flex-1 px-3 lg:px-5 py-2 lg:py-3 cursor-pointer rounded-xl" > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.arrivalLabel')}</span>
               <div className="flex items-center gap-2">
                 <CalendarDays size={16} className="text-primary shrink-0" />
                 <input
@@ -287,18 +265,7 @@ export default function BookingWidget() {
                   type="date"
                   value={checkIn}
                   onChange={e => setCheckIn(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
-                />
-              </div>
-            </div>
-
-            {/* Check-out */}
-            <div
-              onClick={openCheckOut}
-              className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r cursor-pointer rounded-xl"
-            >
-              <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.departureLabel')}</span>
+                  min={new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Check-out */} <div onClick={openCheckOut} className="flex-1 px-3 lg:px-5 py-2 lg:py-3 cursor-pointer rounded-xl" > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.departureLabel')}</span>
               <div className="flex items-center gap-2">
                 <CalendarDays size={16} className="text-primary shrink-0" />
                 <input
@@ -306,19 +273,7 @@ export default function BookingWidget() {
                   type="date"
                   value={checkOut}
                   onChange={e => setCheckOut(e.target.value)}
-                  min={checkIn || new Date().toISOString().split('T')[0]}
-                  className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
-                />
-              </div>
-            </div>
-
-            {/* Camping selector */}
-            <div
-              className="flex-1 px-3 lg:px-5 py-2 lg:py-3 lg:border-r relative cursor-pointer rounded-xl"
-              ref={campingRef}
-              onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }}
-            >
-              <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetCamping')}</span>
+                  min={checkIn || new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Camping selector */} <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 relative cursor-pointer rounded-xl" ref={campingRef} onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }} > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetCamping')}</span>
               <button className="flex items-center gap-2 w-full text-left min-w-0">
                 <MapPin size={16} className="text-primary shrink-0" />
                 <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
@@ -332,7 +287,7 @@ export default function BookingWidget() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute left-0 right-0 lg:left-auto lg:right-auto lg:w-96 top-full mt-2 bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden"
+                  className="absolute left-0 right-0 lg:left-auto lg:right-auto lg:w-96 top-full mt-2 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
                 >
                   {campingListContent}
                 </motion.div>
@@ -359,7 +314,7 @@ export default function BookingWidget() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute left-0 right-0 lg:left-auto lg:right-0 lg:w-72 top-full mt-2 bg-white rounded-2xl shadow-2xl border z-50 p-4"
+                  className="absolute left-0 right-0 lg:left-auto lg:right-0 lg:w-72 top-full mt-2 bg-white rounded-2xl shadow-2xl z-50 p-4"
                 >
                   {guestsContent}
                 </motion.div>

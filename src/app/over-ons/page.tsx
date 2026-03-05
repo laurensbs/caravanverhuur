@@ -131,7 +131,7 @@ export default function OverOnsPage() {
                 key={i}
                 variants={fadeUp}
                 custom={i}
-                className="bg-white rounded-2xl p-6 shadow-sm border text-center transition-all duration-300"
+                className="bg-white rounded-2xl p-6 shadow-sm text-center transition-all duration-300"
               >
                 <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   {item.icon}
@@ -225,7 +225,7 @@ export default function OverOnsPage() {
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub') },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub') },
             ].map((stat, i) => (
-              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border">
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm">
                 <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.number}</div>
                 <div className="font-semibold text-foreground text-sm">{stat.label}</div>
                 <div className="text-xs text-muted mt-1">{stat.sub}</div>

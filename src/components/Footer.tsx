@@ -9,7 +9,7 @@ export default function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-white border-t">
+    <footer className="bg-white">
       {/* CTA strip */}
       <div className="bg-primary">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -144,7 +144,7 @@ export default function Footer() {
       </div>
 
       {/* Google Reviews */}
-      <div className="border-t bg-surface">
+      <div className="bg-surface">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -171,7 +171,7 @@ export default function Footer() {
               { name: 'Mark & Anja', text: t('footer.review2'), date: '2025' },
               { name: 'Peter Bakker', text: t('footer.review3'), date: '2024' },
             ].map((review, i) => (
-              <div key={i} className="bg-white rounded-xl p-4 border shadow-sm">
+              <div key={i} className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-1 mb-2">
                   {[...Array(5)].map((_, si) => (
                     <Star key={si} size={12} className="text-amber-400 fill-amber-400" />
@@ -191,7 +191,7 @@ export default function Footer() {
               href="https://www.google.com/maps/place/Caravan+storage+spain/@41.9512941,3.091582,17z/data=!4m6!3m5!1s0x12baff513f9bfd3b:0xd29f4672d9b15353!8m2!3d41.9512941!4d3.091582!16s%2Fg%2F11cs3nd4xr"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border rounded-full text-sm font-semibold text-foreground transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-sm font-semibold text-foreground transition-colors shadow-sm"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -207,7 +207,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t">
+      <div className="">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">
           <p>&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
           <div className="flex gap-4">

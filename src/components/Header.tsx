@@ -108,7 +108,7 @@ export default function Header() {
     <div className="sticky top-0 z-50">
       <WeatherBar />
 
-        <header className="bg-white/95 backdrop-blur-md border-b">
+        <header className="bg-white/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="shrink-0">
@@ -135,26 +135,7 @@ export default function Header() {
             <div className="relative" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
                 {t('nav.destinations')}
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
-              </Link>
-            </div>
-
-            <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link>
-            <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link>
-            <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link>
-
-            <div className="w-px h-5 bg-border mx-3" />
-
-            {/* Language switcher */}
-            <div className="relative" ref={langRef}>
-              <button onClick={() => setLangDropdown(!langDropdown)} className="w-8 h-8 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Language">
-                <Globe size={17} />
-              </button>
-              <AnimatePresence>
-                {langDropdown && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border py-1 min-w-[140px] z-50">
-                    {(['nl', 'en', 'es'] as Locale[]).map(l => (
- <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors ${locale === l ?'text-primary font-semibold' : 'text-foreground-light'}`}>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-8 h-8 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Language"> <Globe size={17} /> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg py-1 min-w-[140px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors ${locale === l ?'text-primary font-semibold' : 'text-foreground-light'}`}>
                         <span className="text-base">{localeFlags[l]}</span>
                         {l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}
                       </button>
@@ -185,10 +166,10 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.97 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border w-64 z-50 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl w-64 z-50 overflow-hidden"
                   >
                     {/* User info */}
-                    <div className="px-4 py-3.5 border-b">
+                    <div className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-sm">
                           {loggedInUser.name.charAt(0).toUpperCase()}
@@ -220,7 +201,7 @@ export default function Header() {
                       ))}
                     </div>
                     {/* Logout */}
-                    <div className="border-t py-1.5">
+                    <div className="py-1.5">
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger/70 transition-colors"
@@ -257,7 +238,7 @@ export default function Header() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.15 }}
-              className="hidden lg:block absolute left-0 right-0 top-full bg-white border-t shadow-xl z-40"
+              className="hidden lg:block absolute left-0 right-0 top-full bg-white shadow-xl z-40"
               onMouseEnter={keepMega}
               onMouseLeave={closeMega}
             >
@@ -370,7 +351,7 @@ export default function Header() {
             className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white z-[101] lg:hidden shadow-2xl flex flex-col"
           >
             {/* Panel header */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b">
+            <div className="flex items-center justify-between px-4 py-3.5">
               <Link href="/" onClick={() => setMenuOpen(false)}>
                 <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-36 h-auto" unoptimized />
               </Link>
@@ -446,7 +427,7 @@ export default function Header() {
             </nav>
 
             {/* Bottom CTA */}
-            <div className="p-4 border-t space-y-2">
+            <div className="p-4 space-y-2">
               {/* Mobile language switcher */}
               <div className="flex items-center justify-center gap-1 mb-2">
                 {(['nl', 'en', 'es'] as Locale[]).map(l => (
@@ -458,7 +439,7 @@ export default function Header() {
               <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-sm transition-transform">
                 {t('nav.bookNow')} <ArrowRight size={16} />
               </Link>
-              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 border text-foreground-light font-medium rounded-xl text-sm transition-colors">
+              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 text-foreground-light font-medium rounded-xl text-sm transition-colors">
                 <User size={15} /> {t('footer.myAccount')}
               </Link>
             </div>

@@ -107,7 +107,7 @@ export default function BetalingenPage() {
     <div className="space-y-6">
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-primary-50 text-primary">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -117,7 +117,7 @@ export default function BetalingenPage() {
             <p className="text-xs text-muted">{paid.length} betalingen</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-primary/20 text-primary">
             <Clock className="w-5 h-5" />
           </div>
@@ -127,7 +127,7 @@ export default function BetalingenPage() {
             <p className="text-xs text-muted">{open.length} betalingen</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
           <div className="p-3 rounded-xl bg-primary/10 text-primary">
             <RotateCcw className="w-5 h-5" />
           </div>
@@ -148,7 +148,7 @@ export default function BetalingenPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Zoek op naam, referentie, betaal-ID..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
         <div className="relative">
@@ -156,7 +156,7 @@ export default function BetalingenPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle statussen</option>
             {PAYMENT_STATUS_OPTIONS.map((s) => (
@@ -169,7 +169,7 @@ export default function BetalingenPage() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as PaymentType | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle types</option>
             {PAYMENT_TYPE_OPTIONS.map((t) => (
@@ -180,33 +180,7 @@ export default function BetalingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} betaling{filtered.length !== 1 ? 'en' : ''} gevonden
-      </p>
-
-      {/* Payments list */}
-      <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider border-b border-border">
-          <div className="col-span-3">Gast / Boeking</div>
-          <div className="col-span-2">Type</div>
-          <div className="col-span-2">Bedrag</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-1">Methode</div>
-          <div className="col-span-2">Datum</div>
-        </div>
-
-        <div className="divide-y divide-border">
-          {filtered.map((payment) => (
-            <div
-              key={payment.id}
-              className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors"
-            >
-              <div className="col-span-3">
-                <p className="text-sm font-medium text-foreground">{payment.guest_name}</p>
-                <p className="text-xs text-muted">{payment.booking_ref}</p>
-              </div>
-
-              <div className="col-span-2">
-                <span className="text-sm text-foreground">{payment.type.replace('_', ' ')}</span>
+        {filtered.length} betaling{filtered.length !== 1 ? 'en' : ''} gevonden </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">Gast / Boeking</div> <div className="col-span-2">Type</div> <div className="col-span-2">Bedrag</div> <div className="col-span-2">Status</div> <div className="col-span-1">Methode</div> <div className="col-span-2">Datum</div> </div> <div className=""> {filtered.map((payment) => ( <div key={payment.id} className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> </div> <div className="col-span-2"> <span className="text-sm text-foreground">{payment.type.replace('_', ' ')}</span>
               </div>
 
               <div className="col-span-2">

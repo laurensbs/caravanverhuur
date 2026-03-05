@@ -50,7 +50,7 @@ function GeannuleerdContent() {
             {t('paymentPage.cancelledDesc')}
           </p>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-sm mb-8">
             <p className="text-sm text-muted">
               {t('paymentPage.cancelledInfo')}
             </p>

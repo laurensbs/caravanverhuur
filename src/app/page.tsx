@@ -140,7 +140,7 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/25"
+              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6"
             >
               <Sun size={14} className="text-primary-light animate-pulse-soft" />
               <span className="hidden sm:inline">{t('nav.season')}</span>
@@ -307,7 +307,7 @@ export default function HomePage() {
                 key={i}
                 variants={scaleIn}
                 custom={i}
-                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border"
+                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm"
               >
                 <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md transition-transform duration-300`}>
                   <div className="text-white">{item.icon}</div>
@@ -366,7 +366,7 @@ export default function HomePage() {
                   <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
                   <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
                   {i < 4 && (
-                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-border" />
+                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-primary/20" />
                   )}
                 </motion.div>
               ))}
@@ -392,7 +392,7 @@ export default function HomePage() {
               >
                 {/* Line */}
                 {i < 4 && (
-                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-border" />
+                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-primary/20" />
                 )}
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10">
                   {item.icon}
@@ -440,7 +440,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md border"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
                   <Image
@@ -589,23 +589,7 @@ export default function HomePage() {
               </div>
               {/* Decorative accent */}
               <div className="absolute -z-10 -top-4 -right-4 w-full h-full rounded-2xl bg-primary/10" />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5, duration: 0.4 }}
-                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl p-3 sm:p-4 shadow-lg border"
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-9 h-9 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
-                    <CheckCircle className="text-white" size={18} />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-foreground text-xs sm:text-base">{t('home.inventoryComplete')}</div>
-                    <div className="text-xs sm:text-sm text-muted">{t('home.inventoryChecked')}</div>
-                  </div>
-                </div>
-              </motion.div>
+
             </motion.div>
           </div>
         </div>
@@ -645,7 +629,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6"
               >
                 <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 transition-colors">
                   {item.icon}
@@ -662,7 +646,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 text-center"
+            className="mt-6 sm:mt-10 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 text-center"
           >
             <p className="text-sm sm:text-base text-primary-light/80 leading-relaxed">
               <span className="text-white font-bold">{t('home.advExperience')}</span> {t('home.advExperienceDesc')}{' '}
@@ -767,7 +751,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 relative border"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 relative"
               >
 
                 <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
@@ -874,7 +858,7 @@ export default function HomePage() {
         aria-label="Chat via WhatsApp"
       >
         <WhatsAppIcon size={26} />
-        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-150 whitespace-nowrap pointer-events-none border">
+        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-150 whitespace-nowrap pointer-events-none">
           {t('home.whatsappTooltip')}
         </span>
       </motion.a>

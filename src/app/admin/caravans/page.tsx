@@ -86,128 +86,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, isCustom, onPhotosUp
   const [photoSaving, setPhotoSaving] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/admin/caravan-bookings?caravanId=${caravan.id}`)
-      .then(res => res.json())
-      .then(data => setBookings(data.bookings || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [caravan.id]);
-
-  const handleStatusChange = async (newStatus: string) => {
-    setSaving(true);
-    const newAvailable = newStatus === 'BESCHIKBAAR';
-    try {
-      await fetch('/api/admin/caravan-settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caravanId: caravan.id,
-          available: newAvailable,
-          status: newStatus,
-        }),
-      });
-      onSettingChange({
-        caravan_id: caravan.id,
-        available: newAvailable,
-        status: newStatus,
-        admin_notes: setting?.admin_notes || null,
-      });
-    } catch { /* silent */ }
-    setSaving(false);
-  };
-
-  const addPhoto = async () => {
-    if (!newPhotoUrl.trim() || !isCustom || !onPhotosUpdate) return;
-    setPhotoSaving(true);
-    try {
-      const updatedPhotos = [...caravan.photos, newPhotoUrl.trim()];
-      const res = await fetch('/api/admin/caravans', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: caravan.id, photos: updatedPhotos }),
-      });
-      if (res.ok) {
-        onPhotosUpdate(updatedPhotos);
-        setNewPhotoUrl('');
-      }
-    } catch { /* silent */ }
-    setPhotoSaving(false);
-  };
-
-  const removePhoto = async (index: number) => {
-    if (!isCustom || !onPhotosUpdate) return;
-    setPhotoSaving(true);
-    try {
-      const updatedPhotos = caravan.photos.filter((_, i) => i !== index);
-      const res = await fetch('/api/admin/caravans', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: caravan.id, photos: updatedPhotos }),
-      });
-      if (res.ok) {
-        onPhotosUpdate(updatedPhotos);
-      }
-    } catch { /* silent */ }
-    setPhotoSaving(false);
-  };
-
-  const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
-
-  return (
-    <div className="bg-surface rounded-2xl p-5 border border-border mt-2 space-y-5">
-      {/* Photos */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted flex items-center gap-1.5">
-            <Camera className="w-3.5 h-3.5" />
-            Foto&apos;s ({caravan.photos.length})
-          </h4>
-          {isCustom && (
-            <button
-              onClick={() => setShowPhotoModal(!showPhotoModal)}
-              className="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1"
-            >
-              <ImagePlus size={14} />
-              Foto toevoegen
-            </button>
-          )}
-        </div>
-
-        {showPhotoModal && isCustom && (
-          <div className="mb-3 p-3 bg-white rounded-xl border border-border space-y-2">
-            <input
-              type="url"
-              value={newPhotoUrl}
-              onChange={e => setNewPhotoUrl(e.target.value)}
-              placeholder="https://voorbeeld.nl/foto.jpg"
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={addPhoto}
-                disabled={!newPhotoUrl.trim() || photoSaving}
-                className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-dark disabled:opacity-50 flex items-center gap-1"
-              >
-                {photoSaving ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-                Toevoegen
-              </button>
-              <button
-                onClick={() => { setShowPhotoModal(false); setNewPhotoUrl(''); }}
-                className="px-3 py-1.5 border border-border rounded-lg text-xs text-muted hover:bg-surface"
-              >
-                Annuleren
-              </button>
-            </div>
-          </div>
-        )}
-
-        {caravan.photos.length > 0 ? (
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-            {caravan.photos.map((photo, i) => (
-              <div key={i} className="relative w-32 h-24 shrink-0 rounded-xl overflow-hidden group">
-                <Image
-                  src={photo}
-                  alt={`${caravan.name} foto ${i + 1}`}
+    fetch(`/api/admin/caravan-bookings?caravanId=${caravan.id}`) .then(res => res.json()) .then(data => setBookings(data.bookings || [])) .catch(() => {}) .finally(() => setLoading(false)); }, [caravan.id]); const handleStatusChange = async (newStatus: string) => { setSaving(true); const newAvailable = newStatus === 'BESCHIKBAAR'; try { await fetch('/api/admin/caravan-settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ caravanId: caravan.id, available: newAvailable, status: newStatus, }), }); onSettingChange({ caravan_id: caravan.id, available: newAvailable, status: newStatus, admin_notes: setting?.admin_notes || null, }); } catch { /* silent */ } setSaving(false); }; const addPhoto = async () => { if (!newPhotoUrl.trim() || !isCustom || !onPhotosUpdate) return; setPhotoSaving(true); try { const updatedPhotos = [...caravan.photos, newPhotoUrl.trim()]; const res = await fetch('/api/admin/caravans', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: caravan.id, photos: updatedPhotos }), }); if (res.ok) { onPhotosUpdate(updatedPhotos); setNewPhotoUrl(''); } } catch { /* silent */ } setPhotoSaving(false); }; const removePhoto = async (index: number) => { if (!isCustom || !onPhotosUpdate) return; setPhotoSaving(true); try { const updatedPhotos = caravan.photos.filter((_, i) => i !== index); const res = await fetch('/api/admin/caravans', { method: 'PATCH', headers: { 'Content-Type': 'application/json'}, body: JSON.stringify({ id: caravan.id, photos: updatedPhotos }), }); if (res.ok) { onPhotosUpdate(updatedPhotos); } } catch { /* silent */ } setPhotoSaving(false); }; const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0); return ( <div className="bg-surface rounded-2xl p-5 mt-2 space-y-5"> {/* Photos */} <div> <div className="flex items-center justify-between mb-2"> <h4 className="text-xs font-semibold uppercase tracking-wider text-muted flex items-center gap-1.5"> <Camera className="w-3.5 h-3.5" /> Foto&apos;s ({caravan.photos.length}) </h4> {isCustom && ( <button onClick={() => setShowPhotoModal(!showPhotoModal)} className="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1" > <ImagePlus size={14} /> Foto toevoegen </button> )} </div> {showPhotoModal && isCustom && ( <div className="mb-3 p-3 bg-white rounded-xl space-y-2"> <input type="url" value={newPhotoUrl} onChange={e => setNewPhotoUrl(e.target.value)} placeholder="https://voorbeeld.nl/foto.jpg" className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> <div className="flex gap-2"> <button onClick={addPhoto} disabled={!newPhotoUrl.trim() || photoSaving} className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-dark disabled:opacity-50 flex items-center gap-1" > {photoSaving ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Toevoegen </button> <button onClick={() => { setShowPhotoModal(false); setNewPhotoUrl(''); }} className="px-3 py-1.5 rounded-lg text-xs text-muted hover:bg-surface" > Annuleren </button> </div> </div> )} {caravan.photos.length > 0 ? ( <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1"> {caravan.photos.map((photo, i) => ( <div key={i} className="relative w-32 h-24 shrink-0 rounded-xl overflow-hidden group"> <Image src={photo} alt={`${caravan.name} foto ${i + 1}`}
                   fill
                   className="object-cover"
                   sizes="128px"
@@ -230,7 +109,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, isCustom, onPhotosUp
       </div>
 
       {/* Availability control */}
-      <div className="bg-white rounded-xl p-4 border border-border">
+      <div className="bg-white rounded-xl p-4">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5">
           <Power className="w-3.5 h-3.5" />
           Beschikbaarheid beheren
@@ -311,7 +190,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, isCustom, onPhotosUp
           {caravan.amenities.map((a) => (
             <span
               key={a}
-              className="px-2.5 py-1 bg-white border border-border rounded-lg text-xs text-muted"
+              className="px-2.5 py-1 bg-white rounded-lg text-xs text-muted"
             >
               {a}
             </span>
@@ -543,19 +422,19 @@ export default function CaravansAdminPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-foreground">{totalCaravans}</p>
           <p className="text-xs text-muted">Totaal</p>
         </div>
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary-dark">{beschikbaar}</p>
           <p className="text-xs text-muted">Beschikbaar</p>
         </div>
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary">{onderhoud}</p>
           <p className="text-xs text-muted">Onderhoud</p>
         </div>
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-danger">{nietBeschikbaar}</p>
           <p className="text-xs text-muted">Niet beschikbaar</p>
         </div>
@@ -568,7 +447,7 @@ export default function CaravansAdminPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Zoek op naam, referentie, fabrikant..."
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+          className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
         />
       </div>
 
@@ -580,7 +459,7 @@ export default function CaravansAdminPage() {
           const bookingCount = bookingCounts[caravan.id] || 0;
 
           return (
-            <div key={caravan.id} className="bg-white rounded-2xl border border-border overflow-hidden">
+            <div key={caravan.id} className="bg-white rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedId(isExpanded ? null : caravan.id)}
                 className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
@@ -615,192 +494,10 @@ export default function CaravansAdminPage() {
                     <span>{caravan.manufacturer} {caravan.year}</span>
                     {bookingCount > 0 && (
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> {bookingCount} boeking{bookingCount !== 1 ? 'en' : ''}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {caravan.isCustom && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDeleteCaravan(caravan as CustomCaravan); }}
-                      className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Verwijderen"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  )}
-                  <div className="text-right hidden md:block">
-                    <p className="text-sm font-semibold text-foreground">{formatCurrency(caravan.pricePerWeek)}/wk</p>
-                  </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCaravanStatusColor(effectiveStatus)}`}
-                  >
-                    <StatusIcon className="w-3 h-3" />
-                    {getStatusLabel(effectiveStatus)}
-                  </span>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-muted" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted" />
-                  )}
-                </div>
-              </button>
-
-              {isExpanded && (
-                <div className="px-5 pb-5">
-                  <CaravanDetail
-                    caravan={caravan}
-                    setting={settings[caravan.id] || null}
-                    onSettingChange={handleSettingChange}
-                    isCustom={caravan.isCustom}
-                    onPhotosUpdate={caravan.isCustom ? (photos) => handlePhotosUpdate(caravan.id, photos) : undefined}
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted">
-            <p className="text-lg">Geen caravans gevonden</p>
-          </div>
-        )}
-      </div>
-
-      {/* ===== NEW CARAVAN MODAL ===== */}
-      {showNewCaravanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNewCaravanModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <Plus size={20} className="text-primary" />
-                  Nieuwe caravan toevoegen
-                </h2>
-                <button onClick={() => setShowNewCaravanModal(false)} className="p-1.5 text-muted hover:text-foreground hover:bg-surface rounded-lg">
-                  <X size={18} />
-                </button>
-              </div>
-
-              {newError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
-                  <AlertTriangle size={16} /> {newError}
-                </div>
-              )}
-
-              {newSuccess && (
-                <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm flex items-center gap-2">
-                  <Check size={16} /> {newSuccess}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                {/* Name + Manufacturer row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Naam <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={newCaravan.name}
-                      onChange={e => setNewCaravan(p => ({ ...p, name: e.target.value }))}
-                      placeholder="bijv. Dethleffs Camper 560"
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Fabrikant <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={newCaravan.manufacturer}
-                      onChange={e => setNewCaravan(p => ({ ...p, manufacturer: e.target.value }))}
-                      placeholder="bijv. Dethleffs"
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                </div>
-
-                {/* Type, Year, MaxPersons row */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Type</label>
-                    <select
-                      value={newCaravan.type}
-                      onChange={e => setNewCaravan(p => ({ ...p, type: e.target.value }))}
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
-                    >
-                      <option value="FAMILIE">Familie</option>
-                      <option value="COMPACT">Compact</option>
-                      <option value="LUXE">Luxe</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Bouwjaar</label>
-                    <input
-                      type="number"
-                      value={newCaravan.year}
-                      onChange={e => setNewCaravan(p => ({ ...p, year: parseInt(e.target.value) || 2020 }))}
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Max personen</label>
-                    <input
-                      type="number"
-                      value={newCaravan.maxPersons}
-                      onChange={e => setNewCaravan(p => ({ ...p, maxPersons: parseInt(e.target.value) || 2 }))}
-                      min={1}
-                      max={10}
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block text-xs font-medium text-foreground mb-1">Beschrijving</label>
-                  <textarea
-                    value={newCaravan.description}
-                    onChange={e => setNewCaravan(p => ({ ...p, description: e.target.value }))}
-                    rows={3}
-                    placeholder="Beschrijving van de caravan..."
-                    className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                  />
-                </div>
-
-                {/* Prices */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Prijs/dag (€)</label>
-                    <input
-                      type="number"
-                      value={newCaravan.pricePerDay || ''}
-                      onChange={e => setNewCaravan(p => ({ ...p, pricePerDay: parseFloat(e.target.value) || 0 }))}
-                      placeholder="75"
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Prijs/week (€)</label>
-                    <input
-                      type="number"
-                      value={newCaravan.pricePerWeek || ''}
-                      onChange={e => setNewCaravan(p => ({ ...p, pricePerWeek: parseFloat(e.target.value) || 0 }))}
-                      placeholder="450"
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-foreground mb-1">Borg (€)</label>
-                    <input
-                      type="number"
-                      value={newCaravan.deposit || ''}
+                        <Calendar className="w-3 h-3" /> {bookingCount} boeking{bookingCount !== 1 ? 'en' : ''} </span> )} </div> </div> <div className="flex items-center gap-3 shrink-0"> {caravan.isCustom && ( <button onClick={(e) => { e.stopPropagation(); setDeleteCaravan(caravan as CustomCaravan); }} className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Verwijderen" > <Trash2 size={15} /> </button> )} <div className="text-right hidden md:block"> <p className="text-sm font-semibold text-foreground">{formatCurrency(caravan.pricePerWeek)}/wk</p> </div> <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCaravanStatusColor(effectiveStatus)}`} > <StatusIcon className="w-3 h-3" /> {getStatusLabel(effectiveStatus)} </span> {isExpanded ? ( <ChevronUp className="w-4 h-4 text-muted" /> ) : ( <ChevronDown className="w-4 h-4 text-muted" /> )} </div> </button> {isExpanded && ( <div className="px-5 pb-5"> <CaravanDetail caravan={caravan} setting={settings[caravan.id] || null} onSettingChange={handleSettingChange} isCustom={caravan.isCustom} onPhotosUpdate={caravan.isCustom ? (photos) => handlePhotosUpdate(caravan.id, photos) : undefined} /> </div> )} </div> ); })} {filtered.length === 0 && ( <div className="text-center py-12 text-muted"> <p className="text-lg">Geen caravans gevonden</p> </div> )} </div> {/* ===== NEW CARAVAN MODAL ===== */} {showNewCaravanModal && ( <div className="fixed inset-0 z-50 flex items-center justify-center p-4"> <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNewCaravanModal(false)} /> <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto"> <div className="p-6"> <div className="flex items-center justify-between mb-6"> <h2 className="text-lg font-bold text-foreground flex items-center gap-2"> <Plus size={20} className="text-primary" /> Nieuwe caravan toevoegen </h2> <button onClick={() => setShowNewCaravanModal(false)} className="p-1.5 text-muted hover:text-foreground hover:bg-surface rounded-lg"> <X size={18} /> </button> </div> {newError && ( <div className="mb-4 p-3 bg-red-50 border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2"> <AlertTriangle size={16} /> {newError} </div> )} {newSuccess && ( <div className="mb-4 p-3 bg-green-50 border-green-200 text-green-700 rounded-xl text-sm flex items-center gap-2"> <Check size={16} /> {newSuccess} </div> )} <div className="space-y-4"> {/* Name + Manufacturer row */} <div className="grid grid-cols-2 gap-3"> <div> <label className="block text-xs font-medium text-foreground mb-1">Naam <span className="text-red-500">*</span></label> <input type="text" value={newCaravan.name} onChange={e => setNewCaravan(p => ({ ...p, name: e.target.value }))} placeholder="bijv. Dethleffs Camper 560" className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="block text-xs font-medium text-foreground mb-1">Fabrikant <span className="text-red-500">*</span></label> <input type="text" value={newCaravan.manufacturer} onChange={e => setNewCaravan(p => ({ ...p, manufacturer: e.target.value }))} placeholder="bijv. Dethleffs" className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> {/* Type, Year, MaxPersons row */} <div className="grid grid-cols-3 gap-3"> <div> <label className="block text-xs font-medium text-foreground mb-1">Type</label> <select value={newCaravan.type} onChange={e => setNewCaravan(p => ({ ...p, type: e.target.value }))} className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white" > <option value="FAMILIE">Familie</option> <option value="COMPACT">Compact</option> <option value="LUXE">Luxe</option> </select> </div> <div> <label className="block text-xs font-medium text-foreground mb-1">Bouwjaar</label> <input type="number" value={newCaravan.year} onChange={e => setNewCaravan(p => ({ ...p, year: parseInt(e.target.value) || 2020 }))} className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="block text-xs font-medium text-foreground mb-1">Max personen</label> <input type="number" value={newCaravan.maxPersons} onChange={e => setNewCaravan(p => ({ ...p, maxPersons: parseInt(e.target.value) || 2 }))} min={1} max={10} className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> {/* Description */} <div> <label className="block text-xs font-medium text-foreground mb-1">Beschrijving</label> <textarea value={newCaravan.description} onChange={e => setNewCaravan(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Beschrijving van de caravan..." className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" /> </div> {/* Prices */} <div className="grid grid-cols-3 gap-3"> <div> <label className="block text-xs font-medium text-foreground mb-1">Prijs/dag (€)</label> <input type="number" value={newCaravan.pricePerDay ||''} onChange={e => setNewCaravan(p => ({ ...p, pricePerDay: parseFloat(e.target.value) || 0 }))} placeholder="75" className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="block text-xs font-medium text-foreground mb-1">Prijs/week (€)</label> <input type="number" value={newCaravan.pricePerWeek ||''} onChange={e => setNewCaravan(p => ({ ...p, pricePerWeek: parseFloat(e.target.value) || 0 }))} placeholder="450" className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="block text-xs font-medium text-foreground mb-1">Borg (€)</label> <input type="number" value={newCaravan.deposit ||''}
                       onChange={e => setNewCaravan(p => ({ ...p, deposit: parseFloat(e.target.value) || 0 }))}
                       placeholder="400"
-                      className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                   </div>
                 </div>
@@ -815,7 +512,7 @@ export default function CaravansAdminPage() {
                     value={newCaravan.amenities}
                     onChange={e => setNewCaravan(p => ({ ...p, amenities: e.target.value }))}
                     placeholder="Airco, Verwarming, Koelkast, Douche, Toilet, Luifel"
-                    className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -829,7 +526,7 @@ export default function CaravansAdminPage() {
                     value={newCaravan.inventory}
                     onChange={e => setNewCaravan(p => ({ ...p, inventory: e.target.value }))}
                     placeholder="Dekbedden (4x), Kussens, Servies, Kookgerei"
-                    className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -843,7 +540,7 @@ export default function CaravansAdminPage() {
                     onChange={e => setNewCaravan(p => ({ ...p, photos: e.target.value }))}
                     rows={3}
                     placeholder={"https://voorbeeld.nl/foto1.jpg\nhttps://voorbeeld.nl/foto2.jpg"}
-                    className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none font-mono text-xs"
+                    className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-mono text-xs"
                   />
                 </div>
               </div>
@@ -851,7 +548,7 @@ export default function CaravansAdminPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowNewCaravanModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-muted hover:bg-surface transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-muted hover:bg-surface transition-colors"
                 >
                   Annuleren
                 </button>
@@ -889,7 +586,7 @@ export default function CaravansAdminPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteCaravan(null)}
-                className="flex-1 px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-muted hover:bg-surface"
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-muted hover:bg-surface"
               >
                 Annuleren
               </button>

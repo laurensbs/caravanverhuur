@@ -108,7 +108,7 @@ export default function CaravansPage() {
       </section>
 
       {/* Filters */}
-      <section className="bg-white border-b sticky top-[120px] z-40 shadow-sm">
+      <section className="bg-white sticky top-[120px] z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Desktop filters */}
           <div className="hidden lg:flex items-center gap-4">
@@ -119,16 +119,7 @@ export default function CaravansPage() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t('caravans.searchPlaceholder')}
-                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-              />
-            </div>
-
-            <div className="w-px h-8 bg-border" />
-
-            {/* Type filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted uppercase tracking-wide">{t('caravans.filterType')}</span>
+                placeholder={t('caravans.searchPlaceholder')} className="w-full pl-9 pr-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" /> </div> {/* Type filter */} <div className="flex items-center gap-2"> <span className="text-xs font-medium text-muted uppercase tracking-wide">{t('caravans.filterType')}</span>
               {(['ALL', 'FAMILIE', 'COMPACT', 'LUXE'] as const).map(type => (
                 <button
                   key={type}
@@ -140,138 +131,11 @@ export default function CaravansPage() {
                         type === 'COMPACT' ? 'bg-primary text-white shadow-md' :
                         'bg-primary text-white shadow-md'
                       : 'bg-surface text-foreground'
-                  }`}
-                >
-                  {type === 'ALL' ? t('caravans.filterAll') : type === 'FAMILIE' ? t('caravans.filterFamily') : type === 'COMPACT' ? t('caravans.filterCompact') : t('caravans.filterLuxe')}
-                </button>
-              ))}
-            </div>
-
-            <div className="w-px h-8 bg-border" />
-
-            {/* Persons filter */}
-            <div className="flex items-center gap-2">
-              <Users size={14} className="text-muted" />
-              {[0, 2, 4, 5].map(num => (
-                <button
-                  key={num}
-                  onClick={() => setPersonFilter(num)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    personFilter === num
-                      ? 'bg-primary text-white shadow-md'
+                  }`} > {type === 'ALL' ? t('caravans.filterAll') : type === 'FAMILIE' ? t('caravans.filterFamily') : type === 'COMPACT' ? t('caravans.filterCompact') : t('caravans.filterLuxe')} </button> ))} </div> {/* Persons filter */} <div className="flex items-center gap-2"> <Users size={14} className="text-muted" /> {[0, 2, 4, 5].map(num => ( <button key={num} onClick={() => setPersonFilter(num)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${ personFilter === num ?'bg-primary text-white shadow-md'
                       : 'bg-surface text-foreground'
                   }`}
                 >
-                  {num === 0 ? t('caravans.filterAll') : `${num}+`}
-                </button>
-              ))}
-            </div>
-
-            <div className="w-px h-8 bg-border" />
-
-            {/* Price filter */}
-            <div className="flex items-center gap-2">
-              <Euro size={14} className="text-muted" />
-              <select
-                value={maxPrice}
-                onChange={e => setMaxPrice(Number(e.target.value))}
-                className="px-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
-              >
-                <option value={0}>{t('caravans.filterMaxPrice')}</option>
-                <option value={400}>&le; &euro;400/week</option>
-                <option value={500}>&le; &euro;500/week</option>
-                <option value={600}>&le; &euro;600/week</option>
-                <option value={700}>&le; &euro;700/week</option>
-              </select>
-            </div>
-
-            <div className="w-px h-8 bg-border" />
-
-            {/* Sort */}
-            <div className="flex items-center gap-2">
-              <ArrowUpDown size={14} className="text-muted" />
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
-              >
-                <option value="default">{t('caravans.sortDefault')}</option>
-                <option value="price-asc">{t('caravans.sortPriceAsc')}</option>
-                <option value="price-desc">{t('caravans.sortPriceDesc2')}</option>
-                <option value="persons-desc">{t('caravans.sortPersonsDesc')}</option>
-              </select>
-            </div>
-
-            {/* Result count + reset */}
-            <div className="ml-auto flex items-center gap-3">
-              {activeFilterCount > 0 && (
-                <button onClick={resetFilters} className="text-xs text-primary flex items-center gap-1">
-                  <X size={12} /> Reset
-                </button>
-              )}
-              <span className="text-xs text-muted">{filtered.length} caravan{filtered.length !== 1 ? 's' : ''}</span>
-            </div>
-          </div>
-
-          {/* Tablet filters */}
-          <div className="hidden md:flex lg:hidden items-center gap-3">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t('caravans.searchPlaceholder')}
-                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border"
-            >
-              <SlidersHorizontal size={16} />
-              {t('caravans.filterFilters')}
-              {activeFilterCount > 0 && (
-                <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
-              )}
-            </button>
-            <span className="text-xs text-muted whitespace-nowrap">{filtered.length} {t('caravans.results')}</span>
-          </div>
-
-          {/* Mobile filter button */}
-          <div className="flex md:hidden items-center justify-between gap-3">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t('caravans.searchPlaceholderShort')}
-                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border"
-            >
-              <Filter size={16} />
-              {activeFilterCount > 0 && (
-                <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
-              )}
-            </button>
-          </div>
-
-          {/* Expanded filters (mobile + tablet) */}
-          {showFilters && (
-            <div className="lg:hidden mt-4 pb-2 space-y-4 border-t pt-4">
-              <div>
-                <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterType')}</span>
-                <div className="flex flex-wrap gap-2">
-                  {(['ALL', 'FAMILIE', 'COMPACT', 'LUXE'] as const).map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setTypeFilter(type)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  {num === 0 ? t('caravans.filterAll') : `${num}+`} </button> ))} </div> {/* Price filter */} <div className="flex items-center gap-2"> <Euro size={14} className="text-muted" /> <select value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="px-3 py-1.5 rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none bg-white" > <option value={0}>{t('caravans.filterMaxPrice')}</option> <option value={400}>&le; &euro;400/week</option> <option value={500}>&le; &euro;500/week</option> <option value={600}>&le; &euro;600/week</option> <option value={700}>&le; &euro;700/week</option> </select> </div> {/* Sort */} <div className="flex items-center gap-2"> <ArrowUpDown size={14} className="text-muted" /> <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className="px-3 py-1.5 rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none bg-white" > <option value="default">{t('caravans.sortDefault')}</option> <option value="price-asc">{t('caravans.sortPriceAsc')}</option> <option value="price-desc">{t('caravans.sortPriceDesc2')}</option> <option value="persons-desc">{t('caravans.sortPersonsDesc')}</option> </select> </div> {/* Result count + reset */} <div className="ml-auto flex items-center gap-3"> {activeFilterCount > 0 && ( <button onClick={resetFilters} className="text-xs text-primary flex items-center gap-1"> <X size={12} /> Reset </button> )} <span className="text-xs text-muted">{filtered.length} caravan{filtered.length !== 1 ? 's' : ''}</span> </div> </div> {/* Tablet filters */} <div className="hidden md:flex lg:hidden items-center gap-3"> <div className="relative flex-1"> <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /> <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('caravans.searchPlaceholder')} className="w-full pl-9 pr-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" /> </div> <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium" > <SlidersHorizontal size={16} /> {t('caravans.filterFilters')} {activeFilterCount > 0 && ( <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span> )} </button> <span className="text-xs text-muted whitespace-nowrap">{filtered.length} {t('caravans.results')}</span> </div> {/* Mobile filter button */} <div className="flex md:hidden items-center justify-between gap-3"> <div className="relative flex-1"> <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /> <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('caravans.searchPlaceholderShort')} className="w-full pl-9 pr-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" /> </div> <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium" > <Filter size={16} /> {activeFilterCount > 0 && ( <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span> )} </button> </div> {/* Expanded filters (mobile + tablet) */} {showFilters && ( <div className="lg:hidden mt-4 pb-2 space-y-4 pt-4"> <div> <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterType')}</span> <div className="flex flex-wrap gap-2"> {(['ALL', 'FAMILIE', 'COMPACT', 'LUXE'] as const).map(type => ( <button key={type} onClick={() => setTypeFilter(type)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                         typeFilter === type
                           ? type === 'LUXE' ? 'bg-primary text-white' :
                             type === 'FAMILIE' ? 'bg-primary text-white' :
@@ -296,98 +160,7 @@ export default function CaravansPage() {
                         personFilter === num ? 'bg-primary text-white' : 'bg-surface text-foreground'
                       }`}
                     >
-                      {num === 0 ? t('caravans.filterAll') : `${num}+`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterMaxPrice')}</span>
-                  <select
-                    value={maxPrice}
-                    onChange={e => setMaxPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
-                  >
-                    <option value={0}>{t('caravans.filterNoLimit')}</option>
-                    <option value={400}>&le; &euro;400/week</option>
-                    <option value={500}>&le; &euro;500/week</option>
-                    <option value={600}>&le; &euro;600/week</option>
-                    <option value={700}>&le; &euro;700/week</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterSort')}</span>
-                  <select
-                    value={sortBy}
-                    onChange={e => setSortBy(e.target.value as SortOption)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
-                  >
-                    <option value="default">{t('caravans.sortDefault')}</option>
-                    <option value="price-asc">{t('caravans.sortPriceAsc')}</option>
-                    <option value="price-desc">{t('caravans.sortPriceDesc2')}</option>
-                    <option value="persons-desc">{t('caravans.sortPersonsDesc')}</option>
-                  </select>
-                </div>
-              </div>
-              {activeFilterCount > 0 && (
-                <button onClick={resetFilters} className="text-sm text-primary flex items-center gap-1">
-                  <X size={14} /> {t('caravans.resetAll')}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Grid */}
-      <section className="py-12 bg-surface-alt min-h-[60vh]">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Results header */}
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-muted">
-              <span className="font-semibold text-foreground">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} {t('caravans.resultsFound')}
-            </p>
-            {filtered.length > 0 && (
-              <p className="text-xs text-primary font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                {t('caravans.seasonAvailable')}
-              </p>
-            )}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-xl text-muted mb-4">{t('caravans.noResults')}</p>
-              <button
-                onClick={resetFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-medium transition-colors"
-              >
-                <X size={16} /> {t('caravans.resetFilters')}
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filtered.map((caravan, i) => (
-                <motion.div
-                  key={caravan.id}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 border group"
-                >
-                  <div className="relative h-56 overflow-hidden">
-                    <Image
-                      src={caravan.photos[0]}
-                      alt={caravan.name}
-                      fill
-                      className="object-cover transition-transform duration-500"
-                      unoptimized
-                    />
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                      {num === 0 ? t('caravans.filterAll') : `${num}+`} </button> ))} </div> </div> <div className="flex gap-3"> <div className="flex-1"> <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterMaxPrice')}</span> <select value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-white" > <option value={0}>{t('caravans.filterNoLimit')}</option> <option value={400}>&le; &euro;400/week</option> <option value={500}>&le; &euro;500/week</option> <option value={600}>&le; &euro;600/week</option> <option value={700}>&le; &euro;700/week</option> </select> </div> <div className="flex-1"> <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterSort')}</span> <select value={sortBy} onChange={e => setSortBy(e.target.value as SortOption)} className="w-full px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-white" > <option value="default">{t('caravans.sortDefault')}</option> <option value="price-asc">{t('caravans.sortPriceAsc')}</option> <option value="price-desc">{t('caravans.sortPriceDesc2')}</option> <option value="persons-desc">{t('caravans.sortPersonsDesc')}</option> </select> </div> </div> {activeFilterCount > 0 && ( <button onClick={resetFilters} className="text-sm text-primary flex items-center gap-1"> <X size={14} /> {t('caravans.resetAll')} </button> )} </div> )} </div> </section> {/* Grid */} <section className="py-12 bg-surface-alt min-h-[60vh]"> <div className="max-w-7xl mx-auto px-4"> {/* Results header */} <div className="flex items-center justify-between mb-6"> <p className="text-sm text-muted"> <span className="font-semibold text-foreground">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} {t('caravans.resultsFound')} </p> {filtered.length > 0 && ( <p className="text-xs text-primary font-medium flex items-center gap-1"> <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" /> {t('caravans.seasonAvailable')} </p> )} </div> {filtered.length === 0 ? ( <div className="text-center py-20"> <p className="text-xl text-muted mb-4">{t('caravans.noResults')}</p> <button onClick={resetFilters} className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-medium transition-colors" > <X size={16} /> {t('caravans.resetFilters')} </button> </div> ) : ( <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {filtered.map((caravan, i) => ( <motion.div key={caravan.id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className="bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 group" > <div className="relative h-56 overflow-hidden"> <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover transition-transform duration-500" unoptimized /> <div className="absolute top-4 left-4 flex flex-col gap-2"> <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${
                         caravan.type === 'LUXE' ? 'bg-primary' :
                         caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary'
                       }`}>
@@ -407,27 +180,7 @@ export default function CaravansPage() {
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
                     <div className="flex items-center gap-4 text-sm text-muted mb-3">
-                      <span className="flex items-center gap-1"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span>
-                      <span>{caravan.manufacturer} &bull; {caravan.year}</span>
-                    </div>
-                    <p className="text-sm text-muted mb-4 line-clamp-2">{caravan.description}</p>
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {caravan.amenities.slice(0, 4).map(a => (
-                        <span key={a} className="text-xs px-2 py-1 bg-surface rounded-md text-muted">{a}</span>
-                      ))}
-                      {caravan.amenities.length > 4 && (
-                        <span className="text-xs px-2 py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 4}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-3">
-                      <Link
-                        href={`/caravans/${caravan.id}`}
-                        className="flex-1 text-center py-2.5 border border-primary text-primary font-semibold rounded-xl transition-colors text-sm"
-                      >
-                        {t('caravans.details')}
-                      </Link>
-                      <Link
-                        href={`/boeken?caravan=${caravan.id}`}
+                      <span className="flex items-center gap-1"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span> <span>{caravan.manufacturer} &bull; {caravan.year}</span> </div> <p className="text-sm text-muted mb-4 line-clamp-2">{caravan.description}</p> <div className="flex flex-wrap gap-1 mb-4"> {caravan.amenities.slice(0, 4).map(a => ( <span key={a} className="text-xs px-2 py-1 bg-surface rounded-md text-muted">{a}</span> ))} {caravan.amenities.length > 4 && ( <span className="text-xs px-2 py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 4}</span> )} </div> <div className="flex gap-3"> <Link href={`/caravans/${caravan.id}`} className="flex-1 text-center py-2.5 border-primary text-primary font-semibold rounded-xl transition-colors text-sm" > {t('caravans.details')} </Link> <Link href={`/boeken?caravan=${caravan.id}`}
                         className="flex-1 text-center py-2.5 bg-primary text-white font-semibold rounded-xl transition-all text-sm shadow-md"
                       >
                         {t('caravans.bookNow')}

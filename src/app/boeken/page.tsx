@@ -236,7 +236,7 @@ function BoekenContent() {
             )}
 
             {/* Summary card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl p-6 shadow-lg border text-left mb-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl p-6 shadow-lg text-left mb-6">
               <div className="flex items-center gap-3 mb-4">
                 {chosenCaravan && (
                   <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0">
@@ -254,7 +254,7 @@ function BoekenContent() {
                 <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.nightsLabel')}</p><p className="font-semibold">{nights}</p></div>
                 <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.personsLabel')}</p><p className="font-semibold">{adults} + {children} {t('booking.child')}</p></div>
               </div>
-              <div className="mt-4 pt-4 border-t space-y-2">
+              <div className="mt-4 pt-4 space-y-2">
                 <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{discountedTotal}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-primary">&euro;{deposit}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
@@ -317,7 +317,7 @@ function BoekenContent() {
       </section>
 
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[100px] lg:top-[72px] z-30 bg-white border-b shadow-sm">
+      <div ref={contentRef} className="sticky top-[100px] lg:top-[72px] z-30 bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">
@@ -348,7 +348,7 @@ function BoekenContent() {
                     </div>
                     <div>
                       <p className={`text-sm font-semibold ${isCurrent ? 'text-foreground' : isDone ? 'text-primary' : 'text-muted'}`}>{s.label}</p>
-                      <p className={`text-xs ${isCurrent ? 'text-muted' : 'text-border'}`}>{s.desc}</p>
+                      <p className={`text-xs ${isCurrent ? 'text-muted' : 'text-muted'}`}>{s.desc}</p>
                     </div>
                   </div>
                   {i < stepConfig.length - 1 && (
@@ -386,7 +386,7 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border shadow-sm p-6">
+                      <div className="bg-white rounded-2xl shadow-sm p-6">
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
@@ -394,7 +394,7 @@ function BoekenContent() {
                               {t('booking.arrivalLabel')}
                             </label>
                             <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
@@ -402,7 +402,7 @@ function BoekenContent() {
                               {t('booking.departureLabel')}
                             </label>
                             <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
                           </div>
                         </div>
 
@@ -450,7 +450,7 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className="bg-white border rounded-xl p-4 text-left transition-all group"
+                                className="bg-white rounded-xl p-4 text-left transition-all group"
                               >
                                 <span className="text-2xl mb-1 block">{q.icon}</span>
                                 <p className="font-semibold text-foreground transition-colors">{q.label}</p>
@@ -471,12 +471,12 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border shadow-sm p-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-5">
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <div className="relative flex-1">
                             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                             <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
-                              className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                         </div>
 
@@ -520,7 +520,7 @@ function BoekenContent() {
                                   </div>
                                   <p className="text-xs text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
                                 </div>
-                                <Tent size={18} className={`shrink-0 ${isSelected ? 'text-primary' : 'text-border'}`} />
+                                <Tent size={18} className={`shrink-0 ${isSelected ? 'text-primary' : 'text-muted'}`} />
                               </div>
                             </motion.button>
                           );
@@ -532,13 +532,13 @@ function BoekenContent() {
 
                       {/* Spot number */}
                       {campingId && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border shadow-sm p-5">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-sm p-5">
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <Hash size={14} className="text-primary" />
                             {t('booking.preferredSpot')}
                           </label>
                           <input type="text" value={spotNumber} onChange={e => setSpotNumber(e.target.value)} placeholder={t('booking.spotPlaceholder')}
-                            className="w-full px-4 py-3 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full px-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           <p className="text-xs text-muted mt-1.5">{t('booking.spotNote')}</p>
                         </motion.div>
                       )}
@@ -554,7 +554,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Person counters */}
-                      <div className="bg-white rounded-2xl border shadow-sm p-6">
+                      <div className="bg-white rounded-2xl shadow-sm p-6">
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div className="flex items-center justify-between">
                             <div>
@@ -587,7 +587,7 @@ function BoekenContent() {
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 pt-4 border-t flex items-center gap-2">
+                        <div className="mt-4 pt-4 flex items-center gap-2">
                           <Users size={16} className="text-primary" />
                           <span className="text-sm font-medium text-foreground-light">{t('booking.totalPersons')} {totalPersons} {totalPersons === 1 ? t('booking.person') : t('booking.persons')}</span>
                         </div>
@@ -670,7 +670,7 @@ function BoekenContent() {
                                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="border-t p-5 space-y-4">
+                                      <div className="p-5 space-y-4">
                                         {/* Photo gallery */}
                                         <div>
                                           <p className="text-sm font-semibold text-foreground mb-3">{t('booking.photosLabel')}</p>
@@ -739,13 +739,13 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s4Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
                         <div>
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
                           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jan Jansen"
-                            className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div>
@@ -753,14 +753,14 @@ function BoekenContent() {
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl"
-                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+31 6 12345678"
-                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                         </div>
                         <div>
@@ -768,12 +768,12 @@ function BoekenContent() {
                             <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
                           </label>
                           <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
-                            rows={3} className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
+                            rows={3} className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
                         </div>
                       </div>
 
                       {/* Terms */}
-                      <label className="flex items-start gap-3 cursor-pointer bg-white rounded-xl p-4 border">
+                      <label className="flex items-start gap-3 cursor-pointer bg-white rounded-xl p-4">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-gray-300'}`}>
                           {termsAccepted && <Check size={12} className="text-white" />}
                         </div>
@@ -796,7 +796,7 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s5Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                         {/* Caravan strip */}
                         {chosenCaravan && (
                           <div className="relative h-40 sm:h-48">
@@ -845,7 +845,7 @@ function BoekenContent() {
                             <p className="text-sm text-muted">{email} &bull; {phone}</p>
                           </div>
 
-                          <div className="border-t pt-4 space-y-2">
+                          <div className="pt-4 space-y-2">
                             <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${discountApplied ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
                             {discountApplied && (
                               <div className="flex justify-between items-center">
@@ -858,7 +858,7 @@ function BoekenContent() {
                           </div>
 
                           {/* Discount code input */}
-                          <div className="border-t pt-4">
+                          <div className="pt-4">
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Tag size={14} className="text-primary" /> {t('booking.discountCode')}
                             </label>
@@ -869,10 +869,10 @@ function BoekenContent() {
                                 onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError(''); }}
                                 placeholder={t('booking.discountPlaceholder')}
                                 disabled={!!discountApplied}
-                                className="flex-1 px-4 py-2.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm uppercase disabled:opacity-50"
+                                className="flex-1 px-4 py-2.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm uppercase disabled:opacity-50"
                               />
                               {discountApplied ? (
-                                <button onClick={() => { setDiscountApplied(null); setDiscountCode(''); }} className="px-4 py-2.5 border rounded-xl text-sm font-medium text-muted transition-colors">
+                                <button onClick={() => { setDiscountApplied(null); setDiscountCode(''); }} className="px-4 py-2.5 rounded-xl text-sm font-medium text-muted transition-colors">
                                   {t('booking.discountRemove')}
                                 </button>
                               ) : (
@@ -902,19 +902,19 @@ function BoekenContent() {
               </AnimatePresence>
 
               {/* ===== NAVIGATION BUTTONS ===== */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t">
+              <div className="flex items-center justify-between mt-8 pt-6">
                 {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 border rounded-full text-foreground-light font-medium transition-all">
+                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
                     <ArrowLeft size={18} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
+                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
                     {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
-                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg text-base">
+                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg text-base">
                     {submitting ? (
                       <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
                     ) : (
@@ -929,7 +929,7 @@ function BoekenContent() {
             <div className="hidden lg:block">
               <div className="sticky top-[140px] space-y-5">
                 {/* Live summary card */}
-                <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="bg-primary p-5 text-white">
                     <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> {t('booking.yourBooking')}</h3>
                   </div>
@@ -973,7 +973,7 @@ function BoekenContent() {
 
                     {/* Price */}
                     {totalPrice > 0 && (
-                      <div className="border-t pt-3 mt-3">
+                      <div className="pt-3 mt-3">
                         <div className="flex justify-between items-baseline mb-1">
                           <span className="text-muted">{t('booking.total')}</span>
                           <motion.span key={discountedTotal} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-xl font-bold">&euro;{discountedTotal}</motion.span>
@@ -1008,7 +1008,7 @@ function BoekenContent() {
                 </div>
 
                 {/* Need help */}
-                <div className="bg-white rounded-2xl border p-5 text-center">
+                <div className="bg-white rounded-2xl p-5 text-center">
                   <p className="text-sm font-semibold text-foreground mb-1">{t('booking.needHelp')}</p>
                   <p className="text-xs text-muted mb-3">{t('booking.helpText')}</p>
                   <a href="https://wa.me/34600000000" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold transition-colors">
@@ -1025,7 +1025,7 @@ function BoekenContent() {
       {/* ===== MOBILE STICKY SUMMARY ===== */}
       {discountedTotal > 0 && (
         <div className="lg:hidden fixed bottom-20 left-4 right-4 z-30">
-          <div className="bg-white rounded-2xl shadow-xl border px-4 py-3 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-muted">{t('booking.totalPriceLabel')}</p>
               <p className="text-lg font-bold text-primary">&euro;{discountedTotal}</p>

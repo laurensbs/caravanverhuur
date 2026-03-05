@@ -66,7 +66,7 @@ function ContactDetail({
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-5 border border-border mt-2 space-y-4">
+    <div className="bg-surface rounded-2xl p-5 mt-2 space-y-4">
       {/* Contact info */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex items-center gap-2 text-sm text-muted">
@@ -97,7 +97,7 @@ function ContactDetail({
 
       {/* Admin reply */}
       {contact.admin_reply && (
-        <div className="bg-primary-light rounded-xl p-4 border border-primary">
+        <div className="bg-primary-light rounded-xl p-4">
           <p className="text-xs font-semibold text-primary-dark uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Antwoord
@@ -116,7 +116,7 @@ function ContactDetail({
             onChange={(e) => setReply(e.target.value)}
             placeholder="Typ je antwoord..."
             rows={3}
-            className="w-full px-4 py-3 bg-white border border-border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full px-4 py-3 bg-white rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
           <div className="flex items-center gap-3 mt-2">
             <button
@@ -205,15 +205,15 @@ export default function BerichtenPage() {
     <div className="space-y-4">
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary">{newCount}</p>
           <p className="text-xs text-muted">Nieuw</p>
         </div>
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary">{readCount}</p>
           <p className="text-xs text-muted">Gelezen</p>
         </div>
-        <div className="bg-white rounded-xl border border-border p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary">{answeredCount}</p>
           <p className="text-xs text-muted">Beantwoord</p>
         </div>
@@ -228,7 +228,7 @@ export default function BerichtenPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Zoek op naam, e-mail, onderwerp..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
         <div className="relative">
@@ -238,7 +238,7 @@ export default function BerichtenPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as ContactStatus | 'ALLE')
             }
-            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle statussen</option>
             {STATUS_OPTIONS.map((s) => (
@@ -262,7 +262,7 @@ export default function BerichtenPage() {
           return (
             <div
               key={contact.id}
-              className="bg-white rounded-2xl border border-border overflow-hidden"
+              className="bg-white rounded-2xl overflow-hidden"
             >
               <button
                 onClick={() =>
@@ -270,7 +270,7 @@ export default function BerichtenPage() {
                 }
                 className={`w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer ${
                   contact.status === 'NIEUW'
-                    ? 'border-l-4 border-l-primary'
+                    ? 'bg-primary/5'
                     : ''
                 }`}
               >

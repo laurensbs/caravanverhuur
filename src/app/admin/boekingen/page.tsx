@@ -97,7 +97,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-5 border border-border mt-2 space-y-5">
+    <div className="bg-surface rounded-2xl p-5 mt-2 space-y-5">
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <User className="w-4 h-4" /> Gastgegevens
@@ -174,7 +174,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             <span className="text-muted">Restbedrag</span>
             <span className="text-foreground">{formatCurrency(Number(booking.remaining_amount))}</span>
           </div>
-          <div className="flex justify-between text-sm border-t border-border pt-2">
+          <div className="flex justify-between text-sm pt-2">
             <span className="text-muted">Borg</span>
             <span className="text-foreground">{formatCurrency(Number(booking.borg_amount))}</span>
           </div>
@@ -212,7 +212,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
           <select
             value={newStatus}
             onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
-            className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
@@ -225,7 +225,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 bg-white border border-border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full px-3 py-2 bg-white rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
             placeholder="Interne notities..."
           />
         </div>
@@ -250,17 +250,17 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                   <div>
                     <label className="text-xs font-semibold text-muted block mb-1">Kortingsbedrag (€)</label>
                     <input type="number" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} placeholder="50"
-                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted block mb-1">Reden / Code</label>
                     <input type="text" value={discountCode} onChange={e => setDiscountCode(e.target.value)} placeholder="ADMIN"
-                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> Wachtwoord</label>
                     <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder="Admin wachtwoord"
-                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
                 {discountError && <p className="text-xs text-red-500">{discountError}</p>}
@@ -315,7 +315,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         )}
         <button
           onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }}
-          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer ml-auto"
+          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer ml-auto"
         >
           <Trash2 className="w-4 h-4" />
           Verwijderen
@@ -323,7 +323,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
       </div>
 
       {showDeleteConfirm && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+        <div className="bg-red-50 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2 text-red-700">
             <AlertTriangle className="w-5 h-5" />
             <p className="text-sm font-semibold">Boeking permanent verwijderen?</p>
@@ -341,7 +341,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
               placeholder="Admin wachtwoord"
-              className="flex-1 px-3 py-2 bg-white border border-red-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="flex-1 px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
             />
           </div>
           <div className="flex gap-2">
@@ -372,7 +372,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
             >
               Annuleren
             </button>
@@ -450,7 +450,7 @@ export default function BookingenPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Zoek op naam, e-mail, referentie..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
         <div className="relative">
@@ -458,7 +458,7 @@ export default function BookingenPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'ALLE')}
-            className="pl-10 pr-8 py-2.5 bg-white border border-border rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="pl-10 pr-8 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             <option value="ALLE">Alle statussen</option>
             {STATUS_OPTIONS.map((s) => (
@@ -479,7 +479,7 @@ export default function BookingenPage() {
           const isExpanded = expandedId === booking.id;
 
           return (
-            <div key={booking.id} className="bg-white rounded-2xl border border-border overflow-hidden">
+            <div key={booking.id} className="bg-white rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedId(isExpanded ? null : booking.id)}
                 className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"

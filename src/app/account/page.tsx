@@ -144,15 +144,7 @@ export default function AccountPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {['bg-primary', 'bg-primary', 'bg-primary-light', 'bg-danger/70'].map((bg, i) => (
-                  <div key={i} className={`w-8 h-8 rounded-full ${bg} border-2 border-primary-dark flex items-center justify-center text-white text-xs font-bold`}>
-                    {['JB', 'ML', 'PV', 'AK'][i]}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-white/90 text-sm font-medium">{t('account.socialProof')}</p>
+              <div className="flex -space-x-2"> {['bg-primary', 'bg-primary', 'bg-primary-light', 'bg-danger/70'].map((bg, i) => ( <div key={i} className={`w-8 h-8 rounded-full ${bg} border-primary-dark flex items-center justify-center text-white text-xs font-bold`}> {['JB', 'ML', 'PV', 'AK'][i]} </div> ))} </div> <div> <p className="text-white/90 text-sm font-medium">{t('account.socialProof')}</p>
                 <p className="text-white/50 text-xs">{t('account.socialProofSub')}</p>
               </div>
             </div>
@@ -190,7 +182,7 @@ export default function AccountPage() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-sm border p-5 sm:p-7"
+                className="bg-white rounded-2xl shadow-sm p-5 sm:p-7"
               >
                 {/* Tab switcher */}
                 <div className="flex bg-surface rounded-xl p-1 mb-5">
@@ -206,88 +198,7 @@ export default function AccountPage() {
                     onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted'
-                    }`}
-                  >
-                    {t('account.tabRegister')}
-                  </button>
-                </div>
-
-                {/* Error / Success messages */}
-                <AnimatePresence mode="wait">
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-start gap-2.5 bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border border-danger/20"
-                    >
-                      <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{error}</span>
-                    </motion.div>
-                  )}
-                  {success && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border border-primary-100"
-                    >
-                      <CheckCircle size={16} className="shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{success}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <form onSubmit={handleSubmit} className="space-y-3.5">
-                  {/* Name (register) */}
-                  <AnimatePresence>
-                    {mode === 'register' && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelName')}</label>
-                        <div className="relative">
-                          <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'}
-                            className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Email */}
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelEmail')}</label>
-                    <div className="relative">
-                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email"
-                        className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPassword')}</label>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                        placeholder={mode === 'register' ? t('account.placeholderPasswordNew') : '••••••••'} required
-                        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                        className="w-full pl-10 pr-12 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors">
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                    {mode === 'login' && (
-                      <p className="text-xs text-muted mt-1.5">
-                        {t('account.forgotPassword')}{' '}
-                        <Link href="/contact" className="text-primary font-medium">{t('account.contactUs')}</Link>
-                      </p>
-                    )}
-                    {mode === 'register' && password.length > 0 && (
-                      <div className="mt-2.5">
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4].map(i => (
-                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-surface-alt'}`} />
+                    }`} > {t('account.tabRegister')} </button> </div> {/* Error / Success messages */} <AnimatePresence mode="wait"> {error && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border-danger/20" > <AlertCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{error}</span> </motion.div> )} {success && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border-primary-100" > <CheckCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{success}</span> </motion.div> )} </AnimatePresence> <form onSubmit={handleSubmit} className="space-y-3.5"> {/* Name (register) */} <AnimatePresence> {mode ==='register' && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelName')}</label> <div className="relative"> <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'} className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </motion.div> )} </AnimatePresence> {/* Email */} <div> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelEmail')}</label> <div className="relative"> <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </div> {/* Password */} <div> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPassword')}</label> <div className="relative"> <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={mode === 'register' ? t('account.placeholderPasswordNew') : '••••••••'} required autoComplete={mode === 'login' ? 'current-password' : 'new-password'} className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors"> {showPassword ? <EyeOff size={16} /> : <Eye size={16} />} </button> </div> {mode ==='login' && ( <p className="text-xs text-muted mt-1.5"> {t('account.forgotPassword')}{' '} <Link href="/contact" className="text-primary font-medium">{t('account.contactUs')}</Link> </p> )} {mode === 'register' && password.length > 0 && ( <div className="mt-2.5"> <div className="flex gap-1"> {[1, 2, 3, 4].map(i => ( <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-surface-alt'}`} />
                           ))}
                         </div>
                         <p className={`text-xs mt-1 font-medium ${passwordStrength <= 1 ? 'text-danger' : passwordStrength <= 2 ? 'text-primary' : 'text-primary'}`}>
@@ -301,19 +212,7 @@ export default function AccountPage() {
                   <AnimatePresence>
                     {mode === 'register' && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPhone')} <span className="text-muted font-normal">{t('account.optional')}</span></label>
-                        <div className="relative">
-                          <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678"
-                            className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Terms checkbox (register) */}
-                  <AnimatePresence>
-                    {mode === 'register' && (
+                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPhone')} <span className="text-muted font-normal">{t('account.optional')}</span></label> <div className="relative"> <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </motion.div> )} </AnimatePresence> {/* Terms checkbox (register) */} <AnimatePresence> {mode ==='register' && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-start gap-2.5 pt-1">
                         <input type="checkbox" id="acceptTerms" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
                           className="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary/20 cursor-pointer" />
@@ -337,7 +236,7 @@ export default function AccountPage() {
                 </form>
 
                 {/* Footer switch */}
-                <div className="mt-5 pt-4 border-t text-center text-sm text-muted">
+                <div className="mt-5 pt-4 text-center text-sm text-muted">
                   {mode === 'login' ? (
                     <p>{t('account.noAccount')}{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold">{t('account.registerFree')}</button></p>
                   ) : (
@@ -354,7 +253,7 @@ export default function AccountPage() {
                   { icon: <Palmtree size={13} />, text: t('account.trustDirect') },
                 ].map((badge, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-xs text-muted font-medium">
-                    <span className="text-border">{badge.icon}</span>
+                    <span className="text-muted">{badge.icon}</span>
                     {badge.text}
                   </span>
                 ))}

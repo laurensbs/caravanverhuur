@@ -38,7 +38,7 @@ export default function CookieConsent() {
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6"
         >
-          <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl border p-4 sm:p-6">
+          <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-4 sm:p-6">
             <div className="flex items-start gap-3 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                 <Cookie className="text-primary" size={20} />
@@ -60,7 +60,7 @@ export default function CookieConsent() {
                   </button>
                   <button
                     onClick={decline}
-                    className="px-4 sm:px-6 py-2 border text-muted font-medium rounded-full text-xs sm:text-sm transition-colors"
+                    className="px-4 sm:px-6 py-2 text-muted font-medium rounded-full text-xs sm:text-sm transition-colors"
                   >
                     {t('cookie.essentialOnly')}
                   </button>

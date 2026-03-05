@@ -124,7 +124,7 @@ export default function FAQPage() {
                   const key = `${catIdx}-${itemIdx}`;
                   const isOpen = openItems.has(key);
                   return (
-                    <div key={key} className="border rounded-xl overflow-hidden bg-white">
+                    <div key={key} className="rounded-xl overflow-hidden bg-white">
                       <button
                         onClick={() => toggle(key)}
                         className="w-full flex items-center justify-between p-4 text-left transition-colors"
@@ -144,7 +144,7 @@ export default function FAQPage() {
                             transition={{ duration: 0.2 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-4 pb-4 text-muted text-sm leading-relaxed border-t pt-3">
+                            <div className="px-4 pb-4 text-muted text-sm leading-relaxed pt-3">
                               {item.a}
                             </div>
                           </motion.div>
@@ -158,7 +158,7 @@ export default function FAQPage() {
           ))}
 
           {/* CTA */}
-          <div className="bg-surface rounded-2xl p-8 text-center border mt-12">
+          <div className="bg-surface rounded-2xl p-8 text-center mt-12">
             <h3 className="text-xl font-bold text-foreground mb-2">{t('faq.notFoundTitle')}</h3>
             <p className="text-muted mb-6">{t('faq.notFoundText')}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

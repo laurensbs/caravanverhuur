@@ -77,7 +77,7 @@ function SuccesContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border mb-8"
+            className="bg-white rounded-2xl p-6 shadow-sm mb-8"
           >
             <div className="flex items-center gap-3 justify-center text-primary mb-3">
               <CheckCircle size={20} />

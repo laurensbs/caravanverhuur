@@ -69,7 +69,7 @@ export default function WeatherChecker() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm border transition-all duration-300 text-center"
+              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm transition-all duration-300 text-center"
             >
               <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{w.month}</div>
               <div className="flex items-center justify-center">

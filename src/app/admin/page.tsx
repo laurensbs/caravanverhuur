@@ -65,7 +65,7 @@ function StatCard({
     >
       <Link
         href={href}
-        className="block bg-white rounded-2xl p-5 border border-border hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+        className="block bg-white rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
       >
         <div className="flex items-start justify-between">
           <div>
@@ -209,109 +209,7 @@ export default function AdminDashboard() {
         <StatCard
           label="Berichten"
           value={String(totalMessages)}
-          sub={`${newMessages} ongelezen`}
-          icon={Mail}
-          color="bg-primary-100 text-primary-dark"
-          href={p('/berichten')}
-          index={3}
-        />
-      </div>
-
-      {/* Action items */}
-      {(newBookings > 0 || openCount > 0 || newMessages > 0) && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.4 }}
-          className="bg-white rounded-2xl border border-border p-5"
-        >
-          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
-            Actiepunten
-          </h3>
-          <div className="space-y-2">
-            {newBookings > 0 && (
-              <Link
-                href={p('/boekingen')}
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>
-                  <strong>{newBookings}</strong> nieuwe boeking(en) wacht(en) op bevestiging
-                </span>
-                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
-              </Link>
-            )}
-            {openCount > 0 && (
-              <Link
-                href={p('/betalingen')}
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary"
-              >
-                <Clock className="w-4 h-4 shrink-0" />
-                <span>
-                  <strong>{openCount}</strong> openstaande betaling(en) ({formatCurrency(totalOpen)})
-                </span>
-                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
-              </Link>
-            )}
-            {newMessages > 0 && (
-              <Link
-                href={p('/berichten')}
-                className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark"
-              >
-                <Mail className="w-4 h-4 shrink-0" />
-                <span>
-                  <strong>{newMessages}</strong> ongelezen bericht(en)
-                </span>
-                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
-              </Link>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45, duration: 0.4 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-      >
-        {/* Recent bookings */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              Recente Boekingen
-            </h3>
-            <Link
-              href={p('/boekingen')}
-              className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
-            >
-              Alles bekijken <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          {recentBookings.length === 0 ? (
-            <p className="text-sm text-muted py-8 text-center">Nog geen boekingen</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {recentBookings.map((booking) => {
-                const caravan = getBookingCaravan(booking);
-                const camping = getBookingCamping(booking);
-                return (
-                  <Link
-                    key={booking.id}
-                    href={p('/boekingen')}
-                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">
-                        {booking.guest_name}
-                      </p>
-                      <p className="text-xs text-muted truncate">
-                        {caravan?.name} • {camping?.name}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
+          sub={`${newMessages} ongelezen`} icon={Mail} color="bg-primary-100 text-primary-dark" href={p('/berichten')} index={3} /> </div> {/* Action items */} {(newBookings > 0 || openCount > 0 || newMessages > 0) && ( <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3"> Actiepunten </h3> <div className="space-y-2"> {newBookings > 0 && ( <Link href={p('/boekingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <AlertCircle className="w-4 h-4 shrink-0" /> <span> <strong>{newBookings}</strong> nieuwe boeking(en) wacht(en) op bevestiging </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {openCount > 0 && ( <Link href={p('/betalingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary" > <Clock className="w-4 h-4 shrink-0" /> <span> <strong>{openCount}</strong> openstaande betaling(en) ({formatCurrency(totalOpen)}) </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {newMessages > 0 && ( <Link href={p('/berichten')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <Mail className="w-4 h-4 shrink-0" /> <span> <strong>{newMessages}</strong> ongelezen bericht(en) </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} </div> </motion.div> )} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6" > {/* Recent bookings */} <div className="lg:col-span-2 bg-white rounded-2xl p-5"> <div className="flex items-center justify-between mb-4"> <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider"> Recente Boekingen </h3> <Link href={p('/boekingen')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1" > Alles bekijken <ArrowRight className="w-3 h-3" /> </Link> </div> {recentBookings.length === 0 ? ( <p className="text-sm text-muted py-8 text-center">Nog geen boekingen</p> ) : ( <div className=""> {recentBookings.map((booking) => { const caravan = getBookingCaravan(booking); const camping = getBookingCamping(booking); return ( <Link key={booking.id} href={p('/boekingen')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors" > <div className="flex-1 min-w-0"> <p className="font-medium text-sm text-foreground truncate"> {booking.guest_name} </p> <p className="text-xs text-muted truncate"> {caravan?.name} • {camping?.name} </p> </div> <div className="text-right shrink-0"> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
                       >
                         {booking.status.replace('_', ' ')}
                       </span>
@@ -327,7 +225,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="bg-white rounded-2xl border border-border p-5">
+        <div className="bg-white rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               Berichten
@@ -372,7 +270,7 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55, duration: 0.4 }}
-        className="bg-white rounded-2xl border border-border p-5"
+        className="bg-white rounded-2xl p-5"
       >
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
           Aankomende Verblijven
@@ -387,7 +285,7 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={b.id}
-                  className="flex items-center gap-4 p-3 rounded-xl border border-border"
+                  className="flex items-center gap-4 p-3 rounded-xl"
                 >
                   <div className="text-center bg-surface rounded-xl px-3 py-2 shrink-0">
                     <p className="text-lg font-bold text-primary-dark">
@@ -408,81 +306,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="shrink-0">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`}
-                    >
-                      {b.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
-
-      {/* Test data purge */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.65, duration: 0.4 }}
-        className="bg-white rounded-2xl border border-border p-5"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-50">
-              <ShieldAlert className="w-5 h-5 text-red-500" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Database opschonen</h3>
-              <p className="text-xs text-muted">Verwijder alle testdata (boekingen, betalingen, berichten, checklists)</p>
-            </div>
-          </div>
-          {!showPurge && (
-            <button
-              onClick={() => setShowPurge(true)}
-              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" />
-              Wis alle testdata
-            </button>
-          )}
-        </div>
-
-        {showPurge && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-4 pt-4 border-t border-border space-y-3"
-          >
-            {purgeResult ? (
-              <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                {purgeResult.message}
-              </div>
-            ) : (
-              <>
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                  <p className="text-xs text-red-700 font-medium">
-                    ⚠️ Dit verwijdert ALLE boekingen, betalingen, berichten, borgchecklists en nieuwsbrieven uit de database. Dit is onomkeerbaar!
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-foreground mb-1 block">Bevestig met admin wachtwoord</label>
-                  <input
-                    type="password"
-                    value={purgePassword}
-                    onChange={(e) => setPurgePassword(e.target.value)}
-                    placeholder="Admin wachtwoord"
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={async () => {
-                      if (!purgePassword) return;
-                      setPurging(true);
-                      try {
-                        const res = await fetch('/api/admin/dashboard', {
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {b.status.replace('_', ' ')} </span> </div> </div> ); })} </div> )} </motion.div> {/* Test data purge */} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-5 h-5 text-red-500" /> </div> <div> <h3 className="text-sm font-semibold text-foreground">Database opschonen</h3> <p className="text-xs text-muted">Verwijder alle testdata (boekingen, betalingen, berichten, checklists)</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> Wis alle testdata </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ Dit verwijdert ALLE boekingen, betalingen, berichten, borgchecklists en nieuwsbrieven uit de database. Dit is onomkeerbaar! </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">Bevestig met admin wachtwoord</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder="Admin wachtwoord" className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
                           method: 'DELETE',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ adminPassword: purgePassword }),
@@ -508,7 +332,7 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     onClick={() => { setShowPurge(false); setPurgePassword(''); setPurgeResult(null); }}
-                    className="px-4 py-2 text-sm font-medium border border-border rounded-lg hover:bg-surface transition-colors cursor-pointer"
+                    className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-surface transition-colors cursor-pointer"
                   >
                     Annuleren
                   </button>

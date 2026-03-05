@@ -59,23 +59,7 @@ const sections = [
   {
     id: 'betalingen',
     icon: CreditCard,
-    title: '3. Betalingsverwerking',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">
-          Betalingen worden verwerkt via iDEAL, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker.
-        </p>
-        <div className="bg-primary-50 border border-primary-light rounded-xl p-4 flex gap-3">
-          <Shield size={18} className="text-primary shrink-0 mt-0.5" />
-          <p className="text-sm text-foreground leading-relaxed">
-            Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL.
-          </p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'bewaartermijn',
+    title: '3. Betalingsverwerking', content: ( <div className="space-y-4"> <p className="text-muted leading-relaxed"> Betalingen worden verwerkt via iDEAL, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker. </p> <div className="bg-primary-50 border-primary-light rounded-xl p-4 flex gap-3"> <Shield size={18} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground leading-relaxed"> Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL. </p> </div> </div> ), }, { id:'bewaartermijn',
     icon: Clock,
     title: '4. Bewaartermijn',
     content: (
@@ -147,19 +131,7 @@ const sections = [
             'SSL/TLS versleuteling op onze website',
             'Versleutelde opslag van gevoelige gegevens',
             'Beperkte toegang tot persoonsgegevens',
-            'Regelmatige beveiligingsaudits',
-          ].map((item, i) => (
-            <div key={i} className="flex gap-3 bg-primary-50 border border-primary-light rounded-xl p-3.5">
-              <Lock size={14} className="text-primary shrink-0 mt-0.5" />
-              <p className="text-sm text-foreground">{item}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'derden',
+            'Regelmatige beveiligingsaudits', ].map((item, i) => ( <div key={i} className="flex gap-3 bg-primary-50 border-primary-light rounded-xl p-3.5"> <Lock size={14} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground">{item}</p> </div> ))} </div> </div> ), }, { id:'derden',
     icon: Share2,
     title: '8. Delen met Derden',
     content: (
@@ -216,7 +188,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Quick nav */}
-      <section className="border-b bg-white sticky top-0 z-30">
+      <section className="bg-white sticky top-0 z-30">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (
@@ -236,7 +208,7 @@ export default function PrivacyPage() {
       <section className="py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 space-y-8">
           {/* Intro */}
-          <div className="bg-white rounded-2xl border p-6 sm:p-8">
+          <div className="bg-white rounded-2xl p-6 sm:p-8">
             <p className="text-muted leading-relaxed">
               Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens.
               Dit privacybeleid beschrijft hoe wij uw gegevens verzamelen, gebruiken en beschermen conform de
@@ -247,7 +219,7 @@ export default function PrivacyPage() {
           {sections.map(s => {
             const Icon = s.icon;
             return (
-              <div key={s.id} id={s.id} className="bg-white rounded-2xl border p-6 sm:p-8 scroll-mt-20">
+              <div key={s.id} id={s.id} className="bg-white rounded-2xl p-6 sm:p-8 scroll-mt-20">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
                     <Icon size={20} className="text-primary" />

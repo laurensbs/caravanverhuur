@@ -107,7 +107,7 @@ const statusColors: Record<string, string> = {
 };
 
 const borgItemIcons: Record<string, React.ReactNode> = {
-  nvt: <Minus size={14} className="text-border" />,
+  nvt: <Minus size={14} className="text-muted" />,
   goed: <CheckCircle2 size={14} className="text-primary" />,
   beschadigd: <AlertTriangle size={14} className="text-primary" />,
   ontbreekt: <XCircle size={14} className="text-danger" />,
@@ -359,7 +359,7 @@ function MijnAccountContent() {
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-28 space-y-4">
               {/* User card */}
-              <div className="bg-white rounded-2xl border p-5">
+              <div className="bg-white rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                     {firstName.charAt(0).toUpperCase()}
@@ -385,7 +385,7 @@ function MijnAccountContent() {
               </div>
 
               {/* Nav items */}
-              <nav className="bg-white rounded-2xl border p-2 space-y-0.5">
+              <nav className="bg-white rounded-2xl p-2 space-y-0.5">
                 {tabs.map(tb => (
                   <button
                     key={tb.key}
@@ -406,7 +406,7 @@ function MijnAccountContent() {
               </nav>
 
               {/* Sidebar actions */}
-              <div className="bg-white rounded-2xl border p-2 space-y-0.5">
+              <div className="bg-white rounded-2xl p-2 space-y-0.5">
                 <Link href="/boeken" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-primary transition-colors">
                   <Plus size={18} />
                   {t('myAccount.newBooking')}
@@ -449,7 +449,7 @@ function MijnAccountContent() {
                   className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold transition-all ${
                     tab === tb.key
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-white text-foreground-light border'
+                      : 'bg-white text-foreground-light'
                   }`}
                 >
                   {tb.icon}
@@ -490,7 +490,7 @@ function MijnAccountContent() {
                     const camping = getCamping(upcomingBooking.camping_id);
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
-                      <div className="bg-white rounded-2xl overflow-hidden border shadow-sm">
+                      <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
                         <div className="relative h-36 sm:h-44 bg-foreground">
                           {caravan?.photos?.[0] && (
                             <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" unoptimized />
@@ -550,7 +550,7 @@ function MijnAccountContent() {
                             { value: remainingDays, label: days === 1 ? t('myAccount.day') : t('myAccount.daysLabel') },
                             { value: hours, label: t('myAccount.hours') },
                           ].map((item, i) => (
-                            <div key={i} className="text-center bg-white rounded-xl p-3 border shadow-sm">
+                            <div key={i} className="text-center bg-white rounded-xl p-3 shadow-sm">
                               <div className="text-2xl sm:text-3xl font-bold text-primary leading-none">{item.value}</div>
                               <div className="text-xs text-muted font-medium uppercase tracking-wider mt-1.5">{item.label}</div>
                             </div>
@@ -562,7 +562,7 @@ function MijnAccountContent() {
                             <span>{t('myAccount.countdownProgress')}</span>
                             <span className="font-semibold text-primary">{pct}%</span>
                           </div>
-                          <div className="h-2 bg-border/30 rounded-full overflow-hidden">
+                          <div className="h-2 bg-stone-200/30 rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
@@ -573,7 +573,7 @@ function MijnAccountContent() {
                         </p>
 
                         {/* Caravan preparation timeline */}
-                        <div className="mt-5 pt-4 border-t">
+                        <div className="mt-5 pt-4">
                           <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
                             <ClipboardCheck size={13} className="text-primary" />
                             Caravan klaarzetten
@@ -592,12 +592,12 @@ function MijnAccountContent() {
                                 <div key={i} className="flex gap-3">
                                   <div className="flex flex-col items-center">
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                                      completed ? 'bg-primary text-white' : 'bg-border/30 text-muted'
+                                      completed ? 'bg-primary text-white' : 'bg-stone-200/30 text-muted'
                                     }`}>
                                       {completed ? <Check size={12} /> : <span>{step.icon}</span>}
                                     </div>
                                     {i < 4 && (
-                                      <div className={`w-0.5 h-6 ${completed ? 'bg-primary/30' : 'bg-border/30'}`} />
+                                      <div className={`w-0.5 h-6 ${completed ? 'bg-primary/30' : 'bg-stone-200/30'}`} />
                                     )}
                                   </div>
                                   <div className={`pb-3 ${current ? '' : ''}`}>
@@ -628,7 +628,7 @@ function MijnAccountContent() {
                     const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
 
                     return (
-                      <div className="bg-white rounded-2xl border overflow-hidden">
+                      <div className="bg-white rounded-2xl overflow-hidden">
                         <div className="p-5 sm:p-6 pb-0 sm:pb-0">
                           <div className="flex items-center gap-3 mb-1">
                             <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
@@ -657,7 +657,7 @@ function MijnAccountContent() {
                                         <div className="flex items-center gap-2">
                                           <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
                                           {act.distance && (
-                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full border whitespace-nowrap shrink-0">
+                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
                                               {act.distance}
                                             </span>
                                           )}
@@ -678,7 +678,7 @@ function MijnAccountContent() {
                           ))}
 
                           {/* General tips */}
-                          <div className="border-t pt-4">
+                          <div className="pt-4">
                             <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
                               <Star size={10} className="text-primary" />
                               Algemene tips Costa Brava
@@ -751,28 +751,28 @@ function MijnAccountContent() {
 
                   {/* Quick actions */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <Link href="/boeken" className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                    <Link href="/boeken" className="bg-white rounded-2xl p-4 text-center transition-all group">
                       <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Plus size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.newBooking')}</div>
                       <div className="text-xs text-muted mt-0.5">{t('myAccount.season2026')}</div>
                     </Link>
-                    <button onClick={() => switchTab('boekingen')} className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                    <button onClick={() => switchTab('boekingen')} className="bg-white rounded-2xl p-4 text-center transition-all group">
                       <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Eye size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.myBookings')}</div>
                       <div className="text-xs text-muted mt-0.5">{bookings.length} {t('myAccount.totalCount')}</div>
                     </button>
-                    <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                    <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 text-center transition-all group">
                       <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <CreditCard size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.paymentsTitle')}</div>
                       <div className="text-xs text-muted mt-0.5">{payments.filter(p => p.status === 'BETAALD').length} {t('myAccount.statPaid').toLowerCase()}</div>
                     </button>
-                    <Link href="/contact" className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                    <Link href="/contact" className="bg-white rounded-2xl p-4 text-center transition-all group">
                       <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Mail size={20} className="text-primary" />
                       </div>
@@ -783,7 +783,7 @@ function MijnAccountContent() {
 
                   {/* Empty state */}
                   {bookings.length === 0 && (
-                    <div className="bg-white rounded-2xl p-10 sm:p-14 text-center border">
+                    <div className="bg-white rounded-2xl p-10 sm:p-14 text-center">
                       <div className="w-16 h-16 bg-primary/8 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Sun size={28} className="text-primary" />
                       </div>
@@ -804,12 +804,12 @@ function MijnAccountContent() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.myBookings')}</h2>
-                    <span className="text-xs text-muted bg-white px-3 py-1 rounded-full border">{bookings.length} {t('myAccount.totalCount')}</span>
+                    <span className="text-xs text-muted bg-white px-3 py-1 rounded-full">{bookings.length} {t('myAccount.totalCount')}</span>
                   </div>
 
                   {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border">
-                      <Calendar size={40} className="mx-auto text-border mb-3" />
+                    <div className="bg-white rounded-2xl p-8 text-center">
+                      <Calendar size={40} className="mx-auto text-muted mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noBookingsYet')}</p>
                       <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold mt-4 transition-colors">
                         {t('myAccount.bookNow')} <ArrowRight size={14} />
@@ -821,7 +821,7 @@ function MijnAccountContent() {
                       const camping = getCamping(booking.camping_id);
                       const isPast = new Date(booking.check_out) < new Date();
                       return (
-                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-all ${isPast ? 'opacity-60' : ''}`}>
+                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden transition-all ${isPast ? 'opacity-60' : ''}`}>
                           {/* Caravan image strip */}
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
@@ -879,7 +879,7 @@ function MijnAccountContent() {
                             </div>
 
                             {/* Payment progress */}
-                            <div className="mt-4 pt-3 border-t">
+                            <div className="mt-4 pt-3">
                               {(() => {
                                 const bookingPayments = payments.filter(p => p.booking_id === booking.id);
                                 const paid = bookingPayments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0);
@@ -923,7 +923,7 @@ function MijnAccountContent() {
 
                   {/* Payment summary card */}
                   {payments.length > 0 && (
-                    <div className="bg-white rounded-2xl p-5 border">
+                    <div className="bg-white rounded-2xl p-5">
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.paid')}</div>
@@ -948,7 +948,7 @@ function MijnAccountContent() {
                   )}
 
                   {payments.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border">
+                    <div className="bg-white rounded-2xl p-8 text-center">
                       <CreditCard size={40} className="mx-auto text-muted/30 mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noPayments')}</p>
                     </div>
@@ -956,7 +956,7 @@ function MijnAccountContent() {
                     payments.map(payment => {
                       const booking = bookings.find(b => b.id === payment.booking_id);
                       return (
-                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border">
+                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                             payment.status === 'BETAALD' ? 'bg-primary-50' : 'bg-primary-50'
                           }`}>
@@ -1012,7 +1012,7 @@ function MijnAccountContent() {
                   </div>
 
                   {borgChecklists.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border">
+                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center">
                       <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Shield size={28} className="text-primary" />
                       </div>
@@ -1048,7 +1048,7 @@ function MijnAccountContent() {
                       });
 
                       return (
-                        <div key={bc.id} className="bg-white rounded-2xl border overflow-hidden">
+                        <div key={bc.id} className="bg-white rounded-2xl overflow-hidden">
                           {/* Header */}
                           <button
                             onClick={() => setExpandedBorgId(isExpanded ? null : bc.id)}
@@ -1094,7 +1094,7 @@ function MijnAccountContent() {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
-                                <div className="border-t p-4 sm:p-5 space-y-4">
+                                <div className="p-4 sm:p-5 space-y-4">
                                   {/* Summary cards */}
                                   <div className="grid grid-cols-3 gap-2">
                                     <div className="bg-primary-50 rounded-xl p-3 text-center">
@@ -1217,7 +1217,7 @@ function MijnAccountContent() {
                                   )}
 
                                   {/* View full page link */}
-                                  <div className="pt-2 border-t">
+                                  <div className="pt-2">
                                     <Link
                                       href={`/borg/${bc.token}`}
                                       className="flex items-center gap-1.5 text-primary text-sm font-medium"
@@ -1237,7 +1237,7 @@ function MijnAccountContent() {
                   )}
 
                   {/* How borg works */}
-                  <div className="bg-white rounded-2xl p-5 border">
+                  <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-3">{t('myAccount.howBorgWorks')}</h3>
                     <div className="space-y-3">
                       {[
@@ -1275,7 +1275,7 @@ function MijnAccountContent() {
                       { icon: <Shield size={18} />, title: t('myAccount.termsDeposit'), desc: t('myAccount.termsDepositDesc') },
                       { icon: <Clock size={18} />, title: t('myAccount.termsCheckInOut'), desc: t('myAccount.termsCheckInOutDesc') },
                     ].map((item, i) => (
-                      <div key={i} className="bg-white rounded-2xl p-4 border">
+                      <div key={i} className="bg-white rounded-2xl p-4">
                         <div className="flex items-start gap-3">
                           <div className="w-9 h-9 bg-primary/8 rounded-lg flex items-center justify-center shrink-0 text-primary">
                             {item.icon}
@@ -1290,7 +1290,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Important rules */}
-                  <div className="bg-white rounded-2xl p-5 border">
+                  <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                       <FileText size={16} className="text-primary" />
                       {t('myAccount.termsImportant')}
@@ -1312,7 +1312,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Cancellation policy */}
-                  <div className="bg-white rounded-2xl p-5 border">
+                  <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                       <AlertTriangle size={16} className="text-primary" />
                       {t('myAccount.termsCancellationTitle')}
@@ -1357,7 +1357,7 @@ function MijnAccountContent() {
                   <h2 className="text-xl font-bold text-foreground tracking-tight mb-4">{t('myAccount.myProfile')}</h2>
 
                   {/* Profile card */}
-                  <div className="bg-white rounded-2xl p-6 border">
+                  <div className="bg-white rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
@@ -1376,7 +1376,7 @@ function MijnAccountContent() {
                     </div>
 
                     {editingProfile ? (
-                      <div className="space-y-3 pt-3 border-t">
+                      <div className="space-y-3 pt-3">
                         <div>
                           <label className="text-xs font-semibold text-foreground-light mb-1.5 block">{t('myAccount.name')}</label>
                           <input value={editName} onChange={(e) => setEditName(e.target.value)}
@@ -1399,14 +1399,14 @@ function MijnAccountContent() {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-3 pt-3 border-t">
+                      <div className="space-y-3 pt-3">
                         {[
                           { icon: <User size={16} />, label: t('myAccount.name'), value: customer.name },
                           { icon: <Mail size={16} />, label: t('myAccount.email'), value: customer.email },
                           { icon: <Phone size={16} />, label: t('myAccount.phone'), value: customer.phone || '—' },
                         ].map(field => (
                           <div key={field.label} className="flex items-center gap-3 py-1.5">
-                            <span className="text-border">{field.icon}</span>
+                            <span className="text-muted">{field.icon}</span>
                             <div>
                               <div className="text-xs text-muted uppercase tracking-wider">{field.label}</div>
                               <div className="text-sm font-medium text-foreground">{field.value}</div>
@@ -1418,7 +1418,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Newsletter subscription */}
-                  <div className="bg-white rounded-2xl p-5 border">
+                  <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
                       <Mail size={16} className="text-primary" />
                       Nieuwsbrief
@@ -1449,7 +1449,7 @@ function MijnAccountContent() {
                         }}
                         disabled={togglingNewsletter}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
-                          !newsletterUnsubscribed ? 'bg-primary' : 'bg-border'
+                          !newsletterUnsubscribed ? 'bg-primary' : 'bg-muted'
                         }`}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
@@ -1460,7 +1460,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* GDPR / Danger zone */}
-                  <div className="bg-white rounded-2xl p-5 border">
+                  <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-1">{t('myAccount.privacyData')}</h3>
                     <p className="text-xs text-muted mb-3 leading-relaxed">
                       {t('myAccount.gdprText')}
@@ -1489,7 +1489,7 @@ function MijnAccountContent() {
                         </button>
                       </motion.div>
                     ) : (
-                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-danger/5 rounded-xl p-4 border border-danger/20 space-y-3">
+                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="bg-danger/5 rounded-xl p-4 space-y-3">
                         <div className="flex items-start gap-2">
                           <AlertCircle size={16} className="text-danger shrink-0 mt-0.5" />
                           <div>
@@ -1504,7 +1504,7 @@ function MijnAccountContent() {
                             {t('myAccount.deleteConfirmYes')}
                           </button>
                           <button onClick={() => setShowDeleteConfirm(false)}
-                            className="px-4 py-2.5 bg-white text-foreground-light text-xs font-semibold rounded-lg transition-colors border">
+                            className="px-4 py-2.5 bg-white text-foreground-light text-xs font-semibold rounded-lg transition-colors">
                             {t('myAccount.deleteConfirmNo')}
                           </button>
                         </div>
@@ -1521,12 +1521,12 @@ function MijnAccountContent() {
       </div>
 
       {/* Mobile bottom action bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t px-4 pt-3 z-40" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 pt-3 z-40" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         <div className="flex gap-2">
           <Link href="/boeken" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl">
             <Plus size={16} /> {t('myAccount.newBooking')}
           </Link>
-          <button onClick={handleLogout} className="px-4 py-2.5 border text-foreground-light rounded-xl text-sm transition-colors">
+          <button onClick={handleLogout} className="px-4 py-2.5 text-foreground-light rounded-xl text-sm transition-colors">
             <LogOut size={16} />
           </button>
         </div>

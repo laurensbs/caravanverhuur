@@ -308,7 +308,7 @@ export default function AdminBorgPage() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleCreate}
-            className="bg-white rounded-xl border border-border p-5 overflow-hidden"
+            className="bg-white rounded-xl p-5 overflow-hidden"
           >
             <h3 className="font-semibold text-foreground mb-4">Nieuwe borgchecklist aanmaken</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -317,7 +317,7 @@ export default function AdminBorgPage() {
                 <select
                   value={newBookingId}
                   onChange={(e) => setNewBookingId(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
                   required
                 >
                   <option value="">Selecteer boeking...</option>
@@ -335,7 +335,7 @@ export default function AdminBorgPage() {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="INCHECKEN">Inchecken</option>
                   <option value="UITCHECKEN">Uitchecken</option>
@@ -348,7 +348,7 @@ export default function AdminBorgPage() {
                   value={newStaffName}
                   onChange={(e) => setNewStaffName(e.target.value)}
                   placeholder="Naam medewerker"
-                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -389,7 +389,7 @@ export default function AdminBorgPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               filter === f.value
                 ? 'bg-primary text-white'
-                : 'bg-white text-muted border border-border hover:bg-surface'
+                : 'bg-white text-muted hover:bg-surface'
             }`}
           >
             {f.label}
@@ -399,7 +399,7 @@ export default function AdminBorgPage() {
 
       {/* Checklists */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-border p-12 text-center">
+        <div className="bg-white rounded-xl p-12 text-center">
           <ClipboardCheck className="w-12 h-12 text-muted mx-auto mb-3" />
           <p className="text-muted">Geen checklists gevonden</p>
         </div>
@@ -416,7 +416,7 @@ export default function AdminBorgPage() {
               <motion.div
                 key={checklist.id}
                 layout
-                className="bg-white rounded-xl border border-border overflow-hidden"
+                className="bg-white rounded-xl overflow-hidden"
               >
                 {/* Header row */}
                 <button
@@ -468,7 +468,7 @@ export default function AdminBorgPage() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-border p-4 space-y-5">
+                      <div className="p-4 space-y-5">
                         {/* Info bar */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                           <div className="flex items-center gap-2 text-muted">
@@ -492,7 +492,7 @@ export default function AdminBorgPage() {
                             type="text"
                             value={checklist.staff_name || ''}
                             onChange={(e) => handleStaffNameChange(checklist.id, e.target.value)}
-                            className="w-full max-w-xs px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
+                            className="w-full max-w-xs px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-primary"
                             placeholder="Naam medewerker"
                             disabled={checklist.status === 'AFGEROND' || checklist.status === 'KLANT_AKKOORD'}
                           />
@@ -533,7 +533,7 @@ export default function AdminBorgPage() {
                                                 : st === 'beschadigd' ? 'bg-primary text-white'
                                                 : st === 'ontbreekt' ? 'bg-danger text-white'
                                                 : 'bg-muted text-white'
-                                                : 'bg-white border border-border text-muted hover:bg-surface-alt disabled:opacity-50'
+                                                : 'bg-white text-muted hover:bg-surface-alt disabled:opacity-50'
                                             }`}
                                           >
                                             {st === 'nvt' ? 'N.v.t.' : st.charAt(0).toUpperCase() + st.slice(1)}
@@ -546,7 +546,7 @@ export default function AdminBorgPage() {
                                         onChange={(e) => isEditable && handleItemUpdate(checklist.id, globalIdx, 'notes', e.target.value)}
                                         placeholder="Opmerkingen..."
                                         disabled={!isEditable}
-                                        className="flex-1 px-2 py-1 border border-border rounded text-xs focus:outline-none focus:border-primary disabled:bg-surface-alt"
+                                        className="flex-1 px-2 py-1 rounded text-xs focus:outline-none focus:border-primary disabled:bg-surface-alt"
                                       />
                                       {isEditable && (
                                         <button
@@ -567,13 +567,13 @@ export default function AdminBorgPage() {
 
                         {/* Add custom item */}
                         {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
-                          <div className="border border-dashed border-border rounded-lg p-3">
+                          <div className="rounded-lg p-3">
                             {addingItemTo === checklist.id ? (
                               <div className="flex flex-col sm:flex-row gap-2">
                                 <select
                                   value={newItemCategory}
                                   onChange={(e) => setNewItemCategory(e.target.value)}
-                                  className="px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                  className="px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary sm:w-40"
                                 >
                                   <option value="">Categorie...</option>
                                   {[...new Set(checklist.items.map(i => i.category))].map(cat => (
@@ -586,7 +586,7 @@ export default function AdminBorgPage() {
                                     type="text"
                                     placeholder="Categorienaam..."
                                     onChange={(e) => setNewItemCategory(e.target.value === '' ? '__new' : e.target.value)}
-                                    className="px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                    className="px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary sm:w-40"
                                   />
                                 )}
                                 <input
@@ -594,7 +594,7 @@ export default function AdminBorgPage() {
                                   value={newItemName}
                                   onChange={(e) => setNewItemName(e.target.value)}
                                   placeholder="Item naam..."
-                                  className="flex-1 px-2 py-1.5 border border-border rounded text-xs focus:outline-none focus:border-primary"
+                                  className="flex-1 px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary"
                                   onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
                                 />
                                 <div className="flex gap-1">
@@ -633,7 +633,7 @@ export default function AdminBorgPage() {
                             value={checklist.general_notes || ''}
                             onChange={(e) => handleNotesChange(checklist.id, e.target.value)}
                             rows={3}
-                            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:bg-surface-alt"
+                            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-primary disabled:bg-surface-alt"
                             placeholder="Notities over de inspectie..."
                             disabled={checklist.status === 'AFGEROND' || checklist.status === 'KLANT_AKKOORD'}
                           />
@@ -657,7 +657,7 @@ export default function AdminBorgPage() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
+                        <div className="flex flex-wrap gap-3 pt-2">
                           {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
                             <>
                               <button

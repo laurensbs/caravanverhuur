@@ -37,13 +37,7 @@ export default function NotFound() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-full transition-all"
           >
             <Home size={18} />
-            {t('notFound.toHome')}
-          </Link>
-          <Link
-            href="/caravans"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-primary text-primary font-semibold rounded-full transition-all"
-          >
-            {t('notFound.viewCaravans')}
+            {t('notFound.toHome')} </Link> <Link href="/caravans" className="inline-flex items-center justify-center gap-2 px-6 py-3 border-primary text-primary font-semibold rounded-full transition-all" > {t('notFound.viewCaravans')}
             <ArrowRight size={18} />
           </Link>
         </div>
