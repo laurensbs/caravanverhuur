@@ -85,32 +85,84 @@ export default function Footer() {
       </div>
 
       {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-4 py-10 sm:py-14">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-14">
         {/* Mobile: logo centered + stacked columns */}
-        <div className="flex flex-col items-center text-center lg:hidden mb-8">
+        <div className="flex flex-col items-center text-center lg:hidden mb-6">
           <Image
             src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
             alt="Caravanverhuur Costa Brava"
             width={240}
             height={70}
-            className="w-44 sm:w-52 h-auto mb-3"
+            className="w-40 sm:w-52 h-auto mb-2"
             unoptimized
           />
           <GoogleStars size={13} />
-          <p className="text-muted text-sm leading-relaxed max-w-xs mt-3">
+          <p className="text-muted text-xs leading-relaxed max-w-xs mt-2">
             {t('footer.tagline')}
           </p>
-          <div className="mt-3 text-muted text-xs">
-            {t('footer.partOf')}{' '}
-            <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-              Caravanstalling-Spanje.com
-            </a>
+        </div>
+
+        {/* Mobile: 2-col grid for links + legal */}
+        <div className="grid grid-cols-2 gap-4 lg:hidden">
+          {/* Quick links */}
+          <div>
+            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
+            <ul className="space-y-1.5">
+              {[
+                { href: '/caravans', label: t('footer.ourCaravans') },
+                { href: '/bestemmingen', label: t('nav.destinations') },
+                { href: '/boeken', label: t('footer.directBooking') },
+                { href: '/over-ons', label: t('nav.about') },
+                { href: '/faq', label: t('nav.faq') },
+                { href: '/contact', label: t('nav.contact') },
+              ].map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-muted text-xs">{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal + Contact combined */}
+          <div>
+            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
+            <ul className="space-y-1.5 mb-4">
+              {[
+                { href: '/voorwaarden', label: t('footer.terms') },
+                { href: '/privacy', label: t('footer.privacy') },
+                { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
+              ].map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-muted text-xs">{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
+            <ul className="space-y-1.5">
+              <li>
+                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted text-xs flex items-center gap-1.5">
+                  <Mail size={12} className="text-primary shrink-0" />
+                  <span className="truncate">info@caravanverhuur...</span>
+                </a>
+              </li>
+              <li>
+                <a href="tel:+34650036755" className="text-muted text-xs flex items-center gap-1.5">
+                  <Phone size={12} className="text-primary shrink-0" />
+                  +34 650 036 755
+                </a>
+              </li>
+              <li className="text-muted text-xs flex items-center gap-1.5">
+                <MapPin size={12} className="text-primary shrink-0" />
+                {t('footer.location')}
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
-          {/* Brand - desktop only */}
-          <div className="hidden lg:block space-y-3">
+        {/* Desktop: 4-col grid */}
+        <div className="hidden lg:grid grid-cols-4 gap-12">
+          {/* Brand */}
+          <div className="space-y-3">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
@@ -133,7 +185,7 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
+            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
             <ul className="space-y-2">
               {[
                 { href: '/caravans', label: t('footer.ourCaravans') },
@@ -155,7 +207,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
+            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {[
                 { href: '/voorwaarden', label: t('footer.terms') },
@@ -174,7 +226,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
+            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
             <ul className="space-y-2.5">
               <li>
                 <a href="mailto:info@caravanverhuurspanje.com" className="text-muted transition-colors text-sm flex items-start gap-2">

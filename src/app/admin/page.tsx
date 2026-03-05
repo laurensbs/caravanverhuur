@@ -13,8 +13,7 @@ import {
   Clock,
   AlertCircle,
   Loader2,
-  Trash2,
-  ShieldAlert,
+  Download,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import {
@@ -91,10 +90,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showPurge, setShowPurge] = useState(false);
-  const [purgePassword, setPurgePassword] = useState('');
-  const [purging, setPurging] = useState(false);
-  const [purgeResult, setPurgeResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/dashboard')
@@ -150,6 +146,26 @@ export default function AdminDashboard() {
   const revenueThisMonth = parseFloat(stats.monthly?.revenue_this_month || '0');
 
   const monthName = new Date().toLocaleDateString(dateLocale, { month: 'long' });
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch('/api/admin/export');
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `caravanverhuur-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert(t('common.error'));
+    }
+    setExporting(false);
+  };
 
   return (
     <div className="space-y-3 sm:space-y-6">
@@ -387,43 +403,37 @@ export default function AdminDashboard() {
                   </div>
                   <div className="shrink-0">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {ts(b.status)} </span> </div> </div> ); })} </div> )} </motion.div> {/* Test data purge — admin only */}
-      {role === 'admin' && (<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-3 sm:p-5" > <div className="flex items-center justify-between flex-wrap gap-2"> <div className="flex items-center gap-2 sm:gap-3"> <div className="p-2 sm:p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" /> </div> <div> <h3 className="text-xs sm:text-sm font-semibold text-foreground">{t('dashboard.cleanDatabase')}</h3> <p className="text-[10px] sm:text-xs text-muted">{t('dashboard.cleanDatabaseDesc')}</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> {t('dashboard.wipeTestData')} </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ {t('dashboard.wipeWarning')} </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">{t('dashboard.confirmAdminPassword')}</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
-                          method: 'DELETE',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ adminPassword: purgePassword }),
-                        });
-                        const d = await res.json();
-                        if (res.ok) {
-                          setPurgeResult({ success: true, message: t('dashboard.dataDeleted') });
-                          // Refresh data after purge
-                          setTimeout(() => window.location.reload(), 2000);
-                        } else {
-                          setPurgeResult({ success: false, message: d.error || t('dashboard.deleteError') });
-                        }
-                      } catch {
-                        setPurgeResult({ success: false, message: t('dashboard.networkError') });
-                      }
-                      setPurging(false);
-                    }}
-                    disabled={purging || !purgePassword}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {purging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    {t('dashboard.permanentDelete')}
-                  </button>
-                  <button
-                    onClick={() => { setShowPurge(false); setPurgePassword(''); setPurgeResult(null); }}
-                    className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-surface transition-colors cursor-pointer"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-      </motion.div>)}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {ts(b.status)} </span> </div> </div> ); })} </div> )} </motion.div>
+
+      {/* Export all data — admin only */}
+      {role === 'admin' && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65, duration: 0.4 }}
+          className="bg-white rounded-2xl p-3 sm:p-5"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 sm:p-2.5 rounded-xl bg-primary-50">
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground">{t('dashboard.exportData')}</h3>
+                <p className="text-[10px] sm:text-xs text-muted">{t('dashboard.exportDataDesc')}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {t('dashboard.exportBtn')}
+            </button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
