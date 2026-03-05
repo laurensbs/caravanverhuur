@@ -16,6 +16,7 @@ import {
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings } from '@/data/campings';
+import { destinations } from '@/data/destinations';
 import { getActivitiesForLocation, getCategoryLabel, generalTips, groupActivitiesByCategory } from '@/data/activities';
 import type { Activity } from '@/data/activities';
 import { useLanguage } from '@/i18n/context';
@@ -1280,6 +1281,12 @@ function MijnAccountContent() {
                     const grouped = groupActivitiesByCategory(activities);
                     const categoryOrder: Activity['category'][] = ['strand', 'sport', 'natuur', 'cultuur', 'kinderen', 'culinair', 'uitstap'];
                     const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
+                    // Find matching destination for link
+                    const dest = destinations.find(d =>
+                      d.name.toLowerCase() === location.toLowerCase() ||
+                      location.toLowerCase().includes(d.name.toLowerCase()) ||
+                      d.name.toLowerCase().includes(location.toLowerCase())
+                    );
 
                     return (
                       <>
@@ -1289,9 +1296,24 @@ function MijnAccountContent() {
                           </div>
                           <div>
                             <h2 className="text-xl font-bold text-foreground tracking-tight">Tips & activiteiten</h2>
-                            <p className="text-sm text-muted">Ontdek de mooiste plekken bij {location}</p>
+                            <p className="text-sm text-muted">
+                              Ontdek de mooiste plekken bij {location}
+                              {dest && (
+                                <> &mdash; <Link href={`/bestemmingen/${dest.slug}`} className="text-primary font-medium hover:underline">Meer over {dest.name} →</Link></>
+                              )}
+                            </p>
                           </div>
                         </div>
+
+                        {booking && camping && (
+                          <div className="bg-primary/5 rounded-xl p-4 flex items-center gap-3">
+                            <MapPin size={18} className="text-primary shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{camping.name}</p>
+                              <p className="text-xs text-muted">{camping.location} &middot; {booking.check_in ? new Date(booking.check_in).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long' }) : ''} – {booking.check_out ? new Date(booking.check_out).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="bg-white rounded-2xl overflow-hidden">
                           <div className="p-5 sm:p-6 space-y-4">

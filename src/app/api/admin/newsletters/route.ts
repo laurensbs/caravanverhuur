@@ -7,6 +7,7 @@ import {
   getNewsletterById,
   markNewsletterSent,
   getSubscribedCustomerEmails,
+  setupDatabase,
 } from '@/lib/db';
 import { sendNewsletterEmail } from '@/lib/email';
 import { generateUnsubscribeToken } from '@/app/api/newsletter/unsubscribe/route';
@@ -16,7 +17,18 @@ export async function GET() {
   try {
     const newsletters = await getAllNewsletters();
     return NextResponse.json({ newsletters });
-  } catch (error) {
+  } catch (error: unknown) {
+    // Auto-setup if table doesn't exist
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('does not exist') || msg.includes('relation')) {
+      try {
+        await setupDatabase();
+        const newsletters = await getAllNewsletters();
+        return NextResponse.json({ newsletters });
+      } catch (retryError) {
+        console.error('Error after setup retry:', retryError);
+      }
+    }
     console.error('Error fetching newsletters:', error);
     return NextResponse.json({ error: 'Fout bij ophalen nieuwsbrieven' }, { status: 500 });
   }
@@ -119,14 +131,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Titel en inhoud zijn verplicht' }, { status: 400 });
     }
 
-    const result = await createNewsletter({
-      title: title.trim(),
-      content: content.trim(),
-      category: category || 'algemeen',
-      eventDate: eventDate || undefined,
-      eventLocation: eventLocation?.trim() || undefined,
-      photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
-    });
+    let result;
+    try {
+      result = await createNewsletter({
+        title: title.trim(),
+        content: content.trim(),
+        category: category || 'algemeen',
+        eventDate: eventDate || undefined,
+        eventLocation: eventLocation?.trim() || undefined,
+        photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
+      });
+    } catch (createError: unknown) {
+      // Auto-setup if table doesn't exist
+      const msg = createError instanceof Error ? createError.message : String(createError);
+      if (msg.includes('does not exist') || msg.includes('relation')) {
+        await setupDatabase();
+        result = await createNewsletter({
+          title: title.trim(),
+          content: content.trim(),
+          category: category || 'algemeen',
+          eventDate: eventDate || undefined,
+          eventLocation: eventLocation?.trim() || undefined,
+          photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
+        });
+      } else {
+        throw createError;
+      }
+    }
 
     return NextResponse.json({ success: true, id: result.id });
   } catch (error) {

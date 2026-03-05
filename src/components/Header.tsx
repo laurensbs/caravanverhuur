@@ -364,14 +364,15 @@ export default function Header() {
             <nav className="flex-1 overflow-y-auto py-2 px-2">
               <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
 
-              {/* Caravans — expandable */}
-              <button
-                onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/caravans') ? 'text-primary' : 'text-foreground-light'}`}
-              >
-                {t('nav.caravans')}
-                <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
-              </button>
+              {/* Caravans — link + expandable chevron */}
+              <div className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/caravans') ? 'text-primary' : 'text-foreground-light'}`}>
+                <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex-1">
+                  {t('nav.caravans')}
+                </Link>
+                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-1 -mr-1">
+                  <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
               <AnimatePresence>
                 {mobileSubmenu === 'caravans' && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
@@ -392,14 +393,15 @@ export default function Header() {
                 )}
               </AnimatePresence>
 
-              {/* Bestemmingen — expandable */}
-              <button
-                onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/bestemmingen') ? 'text-primary' : 'text-foreground-light'}`}
-              >
-                {t('nav.destinations')}
-                <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
-              </button>
+              {/* Bestemmingen — link + expandable chevron */}
+              <div className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium ${active('/bestemmingen') ? 'text-primary' : 'text-foreground-light'}`}>
+                <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex-1">
+                  {t('nav.destinations')}
+                </Link>
+                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')} className="p-1 -mr-1">
+                  <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
               <AnimatePresence>
                 {mobileSubmenu === 'bestemmingen' && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
