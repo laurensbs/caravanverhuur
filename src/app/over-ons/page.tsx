@@ -14,7 +14,7 @@ import {
   Award,
   Instagram,
   Facebook,
-  ChevronRight,
+
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -36,21 +36,8 @@ export default function OverOnsPage() {
 
   return (
     <>
-      {/* Header */}
-      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-gray-600 font-medium">{t('about.heroTitle')}</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('about.heroTitle')}</h1>
-          <p className="text-gray-500 mt-1 text-sm sm:text-base max-w-xl">{t('about.heroSubtitle')}</p>
-        </div>
-      </section>
-
       {/* Wat we doen */}
-      <section className="py-12 sm:py-20">
+      <section className="pt-28 sm:pt-32 pb-12 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>

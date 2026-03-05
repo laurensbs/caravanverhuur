@@ -279,34 +279,8 @@ function BoekenContent() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* ===== COMPACT HEADER ===== */}
-      <section className="pt-28 sm:pt-32 pb-6 sm:pb-8 bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-gray-600 font-medium">{t('booking.bookYour')} {t('booking.caravan')}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            {t('booking.bookYour')} <span className="text-primary">{t('booking.caravan')}</span>
-          </h1>
-          <p className="text-gray-500 text-sm sm:text-base max-w-xl mb-4">{t('booking.heroDesc')}</p>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { icon: <Shield size={13} />, text: t('booking.pillCancel') },
-              { icon: <Clock size={13} />, text: t('booking.pill24h') },
-              { icon: <Star size={13} />, text: t('booking.pillRating') },
-            ].map(pill => (
-              <span key={pill.text} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/5 rounded-full text-primary text-xs font-medium">
-                {pill.icon} {pill.text}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm">
+      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm pt-28 sm:pt-32">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">

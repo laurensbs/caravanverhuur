@@ -173,21 +173,8 @@ export default function PrivacyPage() {
 
   return (
     <>
-      {/* Header */}
-      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-gray-600 font-medium">{t('legal.privacy')}</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('legal.privacy')}</h1>
-          <p className="text-gray-500 mt-1 text-sm">{t('legal.lastUpdated')}</p>
-        </div>
-      </section>
-
       {/* Quick nav */}
-      <section className="bg-white sticky top-[72px] z-30 border-b border-gray-100">
+      <section className="bg-white sticky top-[72px] z-30 border-b border-gray-100 pt-28 sm:pt-32">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (

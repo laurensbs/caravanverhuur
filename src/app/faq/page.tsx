@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronDown, HelpCircle, ArrowRight, ChevronRight } from 'lucide-react';
+import { ChevronDown, HelpCircle, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
 
@@ -80,20 +80,7 @@ export default function FAQPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      {/* Header */}
-      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-4">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-gray-600 font-medium">{t('faq.heroTitle')}</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('faq.heroTitle')}</h1>
-          <p className="text-gray-500 mt-1 text-sm sm:text-base">{t('faq.heroSubtitle')}</p>
-        </div>
-      </section>
-
-      <section className="py-10 sm:py-16">
+      <section className="pt-28 sm:pt-32 pb-10 sm:pb-16">
         <div className="max-w-3xl mx-auto px-4">
           {faqCategories.map((cat, catIdx) => (
             <div
