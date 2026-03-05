@@ -108,8 +108,7 @@ export default function AccountPage() {
               unoptimized
             />
           </div>
-          <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
-            <div />
+          <div className="relative z-10 flex flex-col justify-center p-10 xl:p-14 w-full">
 
             <div className="space-y-8">
               <div>
