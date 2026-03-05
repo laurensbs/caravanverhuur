@@ -26,6 +26,7 @@ import {
   Globe,
   User,
   ArrowRight,
+  ClipboardList,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -39,6 +40,7 @@ const CREDENTIALS: Record<string, { password: string; role: AdminRole }> = {
 /* ── Nav items with role-based access ───────────── */
 const NAV_ITEMS: { sub: string; key: string; icon: typeof LayoutDashboard; roles: AdminRole[] }[] = [
   { sub: '', key: 'nav.dashboard', icon: LayoutDashboard, roles: ['admin', 'staff'] },
+  { sub: '/planning', key: 'nav.planning', icon: ClipboardList, roles: ['admin', 'staff'] },
   { sub: '/boekingen', key: 'nav.bookings', icon: CalendarCheck, roles: ['admin', 'staff'] },
   { sub: '/betalingen', key: 'nav.payments', icon: CreditCard, roles: ['admin'] },
   { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },

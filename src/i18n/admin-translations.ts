@@ -102,6 +102,7 @@ export const translations: Record<AdminLocale, Dict> = {
     /* ── navigation ─────────────────────── */
     nav: {
       dashboard: 'Dashboard',
+      planning: 'Planning',
       bookings: 'Boekingen',
       payments: 'Betalingen',
       messages: 'Berichten',
@@ -143,6 +144,13 @@ export const translations: Record<AdminLocale, Dict> = {
       ONDERHOUD: 'Onderhoud',
       GEBOEKT: 'Geboekt',
       NIET_BESCHIKBAAR: 'Niet beschikbaar',
+      TODO: 'Te doen',
+      IN_PROGRESS: 'Bezig',
+      DONE: 'Klaar',
+      PREP: 'Klaarmaken',
+      TRANSPORT: 'Vervoeren',
+      SETUP: 'Opzetten',
+      PICKUP: 'Ophalen',
       allStatuses: 'Alle statussen',
       allTypes: 'Alle types',
     },
@@ -605,6 +613,7 @@ export const translations: Record<AdminLocale, Dict> = {
 
     nav: {
       dashboard: 'Dashboard',
+      planning: 'Planning',
       bookings: 'Bookings',
       payments: 'Payments',
       messages: 'Messages',
@@ -645,6 +654,13 @@ export const translations: Record<AdminLocale, Dict> = {
       ONDERHOUD: 'Maintenance',
       GEBOEKT: 'Booked',
       NIET_BESCHIKBAAR: 'Unavailable',
+      TODO: 'To do',
+      IN_PROGRESS: 'In progress',
+      DONE: 'Done',
+      PREP: 'Prepare',
+      TRANSPORT: 'Transport',
+      SETUP: 'Set up',
+      PICKUP: 'Pick up',
       allStatuses: 'All statuses',
       allTypes: 'All types',
     },

@@ -228,6 +228,22 @@ export async function setupDatabase() {
     // ignore
   }
 
+  // Booking tasks table (planning / operations)
+  await sql`
+    CREATE TABLE IF NOT EXISTS booking_tasks (
+      id TEXT PRIMARY KEY,
+      booking_id TEXT NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+      task_type TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'TODO',
+      assigned_to TEXT,
+      notes TEXT,
+      due_date DATE,
+      completed_at TIMESTAMP,
+      completed_by TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1192,4 +1208,92 @@ export async function applyBookingDiscount(bookingId: string, discountCode: stri
   await sql`UPDATE payments SET amount = ${newRemaining} WHERE booking_id = ${bookingId} AND type = 'RESTBETALING' AND status = 'OPENSTAAND'`;
 
   return { newTotalPrice, newDeposit, newRemaining };
+}
+
+// ===== BOOKING TASKS (PLANNING) =====
+
+const TASK_TYPES = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'CLEANING', 'INSPECTION'] as const;
+
+export async function getTasksForBooking(bookingId: string) {
+  const result = await sql`
+    SELECT * FROM booking_tasks WHERE booking_id = ${bookingId} ORDER BY created_at ASC
+  `;
+  return result.rows;
+}
+
+export async function getAllTasks() {
+  const result = await sql`
+    SELECT t.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status as booking_status
+    FROM booking_tasks t
+    JOIN bookings b ON t.booking_id = b.id
+    ORDER BY t.due_date ASC NULLS LAST, t.created_at ASC
+  `;
+  return result.rows;
+}
+
+export async function ensureTasksForBooking(bookingId: string, checkIn: string, checkOut: string) {
+  const existing = await sql`SELECT task_type FROM booking_tasks WHERE booking_id = ${bookingId}`;
+  const existingTypes = new Set(existing.rows.map((r) => r.task_type as string));
+
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
+  const prepDate = new Date(checkInDate);
+  prepDate.setDate(prepDate.getDate() - 3);
+  const transportDate = new Date(checkInDate);
+  transportDate.setDate(transportDate.getDate() - 1);
+
+  const dueDates: Record<string, Date> = {
+    PREP: prepDate,
+    TRANSPORT: transportDate,
+    SETUP: transportDate,
+    CHECKIN: checkInDate,
+    CHECKOUT: checkOutDate,
+    PICKUP: new Date(checkOutDate.getTime() + 86400000),
+    CLEANING: new Date(checkOutDate.getTime() + 2 * 86400000),
+    INSPECTION: new Date(checkOutDate.getTime() + 2 * 86400000),
+  };
+
+  for (const taskType of TASK_TYPES) {
+    if (!existingTypes.has(taskType)) {
+      const id = generateId('task');
+      const dueDate = dueDates[taskType].toISOString().slice(0, 10);
+      await sql`
+        INSERT INTO booking_tasks (id, booking_id, task_type, status, due_date)
+        VALUES (${id}, ${bookingId}, ${taskType}, 'TODO', ${dueDate})
+      `;
+    }
+  }
+}
+
+export async function updateTaskStatus(taskId: string, status: string, completedBy?: string) {
+  if (status === 'DONE') {
+    await sql`
+      UPDATE booking_tasks SET status = ${status}, completed_at = NOW(), completed_by = ${completedBy || null} WHERE id = ${taskId}
+    `;
+  } else {
+    await sql`
+      UPDATE booking_tasks SET status = ${status}, completed_at = NULL, completed_by = NULL WHERE id = ${taskId}
+    `;
+  }
+}
+
+export async function updateTaskAssignment(taskId: string, assignedTo: string) {
+  await sql`
+    UPDATE booking_tasks SET assigned_to = ${assignedTo} WHERE id = ${taskId}
+  `;
+}
+
+export async function updateTaskNotes(taskId: string, notes: string) {
+  await sql`
+    UPDATE booking_tasks SET notes = ${notes} WHERE id = ${taskId}
+  `;
+}
+
+export async function ensureAllBookingTasks() {
+  const bookings = await sql`
+    SELECT id, check_in, check_out FROM bookings WHERE status != 'GEANNULEERD'
+  `;
+  for (const booking of bookings.rows) {
+    await ensureTasksForBooking(booking.id, booking.check_in, booking.check_out);
+  }
 }
