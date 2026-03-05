@@ -143,11 +143,6 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2"> {['bg-primary', 'bg-primary', 'bg-primary-light', 'bg-danger/70'].map((bg, i) => ( <div key={i} className={`w-8 h-8 rounded-full ${bg} border-primary-dark flex items-center justify-center text-white text-xs font-bold`}> {['JB', 'ML', 'PV', 'AK'][i]} </div> ))} </div> <div> <p className="text-white/90 text-sm font-medium">{t('account.socialProof')}</p>
-                <p className="text-white/50 text-xs">{t('account.socialProofSub')}</p>
-              </div>
-            </div>
           </div>
         </div>
 
