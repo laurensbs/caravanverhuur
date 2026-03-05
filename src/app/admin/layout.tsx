@@ -426,14 +426,7 @@ function AdminLayoutInner({
               unoptimized
             />
           </div>
-          {/* Role badge */}
-          <div className="mt-2 flex items-center justify-center">
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-              role === 'admin' ? 'bg-amber-400/20 text-amber-300' : 'bg-white/15 text-white/80'
-            }`}>
-              {role}
-            </span>
-          </div>
+
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
