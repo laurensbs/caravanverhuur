@@ -2,9 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, HelpCircle, ArrowRight } from 'lucide-react';
+import { ChevronDown, HelpCircle, ArrowRight, ChevronRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
 
 export default function FAQPage() {
@@ -82,37 +81,23 @@ export default function FAQPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       {/* Header */}
-      <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
-        <Image
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"
-          alt="Camping bij zonsondergang"
-          fill
-          className="object-cover"
-          priority
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white px-4">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
-              {t('faq.heroTitle')}
-            </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
-              {t('faq.heroSubtitle')}
-            </motion.p>
-          </div>
+      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
+        <div className="max-w-3xl mx-auto px-4">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <span className="text-gray-600 font-medium">{t('faq.heroTitle')}</span>
+          </nav>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('faq.heroTitle')}</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">{t('faq.heroSubtitle')}</p>
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-10 sm:py-16">
         <div className="max-w-3xl mx-auto px-4">
           {faqCategories.map((cat, catIdx) => (
-            <motion.div
+            <div
               key={cat.category}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: catIdx * 0.1, duration: 0.5 }}
               className="mb-10"
             >
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
@@ -154,7 +139,7 @@ export default function FAQPage() {
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           ))}
 
           {/* CTA */}

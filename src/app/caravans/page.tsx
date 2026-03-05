@@ -264,13 +264,13 @@ export default function CaravansPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
               {filtered.map((caravan) => (
                 <div
                   key={caravan.id}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
                 >
-                  <div className="relative h-56 overflow-hidden">
+                  <div className="relative h-48 sm:h-56 overflow-hidden">
                     <Image
                       src={caravan.photos[0]}
                       alt={caravan.name}
@@ -293,7 +293,7 @@ export default function CaravansPage() {
                       <span className="text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}/week</span>
                     </div>
                   </div>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-1">{caravan.name}</h3>
                     <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                       <span className="flex items-center gap-1">

@@ -279,45 +279,34 @@ function BoekenContent() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* ===== IMMERSIVE HERO ===== */}
-      <section className="relative h-[45vh] min-h-[320px] lg:h-[50vh] overflow-hidden">
-        <Image
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
-          alt="Strand Costa Brava"
-          fill className="object-cover" priority unoptimized
-        />
-        <div className="absolute inset-0 bg-black/35" />
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-semibold mb-4">
-              <Sparkles size={14} /> {t('booking.planDream')}
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-              {t('booking.bookYour')} <span className="text-primary">{t('booking.caravan')}</span>
-            </h1>
-            <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto drop-shadow">
-              {t('booking.heroDesc')}
-            </p>
-          </motion.div>
-
-          {/* Trust pills */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-wrap justify-center gap-3 mt-6">
+      {/* ===== COMPACT HEADER ===== */}
+      <section className="pt-28 sm:pt-32 pb-6 sm:pb-8 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <span className="text-gray-600 font-medium">{t('booking.bookYour')} {t('booking.caravan')}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            {t('booking.bookYour')} <span className="text-primary">{t('booking.caravan')}</span>
+          </h1>
+          <p className="text-gray-500 text-sm sm:text-base max-w-xl mb-4">{t('booking.heroDesc')}</p>
+          <div className="flex flex-wrap gap-2">
             {[
-              { icon: <Shield size={14} />, text: t('booking.pillCancel') },
-              { icon: <Clock size={14} />, text: t('booking.pill24h') },
-              { icon: <Star size={14} />, text: t('booking.pillRating') },
+              { icon: <Shield size={13} />, text: t('booking.pillCancel') },
+              { icon: <Clock size={13} />, text: t('booking.pill24h') },
+              { icon: <Star size={13} />, text: t('booking.pillRating') },
             ].map(pill => (
-              <span key={pill.text} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 backdrop-blur-md rounded-full text-white text-xs font-medium">
+              <span key={pill.text} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/5 rounded-full text-primary text-xs font-medium">
                 {pill.icon} {pill.text}
               </span>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[112px] lg:top-[72px] z-30 bg-white shadow-sm">
+      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">

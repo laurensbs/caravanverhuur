@@ -14,6 +14,7 @@ import {
   Award,
   Instagram,
   Facebook,
+  ChevronRight,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -36,32 +37,22 @@ export default function OverOnsPage() {
   return (
     <>
       {/* Header */}
-      <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
-        <Image
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sa_Riera_beach.JPG/1280px-Sa_Riera_beach.JPG"
-          alt="Costa Brava kust"
-          fill
-          className="object-cover"
-          priority
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white px-4">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
-              {t('about.heroTitle')}
-            </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
-              {t('about.heroSubtitle')}
-            </motion.p>
-          </div>
+      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <span className="text-gray-600 font-medium">{t('about.heroTitle')}</span>
+          </nav>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('about.heroTitle')}</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base max-w-xl">{t('about.heroSubtitle')}</p>
         </div>
       </section>
 
       {/* Wat we doen */}
-      <section className="py-20">
+      <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
               <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.whoWeAre')}</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2 mb-6">
@@ -97,7 +88,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Voordelen vs concurrentie */}
-      <section className="py-20 bg-surface">
+      <section className="py-12 sm:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -145,11 +136,11 @@ export default function OverOnsPage() {
       </section>
 
       {/* Proces */}
-      <section className="py-20">
+      <section className="py-12 sm:py-20">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.processLabel')}</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">{t('about.processTitle')}</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold text-foreground mt-2">{t('about.processTitle')}</h2>
           </div>
 
           <div className="space-y-8">
@@ -182,7 +173,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* Moederbedrijf */}
-      <section className="py-20 bg-surface">
+      <section className="py-12 sm:py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -206,11 +197,11 @@ export default function OverOnsPage() {
       </section>
 
       {/* Cijfers & Sociaal bewijs */}
-      <section className="py-20">
+      <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.numbersLabel')}</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">{t('about.numbersTitle')}</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold text-foreground mt-2">{t('about.numbersTitle')}</h2>
           </div>
           <motion.div
             initial="hidden"
@@ -249,7 +240,7 @@ export default function OverOnsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-primary-dark text-white">
+      <section className="py-12 sm:py-20 bg-primary-dark text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">{t('about.ctaTitle')}</h2>
           <p className="text-primary-light text-lg mb-8">{t('about.ctaSubtitle')}</p>

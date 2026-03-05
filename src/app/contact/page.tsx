@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
 export default function ContactPage() {
@@ -44,7 +43,7 @@ export default function ContactPage() {
     return (
       <section className="py-20 min-h-[60vh] flex items-center">
         <div className="max-w-xl mx-auto px-4 text-center">
-          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <div>
             <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="text-primary" size={40} />
             </div>
@@ -52,7 +51,7 @@ export default function ContactPage() {
             <p className="text-muted text-lg">
               {t('contact.successText')}
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
     );
@@ -61,38 +60,23 @@ export default function ContactPage() {
   return (
     <>
       {/* Header */}
-      <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
-        <Image
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
-          alt="Costa Brava strand"
-          fill
-          className="object-cover"
-          priority
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white px-4">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl sm:text-5xl font-bold mb-4 drop-shadow-lg">
-              {t('contact.heroTitle')}
-            </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-white/90 text-lg max-w-2xl mx-auto drop-shadow">
-              {t('contact.heroSubtitle')}
-            </motion.p>
-          </div>
+      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <span className="text-gray-600 font-medium">{t('contact.heroTitle')}</span>
+          </nav>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('contact.heroTitle')}</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base max-w-xl">{t('contact.heroSubtitle')}</p>
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-10 sm:py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Contact info */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-8"
-            >
+            <div className="space-y-6 sm:space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.directlyAvailable')}</h2>
                 <div className="space-y-4">
@@ -159,17 +143,12 @@ export default function ContactPage() {
                   <div className="text-white/80 text-xs">{t('contact.whatsappDirect')}</div>
                 </div>
               </a>
-            </motion.div>
+            </div>
 
             {/* Contact form */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="lg:col-span-2"
-            >
-              <div className="bg-white rounded-2xl p-8 shadow-sm">
-                <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.sendMessage')}</h2>
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{t('contact.sendMessage')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
@@ -200,7 +179,7 @@ export default function ContactPage() {
                   </button>
                 </form>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>

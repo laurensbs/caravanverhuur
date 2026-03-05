@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Destination } from '@/data/destinations';
 
 interface CostaBravaMapProps {
@@ -13,8 +13,118 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSatellite, setIsSatellite] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+    if (!isFullscreen) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      } else if ((containerRef.current as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
+        (containerRef.current as unknown as { webkitRequestFullscreen: () => void }).webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as unknown as { webkitExitFullscreen?: () => void }).webkitExitFullscreen) {
+        (document as unknown as { webkitExitFullscreen: () => void }).webkitExitFullscreen();
+      }
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const handler = () => {
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      // Invalidate map size after fullscreen change
+      setTimeout(() => { mapInstanceRef.current?.invalidateSize(); }, 200);
+    };
+    document.addEventListener('fullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
+  }, []);
+
+  const toggleSatellite = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const next = !isSatellite;
+    setIsSatellite(next);
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+    const newUrl = next
+      ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const newAttr = next
+      ? '&copy; Esri'
+      : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    import('leaflet').then((L) => {
+      tileLayerRef.current = L.default.tileLayer(newUrl, {
+        attribution: newAttr,
+        maxZoom: 19,
+        ...(next ? {} : { subdomains: 'abcd' }),
+      }).addTo(map);
+    });
+  }, [isSatellite]);
+
+  const locateMe = useCallback(() => {
+    if (!navigator.geolocation || !mapInstanceRef.current) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const map = mapInstanceRef.current;
+        if (!map) return;
+        const { latitude, longitude } = pos.coords;
+
+        import('leaflet').then((L) => {
+          // Remove old user marker
+          if (userMarkerRef.current) {
+            map.removeLayer(userMarkerRef.current);
+          }
+          // Add user location marker
+          const userIcon = L.default.divIcon({
+            className: '',
+            html: `<div style="width:18px;height:18px;background:#3B82F6;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(59,130,246,.5);"></div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          });
+          userMarkerRef.current = L.default.marker([latitude, longitude], { icon: userIcon })
+            .addTo(map)
+            .bindPopup('<div style="font-family:DM Sans,system-ui;padding:4px 2px;"><strong style="font-size:13px;">Jouw locatie</strong></div>', { className: 'pretty-popup' });
+
+          // Fit bounds to include user + all destinations
+          const allPoints: [number, number][] = [[latitude, longitude], ...destinations.map(d => [d.coordinates.lat, d.coordinates.lng] as [number, number])];
+          const bounds = L.default.latLngBounds(allPoints);
+          map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 10, duration: 1 });
+        });
+
+        setLocating(false);
+      },
+      () => { setLocating(false); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, [destinations]);
+
+  const fitAll = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map || destinations.length === 0) return;
+    import('leaflet').then((L) => {
+      const bounds = L.default.latLngBounds(destinations.map(d => [d.coordinates.lat, d.coordinates.lng] as [number, number]));
+      map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 11, duration: 0.8 });
+    });
+  }, [destinations]);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -50,7 +160,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       L.default.control.zoom({ position: 'topright' }).addTo(map);
 
       // CartoDB Voyager tiles – prettier, cleaner than OSM
-      L.default.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      tileLayerRef.current = L.default.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OST</a> &copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
         subdomains: 'abcd',
@@ -148,7 +258,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   }, [destinations, activeDestination, onMarkerClick]);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200/60 bg-gray-100">
+    <div ref={containerRef} className={`relative w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200/60 bg-gray-100 ${isFullscreen ? 'rounded-none' : ''}`}>
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-50 flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-3">
@@ -157,7 +267,69 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           </div>
         </div>
       )}
-      <div ref={mapRef} className="w-full h-[300px] sm:h-[420px] md:h-[500px] lg:h-[560px] touch-pan-y" />
+      <div ref={mapRef} className={`w-full touch-pan-y ${isFullscreen ? 'h-screen' : 'h-[350px] sm:h-[420px] md:h-[500px] lg:h-[560px]'}`} />
+
+      {/* — Map controls overlay — */}
+      {isLoaded && (
+        <>
+          {/* Top-left: destination counter */}
+          <div className="absolute top-3 left-3 z-[1000]">
+            <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-100 flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-[#0EA5E9] rounded-full animate-pulse" />
+              <span className="text-xs font-semibold text-gray-700">{destinations.length} bestemmingen</span>
+            </div>
+          </div>
+
+          {/* Bottom-left: control buttons */}
+          <div className="absolute bottom-3 left-3 z-[1000] flex flex-col gap-2">
+            {/* Fullscreen toggle */}
+            <button
+              onClick={toggleFullscreen}
+              className="w-9 h-9 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white transition-all"
+              title={isFullscreen ? 'Verkleinen' : 'Volledig scherm'}
+            >
+              {isFullscreen ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              )}
+            </button>
+
+            {/* Locate me */}
+            <button
+              onClick={locateMe}
+              disabled={locating}
+              className="w-9 h-9 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white transition-all disabled:opacity-50"
+              title="Mijn locatie"
+            >
+              {locating ? (
+                <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/><line x1="12" y1="1" x2="12" y2="7"/><line x1="12" y1="17.01" x2="12" y2="22.96"/></svg>
+              )}
+            </button>
+
+            {/* Fit all markers */}
+            <button
+              onClick={fitAll}
+              className="w-9 h-9 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary hover:bg-white transition-all"
+              title="Alles tonen"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg>
+            </button>
+
+            {/* Satellite toggle */}
+            <button
+              onClick={toggleSatellite}
+              className={`w-9 h-9 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100 flex items-center justify-center transition-all ${isSatellite ? 'bg-primary text-white' : 'bg-white/95 text-gray-600 hover:text-primary hover:bg-white'}`}
+              title={isSatellite ? 'Stratenkaart' : 'Satelliet'}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </button>
+          </div>
+        </>
+      )}
+
       {/* Mobile gesture hint */}
       {hintVisible && (
         <div className="sm:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none animate-pulse z-20">

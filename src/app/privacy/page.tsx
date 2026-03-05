@@ -173,22 +173,21 @@ export default function PrivacyPage() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative bg-primary-dark text-white py-16 sm:py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
-        <div className="max-w-4xl mx-auto px-4 relative">
-          <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
-            <Link href="/" className="transition-colors">Home</Link>
-            <ChevronRight size={14} />
-            <span>{t('legal.privacy')}</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold mb-3">{t('legal.privacy')}</h1>
-          <p className="text-primary-light text-lg">{t('legal.lastUpdated')}</p>
+      {/* Header */}
+      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <span className="text-gray-600 font-medium">{t('legal.privacy')}</span>
+          </nav>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('legal.privacy')}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t('legal.lastUpdated')}</p>
         </div>
       </section>
 
       {/* Quick nav */}
-      <section className="bg-white sticky top-0 z-30">
+      <section className="bg-white sticky top-[72px] z-30 border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (
