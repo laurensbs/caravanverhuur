@@ -68,7 +68,7 @@ function ContactDetail({
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-5 mt-2 space-y-4">
+    <div className="bg-surface rounded-2xl p-3 sm:p-5 mt-2 space-y-3 sm:space-y-4">
       {/* Contact info */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex items-center gap-2 text-sm text-muted">
@@ -88,7 +88,7 @@ function ContactDetail({
       </div>
 
       {/* Message */}
-      <div className="bg-white rounded-xl p-4">
+      <div className="bg-white rounded-xl p-3 sm:p-4">
         <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
           {t('messages.message')}
         </p>
@@ -205,9 +205,9 @@ export default function BerichtenPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-white rounded-xl p-3 text-center">
           <p className="text-2xl font-bold text-primary">{newCount}</p>
           <p className="text-xs text-muted">{t('messages.newCount')}</p>
@@ -258,7 +258,7 @@ export default function BerichtenPage() {
       </p>
 
       {/* Messages list */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {filtered.map((contact) => {
           const isExpanded = expandedId === contact.id;
 
@@ -271,7 +271,7 @@ export default function BerichtenPage() {
                 onClick={() =>
                   setExpandedId(isExpanded ? null : contact.id)
                 }
-                className={`w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer ${
+                className={`w-full px-3 py-3 sm:px-5 sm:py-4 flex items-center gap-2 sm:gap-4 text-left hover:bg-surface transition-colors cursor-pointer ${
                   contact.status === 'NIEUW'
                     ? 'bg-primary/5'
                     : ''
@@ -325,7 +325,7 @@ export default function BerichtenPage() {
               </button>
 
               {isExpanded && (
-                <div className="px-5 pb-5">
+                <div className="px-3 pb-3 sm:px-5 sm:pb-5">
                   <ContactDetail contact={contact} onUpdate={handleUpdate} />
                 </div>
               )}

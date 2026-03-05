@@ -308,23 +308,23 @@ export default function AdminNieuwsbrieven() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         {[
           { label: t('newsletters.total'), value: totalCount, icon: Newspaper, color: 'text-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10' },
           { label: t('newsletters.drafts'), value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: t('newsletters.sent'), value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: t('newsletters.totalRecipients'), value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${s.bg}`}>
+          <div key={s.label} className="bg-white rounded-xl p-2.5 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className={`p-1.5 sm:p-2 rounded-lg ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted">{s.label}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{s.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted">{s.label}</p>
               </div>
             </div>
           </div>
@@ -405,7 +405,7 @@ export default function AdminNieuwsbrieven() {
           return (
             <div
               key={n.id}
-              className="bg-white rounded-xl p-5 hover:shadow-sm transition-shadow"
+              className="bg-white rounded-xl p-3 sm:p-5 hover:shadow-sm transition-shadow"
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">

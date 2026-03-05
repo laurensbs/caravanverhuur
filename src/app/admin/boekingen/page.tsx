@@ -99,7 +99,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-5 mt-2 space-y-5">
+    <div className="bg-surface rounded-2xl p-3 sm:p-5 mt-2 space-y-3 sm:space-y-5">
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <User className="w-4 h-4" /> {t('bookings.guestDetails')}
@@ -150,8 +150,8 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             </div>
           </div>
         </div>
-        <div className="mt-2 bg-white rounded-xl p-3 text-xs text-muted">
-          <p>
+        <div className="bg-white rounded-xl p-3 text-xs text-muted">
+          <p className="flex flex-wrap gap-x-2 gap-y-0.5">
             <strong>{t('bookings.checkIn')}:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
             <strong>{t('bookings.checkOut')}:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
             <strong>{t('bookings.nightsLabel')}:</strong> {booking.nights}
@@ -163,7 +163,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <CreditCard className="w-4 h-4" /> {t('bookings.financial')}
         </h4>
-        <div className="bg-white rounded-xl p-4 space-y-2">
+        <div className="bg-white rounded-xl p-3 sm:p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted">{t('bookings.totalPrice')}</span>
             <span className="font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</span>
@@ -208,7 +208,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
           <select
@@ -243,7 +243,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
           {showDiscount ? t('bookings.cancelDiscount') : t('bookings.applyDiscount')}
         </button>
         {showDiscount && (
-          <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+          <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-3 sm:p-4 space-y-3">
             {discountSuccess ? (
               <div className="text-sm text-primary font-medium">{t('bookings.discountApplied')}</div>
             ) : (
@@ -444,8 +444,8 @@ export default function BookingenPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
@@ -475,7 +475,7 @@ export default function BookingenPage() {
         {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
       </p>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {filtered.map((booking) => {
           const caravan = getBookingCaravan(booking);
           const camping = getBookingCamping(booking);
@@ -485,9 +485,9 @@ export default function BookingenPage() {
             <div key={booking.id} className="bg-white rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedId(isExpanded ? null : booking.id)}
-                className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
+                className="w-full px-3 py-3 sm:px-5 sm:py-4 flex items-center gap-2 sm:gap-4 text-left hover:bg-surface transition-colors cursor-pointer"
               >
-                <div className="text-center bg-surface rounded-xl px-3 py-2 shrink-0 hidden sm:block">
+                <div className="text-center bg-surface rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 shrink-0 hidden sm:block">
                   <p className="text-lg font-bold text-primary-dark">
                     {new Date(booking.check_in).getDate()}
                   </p>
@@ -524,7 +524,7 @@ export default function BookingenPage() {
               </button>
 
               {isExpanded && (
-                <div className="px-5 pb-5">
+                <div className="px-3 pb-3 sm:px-5 sm:pb-5">
                   <BookingDetail
                     booking={booking}
                     onStatusChange={handleStatusChange}

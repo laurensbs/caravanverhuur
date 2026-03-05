@@ -106,43 +106,43 @@ export default function BetalingenPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-primary-50 text-primary">
-            <CheckCircle2 className="w-5 h-5" />
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
+          <div className="p-2 sm:p-3 rounded-xl bg-primary-50 text-primary">
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">{t('payments.received')}</p>
-            <p className="text-xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
-            <p className="text-xs text-muted">{paid.length} {t('payments.paymentsCount')}</p>
+            <p className="text-[10px] sm:text-xs text-muted font-medium">{t('payments.received')}</p>
+            <p className="text-sm sm:text-xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
+            <p className="text-[10px] sm:text-xs text-muted hidden sm:block">{paid.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-primary/20 text-primary">
-            <Clock className="w-5 h-5" />
+        <div className="bg-white rounded-2xl p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
+          <div className="p-2 sm:p-3 rounded-xl bg-primary/20 text-primary">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">{t('payments.openPayments')}</p>
-            <p className="text-xl font-bold text-foreground">{formatCurrency(totalOpen)}</p>
-            <p className="text-xs text-muted">{open.length} {t('payments.paymentsCount')}</p>
+            <p className="text-[10px] sm:text-xs text-muted font-medium">{t('payments.openPayments')}</p>
+            <p className="text-sm sm:text-xl font-bold text-foreground">{formatCurrency(totalOpen)}</p>
+            <p className="text-[10px] sm:text-xs text-muted hidden sm:block">{open.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
-            <RotateCcw className="w-5 h-5" />
+        <div className="bg-white rounded-2xl p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
+          <div className="p-2 sm:p-3 rounded-xl bg-primary/10 text-primary">
+            <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <p className="text-xs text-muted font-medium">{t('payments.refunded')}</p>
-            <p className="text-xl font-bold text-foreground">{formatCurrency(totalRefunded)}</p>
-            <p className="text-xs text-muted">{refunded.length} {t('payments.paymentsCount')}</p>
+            <p className="text-[10px] sm:text-xs text-muted font-medium">{t('payments.refunded')}</p>
+            <p className="text-sm sm:text-xl font-bold text-foreground">{formatCurrency(totalRefunded)}</p>
+            <p className="text-[10px] sm:text-xs text-muted hidden sm:block">{refunded.length} {t('payments.paymentsCount')}</p>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
@@ -182,7 +182,7 @@ export default function BetalingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-2">{t('payments.date')}</div> </div> <div className=""> {filtered.map((payment) => ( <div key={payment.id} className="px-5 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-2 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
+        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-2">{t('payments.date')}</div> </div> <div className=""> {filtered.map((payment) => ( <div key={payment.id} className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
               </div>
 
               <div className="col-span-2">

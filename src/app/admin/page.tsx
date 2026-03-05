@@ -66,16 +66,16 @@ function StatCard({
     >
       <Link
         href={href}
-        className="block bg-white rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+        className="block bg-white rounded-2xl p-3 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-muted font-medium">{label}</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
-            {sub && <p className="text-xs text-muted mt-1">{sub}</p>}
+            <p className="text-xs sm:text-sm text-muted font-medium">{label}</p>
+            <p className="text-lg sm:text-2xl font-bold text-foreground mt-0.5 sm:mt-1">{value}</p>
+            {sub && <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1">{sub}</p>}
           </div>
-          <div className={`p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
-            <Icon className="w-5 h-5" />
+          <div className={`p-2 sm:p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
       </Link>
@@ -152,35 +152,35 @@ export default function AdminDashboard() {
   const monthName = new Date().toLocaleDateString(dateLocale, { month: 'long' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Monthly overview */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-primary-dark rounded-2xl p-5 text-white"
+        className="bg-primary-dark rounded-2xl p-3 sm:p-5 text-white"
       >
-        <p className="text-sm text-white/70 font-medium uppercase tracking-wider">
+        <p className="text-xs sm:text-sm text-white/70 font-medium uppercase tracking-wider">
           {t('dashboard.overview', { month: monthName, year: String(new Date().getFullYear()) })}
         </p>
-        <div className="flex flex-wrap gap-6 mt-3">
+        <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-6 mt-2 sm:mt-3">
           <div>
-            <p className="text-3xl font-bold">{bookingsThisMonth}</p>
-            <p className="text-sm text-white/60">{t('dashboard.bookingsThisMonth')}</p>
+            <p className="text-xl sm:text-3xl font-bold">{bookingsThisMonth}</p>
+            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.bookingsThisMonth')}</p>
           </div>
           <div>
-            <p className="text-3xl font-bold">{formatCurrency(revenueThisMonth)}</p>
-            <p className="text-sm text-white/60">{t('dashboard.revenueThisMonth')}</p>
+            <p className="text-xl sm:text-3xl font-bold">{formatCurrency(revenueThisMonth)}</p>
+            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.revenueThisMonth')}</p>
           </div>
           <div>
-            <p className="text-3xl font-bold">{formatCurrency(totalOpen)}</p>
-            <p className="text-sm text-white/60">{t('dashboard.outstanding')}</p>
+            <p className="text-xl sm:text-3xl font-bold">{formatCurrency(totalOpen)}</p>
+            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.outstanding')}</p>
           </div>
         </div>
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <StatCard
           label={t('dashboard.activeBookings')}
           value={String(activeBookings)}
@@ -211,7 +211,86 @@ export default function AdminDashboard() {
         <StatCard
           label={t('dashboard.messages')}
           value={String(totalMessages)}
-          sub={t('dashboard.unread', { count: String(newMessages) })} icon={Mail} color="bg-primary-100 text-primary-dark" href={p('/berichten')} index={3} /> </div> {/* Action items */} {(newBookings > 0 || openCount > 0 || newMessages > 0) && ( <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3"> {t('dashboard.actionItems')} </h3> <div className="space-y-2"> {newBookings > 0 && ( <Link href={p('/boekingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <AlertCircle className="w-4 h-4 shrink-0" /> <span> {t('dashboard.newBookingsWaiting', { count: String(newBookings) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {openCount > 0 && ( <Link href={p('/betalingen')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary" > <Clock className="w-4 h-4 shrink-0" /> <span> {t('dashboard.openPaymentsAmount', { count: String(openCount), amount: formatCurrency(totalOpen) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} {newMessages > 0 && ( <Link href={p('/berichten')} className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark" > <Mail className="w-4 h-4 shrink-0" /> <span> {t('dashboard.unreadMessages', { count: String(newMessages) })} </span> <ArrowRight className="w-4 h-4 ml-auto shrink-0" /> </Link> )} </div> </motion.div> )} <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6" > {/* Recent bookings */} <div className="lg:col-span-2 bg-white rounded-2xl p-5"> <div className="flex items-center justify-between mb-4"> <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider"> {t('dashboard.recentBookings')} </h3> <Link href={p('/boekingen')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1" > {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" /> </Link> </div> {recentBookings.length === 0 ? ( <p className="text-sm text-muted py-8 text-center">{t('dashboard.noBookings')}</p> ) : ( <div className=""> {recentBookings.map((booking) => { const caravan = getBookingCaravan(booking); const camping = getBookingCamping(booking); return ( <Link key={booking.id} href={p('/boekingen')} className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface transition-colors" > <div className="flex-1 min-w-0"> <p className="font-medium text-sm text-foreground truncate"> {booking.guest_name} </p> <p className="text-xs text-muted truncate"> {caravan?.name} • {camping?.name} </p> </div> <div className="text-right shrink-0"> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
+          sub={t('dashboard.unread', { count: String(newMessages) })}
+          icon={Mail}
+          color="bg-primary-100 text-primary-dark"
+          href={p('/berichten')}
+          index={3}
+        />
+      </div>
+
+      {/* Action items */}
+      {(newBookings > 0 || openCount > 0 || newMessages > 0) && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="bg-white rounded-2xl p-3 sm:p-5"
+        >
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider mb-2 sm:mb-3">
+            {t('dashboard.actionItems')}
+          </h3>
+          <div className="space-y-1 sm:space-y-2">
+            {newBookings > 0 && (
+              <Link href={p('/boekingen')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{t('dashboard.newBookingsWaiting', { count: String(newBookings) })}</span>
+                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
+              </Link>
+            )}
+            {openCount > 0 && (
+              <Link href={p('/betalingen')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary">
+                <Clock className="w-4 h-4 shrink-0" />
+                <span>{t('dashboard.openPaymentsAmount', { count: String(openCount), amount: formatCurrency(totalOpen) })}</span>
+                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
+              </Link>
+            )}
+            {newMessages > 0 && (
+              <Link href={p('/berichten')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark">
+                <Mail className="w-4 h-4 shrink-0" />
+                <span>{t('dashboard.unreadMessages', { count: String(newMessages) })}</span>
+                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
+              </Link>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.4 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6"
+      >
+        {/* Recent bookings */}
+        <div className="lg:col-span-2 bg-white rounded-2xl p-3 sm:p-5">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
+              {t('dashboard.recentBookings')}
+            </h3>
+            <Link href={p('/boekingen')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1">
+              {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          {recentBookings.length === 0 ? (
+            <p className="text-sm text-muted py-8 text-center">{t('dashboard.noBookings')}</p>
+          ) : (
+            <div>
+              {recentBookings.map((booking) => {
+                const caravan = getBookingCaravan(booking);
+                const camping = getBookingCamping(booking);
+                return (
+                  <Link
+                    key={booking.id}
+                    href={p('/boekingen')}
+                    className="flex items-center gap-2 sm:gap-4 p-2 sm:p-3 rounded-xl hover:bg-surface transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground truncate">{booking.guest_name}</p>
+                      <p className="text-xs text-muted truncate">{caravan?.name} • {camping?.name}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}
                       >
                         {ts(booking.status)}
                       </span>
@@ -227,8 +306,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent messages */}
-        <div className="bg-white rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-2xl p-3 sm:p-5">
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               {t('dashboard.messages')}
             </h3>
@@ -242,12 +321,12 @@ export default function AdminDashboard() {
           {recentContacts.length === 0 ? (
             <p className="text-sm text-muted py-8 text-center">{t('dashboard.noMessages')}</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1 sm:space-y-3">
               {recentContacts.map((contact) => (
                 <Link
                   key={contact.id}
                   href={p('/berichten')}
-                  className="block p-3 rounded-xl hover:bg-surface transition-colors"
+                  className="block p-2 sm:p-3 rounded-xl hover:bg-surface transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium text-sm text-foreground">{contact.name}</p>
@@ -272,24 +351,24 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.55, duration: 0.4 }}
-        className="bg-white rounded-2xl p-5"
+        className="bg-white rounded-2xl p-3 sm:p-5"
       >
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
+        <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider mb-2 sm:mb-4">
           {t('dashboard.upcomingStays')}
         </h3>
         {upcomingStays.length === 0 ? (
           <p className="text-sm text-muted py-8 text-center">{t('dashboard.noUpcoming')}</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1 sm:space-y-3">
             {upcomingStays.map((b) => {
               const caravan = getBookingCaravan(b);
               const camping = getBookingCamping(b);
               return (
                 <div
                   key={b.id}
-                  className="flex items-center gap-4 p-3 rounded-xl"
+                  className="flex items-center gap-2 sm:gap-4 p-2 sm:p-3 rounded-xl"
                 >
-                  <div className="text-center bg-surface rounded-xl px-3 py-2 shrink-0">
+                  <div className="text-center bg-surface rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 shrink-0">
                     <p className="text-lg font-bold text-primary-dark">
                       {new Date(b.check_in).getDate()}
                     </p>
@@ -309,7 +388,7 @@ export default function AdminDashboard() {
                   <div className="shrink-0">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {ts(b.status)} </span> </div> </div> ); })} </div> )} </motion.div> {/* Test data purge — admin only */}
-      {role === 'admin' && (<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-5" > <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-5 h-5 text-red-500" /> </div> <div> <h3 className="text-sm font-semibold text-foreground">{t('dashboard.cleanDatabase')}</h3> <p className="text-xs text-muted">{t('dashboard.cleanDatabaseDesc')}</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> {t('dashboard.wipeTestData')} </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ {t('dashboard.wipeWarning')} </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">{t('dashboard.confirmAdminPassword')}</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
+      {role === 'admin' && (<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.4 }} className="bg-white rounded-2xl p-3 sm:p-5" > <div className="flex items-center justify-between flex-wrap gap-2"> <div className="flex items-center gap-2 sm:gap-3"> <div className="p-2 sm:p-2.5 rounded-xl bg-red-50"> <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" /> </div> <div> <h3 className="text-xs sm:text-sm font-semibold text-foreground">{t('dashboard.cleanDatabase')}</h3> <p className="text-[10px] sm:text-xs text-muted">{t('dashboard.cleanDatabaseDesc')}</p> </div> </div> {!showPurge && ( <button onClick={() => setShowPurge(true)} className="px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" > <Trash2 className="w-4 h-4 inline -mt-0.5 mr-1" /> {t('dashboard.wipeTestData')} </button> )} </div> {showPurge && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height:'auto' }} className="mt-4 pt-4 space-y-3" > {purgeResult ? ( <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 ${purgeResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}> {purgeResult.success ? <AlertCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />} {purgeResult.message} </div> ) : ( <> <div className="bg-red-50 rounded-xl p-3"> <p className="text-xs text-red-700 font-medium"> ⚠️ {t('dashboard.wipeWarning')} </p> </div> <div> <label className="text-xs font-medium text-foreground mb-1 block">{t('dashboard.confirmAdminPassword')}</label> <input type="password" value={purgePassword} onChange={(e) => setPurgePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200" /> </div> <div className="flex gap-2"> <button onClick={async () => { if (!purgePassword) return; setPurging(true); try { const res = await fetch('/api/admin/dashboard', {
                           method: 'DELETE',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ adminPassword: purgePassword }),

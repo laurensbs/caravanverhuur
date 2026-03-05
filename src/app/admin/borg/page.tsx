@@ -262,15 +262,15 @@ export default function AdminBorgPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             {t('deposit.title')}
           </h1>
-          <p className="text-sm text-muted mt-1">{t('deposit.subtitle')}</p>
+          <p className="text-xs sm:text-sm text-muted mt-0.5 sm:mt-1">{t('deposit.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowNewForm(!showNewForm)}
@@ -282,16 +282,16 @@ export default function AdminBorgPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         {[
           { label: t('common.total'), value: stats.total, color: 'bg-surface text-foreground' },
           { label: t('deposit.open'), value: stats.open, color: 'bg-primary-50 text-primary' },
           { label: t('deposit.inProgress'), value: stats.inProgress, color: 'bg-primary-50 text-primary' },
           { label: t('deposit.completed'), value: stats.done, color: 'bg-primary-50 text-primary' },
         ].map(s => (
-          <div key={s.label} className={`${s.color} rounded-xl p-4 text-center`}>
-            <div className="text-2xl font-bold">{s.value}</div>
-            <div className="text-xs font-medium mt-1">{s.label}</div>
+          <div key={s.label} className={`${s.color} rounded-xl p-2.5 sm:p-4 text-center`}>
+            <div className="text-xl sm:text-2xl font-bold">{s.value}</div>
+            <div className="text-[10px] sm:text-xs font-medium mt-0.5 sm:mt-1">{s.label}</div>
           </div>
         ))}
       </div>
@@ -304,10 +304,10 @@ export default function AdminBorgPage() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             onSubmit={handleCreate}
-            className="bg-white rounded-xl p-5 overflow-hidden"
+            className="bg-white rounded-xl p-3 sm:p-5 overflow-hidden"
           >
-            <h3 className="font-semibold text-foreground mb-4">{t('deposit.createTitle')}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <h3 className="font-semibold text-foreground mb-3 sm:mb-4">{t('deposit.createTitle')}</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.booking')}</label>
                 <select
@@ -348,7 +348,7 @@ export default function AdminBorgPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
               <button
                 type="submit"
                 disabled={creating}
@@ -400,7 +400,7 @@ export default function AdminBorgPage() {
           <p className="text-muted">{t('deposit.noChecklists')}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {filtered.map(checklist => {
             const isExpanded = expandedId === checklist.id;
             const categories = groupByCategory(checklist.items);
@@ -417,10 +417,10 @@ export default function AdminBorgPage() {
                 {/* Header row */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : checklist.id)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-surface transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-surface transition-colors cursor-pointer text-left"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${
                       checklist.type === 'INCHECKEN' ? 'bg-primary-50' : 'bg-primary-50'
                     }`}>
                       <ClipboardCheck size={18} className={
@@ -464,9 +464,9 @@ export default function AdminBorgPage() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 space-y-5">
+                      <div className="p-3 sm:p-4 space-y-3 sm:space-y-5">
                         {/* Info bar */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-sm">
                           <div className="flex items-center gap-2 text-muted">
                             <Hash size={13} /> <span className="font-medium text-foreground">{checklist.booking_ref}</span>
                           </div>
@@ -512,7 +512,7 @@ export default function AdminBorgPage() {
                                   const isEditable = checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD';
 
                                   return (
-                                    <div key={item.item} className="flex flex-col sm:flex-row sm:items-center gap-2 bg-surface rounded-lg p-2.5">
+                                    <div key={item.item} className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 bg-surface rounded-lg p-2 sm:p-2.5">
                                       <div className="flex items-center gap-2 min-w-0 sm:w-1/3">
                                         {itemStatusIcons[item.status]}
                                         <span className="text-sm text-foreground">{item.item}</span>
@@ -653,7 +653,7 @@ export default function AdminBorgPage() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex flex-wrap gap-3 pt-2">
+                        <div className="flex flex-wrap gap-2 sm:gap-3 pt-1 sm:pt-2">
                           {checklist.status !== 'AFGEROND' && checklist.status !== 'KLANT_AKKOORD' && (
                             <>
                               <button
