@@ -154,9 +154,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
-              className="text-center mb-8"
+              className="text-center mb-4"
             >
-              <div className="mx-auto mb-5 relative">
+              <div className="mx-auto relative">
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
                   alt="Caravanverhuur Spanje"
@@ -165,10 +165,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   className="mx-auto w-56 sm:w-64 h-auto"
                   unoptimized
                 />
-              </div>
-              <div className="inline-flex items-center gap-2 bg-primary/5 text-primary text-xs font-semibold px-3 py-1.5 rounded-full border-primary/10">
-                <Shield className="w-3.5 h-3.5" />
-                {lt('auth.adminDashboard')}
               </div>
             </motion.div>
 
