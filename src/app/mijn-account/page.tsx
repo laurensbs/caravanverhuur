@@ -359,7 +359,7 @@ function MijnAccountContent() {
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-28 space-y-4">
               {/* User card */}
-              <div className="bg-white rounded-2xl border border-border/40 p-5">
+              <div className="bg-white rounded-2xl border p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
                     {firstName.charAt(0).toUpperCase()}
@@ -385,7 +385,7 @@ function MijnAccountContent() {
               </div>
 
               {/* Nav items */}
-              <nav className="bg-white rounded-2xl border border-border/40 p-2 space-y-0.5">
+              <nav className="bg-white rounded-2xl border p-2 space-y-0.5">
                 {tabs.map(tb => (
                   <button
                     key={tb.key}
@@ -393,31 +393,31 @@ function MijnAccountContent() {
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       tab === tb.key
                         ? 'bg-primary/8 text-primary'
-                        : 'text-foreground-light hover:bg-[#FAFAF9] hover:text-foreground'
+                        : 'text-foreground-light'
                     }`}
                   >
                     <span className={tab === tb.key ? 'text-primary' : 'text-muted'}>{tb.icon}</span>
                     {tb.label}
                     {tb.badge ? (
-                      <span className="ml-auto w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">{tb.badge}</span>
+                      <span className="ml-auto w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">{tb.badge}</span>
                     ) : null}
                   </button>
                 ))}
               </nav>
 
               {/* Sidebar actions */}
-              <div className="bg-white rounded-2xl border border-border/40 p-2 space-y-0.5">
-                <Link href="/boeken" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-primary hover:bg-primary/5 transition-colors">
+              <div className="bg-white rounded-2xl border p-2 space-y-0.5">
+                <Link href="/boeken" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-primary transition-colors">
                   <Plus size={18} />
                   {t('myAccount.newBooking')}
                 </Link>
-                <Link href="/contact" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#FAFAF9] transition-colors">
+                <Link href="/contact" className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light transition-colors">
                   <Mail size={18} className="text-muted" />
                   {t('myAccount.contactUs')}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light hover:bg-[#FAFAF9] hover:text-danger transition-colors"
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground-light transition-colors"
                 >
                   <LogOut size={18} className="text-muted" />
                   {t('myAccount.logout')}
@@ -449,7 +449,7 @@ function MijnAccountContent() {
                   className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold transition-all ${
                     tab === tb.key
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-white text-foreground-light hover:bg-white border border-border/40'
+                      : 'bg-white text-foreground-light border'
                   }`}
                 >
                   {tb.icon}
@@ -490,14 +490,14 @@ function MijnAccountContent() {
                     const camping = getCamping(upcomingBooking.camping_id);
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
-                      <div className="bg-white rounded-2xl overflow-hidden border border-border/40 shadow-sm">
+                      <div className="bg-white rounded-2xl overflow-hidden border shadow-sm">
                         <div className="relative h-36 sm:h-44 bg-foreground">
                           {caravan?.photos?.[0] && (
                             <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" unoptimized />
                           )}
                           <div className="absolute inset-0 flex items-end justify-between p-5 sm:p-6">
                             <div>
-                              <p className="text-white/50 text-[10px] font-semibold uppercase tracking-widest">{t('myAccount.upcomingTrip')}</p>
+                              <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">{t('myAccount.upcomingTrip')}</p>
                               <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{caravan?.name || 'Caravan'}</h3>
                               <div className="flex items-center gap-3 text-white/60 text-sm mt-1.5">
                                 <span className="flex items-center gap-1"><MapPin size={12} />{camping?.name}</span>
@@ -506,7 +506,7 @@ function MijnAccountContent() {
                             </div>
                             <div className="text-center bg-white/15 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/10">
                               <div className="text-3xl sm:text-4xl font-bold text-white leading-none">{days}</div>
-                              <div className="text-[10px] text-white/60 font-medium uppercase tracking-wider mt-1">
+                              <div className="text-xs text-white/60 font-medium uppercase tracking-wider mt-1">
                                 {days === 1 ? t('myAccount.day') : t('myAccount.days')}
                               </div>
                             </div>
@@ -515,11 +515,11 @@ function MijnAccountContent() {
                         <div className="p-4 sm:p-5 flex items-center justify-between bg-[#FAFAF9]/50">
                           <div className="flex items-center gap-3 text-sm text-muted flex-wrap">
                             <span>{fd(upcomingBooking.check_in)} → {fd(upcomingBooking.check_out)}</span>
-                            <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
+                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[upcomingBooking.status] || 'bg-surface-alt text-foreground-light'}`}>
                               {statusLabelsNL[upcomingBooking.status] || upcomingBooking.status}
                             </span>
                           </div>
-                          <button onClick={() => switchTab('boekingen')} className="text-primary text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
+                          <button onClick={() => switchTab('boekingen')} className="text-primary text-sm font-medium flex items-center gap-1 transition-all">
                             {t('myAccount.details')} <ChevronRight size={14} />
                           </button>
                         </div>
@@ -550,9 +550,9 @@ function MijnAccountContent() {
                             { value: remainingDays, label: days === 1 ? t('myAccount.day') : t('myAccount.daysLabel') },
                             { value: hours, label: t('myAccount.hours') },
                           ].map((item, i) => (
-                            <div key={i} className="text-center bg-white rounded-xl p-3 border border-border/40 shadow-sm">
+                            <div key={i} className="text-center bg-white rounded-xl p-3 border shadow-sm">
                               <div className="text-2xl sm:text-3xl font-bold text-primary leading-none">{item.value}</div>
-                              <div className="text-[10px] text-muted font-medium uppercase tracking-wider mt-1.5">{item.label}</div>
+                              <div className="text-xs text-muted font-medium uppercase tracking-wider mt-1.5">{item.label}</div>
                             </div>
                           ))}
                         </div>
@@ -573,7 +573,7 @@ function MijnAccountContent() {
                         </p>
 
                         {/* Caravan preparation timeline */}
-                        <div className="mt-5 pt-4 border-t border-border/40">
+                        <div className="mt-5 pt-4 border-t">
                           <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
                             <ClipboardCheck size={13} className="text-primary" />
                             Caravan klaarzetten
@@ -604,8 +604,8 @@ function MijnAccountContent() {
                                     <div className={`text-xs font-semibold ${completed ? 'text-primary' : 'text-foreground-light'}`}>
                                       {step.icon} {step.label}
                                     </div>
-                                    <div className="text-[10px] text-muted">{step.desc}</div>
-                                    <div className="text-[10px] text-muted/60 mt-0.5">
+                                    <div className="text-xs text-muted">{step.desc}</div>
+                                    <div className="text-xs text-muted/60 mt-0.5">
                                       {step.daysB === 0 ? 'Check-in dag' : `${step.daysB} ${step.daysB === 1 ? 'dag' : 'dagen'} voor aankomst`}
                                     </div>
                                   </div>
@@ -628,7 +628,7 @@ function MijnAccountContent() {
                     const sortedCategories = categoryOrder.filter(c => grouped[c]?.length);
 
                     return (
-                      <div className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+                      <div className="bg-white rounded-2xl border overflow-hidden">
                         <div className="p-5 sm:p-6 pb-0 sm:pb-0">
                           <div className="flex items-center gap-3 mb-1">
                             <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
@@ -644,20 +644,20 @@ function MijnAccountContent() {
                         <div className="p-5 sm:p-6 pt-4 sm:pt-4 space-y-4">
                           {sortedCategories.map((cat) => (
                             <div key={cat}>
-                              <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                 <span className="w-1 h-1 rounded-full bg-primary" />
                                 {getCategoryLabel(cat, locale)}
                               </h4>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {grouped[cat].map((act) => (
-                                  <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3 hover:bg-surface-alt transition-colors group">
+                                  <div key={act.id} className="bg-[#FAFAF9] rounded-xl p-3 transition-colors group">
                                     <div className="flex items-start gap-2.5">
                                       <span className="text-lg mt-0.5 shrink-0">{act.icon}</span>
                                       <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                           <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
                                           {act.distance && (
-                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full border border-border/40 whitespace-nowrap shrink-0">
+                                            <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full border whitespace-nowrap shrink-0">
                                               {act.distance}
                                             </span>
                                           )}
@@ -666,7 +666,7 @@ function MijnAccountContent() {
                                         {act.tip && (
                                           <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
                                             <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
-                                            <p className="text-[10px] text-primary-dark leading-relaxed">{act.tip}</p>
+                                            <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
                                           </div>
                                         )}
                                       </div>
@@ -678,8 +678,8 @@ function MijnAccountContent() {
                           ))}
 
                           {/* General tips */}
-                          <div className="border-t border-border/40 pt-4">
-                            <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          <div className="border-t pt-4">
+                            <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
                               <Star size={10} className="text-primary" />
                               Algemene tips Costa Brava
                             </h4>
@@ -694,7 +694,7 @@ function MijnAccountContent() {
                                       {act.tip && (
                                         <div className="mt-1.5 flex items-start gap-1.5 bg-primary/5 rounded-lg px-2 py-1.5">
                                           <Lightbulb size={11} className="text-primary mt-0.5 shrink-0" />
-                                          <p className="text-[10px] text-primary-dark leading-relaxed">{act.tip}</p>
+                                          <p className="text-xs text-primary-dark leading-relaxed">{act.tip}</p>
                                         </div>
                                       )}
                                     </div>
@@ -720,7 +720,7 @@ function MijnAccountContent() {
                           <p className="text-sm text-muted mb-3">{t('myAccount.borgAlertDesc').replace('{count}', String(openBorg.length))}</p>
                           <button
                             onClick={() => switchTab('borg')}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
                           >
                             <ClipboardCheck size={16} />
                             {t('myAccount.borgAlertAction')}
@@ -735,7 +735,7 @@ function MijnAccountContent() {
                   {(openPayments.length > 0) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {openPayments.length > 0 && (
-                        <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 hover:border-primary/30 transition-all group">
+                        <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 transition-all group">
                           <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
                             <CreditCard size={18} className="text-primary" />
                           </div>
@@ -743,7 +743,7 @@ function MijnAccountContent() {
                             <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
                             <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
                           </div>
-                          <ArrowRight size={16} className="text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                          <ArrowRight size={16} className="text-primary shrink-0 transition-transform" />
                         </button>
                       )}
                     </div>
@@ -751,39 +751,39 @@ function MijnAccountContent() {
 
                   {/* Quick actions */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <Link href="/boeken" className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
-                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                    <Link href="/boeken" className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Plus size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.newBooking')}</div>
-                      <div className="text-[10px] text-muted mt-0.5">{t('myAccount.season2026')}</div>
+                      <div className="text-xs text-muted mt-0.5">{t('myAccount.season2026')}</div>
                     </Link>
-                    <button onClick={() => switchTab('boekingen')} className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
-                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                    <button onClick={() => switchTab('boekingen')} className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Eye size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.myBookings')}</div>
-                      <div className="text-[10px] text-muted mt-0.5">{bookings.length} {t('myAccount.totalCount')}</div>
+                      <div className="text-xs text-muted mt-0.5">{bookings.length} {t('myAccount.totalCount')}</div>
                     </button>
-                    <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
-                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                    <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <CreditCard size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.paymentsTitle')}</div>
-                      <div className="text-[10px] text-muted mt-0.5">{payments.filter(p => p.status === 'BETAALD').length} {t('myAccount.statPaid').toLowerCase()}</div>
+                      <div className="text-xs text-muted mt-0.5">{payments.filter(p => p.status === 'BETAALD').length} {t('myAccount.statPaid').toLowerCase()}</div>
                     </button>
-                    <Link href="/contact" className="bg-white rounded-2xl p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all border border-border/40 group">
-                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 group-hover:bg-primary/12 transition-colors">
+                    <Link href="/contact" className="bg-white rounded-2xl p-4 text-center transition-all border group">
+                      <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center mx-auto mb-2.5 transition-colors">
                         <Mail size={20} className="text-primary" />
                       </div>
                       <div className="text-sm font-semibold text-foreground">{t('myAccount.contactUs')}</div>
-                      <div className="text-[10px] text-muted mt-0.5">{t('myAccount.needHelp')}</div>
+                      <div className="text-xs text-muted mt-0.5">{t('myAccount.needHelp')}</div>
                     </Link>
                   </div>
 
                   {/* Empty state */}
                   {bookings.length === 0 && (
-                    <div className="bg-white rounded-2xl p-10 sm:p-14 text-center border border-border/40">
+                    <div className="bg-white rounded-2xl p-10 sm:p-14 text-center border">
                       <div className="w-16 h-16 bg-primary/8 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Sun size={28} className="text-primary" />
                       </div>
@@ -791,7 +791,7 @@ function MijnAccountContent() {
                       <p className="text-sm text-muted mt-2 mb-6 max-w-sm mx-auto">
                         {t('myAccount.noBookingsDesc')}
                       </p>
-                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-7 py-3 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm">
+                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-7 py-3 rounded-xl text-sm font-semibold transition-colors shadow-sm">
                         {t('myAccount.bookNow')} <ArrowRight size={14} />
                       </Link>
                     </div>
@@ -804,14 +804,14 @@ function MijnAccountContent() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.myBookings')}</h2>
-                    <span className="text-xs text-muted bg-white px-3 py-1 rounded-full border border-border/40">{bookings.length} {t('myAccount.totalCount')}</span>
+                    <span className="text-xs text-muted bg-white px-3 py-1 rounded-full border">{bookings.length} {t('myAccount.totalCount')}</span>
                   </div>
 
                   {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-border/40">
+                    <div className="bg-white rounded-2xl p-8 text-center border">
                       <Calendar size={40} className="mx-auto text-border mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noBookingsYet')}</p>
-                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold mt-4 hover:bg-primary-dark transition-colors">
+                      <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold mt-4 transition-colors">
                         {t('myAccount.bookNow')} <ArrowRight size={14} />
                       </Link>
                     </div>
@@ -821,7 +821,7 @@ function MijnAccountContent() {
                       const camping = getCamping(booking.camping_id);
                       const isPast = new Date(booking.check_out) < new Date();
                       return (
-                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-all ${isPast ? 'border-border/40 opacity-60' : 'border-border/40 hover:shadow-md hover:-translate-y-0.5'}`}>
+                        <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden border transition-all ${isPast ? 'opacity-60' : ''}`}>
                           {/* Caravan image strip */}
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
@@ -832,7 +832,7 @@ function MijnAccountContent() {
                                   <h3 className="font-bold text-white text-sm">{caravan.name}</h3>
                                   <div className="text-white/70 text-xs flex items-center gap-1"><MapPin size={10} />{camping?.name || 'Camping'}</div>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
                                   {statusLabelsNL[booking.status] || booking.status}
                                 </span>
                               </div>
@@ -845,8 +845,8 @@ function MijnAccountContent() {
                               <div className="flex items-start justify-between mb-3">
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono text-[10px] text-muted">{booking.reference}</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
+                                    <span className="font-mono text-xs text-muted">{booking.reference}</span>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
                                       {statusLabelsNL[booking.status] || booking.status}
                                     </span>
                                   </div>
@@ -879,7 +879,7 @@ function MijnAccountContent() {
                             </div>
 
                             {/* Payment progress */}
-                            <div className="mt-4 pt-3 border-t border-border/40">
+                            <div className="mt-4 pt-3 border-t">
                               {(() => {
                                 const bookingPayments = payments.filter(p => p.booking_id === booking.id);
                                 const paid = bookingPayments.filter(p => p.status === 'BETAALD').reduce((s, p) => s + Number(p.amount), 0);
@@ -902,7 +902,7 @@ function MijnAccountContent() {
                             {/* Reference footer for image-cards */}
                             {!isPast && caravan?.photos?.[0] && (
                               <div className="mt-3 flex items-center justify-between">
-                                <span className="font-mono text-[10px] text-muted">{booking.reference}</span>
+                                <span className="font-mono text-xs text-muted">{booking.reference}</span>
                                 <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
                               </div>
                             )}
@@ -923,7 +923,7 @@ function MijnAccountContent() {
 
                   {/* Payment summary card */}
                   {payments.length > 0 && (
-                    <div className="bg-white rounded-2xl p-5 border border-border/40">
+                    <div className="bg-white rounded-2xl p-5 border">
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                           <div className="text-xs text-muted mb-1">{t('myAccount.paid')}</div>
@@ -948,7 +948,7 @@ function MijnAccountContent() {
                   )}
 
                   {payments.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 text-center border border-border/40">
+                    <div className="bg-white rounded-2xl p-8 text-center border">
                       <CreditCard size={40} className="mx-auto text-muted/30 mb-3" />
                       <p className="text-muted text-sm">{t('myAccount.noPayments')}</p>
                     </div>
@@ -956,7 +956,7 @@ function MijnAccountContent() {
                     payments.map(payment => {
                       const booking = bookings.find(b => b.id === payment.booking_id);
                       return (
-                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border border-border/40">
+                        <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4 border">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                             payment.status === 'BETAALD' ? 'bg-primary-50' : 'bg-primary-50'
                           }`}>
@@ -972,7 +972,7 @@ function MijnAccountContent() {
                               <button
                                 onClick={() => handlePayment(payment.id)}
                                 disabled={payingId === payment.id}
-                                className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
                               >
                                 {payingId === payment.id ? (
                                   <><Loader2 size={12} className="animate-spin" /> {t('myAccount.pleaseWait')}</>
@@ -981,7 +981,7 @@ function MijnAccountContent() {
                                 )}
                               </button>
                             ) : (
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[payment.status] || 'bg-surface-alt text-foreground-light'}`}>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[payment.status] || 'bg-surface-alt text-foreground-light'}`}>
                                 {statusLabelsNL[payment.status] || payment.status}
                               </span>
                             )}
@@ -1012,7 +1012,7 @@ function MijnAccountContent() {
                   </div>
 
                   {borgChecklists.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-border/40">
+                    <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border">
                       <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Shield size={28} className="text-primary" />
                       </div>
@@ -1048,11 +1048,11 @@ function MijnAccountContent() {
                       });
 
                       return (
-                        <div key={bc.id} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+                        <div key={bc.id} className="bg-white rounded-2xl border overflow-hidden">
                           {/* Header */}
                           <button
                             onClick={() => setExpandedBorgId(isExpanded ? null : bc.id)}
-                            className="w-full p-4 sm:p-5 flex items-center gap-3 hover:bg-surface/50 transition-colors text-left"
+                            className="w-full p-4 sm:p-5 flex items-center gap-3 transition-colors text-left"
                           >
                             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                               bc.type === 'INCHECKEN' ? 'bg-primary/10' : 'bg-primary-50'
@@ -1064,7 +1064,7 @@ function MijnAccountContent() {
                                 <span className="font-semibold text-sm text-foreground">
                                   {bc.type === 'INCHECKEN' ? t('myAccount.incheckInspection') : t('myAccount.uitcheckInspection')}
                                 </span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[bc.status] || 'bg-surface-alt text-foreground-light'}`}>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[bc.status] || 'bg-surface-alt text-foreground-light'}`}>
                                   {statusLabelsNL[bc.status] || bc.status}
                                 </span>
                               </div>
@@ -1094,23 +1094,23 @@ function MijnAccountContent() {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
-                                <div className="border-t border-border/40 p-4 sm:p-5 space-y-4">
+                                <div className="border-t p-4 sm:p-5 space-y-4">
                                   {/* Summary cards */}
                                   <div className="grid grid-cols-3 gap-2">
                                     <div className="bg-primary-50 rounded-xl p-3 text-center">
                                       <CheckCircle2 size={18} className="text-primary mx-auto" />
                                       <div className="text-lg font-bold text-primary-dark mt-1">{goedItems}</div>
-                                      <div className="text-[10px] text-primary font-medium">{t('myAccount.inOrder')}</div>
+                                      <div className="text-xs text-primary font-medium">{t('myAccount.inOrder')}</div>
                                     </div>
                                     <div className="bg-primary-50 rounded-xl p-3 text-center">
                                       <AlertTriangle size={18} className="text-primary mx-auto" />
                                       <div className="text-lg font-bold text-primary mt-1">{beschadigdItems}</div>
-                                      <div className="text-[10px] text-primary font-medium">{t('myAccount.damaged')}</div>
+                                      <div className="text-xs text-primary font-medium">{t('myAccount.damaged')}</div>
                                     </div>
                                     <div className="bg-danger/5 rounded-xl p-3 text-center">
                                       <XCircle size={18} className="text-danger mx-auto" />
                                       <div className="text-lg font-bold text-danger mt-1">{ontbreektItems}</div>
-                                      <div className="text-[10px] text-danger font-medium">{t('myAccount.missing')}</div>
+                                      <div className="text-xs text-danger font-medium">{t('myAccount.missing')}</div>
                                     </div>
                                   </div>
 
@@ -1193,13 +1193,13 @@ function MijnAccountContent() {
                                         onChange={(e) => { setRespondingBorgId(bc.id); setBorgNotes(e.target.value); }}
                                         rows={2}
                                         placeholder={t('myAccount.commentsOptional')}
-                                        className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 mb-3"
+                                        className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 mb-3"
                                       />
                                       <div className="flex flex-col sm:flex-row gap-2">
                                         <button
                                           onClick={() => handleBorgResponse(bc.token, true)}
                                           disabled={submittingBorg}
-                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors text-sm disabled:opacity-50"
+                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-semibold transition-colors text-sm disabled:opacity-50"
                                         >
                                           {submittingBorg ? <Loader2 size={14} className="animate-spin" /> : <ThumbsUp size={14} />}
                                           {t('myAccount.agree')}
@@ -1207,7 +1207,7 @@ function MijnAccountContent() {
                                         <button
                                           onClick={() => handleBorgResponse(bc.token, false)}
                                           disabled={submittingBorg}
-                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-danger text-white rounded-xl font-semibold hover:bg-danger/80 transition-colors text-sm disabled:opacity-50"
+                                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-danger text-white rounded-xl font-semibold transition-colors text-sm disabled:opacity-50"
                                         >
                                           {submittingBorg ? <Loader2 size={14} className="animate-spin" /> : <ThumbsDown size={14} />}
                                           {t('myAccount.object')}
@@ -1217,10 +1217,10 @@ function MijnAccountContent() {
                                   )}
 
                                   {/* View full page link */}
-                                  <div className="pt-2 border-t border-border/40">
+                                  <div className="pt-2 border-t">
                                     <Link
                                       href={`/borg/${bc.token}`}
-                                      className="flex items-center gap-1.5 text-primary text-sm font-medium hover:underline"
+                                      className="flex items-center gap-1.5 text-primary text-sm font-medium"
                                       target="_blank"
                                     >
                                       <ExternalLink size={13} />
@@ -1237,7 +1237,7 @@ function MijnAccountContent() {
                   )}
 
                   {/* How borg works */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                  <div className="bg-white rounded-2xl p-5 border">
                     <h3 className="text-sm font-bold text-foreground mb-3">{t('myAccount.howBorgWorks')}</h3>
                     <div className="space-y-3">
                       {[
@@ -1275,7 +1275,7 @@ function MijnAccountContent() {
                       { icon: <Shield size={18} />, title: t('myAccount.termsDeposit'), desc: t('myAccount.termsDepositDesc') },
                       { icon: <Clock size={18} />, title: t('myAccount.termsCheckInOut'), desc: t('myAccount.termsCheckInOutDesc') },
                     ].map((item, i) => (
-                      <div key={i} className="bg-white rounded-2xl p-4 border border-border/40">
+                      <div key={i} className="bg-white rounded-2xl p-4 border">
                         <div className="flex items-start gap-3">
                           <div className="w-9 h-9 bg-primary/8 rounded-lg flex items-center justify-center shrink-0 text-primary">
                             {item.icon}
@@ -1290,7 +1290,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Important rules */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                  <div className="bg-white rounded-2xl p-5 border">
                     <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                       <FileText size={16} className="text-primary" />
                       {t('myAccount.termsImportant')}
@@ -1312,7 +1312,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Cancellation policy */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                  <div className="bg-white rounded-2xl p-5 border">
                     <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                       <AlertTriangle size={16} className="text-primary" />
                       {t('myAccount.termsCancellationTitle')}
@@ -1341,7 +1341,7 @@ function MijnAccountContent() {
                       <Link
                         href="/voorwaarden"
                         target="_blank"
-                        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors shrink-0"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium transition-colors shrink-0"
                       >
                         <ExternalLink size={14} />
                         {t('myAccount.termsReadFull')}
@@ -1357,7 +1357,7 @@ function MijnAccountContent() {
                   <h2 className="text-xl font-bold text-foreground tracking-tight mb-4">{t('myAccount.myProfile')}</h2>
 
                   {/* Profile card */}
-                  <div className="bg-white rounded-2xl p-6 border border-border/40">
+                  <div className="bg-white rounded-2xl p-6 border">
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
@@ -1369,37 +1369,37 @@ function MijnAccountContent() {
                         </div>
                       </div>
                       {!editingProfile && (
-                        <button onClick={() => setEditingProfile(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-dark bg-primary/8 hover:bg-primary/12 px-3.5 py-2 rounded-lg transition-colors">
+                        <button onClick={() => setEditingProfile(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary bg-primary/8 px-3.5 py-2 rounded-lg transition-colors">
                           <Edit3 size={13} /> {t('myAccount.edit')}
                         </button>
                       )}
                     </div>
 
                     {editingProfile ? (
-                      <div className="space-y-3 pt-3 border-t border-border/40">
+                      <div className="space-y-3 pt-3 border-t">
                         <div>
                           <label className="text-xs font-semibold text-foreground-light mb-1.5 block">{t('myAccount.name')}</label>
                           <input value={editName} onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-3.5 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                            className="w-full px-3.5 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                         </div>
                         <div>
                           <label className="text-xs font-semibold text-foreground-light mb-1.5 block">{t('myAccount.phone')}</label>
                           <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)}
-                            className="w-full px-3.5 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                            className="w-full px-3.5 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                         </div>
                         <div className="flex gap-2 pt-1">
                           <button onClick={handleSaveProfile} disabled={saving}
-                            className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-primary-dark transition-colors disabled:opacity-50">
+                            className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-1 transition-colors disabled:opacity-50">
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} {t('myAccount.save')}
                           </button>
                           <button onClick={() => { setEditingProfile(false); setEditName(customer.name); setEditPhone(customer.phone || ''); }}
-                            className="px-5 py-2.5 bg-surface-alt text-foreground-light font-semibold rounded-xl text-sm hover:bg-surface-alt transition-colors">
+                            className="px-5 py-2.5 bg-surface-alt text-foreground-light font-semibold rounded-xl text-sm transition-colors">
                             {t('myAccount.cancel')}
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-3 pt-3 border-t border-border/40">
+                      <div className="space-y-3 pt-3 border-t">
                         {[
                           { icon: <User size={16} />, label: t('myAccount.name'), value: customer.name },
                           { icon: <Mail size={16} />, label: t('myAccount.email'), value: customer.email },
@@ -1408,7 +1408,7 @@ function MijnAccountContent() {
                           <div key={field.label} className="flex items-center gap-3 py-1.5">
                             <span className="text-border">{field.icon}</span>
                             <div>
-                              <div className="text-[10px] text-muted uppercase tracking-wider">{field.label}</div>
+                              <div className="text-xs text-muted uppercase tracking-wider">{field.label}</div>
                               <div className="text-sm font-medium text-foreground">{field.value}</div>
                             </div>
                           </div>
@@ -1418,7 +1418,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* Newsletter subscription */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                  <div className="bg-white rounded-2xl p-5 border">
                     <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
                       <Mail size={16} className="text-primary" />
                       Nieuwsbrief
@@ -1460,7 +1460,7 @@ function MijnAccountContent() {
                   </div>
 
                   {/* GDPR / Danger zone */}
-                  <div className="bg-white rounded-2xl p-5 border border-border/40">
+                  <div className="bg-white rounded-2xl p-5 border">
                     <h3 className="text-sm font-bold text-foreground mb-1">{t('myAccount.privacyData')}</h3>
                     <p className="text-xs text-muted mb-3 leading-relaxed">
                       {t('myAccount.gdprText')}
@@ -1468,7 +1468,7 @@ function MijnAccountContent() {
 
                     {!showDeleteConfirm ? (
                       <button onClick={() => setShowDeleteConfirm(true)}
-                        className="text-xs text-danger/70 hover:text-danger font-medium transition-colors flex items-center gap-1">
+                        className="text-xs text-danger/70 font-medium transition-colors flex items-center gap-1">
                         <Trash2 size={12} /> {t('myAccount.deleteAccount')}
                       </button>
                     ) : deleteEmailSent ? (
@@ -1484,7 +1484,7 @@ function MijnAccountContent() {
                           </div>
                         </div>
                         <button onClick={() => { setShowDeleteConfirm(false); setDeleteEmailSent(false); }}
-                          className="text-xs text-muted hover:text-foreground font-medium transition-colors">
+                          className="text-xs text-muted font-medium transition-colors">
                           Sluiten
                         </button>
                       </motion.div>
@@ -1499,12 +1499,12 @@ function MijnAccountContent() {
                         </div>
                         <div className="flex gap-2">
                           <button onClick={handleDeleteAccount} disabled={deleting}
-                            className="flex-1 py-2.5 bg-danger text-white text-xs font-bold rounded-lg hover:bg-danger/80 transition-colors flex items-center justify-center gap-1 disabled:opacity-50">
+                            className="flex-1 py-2.5 bg-danger text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 disabled:opacity-50">
                             {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                             {t('myAccount.deleteConfirmYes')}
                           </button>
                           <button onClick={() => setShowDeleteConfirm(false)}
-                            className="px-4 py-2.5 bg-white text-foreground-light text-xs font-semibold rounded-lg hover:bg-surface transition-colors border border-border">
+                            className="px-4 py-2.5 bg-white text-foreground-light text-xs font-semibold rounded-lg transition-colors border">
                             {t('myAccount.deleteConfirmNo')}
                           </button>
                         </div>
@@ -1521,12 +1521,12 @@ function MijnAccountContent() {
       </div>
 
       {/* Mobile bottom action bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border/40 px-4 pt-3 z-40" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t px-4 pt-3 z-40" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         <div className="flex gap-2">
           <Link href="/boeken" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl">
             <Plus size={16} /> {t('myAccount.newBooking')}
           </Link>
-          <button onClick={handleLogout} className="px-4 py-2.5 border border-border text-foreground-light rounded-xl text-sm hover:bg-surface transition-colors">
+          <button onClick={handleLogout} className="px-4 py-2.5 border text-foreground-light rounded-xl text-sm transition-colors">
             <LogOut size={16} />
           </button>
         </div>

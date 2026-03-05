@@ -58,9 +58,9 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
           <div className="max-w-5xl mx-auto">
             <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-3">
-              <Link href="/" className="hover:text-white">Home</Link>
+              <Link href="/" className="">Home</Link>
               <ChevronRight size={12} />
-              <Link href="/bestemmingen" className="hover:text-white">{t('destinations.allDestinations')}</Link>
+              <Link href="/bestemmingen" className="">{t('destinations.allDestinations')}</Link>
               <ChevronRight size={12} />
               <span className="text-white">{dest.name}</span>
             </nav>
@@ -161,7 +161,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
 
               <Link
                 href={`/boeken?bestemming=${encodeURIComponent(dest.name)}`}
-                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors"
               >
                 {t('destinations.bookCaravan')} <ArrowRight size={16} />
               </Link>
@@ -174,7 +174,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                   <Link
                     key={d.id}
                     href={`/bestemmingen/${d.slug}`}
-                    className="flex items-center gap-3 py-2 hover:bg-surface rounded-lg px-2 -mx-2 transition-colors"
+                    className="flex items-center gap-3 py-2 rounded-lg px-2 -mx-2 transition-colors"
                   >
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
                       <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover" unoptimized />

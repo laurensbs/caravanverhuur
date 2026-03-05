@@ -108,7 +108,7 @@ export default function CaravansPage() {
       </section>
 
       {/* Filters */}
-      <section className="bg-white border-b border-border sticky top-[120px] z-40 shadow-sm">
+      <section className="bg-white border-b sticky top-[120px] z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Desktop filters */}
           <div className="hidden lg:flex items-center gap-4">
@@ -120,7 +120,7 @@ export default function CaravansPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t('caravans.searchPlaceholder')}
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -139,7 +139,7 @@ export default function CaravansPage() {
                         type === 'FAMILIE' ? 'bg-primary text-white shadow-md' :
                         type === 'COMPACT' ? 'bg-primary text-white shadow-md' :
                         'bg-primary text-white shadow-md'
-                      : 'bg-surface text-foreground hover:bg-surface-alt'
+                      : 'bg-surface text-foreground'
                   }`}
                 >
                   {type === 'ALL' ? t('caravans.filterAll') : type === 'FAMILIE' ? t('caravans.filterFamily') : type === 'COMPACT' ? t('caravans.filterCompact') : t('caravans.filterLuxe')}
@@ -159,7 +159,7 @@ export default function CaravansPage() {
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     personFilter === num
                       ? 'bg-primary text-white shadow-md'
-                      : 'bg-surface text-foreground hover:bg-surface-alt'
+                      : 'bg-surface text-foreground'
                   }`}
                 >
                   {num === 0 ? t('caravans.filterAll') : `${num}+`}
@@ -175,7 +175,7 @@ export default function CaravansPage() {
               <select
                 value={maxPrice}
                 onChange={e => setMaxPrice(Number(e.target.value))}
-                className="px-3 py-1.5 border border-border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="px-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
               >
                 <option value={0}>{t('caravans.filterMaxPrice')}</option>
                 <option value={400}>&le; &euro;400/week</option>
@@ -193,7 +193,7 @@ export default function CaravansPage() {
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-1.5 border border-border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="px-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
               >
                 <option value="default">{t('caravans.sortDefault')}</option>
                 <option value="price-asc">{t('caravans.sortPriceAsc')}</option>
@@ -205,7 +205,7 @@ export default function CaravansPage() {
             {/* Result count + reset */}
             <div className="ml-auto flex items-center gap-3">
               {activeFilterCount > 0 && (
-                <button onClick={resetFilters} className="text-xs text-primary hover:underline flex items-center gap-1">
+                <button onClick={resetFilters} className="text-xs text-primary flex items-center gap-1">
                   <X size={12} /> Reset
                 </button>
               )}
@@ -222,12 +222,12 @@ export default function CaravansPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t('caravans.searchPlaceholder')}
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border border-border"
+              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border"
             >
               <SlidersHorizontal size={16} />
               {t('caravans.filterFilters')}
@@ -247,12 +247,12 @@ export default function CaravansPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t('caravans.searchPlaceholderShort')}
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border border-border"
+              className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium border"
             >
               <Filter size={16} />
               {activeFilterCount > 0 && (
@@ -263,7 +263,7 @@ export default function CaravansPage() {
 
           {/* Expanded filters (mobile + tablet) */}
           {showFilters && (
-            <div className="lg:hidden mt-4 pb-2 space-y-4 border-t border-border pt-4">
+            <div className="lg:hidden mt-4 pb-2 space-y-4 border-t pt-4">
               <div>
                 <span className="text-xs font-medium text-muted uppercase tracking-wide block mb-2">{t('caravans.filterType')}</span>
                 <div className="flex flex-wrap gap-2">
@@ -307,7 +307,7 @@ export default function CaravansPage() {
                   <select
                     value={maxPrice}
                     onChange={e => setMaxPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
                   >
                     <option value={0}>{t('caravans.filterNoLimit')}</option>
                     <option value={400}>&le; &euro;400/week</option>
@@ -321,7 +321,7 @@ export default function CaravansPage() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as SortOption)}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
                   >
                     <option value="default">{t('caravans.sortDefault')}</option>
                     <option value="price-asc">{t('caravans.sortPriceAsc')}</option>
@@ -331,7 +331,7 @@ export default function CaravansPage() {
                 </div>
               </div>
               {activeFilterCount > 0 && (
-                <button onClick={resetFilters} className="text-sm text-primary hover:underline flex items-center gap-1">
+                <button onClick={resetFilters} className="text-sm text-primary flex items-center gap-1">
                   <X size={14} /> {t('caravans.resetAll')}
                 </button>
               )}
@@ -361,7 +361,7 @@ export default function CaravansPage() {
               <p className="text-xl text-muted mb-4">{t('caravans.noResults')}</p>
               <button
                 onClick={resetFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-medium hover:bg-primary-dark transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-medium transition-colors"
               >
                 <X size={16} /> {t('caravans.resetFilters')}
               </button>
@@ -376,14 +376,14 @@ export default function CaravansPage() {
                   viewport={{ once: true }}
                   variants={fadeUp}
                   custom={i}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-border group"
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 border group"
                 >
                   <div className="relative h-56 overflow-hidden">
                     <Image
                       src={caravan.photos[0]}
                       alt={caravan.name}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover transition-transform duration-500"
                       unoptimized
                     />
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -394,7 +394,7 @@ export default function CaravansPage() {
                         {caravan.type}
                       </span>
                       {caravan.status === 'BESCHIKBAAR' && (
-                        <span className="px-2.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center gap-1 w-fit">
+                        <span className="px-2.5 py-0.5 bg-primary text-white text-xs font-bold rounded-full flex items-center gap-1 w-fit">
                           <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                           {t('caravans.available')}
                         </span>
@@ -422,13 +422,13 @@ export default function CaravansPage() {
                     <div className="flex gap-3">
                       <Link
                         href={`/caravans/${caravan.id}`}
-                        className="flex-1 text-center py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors text-sm"
+                        className="flex-1 text-center py-2.5 border border-primary text-primary font-semibold rounded-xl transition-colors text-sm"
                       >
                         {t('caravans.details')}
                       </Link>
                       <Link
                         href={`/boeken?caravan=${caravan.id}`}
-                        className="flex-1 text-center py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all text-sm shadow-md"
+                        className="flex-1 text-center py-2.5 bg-primary text-white font-semibold rounded-xl transition-all text-sm shadow-md"
                       >
                         {t('caravans.bookNow')}
                       </Link>

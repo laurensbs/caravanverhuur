@@ -22,6 +22,7 @@ import {
   Newspaper,
   Shield,
   AlertCircle,
+  Tag,
 } from 'lucide-react';
 
 const ADMIN_PASSWORD = 'CostaAdmin2026!';
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { sub: '/borg', label: 'Borgchecklist', icon: ClipboardCheck },
   { sub: '/klanten', label: 'Klanten', icon: Users },
   { sub: '/nieuwsbrieven', label: 'Nieuwsbrieven', icon: Newspaper },
+  { sub: '/kortingscodes', label: 'Kortingscodes', icon: Tag },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

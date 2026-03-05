@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings } from '@/data/campings';
@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, depositAmount, remainingAmount, borgAmount, spotNumber } = body;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, depositAmount, remainingAmount, borgAmount, spotNumber, discountCode, discountAmount } = body;
 
     if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -70,6 +70,12 @@ export async function POST(request: NextRequest) {
     // Auto-create borgchecklist for this booking (inchecken)
     createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })
       .catch(err => console.error('Auto borg checklist creation failed:', err));
+
+    // Increment discount code usage if used
+    if (discountCode) {
+      incrementDiscountCodeUsage(discountCode)
+        .catch(err => console.error('Discount code usage increment failed:', err));
+    }
 
     return NextResponse.json({ ...result, depositPaymentId: result.depositPaymentId }, { status: 201 });
   } catch (error) {

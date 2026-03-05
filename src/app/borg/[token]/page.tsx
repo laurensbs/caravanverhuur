@@ -155,7 +155,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           <p className="text-muted text-sm mb-6">{error || t('borgPage.notFoundDesc')}</p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold transition-colors"
           >
             <ArrowLeft size={14} />
             {t('borgPage.backToWebsite')}
@@ -247,7 +247,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.4 }}
-          className="bg-white rounded-xl border border-border p-4"
+          className="bg-white rounded-xl border p-4"
         >
           <h2 className="font-semibold text-sm text-foreground mb-3">{t('borgPage.bookingDetails')}</h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -271,7 +271,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             </div>
           </div>
           {checklist.staff_name && (
-            <p className="text-xs text-muted mt-3 pt-3 border-t border-border">
+            <p className="text-xs text-muted mt-3 pt-3 border-t">
               {t('borgPage.inspectedBy')} <span className="font-medium">{checklist.staff_name}</span>
               {checklist.completed_at && (
                 <span> {t('borgPage.on')} {new Date(checklist.completed_at).toLocaleString('nl-NL')}</span>
@@ -290,17 +290,17 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           <div className="bg-primary-50 rounded-xl p-4 text-center border border-primary-100">
             <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-1" />
             <div className="text-xl font-bold text-primary-dark">{goedItems}</div>
-            <div className="text-[10px] font-medium text-primary">{t('borgPage.inOrder')}</div>
+            <div className="text-xs font-medium text-primary">{t('borgPage.inOrder')}</div>
           </div>
           <div className="bg-primary-50 rounded-xl p-4 text-center border border-primary-light">
             <AlertTriangle className="w-6 h-6 text-primary mx-auto mb-1" />
             <div className="text-xl font-bold text-primary">{beschadigdItems}</div>
-            <div className="text-[10px] font-medium text-primary">{t('borgPage.damagedLabel')}</div>
+            <div className="text-xs font-medium text-primary">{t('borgPage.damagedLabel')}</div>
           </div>
           <div className="bg-danger/5 rounded-xl p-4 text-center border border-danger/20">
             <XCircle className="w-6 h-6 text-danger mx-auto mb-1" />
             <div className="text-xl font-bold text-danger">{ontbreektItems}</div>
-            <div className="text-[10px] font-medium text-danger">{t('borgPage.missingLabel')}</div>
+            <div className="text-xs font-medium text-danger">{t('borgPage.missingLabel')}</div>
           </div>
         </motion.div>
 
@@ -311,9 +311,9 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 + catIdx * 0.05, duration: 0.4 }}
-            className="bg-white rounded-xl border border-border overflow-hidden"
+            className="bg-white rounded-xl border overflow-hidden"
           >
-            <div className="bg-surface px-4 py-2.5 border-b border-border">
+            <div className="bg-surface px-4 py-2.5 border-b">
               <h3 className="font-semibold text-sm text-foreground">{category}</h3>
             </div>
             <div className="divide-y divide-border/50">
@@ -323,7 +323,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm text-foreground">{item.item}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         item.status === 'goed' ? 'bg-primary-100 text-primary-dark' :
                         item.status === 'beschadigd' ? 'bg-primary-100 text-primary' :
                         item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
@@ -387,7 +387,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                 value={customerNotes}
                 onChange={(e) => setCustomerNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                 placeholder={t('borgPage.commentsPlaceholder')}
               />
             </div>
@@ -395,7 +395,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
               <button
                 onClick={() => handleSubmit(true)}
                 disabled={submitting}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50 text-sm"
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-50 text-sm"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <ThumbsUp size={16} />}
                 {t('borgPage.agreeBtn')}
@@ -403,7 +403,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
               <button
                 onClick={() => handleSubmit(false)}
                 disabled={submitting}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-danger text-white rounded-xl font-semibold hover:bg-danger/80 transition-colors cursor-pointer disabled:opacity-50 text-sm"
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-danger text-white rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-50 text-sm"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <ThumbsDown size={16} />}
                 {t('borgPage.objectBtn')}
@@ -451,8 +451,8 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
         )}
 
         {/* Footer */}
-        <div className="text-center py-6 border-t border-border">
-          <Link href="/" className="text-sm text-primary hover:underline">
+        <div className="text-center py-6 border-t">
+          <Link href="/" className="text-sm text-primary">
             {t('borgPage.backToSite')}
           </Link>
           <p className="text-xs text-muted mt-2">

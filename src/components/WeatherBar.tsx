@@ -21,14 +21,14 @@ export default function WeatherBar() {
           <span className="text-white/85 hidden sm:inline">{t('weather.barCta')}</span>
           <Link
             href="/boeken"
-            className="ml-2 underline underline-offset-2 font-semibold hover:text-primary-light/80 transition-colors"
+            className="ml-2 underline underline-offset-2 font-semibold transition-colors"
           >
             {t('weather.barLink')}
           </Link>
         </p>
         <button
           onClick={() => setVisible(false)}
-          className="absolute right-3 p-1 hover:bg-white/15 rounded-full transition-colors"
+          className="absolute right-3 p-1 rounded-full transition-colors"
           aria-label={t('weather.barClose')}
         >
           <X size={13} />

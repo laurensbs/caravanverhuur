@@ -188,7 +188,7 @@ const sections = [
     content: (
       <p className="text-muted leading-relaxed">
         Voor vragen over dit privacybeleid of om uw rechten uit te oefenen, kunt u contact opnemen via:{' '}
-        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary hover:underline font-medium">
+        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary font-medium">
           info@caravanverhuurcostabrava.com
         </a>
       </p>
@@ -206,7 +206,7 @@ export default function PrivacyPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
         <div className="max-w-4xl mx-auto px-4 relative">
           <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="transition-colors">Home</Link>
             <ChevronRight size={14} />
             <span>{t('legal.privacy')}</span>
           </div>
@@ -216,14 +216,14 @@ export default function PrivacyPage() {
       </section>
 
       {/* Quick nav */}
-      <section className="border-b border-border bg-white sticky top-0 z-30">
+      <section className="border-b bg-white sticky top-0 z-30">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-foreground hover:bg-surface-alt transition-colors"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted transition-colors"
               >
                 {s.title.replace(/^\d+\.\s/, '')}
               </a>
@@ -236,7 +236,7 @@ export default function PrivacyPage() {
       <section className="py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 space-y-8">
           {/* Intro */}
-          <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8">
+          <div className="bg-white rounded-2xl border p-6 sm:p-8">
             <p className="text-muted leading-relaxed">
               Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens.
               Dit privacybeleid beschrijft hoe wij uw gegevens verzamelen, gebruiken en beschermen conform de
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
           {sections.map(s => {
             const Icon = s.icon;
             return (
-              <div key={s.id} id={s.id} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 scroll-mt-20">
+              <div key={s.id} id={s.id} className="bg-white rounded-2xl border p-6 sm:p-8 scroll-mt-20">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
                     <Icon size={20} className="text-primary" />
@@ -260,10 +260,10 @@ export default function PrivacyPage() {
           })}
 
           <div className="pt-4 flex items-center justify-between">
-            <Link href="/voorwaarden" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+            <Link href="/voorwaarden" className="text-primary text-sm font-medium flex items-center gap-1">
               ← {t('legal.terms')}
             </Link>
-            <Link href="/" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+            <Link href="/" className="text-primary text-sm font-medium flex items-center gap-1">
               {t('legal.backToHome')} →
             </Link>
           </div>

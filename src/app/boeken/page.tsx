@@ -9,7 +9,7 @@ import {
   CalendarDays, MapPin, Users, CheckCircle, ArrowRight, ArrowLeft,
   CreditCard, User, Mail, Phone, MessageSquare, Search, Hash,
   Filter, Sparkles, Shield, Star, Clock, ChevronRight, Sun, Tent,
-  Heart, PartyPopper, Check, Info, Minus, Plus,
+  Heart, PartyPopper, Check, Info, Minus, Plus, Tag,
 } from 'lucide-react';
 import { caravans as staticCaravans, getCaravanById as getStaticCaravanById } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -77,6 +77,10 @@ function BoekenContent() {
   const [submitError, setSubmitError] = useState('');
   const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountApplied, setDiscountApplied] = useState<{ code: string; amount: number; type: string; value: number } | null>(null);
+  const [discountError, setDiscountError] = useState('');
+  const [discountLoading, setDiscountLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,10 +121,12 @@ function BoekenContent() {
 
   const totalPrice = useMemo(() => {
     if (!chosenCaravan || nights <= 0) return 0;
-    return Math.floor(nights / 7) * chosenCaravan.pricePerWeek + (nights % 7) * chosenCaravan.pricePerDay;
+    const base = Math.floor(nights / 7) * chosenCaravan.pricePerWeek + (nights % 7) * chosenCaravan.pricePerDay;
+    return base;
   }, [chosenCaravan, nights]);
 
-  const deposit = Math.round(totalPrice * 0.3);
+  const discountedTotal = discountApplied ? Math.max(0, totalPrice - discountApplied.amount) : totalPrice;
+  const deposit = Math.round(discountedTotal * 0.3);
 
   const canNext = () => {
     switch (step) {
@@ -130,6 +136,30 @@ function BoekenContent() {
       case 4: return name && email && phone && termsAccepted;
       default: return false;
     }
+  };
+
+  const handleApplyDiscount = async () => {
+    if (!discountCode.trim()) return;
+    setDiscountLoading(true);
+    setDiscountError('');
+    try {
+      const res = await fetch('/api/discount/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: discountCode, totalAmount: totalPrice }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setDiscountApplied({ code: data.code, amount: data.discountAmount, type: data.type, value: data.value });
+        setDiscountError('');
+      } else {
+        setDiscountError(data.error || t('booking.discountInvalid'));
+        setDiscountApplied(null);
+      }
+    } catch {
+      setDiscountError(t('booking.discountInvalid'));
+    }
+    setDiscountLoading(false);
   };
 
   const handleSubmit = async () => {
@@ -144,8 +174,10 @@ function BoekenContent() {
           guestName: name, guestEmail: email, guestPhone: phone,
           adults, children, specialRequests: specialRequests || undefined,
           caravanId: selectedCaravan, campingId, spotNumber: spotNumber || undefined,
-          checkIn, checkOut, nights, totalPrice, depositAmount: deposit,
-          remainingAmount: totalPrice - deposit, borgAmount: chosenCaravan?.deposit || 0,
+          checkIn, checkOut, nights, totalPrice: discountedTotal, depositAmount: deposit,
+          remainingAmount: discountedTotal - deposit, borgAmount: chosenCaravan?.deposit || 0,
+          discountCode: discountApplied?.code || undefined,
+          discountAmount: discountApplied?.amount || 0,
         }),
       });
       if (!res.ok) throw new Error('failed');
@@ -204,7 +236,7 @@ function BoekenContent() {
             )}
 
             {/* Summary card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl p-6 shadow-lg border border-border/50 text-left mb-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl p-6 shadow-lg border text-left mb-6">
               <div className="flex items-center gap-3 mb-4">
                 {chosenCaravan && (
                   <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0">
@@ -222,10 +254,13 @@ function BoekenContent() {
                 <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.nightsLabel')}</p><p className="font-semibold">{nights}</p></div>
                 <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.personsLabel')}</p><p className="font-semibold">{adults} + {children} {t('booking.child')}</p></div>
               </div>
-              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
-                <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{totalPrice}</span></div>
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{discountedTotal}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-primary">&euro;{deposit}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                {discountApplied && (
+                  <div className="flex justify-between text-sm"><span className="text-primary flex items-center gap-1"><Tag size={12} /> {t('booking.discountLabel')}</span><span className="font-medium text-primary">-&euro;{discountApplied.amount}</span></div>
+                )}
               </div>
             </motion.div>
 
@@ -233,7 +268,7 @@ function BoekenContent() {
               <strong>{t('booking.nextStep')}</strong> {t('booking.nextStepText')} &euro;{deposit}.
             </motion.div>
 
-            <Link href="/" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+            <Link href="/" className="inline-flex items-center gap-2 text-primary font-semibold">
               {t('booking.backToHome')} <ArrowRight size={16} />
             </Link>
           </motion.div>
@@ -282,7 +317,7 @@ function BoekenContent() {
       </section>
 
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[100px] lg:top-[72px] z-30 bg-white border-b border-border/50 shadow-sm">
+      <div ref={contentRef} className="sticky top-[100px] lg:top-[72px] z-30 bg-white border-b shadow-sm">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">
@@ -313,7 +348,7 @@ function BoekenContent() {
                     </div>
                     <div>
                       <p className={`text-sm font-semibold ${isCurrent ? 'text-foreground' : isDone ? 'text-primary' : 'text-muted'}`}>{s.label}</p>
-                      <p className={`text-[11px] ${isCurrent ? 'text-muted' : 'text-border'}`}>{s.desc}</p>
+                      <p className={`text-xs ${isCurrent ? 'text-muted' : 'text-border'}`}>{s.desc}</p>
                     </div>
                   </div>
                   {i < stepConfig.length - 1 && (
@@ -351,7 +386,7 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6">
+                      <div className="bg-white rounded-2xl border shadow-sm p-6">
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
@@ -359,7 +394,7 @@ function BoekenContent() {
                               {t('booking.arrivalLabel')}
                             </label>
                             <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
@@ -367,7 +402,7 @@ function BoekenContent() {
                               {t('booking.departureLabel')}
                             </label>
                             <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
                           </div>
                         </div>
 
@@ -415,10 +450,10 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className="bg-white border border-border rounded-xl p-4 text-left hover:border-primary hover:shadow-md transition-all group"
+                                className="bg-white border rounded-xl p-4 text-left transition-all group"
                               >
                                 <span className="text-2xl mb-1 block">{q.icon}</span>
-                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{q.label}</p>
+                                <p className="font-semibold text-foreground transition-colors">{q.label}</p>
                                 <p className="text-xs text-muted mt-0.5">{q.days} {t('booking.nightPlural')}</p>
                               </button>
                             );
@@ -436,21 +471,21 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-5">
+                      <div className="bg-white rounded-2xl border shadow-sm p-5">
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <div className="relative flex-1">
                             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                             <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
-                              className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-hide">
-                          <button onClick={() => setLocationFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light hover:bg-surface-alt'}`}>
+                          <button onClick={() => setLocationFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                             {t('booking.allLocations')}
                           </button>
                           {locations.map(loc => (
-                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light hover:bg-surface-alt'}`}>
+                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                               {loc}
                             </button>
                           ))}
@@ -458,7 +493,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Camping cards */}
-                      <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                      <div className="space-y-2 sm:space-y-3 max-h-[45vh] overflow-y-auto pr-1">
                         {filteredCampings.map(c => {
                           const isSelected = campingId === c.id;
                           return (
@@ -466,26 +501,26 @@ function BoekenContent() {
                               key={c.id}
                               layout
                               onClick={() => setCampingId(c.id)}
-                              className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
-                                isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/50 bg-white hover:border-primary/30 hover:shadow-sm'
+                              className={`w-full text-left px-3 py-2.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
+                                isSelected ? 'border-primary bg-primary/5 shadow-md' : 'bg-white'
                               }`}
                             >
-                              <div className="flex items-start justify-between">
+                              <div className="flex items-center justify-between gap-2">
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-foreground">{c.name}</h3>
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <h3 className="font-bold text-sm sm:text-base text-foreground truncate">{c.name}</h3>
                                     {isSelected && (
-                                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
                                         <Check size={12} className="text-white" />
                                       </motion.div>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-sm text-muted mb-1.5">
-                                    <MapPin size={13} /> {c.location}
+                                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted">
+                                    <MapPin size={12} /> {c.location}
                                   </div>
-                                  <p className="text-xs text-muted line-clamp-1">{c.description}</p>
+                                  <p className="text-xs text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
                                 </div>
-                                <Tent size={20} className={`shrink-0 ml-3 mt-1 ${isSelected ? 'text-primary' : 'text-border'}`} />
+                                <Tent size={18} className={`shrink-0 ${isSelected ? 'text-primary' : 'text-border'}`} />
                               </div>
                             </motion.button>
                           );
@@ -497,13 +532,13 @@ function BoekenContent() {
 
                       {/* Spot number */}
                       {campingId && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-border/50 shadow-sm p-5">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border shadow-sm p-5">
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <Hash size={14} className="text-primary" />
                             {t('booking.preferredSpot')}
                           </label>
                           <input type="text" value={spotNumber} onChange={e => setSpotNumber(e.target.value)} placeholder={t('booking.spotPlaceholder')}
-                            className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full px-4 py-3 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           <p className="text-xs text-muted mt-1.5">{t('booking.spotNote')}</p>
                         </motion.div>
                       )}
@@ -519,7 +554,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Person counters */}
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6">
+                      <div className="bg-white rounded-2xl border shadow-sm p-6">
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div className="flex items-center justify-between">
                             <div>
@@ -527,11 +562,11 @@ function BoekenContent() {
                               <p className="text-xs text-muted">{t('booking.adultsAge')}</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
+                              <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
                                 <Minus size={16} />
                               </button>
                               <span className="text-xl font-bold text-foreground w-8 text-center">{adults}</span>
-                              <button onClick={() => setAdults(Math.min(6, adults + 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
+                              <button onClick={() => setAdults(Math.min(6, adults + 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
                                 <Plus size={16} />
                               </button>
                             </div>
@@ -542,17 +577,17 @@ function BoekenContent() {
                               <p className="text-xs text-muted">{t('booking.childrenAge')}</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
+                              <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
                                 <Minus size={16} />
                               </button>
                               <span className="text-xl font-bold text-foreground w-8 text-center">{children}</span>
-                              <button onClick={() => setChildren(Math.min(4, children + 1))} className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-foreground-light hover:border-primary hover:text-primary transition-colors active:scale-95">
+                              <button onClick={() => setChildren(Math.min(4, children + 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
                                 <Plus size={16} />
                               </button>
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
+                        <div className="mt-4 pt-4 border-t flex items-center gap-2">
                           <Users size={16} className="text-primary" />
                           <span className="text-sm font-medium text-foreground-light">{t('booking.totalPersons')} {totalPersons} {totalPersons === 1 ? t('booking.person') : t('booking.persons')}</span>
                         </div>
@@ -572,7 +607,7 @@ function BoekenContent() {
                                 key={c.id}
                                 layout
                                 className={`w-full text-left rounded-2xl border-2 overflow-hidden transition-all ${
-                                  isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-border/50 bg-white hover:border-primary/30 hover:shadow-md'
+                                  isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'bg-white'
                                 }`}
                               >
                                 <button
@@ -600,10 +635,10 @@ function BoekenContent() {
                                       <p className="text-sm text-muted mb-3">{c.maxPersons} {t('booking.persons')} &bull; {c.manufacturer} &bull; {c.year}</p>
                                       <div className="flex flex-wrap gap-1.5 mb-3">
                                         {c.amenities.slice(0, 5).map(a => (
-                                          <span key={a} className="text-[11px] font-medium bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">{a}</span>
+                                          <span key={a} className="text-xs font-medium bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">{a}</span>
                                         ))}
                                         {c.amenities.length > 5 && (
-                                          <span className="text-[11px] font-medium bg-surface-alt text-muted px-2 py-0.5 rounded-full">+{c.amenities.length - 5}</span>
+                                          <span className="text-xs font-medium bg-surface-alt text-muted px-2 py-0.5 rounded-full">+{c.amenities.length - 5}</span>
                                         )}
                                       </div>
                                       <div className="flex items-end justify-between">
@@ -635,14 +670,14 @@ function BoekenContent() {
                                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="border-t border-border/50 p-5 space-y-4">
+                                      <div className="border-t p-5 space-y-4">
                                         {/* Photo gallery */}
                                         <div>
                                           <p className="text-sm font-semibold text-foreground mb-3">{t('booking.photosLabel')}</p>
                                           <div className="grid grid-cols-3 gap-2">
                                             {c.photos.map((photo, idx) => (
                                               <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
-                                                <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover hover:scale-105 transition-transform duration-300" unoptimized />
+                                                <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover transition-transform duration-300" unoptimized />
                                               </div>
                                             ))}
                                           </div>
@@ -704,13 +739,13 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s4Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6 space-y-5">
+                      <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-5">
                         <div>
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
                           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jan Jansen"
-                            className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div>
@@ -718,14 +753,14 @@ function BoekenContent() {
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl"
-                              className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+31 6 12345678"
-                              className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                           </div>
                         </div>
                         <div>
@@ -733,12 +768,12 @@ function BoekenContent() {
                             <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
                           </label>
                           <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
-                            rows={3} className="w-full px-4 py-3.5 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
+                            rows={3} className="w-full px-4 py-3.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
                         </div>
                       </div>
 
                       {/* Terms */}
-                      <label className="flex items-start gap-3 cursor-pointer bg-white rounded-xl p-4 border border-border/50">
+                      <label className="flex items-start gap-3 cursor-pointer bg-white rounded-xl p-4 border">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-gray-300'}`}>
                           {termsAccepted && <Check size={12} className="text-white" />}
                         </div>
@@ -761,7 +796,7 @@ function BoekenContent() {
                         <p className="text-muted">{t('booking.s5Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden">
+                      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
                         {/* Caravan strip */}
                         {chosenCaravan && (
                           <div className="relative h-40 sm:h-48">
@@ -781,39 +816,77 @@ function BoekenContent() {
                         <div className="p-6 space-y-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.arrival')}</p>
+                              <p className="text-xs text-muted uppercase tracking-wider mb-0.5">{t('booking.arrival')}</p>
                               <p className="font-semibold text-sm">{checkIn}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.departure')}</p>
+                              <p className="text-xs text-muted uppercase tracking-wider mb-0.5">{t('booking.departure')}</p>
                               <p className="font-semibold text-sm">{checkOut}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.nightsLabel')}</p>
+                              <p className="text-xs text-muted uppercase tracking-wider mb-0.5">{t('booking.nightsLabel')}</p>
                               <p className="font-semibold text-sm">{nights}</p>
                             </div>
                             <div className="bg-surface rounded-xl p-3">
-                              <p className="text-[11px] text-muted uppercase tracking-wider mb-0.5">{t('booking.personsLabel')}</p>
+                              <p className="text-xs text-muted uppercase tracking-wider mb-0.5">{t('booking.personsLabel')}</p>
                               <p className="font-semibold text-sm">{adults} + {children}</p>
                             </div>
                           </div>
 
                           <div className="bg-surface rounded-xl p-4">
-                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">{t('booking.campingLabel')}</p>
+                            <p className="text-xs text-muted uppercase tracking-wider mb-1">{t('booking.campingLabel')}</p>
                             <p className="font-semibold">{chosenCamping?.name}, {chosenCamping?.location}</p>
                             {spotNumber && <p className="text-sm text-muted mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>}
                           </div>
 
                           <div className="bg-surface rounded-xl p-4">
-                            <p className="text-[11px] text-muted uppercase tracking-wider mb-1">{t('booking.contactDetails')}</p>
+                            <p className="text-xs text-muted uppercase tracking-wider mb-1">{t('booking.contactDetails')}</p>
                             <p className="font-semibold">{name}</p>
                             <p className="text-sm text-muted">{email} &bull; {phone}</p>
                           </div>
 
-                          <div className="border-t border-border/50 pt-4 space-y-2">
-                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{totalPrice}</span></div>
+                          <div className="border-t pt-4 space-y-2">
+                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${discountApplied ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
+                            {discountApplied && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-primary font-medium flex items-center gap-1.5"><Tag size={14} /> {t('booking.discountLabel')} ({discountApplied.code})</span>
+                                <span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span>
+                              </div>
+                            )}
                             <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-bold text-primary">&euro;{deposit}</span></div>
                             <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                          </div>
+
+                          {/* Discount code input */}
+                          <div className="border-t pt-4">
+                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
+                              <Tag size={14} className="text-primary" /> {t('booking.discountCode')}
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={discountCode}
+                                onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError(''); }}
+                                placeholder={t('booking.discountPlaceholder')}
+                                disabled={!!discountApplied}
+                                className="flex-1 px-4 py-2.5 bg-surface border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm uppercase disabled:opacity-50"
+                              />
+                              {discountApplied ? (
+                                <button onClick={() => { setDiscountApplied(null); setDiscountCode(''); }} className="px-4 py-2.5 border rounded-xl text-sm font-medium text-muted transition-colors">
+                                  {t('booking.discountRemove')}
+                                </button>
+                              ) : (
+                                <button onClick={handleApplyDiscount} disabled={discountLoading || !discountCode.trim()} className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold disabled:opacity-50 transition-all">
+                                  {discountLoading ? '...' : t('booking.discountApply')}
+                                </button>
+                              )}
+                            </div>
+                            {discountError && <p className="text-xs text-red-500 mt-1.5">{discountError}</p>}
+                            {discountApplied && (
+                              <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-primary font-medium mt-1.5 flex items-center gap-1">
+                                <Check size={12} /> {discountApplied.type === 'percentage' ? `${discountApplied.value}%` : `€${discountApplied.value}`} {t('booking.discountApplied')} (-&euro;{discountApplied.amount})
+                              </motion.p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -829,19 +902,19 @@ function BoekenContent() {
               </AnimatePresence>
 
               {/* ===== NAVIGATION BUTTONS ===== */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+              <div className="flex items-center justify-between mt-8 pt-6 border-t">
                 {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 border border-border rounded-full text-foreground-light font-medium hover:bg-surface transition-all active:scale-95">
+                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 border rounded-full text-foreground-light font-medium transition-all">
                     <ArrowLeft size={18} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary hover:bg-primary-dark disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg active:scale-95 disabled:shadow-none">
+                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
                     {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
-                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary hover:bg-primary-dark disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95 text-base">
+                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg text-base">
                     {submitting ? (
                       <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
                     ) : (
@@ -856,7 +929,7 @@ function BoekenContent() {
             <div className="hidden lg:block">
               <div className="sticky top-[140px] space-y-5">
                 {/* Live summary card */}
-                <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
                   <div className="bg-primary p-5 text-white">
                     <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> {t('booking.yourBooking')}</h3>
                   </div>
@@ -900,11 +973,17 @@ function BoekenContent() {
 
                     {/* Price */}
                     {totalPrice > 0 && (
-                      <div className="border-t border-border/50 pt-3 mt-3">
+                      <div className="border-t pt-3 mt-3">
                         <div className="flex justify-between items-baseline mb-1">
                           <span className="text-muted">{t('booking.total')}</span>
-                          <motion.span key={totalPrice} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-xl font-bold">&euro;{totalPrice}</motion.span>
+                          <motion.span key={discountedTotal} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-xl font-bold">&euro;{discountedTotal}</motion.span>
                         </div>
+                        {discountApplied && (
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-primary flex items-center gap-1"><Tag size={10} /> {discountApplied.code}</span>
+                            <span className="text-primary font-medium">-&euro;{discountApplied.amount}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between text-xs">
                           <span className="text-muted">{t('booking.depositPercent')}</span>
                           <span className="font-semibold text-primary">&euro;{deposit}</span>
@@ -929,10 +1008,10 @@ function BoekenContent() {
                 </div>
 
                 {/* Need help */}
-                <div className="bg-white rounded-2xl border border-border/50 p-5 text-center">
+                <div className="bg-white rounded-2xl border p-5 text-center">
                   <p className="text-sm font-semibold text-foreground mb-1">{t('booking.needHelp')}</p>
                   <p className="text-xs text-muted mb-3">{t('booking.helpText')}</p>
-                  <a href="https://wa.me/34600000000" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-semibold transition-colors">
+                  <a href="https://wa.me/34600000000" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold transition-colors">
                     <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                     WhatsApp
                   </a>
@@ -944,12 +1023,12 @@ function BoekenContent() {
       </section>
 
       {/* ===== MOBILE STICKY SUMMARY ===== */}
-      {totalPrice > 0 && (
+      {discountedTotal > 0 && (
         <div className="lg:hidden fixed bottom-20 left-4 right-4 z-30">
-          <div className="bg-white rounded-2xl shadow-xl border border-border/50 px-4 py-3 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xl border px-4 py-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-muted">{t('booking.totalPriceLabel')}</p>
-              <p className="text-lg font-bold text-primary">&euro;{totalPrice}</p>
+              <p className="text-lg font-bold text-primary">&euro;{discountedTotal}</p>
             </div>
             {chosenCaravan && (
               <div className="flex items-center gap-2">

@@ -97,7 +97,7 @@ export default function ContactPage() {
                 <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.directlyAvailable')}</h2>
                 <div className="space-y-4">
                   <a href="mailto:info@caravanverhuurspanje.com" className="flex items-start gap-3 group">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 transition-colors">
                       <Mail size={18} className="text-primary" />
                     </div>
                     <div>
@@ -106,7 +106,7 @@ export default function ContactPage() {
                     </div>
                   </a>
                   <a href="tel:+34600000000" className="flex items-start gap-3 group">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 transition-colors">
                       <Phone size={18} className="text-primary" />
                     </div>
                     <div>
@@ -126,13 +126,13 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-2xl p-6 border border-border">
+              <div className="bg-surface rounded-2xl p-6 border">
                 <h3 className="font-semibold text-foreground mb-3">{t('contact.partOf')}</h3>
                 <a
                   href="https://caravanstalling-spanje.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary hover:text-primary-dark font-medium"
+                  className="flex items-center gap-2 text-primary font-medium"
                 >
                   <ExternalLink size={16} />
                   Caravanstalling-Spanje.com
@@ -156,7 +156,7 @@ export default function ContactPage() {
                 href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag%20over%20caravanverhuur."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-[#25D366] hover:bg-[#1da851] text-white rounded-2xl p-5 transition-colors group"
+                className="flex items-center gap-3 bg-[#25D366] text-white rounded-2xl p-5 transition-colors group"
               >
                 <MessageCircle size={24} className="shrink-0" />
                 <div>
@@ -173,7 +173,7 @@ export default function ContactPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="lg:col-span-2"
             >
-              <div className="bg-white rounded-2xl p-8 shadow-sm border border-border">
+              <div className="bg-white rounded-2xl p-8 shadow-sm border">
                 <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact.sendMessage')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -185,7 +185,7 @@ export default function ContactPage() {
                         value={form.name}
                         onChange={e => setForm({ ...form, name: e.target.value })}
                         placeholder="Jan Jansen"
-                        className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                       />
                     </div>
                     <div>
@@ -196,7 +196,7 @@ export default function ContactPage() {
                         value={form.email}
                         onChange={e => setForm({ ...form, email: e.target.value })}
                         placeholder="jan@voorbeeld.nl"
-                        className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -208,7 +208,7 @@ export default function ContactPage() {
                         value={form.phone}
                         onChange={e => setForm({ ...form, phone: e.target.value })}
                         placeholder="+31 6 12345678"
-                        className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                       />
                     </div>
                     <div>
@@ -217,7 +217,7 @@ export default function ContactPage() {
                         required
                         value={form.subject}
                         onChange={e => setForm({ ...form, subject: e.target.value })}
-                        className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
+                        className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
                       >
                         <option value="">{t('contact.subjectPlaceholder')}</option>
                         <option value="boeking">{t('contact.subjectBooking')}</option>
@@ -237,14 +237,14 @@ export default function ContactPage() {
                       onChange={e => setForm({ ...form, message: e.target.value })}
                       placeholder={t('contact.messagePlaceholder')}
                       rows={5}
-                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                     />
                   </div>
                   {submitError && <p className="text-danger text-sm mb-2">{submitError}</p>}
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-dark disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-primary disabled:from-border disabled:to-border disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md"
                   >
                     {submitting ? (
                       <>

@@ -124,10 +124,10 @@ export default function FAQPage() {
                   const key = `${catIdx}-${itemIdx}`;
                   const isOpen = openItems.has(key);
                   return (
-                    <div key={key} className="border border-border rounded-xl overflow-hidden bg-white">
+                    <div key={key} className="border rounded-xl overflow-hidden bg-white">
                       <button
                         onClick={() => toggle(key)}
-                        className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/50 transition-colors"
+                        className="w-full flex items-center justify-between p-4 text-left transition-colors"
                       >
                         <span className="font-medium text-foreground pr-4">{item.q}</span>
                         <ChevronDown
@@ -144,7 +144,7 @@ export default function FAQPage() {
                             transition={{ duration: 0.2 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-4 pb-4 text-muted text-sm leading-relaxed border-t border-border pt-3">
+                            <div className="px-4 pb-4 text-muted text-sm leading-relaxed border-t pt-3">
                               {item.a}
                             </div>
                           </motion.div>
@@ -158,13 +158,13 @@ export default function FAQPage() {
           ))}
 
           {/* CTA */}
-          <div className="bg-surface rounded-2xl p-8 text-center border border-border mt-12">
+          <div className="bg-surface rounded-2xl p-8 text-center border mt-12">
             <h3 className="text-xl font-bold text-foreground mb-2">{t('faq.notFoundTitle')}</h3>
             <p className="text-muted mb-6">{t('faq.notFoundText')}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all shadow-md"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-full transition-all shadow-md"
               >
                 {t('faq.contactUs')}
                 <ArrowRight size={18} />
@@ -173,7 +173,7 @@ export default function FAQPage() {
                 href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] hover:bg-[#1da851] text-white font-semibold rounded-full transition-all shadow-md"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold rounded-full transition-all shadow-md"
               >
                 WhatsApp
                 <ArrowRight size={18} />

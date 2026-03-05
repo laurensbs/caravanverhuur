@@ -131,7 +131,7 @@ export default function OverOnsPage() {
                 key={i}
                 variants={fadeUp}
                 custom={i}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-border text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="bg-white rounded-2xl p-6 shadow-sm border text-center transition-all duration-300"
               >
                 <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   {item.icon}
@@ -196,7 +196,7 @@ export default function OverOnsPage() {
               href="https://caravanstalling-spanje.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all shadow-md"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-full transition-all shadow-md"
             >
               {t('about.visitParent')}
               <ArrowRight size={18} />
@@ -225,7 +225,7 @@ export default function OverOnsPage() {
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub') },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub') },
             ].map((stat, i) => (
-              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border border-border">
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm border">
                 <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.number}</div>
                 <div className="font-semibold text-foreground text-sm">{stat.label}</div>
                 <div className="text-xs text-muted mt-1">{stat.sub}</div>
@@ -237,10 +237,10 @@ export default function OverOnsPage() {
           <div className="mt-12 text-center">
             <p className="text-muted text-sm mb-4">{t('about.socialText')}</p>
             <div className="flex justify-center gap-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white transition-transform">
                 <Instagram size={22} />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary-dark rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary-dark rounded-xl flex items-center justify-center text-white transition-transform">
                 <Facebook size={22} />
               </a>
             </div>
@@ -255,7 +255,7 @@ export default function OverOnsPage() {
           <p className="text-primary-light text-lg mb-8">{t('about.ctaSubtitle')}</p>
           <Link
             href="/boeken"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all text-lg"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-full shadow-lg transition-all text-lg"
           >
             {t('about.ctaButton')}
             <ArrowRight size={20} />

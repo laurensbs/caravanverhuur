@@ -67,7 +67,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
           >
             <div className="flex items-center justify-between p-4">
               <span className="text-white/60 text-sm">{activePhoto + 1} / {caravan.photos.length}</span>
-              <button onClick={() => setLightboxOpen(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20">
+              <button onClick={() => setLightboxOpen(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white">
                 <X size={20} />
               </button>
             </div>
@@ -83,7 +83,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               {activePhoto > 0 && (
                 <button
                   onClick={() => setActivePhoto(p => p - 1)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white"
                 >
                   <ChevronLeft size={24} />
                 </button>
@@ -91,7 +91,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               {activePhoto < caravan.photos.length - 1 && (
                 <button
                   onClick={() => setActivePhoto(p => p + 1)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white"
                 >
                   <ChevronRight size={24} />
                 </button>
@@ -103,7 +103,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   key={i}
                   onClick={() => setActivePhoto(i)}
-                  className={`relative w-16 h-12 rounded-lg overflow-hidden transition-all ${activePhoto === i ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-80'}`}
+                  className={`relative w-16 h-12 rounded-lg overflow-hidden transition-all ${activePhoto === i ? 'ring-2 ring-white' : 'opacity-50'}`}
                 >
                   <Image src={photo} alt="" fill className="object-cover" unoptimized />
                 </button>
@@ -115,9 +115,9 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
 
       <div className="min-h-screen bg-surface">
         {/* Breadcrumb - mobile compact */}
-        <div className="bg-white border-b border-border">
+        <div className="bg-white border-b">
           <div className="max-w-6xl mx-auto px-4 py-3">
-            <Link href="/caravans" className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark transition-colors">
+            <Link href="/caravans" className="inline-flex items-center gap-1.5 text-sm text-primary transition-colors">
               <ArrowLeft size={16} />
               <span className="sm:hidden">{t('caravans.back')}</span>
               <span className="hidden sm:inline">{t('caravans.backToCaravans')}</span>
@@ -162,7 +162,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 onClick={() => { setActivePhoto(0); setLightboxOpen(true); }}
                 className="col-span-2 relative rounded-xl overflow-hidden group"
               >
-                <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" priority unoptimized />
+                <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover transition-transform duration-500" priority unoptimized />
                 <div className="absolute top-3 left-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
                     caravan.type === 'LUXE' ? 'bg-primary-dark' : caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
@@ -175,7 +175,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   onClick={() => { setActivePhoto(i + 1); setLightboxOpen(true); }}
                   className="relative rounded-xl overflow-hidden group"
                 >
-                  <Image src={photo} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                  <Image src={photo} alt="" fill className="object-cover transition-transform duration-500" unoptimized />
                 </button>
               ))}
             </div>
@@ -243,7 +243,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 ].map(t2 => (
                   <div key={t2.label} className="bg-white rounded-xl p-3 text-center">
                     <div className="flex justify-center mb-1">{t2.icon}</div>
-                    <span className="text-[11px] font-medium text-foreground-light">{t2.label}</span>
+                    <span className="text-xs font-medium text-foreground-light">{t2.label}</span>
                   </div>
                 ))}
               </div>
@@ -263,7 +263,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                     <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span>
                     <div className="text-right">
                       <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span>
-                      <div className="text-[10px] text-muted">
+                      <div className="text-xs text-muted">
                         {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')}
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
 
                 <Link
                   href={`/boeken?caravan=${caravan.id}`}
-                  className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-colors active:scale-[0.98] mb-3"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors mb-3"
                 >
                   {t('caravans.bookThisCaravan')}
                   <ArrowRight size={16} />
@@ -284,12 +284,12 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
 
                 <Link
                   href="/contact"
-                  className="flex items-center justify-center w-full py-3 border border-border text-foreground-light font-semibold rounded-xl hover:bg-surface transition-colors text-sm"
+                  className="flex items-center justify-center w-full py-3 border text-foreground-light font-semibold rounded-xl transition-colors text-sm"
                 >
                   {t('caravans.askQuestion')}
                 </Link>
 
-                <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2 text-xs text-muted">
+                <div className="mt-4 pt-4 border-t flex items-center gap-2 text-xs text-muted">
                   <Shield size={14} />
                   <span>{t('caravans.safePaymentNote')}</span>
                 </div>
@@ -315,7 +315,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                   <p className="text-sm text-foreground-light mb-3">&ldquo;{review.text}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-foreground">{review.name}</span>
-                    <span className="text-[10px] text-muted">{review.date}</span>
+                    <span className="text-xs text-muted">{review.date}</span>
                   </div>
                 </div>
               ))}
@@ -328,10 +328,10 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
               <h2 className="text-xl font-bold text-foreground mb-4">{t('caravans.similarCaravans')}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {similarCaravans.map(c => (
-                  <Link key={c.id} href={`/caravans/${c.id}`} className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow group">
+                  <Link key={c.id} href={`/caravans/${c.id}`} className="bg-white rounded-2xl overflow-hidden transition-shadow group">
                     <div className="relative aspect-[16/10]">
-                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
-                      <span className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white ${
+                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover transition-transform duration-500" unoptimized />
+                      <span className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${
                         c.type === 'LUXE' ? 'bg-primary-dark' : c.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
                       }`}>{c.type}</span>
                     </div>
@@ -350,14 +350,14 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Mobile sticky CTA bar */}
-        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white border-t border-border px-4 py-3 flex items-center gap-3">
+        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white border-t px-4 py-3 flex items-center gap-3">
           <div className="flex-1">
             <div className="text-lg font-bold text-primary">&euro;{caravan.pricePerDay}<span className="text-xs text-muted font-normal">/{t('caravans.perDay')}</span></div>
-            <div className="text-[10px] text-muted">&euro;{caravan.pricePerWeek}/{t('caravans.perWeek')}</div>
+            <div className="text-xs text-muted">&euro;{caravan.pricePerWeek}/{t('caravans.perWeek')}</div>
           </div>
           <Link
             href={`/boeken?caravan=${caravan.id}`}
-            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-full text-sm transition-colors active:scale-[0.98]"
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-full text-sm transition-colors"
           >
             {t('caravans.bookButton')} <ArrowRight size={14} />
           </Link>

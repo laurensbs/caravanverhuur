@@ -23,6 +23,7 @@ import {
   Quote,
   Sun,
   MapPin,
+  LayoutDashboard,
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -75,7 +76,7 @@ const WaveDivider = ({ className = '', flip = false }: { className?: string; fli
 
 // Section label component for consistent styling
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center gap-1.5 text-primary font-bold text-[11px] sm:text-xs uppercase tracking-[0.15em]">
+  <span className="inline-flex items-center gap-1.5 text-primary font-bold text-xs sm:text-xs uppercase tracking-[0.15em]">
     <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
     {children}
     <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
@@ -183,7 +184,7 @@ export default function HomePage() {
               ].map((stat, si) => (
                 <div key={si} className="text-center">
                   <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-white/60 text-[11px]">{stat.label}</div>
+                  <div className="text-white/60 text-xs">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -306,10 +307,9 @@ export default function HomePage() {
                 key={i}
                 variants={scaleIn}
                 custom={i}
-                whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm hover:shadow-xl transition-shadow duration-300 border border-border/30 group"
+                className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm border"
               >
-                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md transition-transform duration-300`}>
                   <div className="text-white">{item.icon}</div>
                 </div>
                 <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
@@ -355,14 +355,14 @@ export default function HomePage() {
                 { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={22} /> },
                 { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={22} /> },
                 { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={22} /> },
-                { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <CheckCircle size={22} /> },
+                { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={22} /> },
                 { step: '5', title: t('home.step5'), desc: t('home.step5Desc'), icon: <Star size={22} /> },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative group">
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg transition-all duration-300">
                     {item.icon}
                   </div>
-                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">{t('home.step')} {item.step}</div>
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{t('home.step')} {item.step}</div>
                   <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
                   <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
                   {i < 4 && (
@@ -379,7 +379,7 @@ export default function HomePage() {
               { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
               { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
               { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={18} /> },
-              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <CheckCircle size={18} /> },
+              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={18} /> },
               { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },
             ].map((item, i) => (
               <motion.div
@@ -398,7 +398,7 @@ export default function HomePage() {
                   {item.icon}
                 </div>
                 <div className="pb-6">
-                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
                   <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
                   <p className="text-xs text-muted mt-0.5">{item.desc}</p>
                 </div>
@@ -440,7 +440,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 sm:hover:-translate-y-3 border border-border/30 group"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md border"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
                   <Image
@@ -448,13 +448,13 @@ export default function HomePage() {
                     alt={caravan.name}
                     fill
                     sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className="object-cover transition-transform duration-700 ease-out"
                     unoptimized
                   />
                   {/* Warm gradient overlay at bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/20" />
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold text-white shadow-md ${
+                    <span className={`px-2.5 py-1 rounded-full text-xs sm:text-xs font-semibold text-white shadow-md ${
                       caravan.type === 'LUXE' ? 'bg-primary-dark' :
                       caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
                     }`}>
@@ -474,22 +474,22 @@ export default function HomePage() {
                   <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
-                      <span key={a} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
+                      <span key={a} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
                     ))}
                     {caravan.amenities.length > 3 && (
-                      <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
+                      <span className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
                     )}
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <Link
                       href={`/caravans/${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary hover:text-white transition-all duration-200 text-xs sm:text-sm"
+                      className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm"
                     >
                       {t('caravans.details')}
                     </Link>
                     <Link
                       href={`/boeken?caravan=${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm active:scale-95 shadow-md"
+                      className="flex-1 text-center py-2 sm:py-2.5 bg-primary text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm shadow-md"
                     >
                       {t('nav.bookNow')}
                     </Link>
@@ -508,7 +508,7 @@ export default function HomePage() {
           >
             <Link
               href="/caravans"
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-sm active:scale-95"
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-primary text-primary font-semibold rounded-full transition-all duration-300 text-sm"
             >
               {t('home.allCaravans')}
               <ArrowRight size={16} />
@@ -562,7 +562,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/caravans"
-                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-full transition-all duration-300 text-sm active:scale-95 shadow-lg"
+                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
               >
                 {t('home.inventoryViewCaravans')}
                 <ArrowRight size={16} />
@@ -583,7 +583,7 @@ export default function HomePage() {
                   width={600}
                   height={400}
                   sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full object-cover transition-transform duration-700"
                   unoptimized
                 />
               </div>
@@ -594,7 +594,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5, duration: 0.4 }}
-                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl p-3 sm:p-4 shadow-lg border border-border/50"
+                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-xl p-3 sm:p-4 shadow-lg border"
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-9 h-9 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
@@ -602,7 +602,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-semibold text-foreground text-xs sm:text-base">{t('home.inventoryComplete')}</div>
-                    <div className="text-[10px] sm:text-sm text-muted">{t('home.inventoryChecked')}</div>
+                    <div className="text-xs sm:text-sm text-muted">{t('home.inventoryChecked')}</div>
                   </div>
                 </div>
               </motion.div>
@@ -624,7 +624,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12 sm:mb-16"
           >
-            <span className="inline-flex items-center gap-1.5 text-white/60 font-bold text-[11px] sm:text-xs uppercase tracking-[0.15em]">
+            <span className="inline-flex items-center gap-1.5 text-white/60 font-bold text-xs sm:text-xs uppercase tracking-[0.15em]">
               <span className="w-8 h-[2px] bg-white/30 rounded-full" />
               {t('home.advantagesLabel')}
               <span className="w-8 h-[2px] bg-white/30 rounded-full" />
@@ -645,14 +645,13 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -4, transition: { duration: 0.25 } }}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15 hover:bg-white/20 transition-colors duration-300"
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/15"
               >
-                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 group-hover:bg-white/25 transition-colors">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/15 rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 transition-colors">
                   {item.icon}
                 </div>
                 <h3 className="text-sm sm:text-lg font-bold mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-white/70 text-[11px] sm:text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-white/70 text-xs sm:text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -667,7 +666,7 @@ export default function HomePage() {
           >
             <p className="text-sm sm:text-base text-primary-light/80 leading-relaxed">
               <span className="text-white font-bold">{t('home.advExperience')}</span> {t('home.advExperienceDesc')}{' '}
-              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary-light underline underline-offset-2 hover:text-white transition-colors">
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary-light underline underline-offset-2 transition-colors">
                 caravanstalling-spanje.com
               </a>
             </p>
@@ -768,7 +767,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition-all duration-300 relative border border-border/20"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 relative border"
               >
 
                 <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
@@ -784,7 +783,7 @@ export default function HomePage() {
                     <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
+                    <span className="text-xs text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
                     <span className="text-[9px] text-primary flex items-center gap-0.5"><CheckCircle size={10} />{t('home.reviewVerified')}</span>
                   </div>
                 </div>
@@ -847,14 +846,14 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/boeken"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-white font-bold rounded-full shadow-lg transition-all duration-300 text-base sm:text-lg"
               >
                 {t('home.ctaBookNow')}
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-bold rounded-full transition-all duration-300 text-base sm:text-lg"
               >
                 {t('nav.contact')}
               </Link>
@@ -871,11 +870,11 @@ export default function HomePage() {
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1.5, duration: 0.3, type: 'spring', stiffness: 300 }}
-        className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-[#25D366] hover:bg-[#1da851] rounded-full flex items-center justify-center shadow-lg hover:shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95 group"
+        className="fixed bottom-20 right-5 sm:bottom-8 sm:right-8 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group"
         aria-label="Chat via WhatsApp"
       >
         <WhatsAppIcon size={26} />
-        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none border border-border/50">
+        <span className="absolute right-full mr-3 bg-white text-foreground text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-150 whitespace-nowrap pointer-events-none border">
           {t('home.whatsappTooltip')}
         </span>
       </motion.a>

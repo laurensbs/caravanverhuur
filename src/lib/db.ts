@@ -203,6 +203,31 @@ export async function setupDatabase() {
     // ignore
   }
 
+  // Discount codes table
+  await sql`
+    CREATE TABLE IF NOT EXISTS discount_codes (
+      id TEXT PRIMARY KEY,
+      code TEXT UNIQUE NOT NULL,
+      type TEXT NOT NULL DEFAULT 'percentage',
+      value NUMERIC(10,2) NOT NULL,
+      max_uses INTEGER,
+      used_count INTEGER DEFAULT 0,
+      min_amount NUMERIC(10,2) DEFAULT 0,
+      valid_from TIMESTAMP,
+      valid_until TIMESTAMP,
+      active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Migration: add discount columns to bookings
+  try {
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_code TEXT`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10,2) DEFAULT 0`;
+  } catch {
+    // ignore
+  }
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1052,4 +1077,97 @@ export async function createNewsletterWithPhotos(data: {
     VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null}, ${photos})
   `;
   return { id };
+}
+
+// ===== DISCOUNT CODE QUERIES =====
+
+export async function createDiscountCode(data: {
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  maxUses?: number;
+  minAmount?: number;
+  validFrom?: string;
+  validUntil?: string;
+}) {
+  const id = generateId('DC');
+  await sql`
+    INSERT INTO discount_codes (id, code, type, value, max_uses, min_amount, valid_from, valid_until)
+    VALUES (${id}, ${data.code.toUpperCase()}, ${data.type}, ${data.value}, ${data.maxUses || null}, ${data.minAmount || 0}, ${data.validFrom || null}, ${data.validUntil || null})
+  `;
+  return { id };
+}
+
+export async function getAllDiscountCodes() {
+  const result = await sql`SELECT * FROM discount_codes ORDER BY created_at DESC`;
+  return result.rows;
+}
+
+export async function getDiscountCodeByCode(code: string) {
+  const result = await sql`SELECT * FROM discount_codes WHERE UPPER(code) = UPPER(${code})`;
+  return result.rows[0] || null;
+}
+
+export async function validateDiscountCode(code: string, totalAmount: number) {
+  const dc = await getDiscountCodeByCode(code);
+  if (!dc) return { valid: false, error: 'Code niet gevonden' };
+  if (!dc.active) return { valid: false, error: 'Code is niet meer actief' };
+  if (dc.max_uses && dc.used_count >= dc.max_uses) return { valid: false, error: 'Code is al maximaal gebruikt' };
+  if (dc.min_amount && totalAmount < parseFloat(dc.min_amount)) return { valid: false, error: `Minimaal bestelbedrag is €${dc.min_amount}` };
+  if (dc.valid_from && new Date(dc.valid_from) > new Date()) return { valid: false, error: 'Code is nog niet geldig' };
+  if (dc.valid_until && new Date(dc.valid_until) < new Date()) return { valid: false, error: 'Code is verlopen' };
+
+  let discountAmount = 0;
+  if (dc.type === 'percentage') {
+    discountAmount = Math.round(totalAmount * (parseFloat(dc.value) / 100));
+  } else {
+    discountAmount = Math.min(parseFloat(dc.value), totalAmount);
+  }
+
+  return { valid: true, discountCode: dc, discountAmount, type: dc.type, value: parseFloat(dc.value) };
+}
+
+export async function incrementDiscountCodeUsage(code: string) {
+  await sql`UPDATE discount_codes SET used_count = used_count + 1 WHERE UPPER(code) = UPPER(${code})`;
+}
+
+export async function updateDiscountCode(id: string, data: { active?: boolean; maxUses?: number; validUntil?: string }) {
+  if (data.active !== undefined) {
+    await sql`UPDATE discount_codes SET active = ${data.active} WHERE id = ${id}`;
+  }
+  if (data.maxUses !== undefined) {
+    await sql`UPDATE discount_codes SET max_uses = ${data.maxUses} WHERE id = ${id}`;
+  }
+  if (data.validUntil !== undefined) {
+    await sql`UPDATE discount_codes SET valid_until = ${data.validUntil} WHERE id = ${id}`;
+  }
+}
+
+export async function deleteDiscountCode(id: string) {
+  await sql`DELETE FROM discount_codes WHERE id = ${id}`;
+}
+
+export async function applyBookingDiscount(bookingId: string, discountCode: string, discountAmount: number) {
+  const booking = await getBookingById(bookingId);
+  if (!booking) return null;
+
+  const newTotalPrice = Math.max(0, parseFloat(booking.total_price) - discountAmount);
+  const newDeposit = Math.round(newTotalPrice * 0.3);
+  const newRemaining = newTotalPrice - newDeposit;
+
+  await sql`
+    UPDATE bookings SET 
+      discount_code = ${discountCode},
+      discount_amount = ${discountAmount},
+      total_price = ${newTotalPrice},
+      deposit_amount = ${newDeposit},
+      remaining_amount = ${newRemaining}
+    WHERE id = ${bookingId}
+  `;
+
+  // Update payment amounts
+  await sql`UPDATE payments SET amount = ${newDeposit} WHERE booking_id = ${bookingId} AND type = 'AANBETALING' AND status = 'OPENSTAAND'`;
+  await sql`UPDATE payments SET amount = ${newRemaining} WHERE booking_id = ${bookingId} AND type = 'RESTBETALING' AND status = 'OPENSTAAND'`;
+
+  return { newTotalPrice, newDeposit, newRemaining };
 }

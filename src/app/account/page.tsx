@@ -109,18 +109,7 @@ export default function AccountPage() {
             />
           </div>
           <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
-            <div>
-              <Link href="/">
-                <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                  alt="Caravanverhuur Spanje"
-                  width={320}
-                  height={90}
-                  className="w-48 xl:w-64 h-auto drop-shadow-lg"
-                  unoptimized
-                />
-              </Link>
-            </div>
+            <div />
 
             <div className="space-y-8">
               <div>
@@ -157,7 +146,7 @@ export default function AccountPage() {
             <div className="flex items-center gap-3">
               <div className="flex -space-x-2">
                 {['bg-primary', 'bg-primary', 'bg-primary-light', 'bg-danger/70'].map((bg, i) => (
-                  <div key={i} className={`w-8 h-8 rounded-full ${bg} border-2 border-primary-dark flex items-center justify-center text-white text-[10px] font-bold`}>
+                  <div key={i} className={`w-8 h-8 rounded-full ${bg} border-2 border-primary-dark flex items-center justify-center text-white text-xs font-bold`}>
                     {['JB', 'ML', 'PV', 'AK'][i]}
                   </div>
                 ))}
@@ -174,16 +163,6 @@ export default function AccountPage() {
         <div className="w-full lg:w-1/2 flex flex-col">
           {/* Mobile hero header */}
           <div className="lg:hidden bg-primary-dark px-5 pt-6 pb-10">
-            <Link href="/" className="inline-block mb-4">
-              <Image
-                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                alt="Caravanverhuur Spanje"
-                width={280}
-                height={80}
-                className="w-40 sm:w-48 h-auto drop-shadow-lg"
-                unoptimized
-              />
-            </Link>
             <h1 className="text-2xl font-bold text-white">
               {mode === 'login' ? t('account.welcomeBack') : t('account.createAccount')}
             </h1>
@@ -211,14 +190,14 @@ export default function AccountPage() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-sm border border-border/50 p-5 sm:p-7"
+                className="bg-white rounded-2xl shadow-sm border p-5 sm:p-7"
               >
                 {/* Tab switcher */}
                 <div className="flex bg-surface rounded-xl p-1 mb-5">
                   <button
                     onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                      mode === 'login' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-foreground-light'
+                      mode === 'login' ? 'bg-white text-primary shadow-sm' : 'text-muted'
                     }`}
                   >
                     {t('account.tabLogin')}
@@ -226,7 +205,7 @@ export default function AccountPage() {
                   <button
                     onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                      mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-foreground-light'
+                      mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted'
                     }`}
                   >
                     {t('account.tabRegister')}
@@ -268,7 +247,7 @@ export default function AccountPage() {
                         <div className="relative">
                           <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                           <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'}
-                            className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
                       </motion.div>
                     )}
@@ -280,7 +259,7 @@ export default function AccountPage() {
                     <div className="relative">
                       <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email"
-                        className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                        className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                     </div>
                   </div>
 
@@ -292,16 +271,16 @@ export default function AccountPage() {
                       <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
                         placeholder={mode === 'register' ? t('account.placeholderPasswordNew') : '••••••••'} required
                         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                        className="w-full pl-10 pr-12 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                        className="w-full pl-10 pr-12 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground-light transition-colors">
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors">
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                     {mode === 'login' && (
-                      <p className="text-[11px] text-muted mt-1.5">
+                      <p className="text-xs text-muted mt-1.5">
                         {t('account.forgotPassword')}{' '}
-                        <Link href="/contact" className="text-primary hover:underline font-medium">{t('account.contactUs')}</Link>
+                        <Link href="/contact" className="text-primary font-medium">{t('account.contactUs')}</Link>
                       </p>
                     )}
                     {mode === 'register' && password.length > 0 && (
@@ -311,7 +290,7 @@ export default function AccountPage() {
                             <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-surface-alt'}`} />
                           ))}
                         </div>
-                        <p className={`text-[11px] mt-1 font-medium ${passwordStrength <= 1 ? 'text-danger' : passwordStrength <= 2 ? 'text-primary' : 'text-primary'}`}>
+                        <p className={`text-xs mt-1 font-medium ${passwordStrength <= 1 ? 'text-danger' : passwordStrength <= 2 ? 'text-primary' : 'text-primary'}`}>
                           {strengthLabels[passwordStrength]}
                         </p>
                       </div>
@@ -326,7 +305,7 @@ export default function AccountPage() {
                         <div className="relative">
                           <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678"
-                            className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full pl-10 pr-4 py-3 bg-surface border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
                       </motion.div>
                     )}
@@ -337,12 +316,12 @@ export default function AccountPage() {
                     {mode === 'register' && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-start gap-2.5 pt-1">
                         <input type="checkbox" id="acceptTerms" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary/20 cursor-pointer" />
+                          className="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary/20 cursor-pointer" />
                         <label htmlFor="acceptTerms" className="text-xs text-muted leading-relaxed cursor-pointer">
                           {t('account.agreeWith')}{' '}
-                          <Link href="/voorwaarden" className="text-primary hover:underline font-medium" target="_blank">{t('account.termsLink')}</Link>{' '}
+                          <Link href="/voorwaarden" className="text-primary font-medium" target="_blank">{t('account.termsLink')}</Link>{' '}
                           {t('account.andThe')}{' '}
-                          <Link href="/privacy" className="text-primary hover:underline font-medium" target="_blank">{t('account.privacyLink')}</Link>
+                          <Link href="/privacy" className="text-primary font-medium" target="_blank">{t('account.privacyLink')}</Link>
                         </label>
                       </motion.div>
                     )}
@@ -350,7 +329,7 @@ export default function AccountPage() {
 
                   {/* Submit */}
                   <button type="submit" disabled={loading}
-                    className="w-full py-3.5 bg-primary hover:bg-primary-dark disabled:opacity-60 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2 shadow-sm shadow-primary/20">
+                    className="w-full py-3.5 bg-primary disabled:opacity-60 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all mt-2 shadow-sm shadow-primary/20">
                     {loading ? <Loader2 size={18} className="animate-spin" /> : (
                       <>{mode === 'login' ? t('account.btnLogin') : t('account.btnRegister')} <ArrowRight size={16} /></>
                     )}
@@ -358,11 +337,11 @@ export default function AccountPage() {
                 </form>
 
                 {/* Footer switch */}
-                <div className="mt-5 pt-4 border-t border-border/50 text-center text-sm text-muted">
+                <div className="mt-5 pt-4 border-t text-center text-sm text-muted">
                   {mode === 'login' ? (
-                    <p>{t('account.noAccount')}{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold hover:underline">{t('account.registerFree')}</button></p>
+                    <p>{t('account.noAccount')}{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold">{t('account.registerFree')}</button></p>
                   ) : (
-                    <p>{t('account.hasAccount')}{' '}<button onClick={() => { setMode('login'); setError(''); }} className="text-primary font-semibold hover:underline">{t('account.loginLink')}</button></p>
+                    <p>{t('account.hasAccount')}{' '}<button onClick={() => { setMode('login'); setError(''); }} className="text-primary font-semibold">{t('account.loginLink')}</button></p>
                   )}
                 </div>
               </motion.div>
@@ -374,7 +353,7 @@ export default function AccountPage() {
                   { icon: <CheckCircle size={13} />, text: t('account.trustFree') },
                   { icon: <Palmtree size={13} />, text: t('account.trustDirect') },
                 ].map((badge, i) => (
-                  <span key={i} className="flex items-center gap-1.5 text-[11px] text-muted font-medium">
+                  <span key={i} className="flex items-center gap-1.5 text-xs text-muted font-medium">
                     <span className="text-border">{badge.icon}</span>
                     {badge.text}
                   </span>

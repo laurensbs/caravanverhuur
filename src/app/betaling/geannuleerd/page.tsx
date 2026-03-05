@@ -50,7 +50,7 @@ function GeannuleerdContent() {
             {t('paymentPage.cancelledDesc')}
           </p>
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8">
             <p className="text-sm text-muted">
               {t('paymentPage.cancelledInfo')}
             </p>
@@ -60,14 +60,14 @@ function GeannuleerdContent() {
             {paymentId && (
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold transition-colors"
               >
                 <RefreshCw size={16} /> {t('paymentPage.retry')}
               </button>
             )}
             <Link
               href="/mijn-account"
-              className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold hover:bg-surface-alt transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold transition-colors"
             >
               {t('paymentPage.toMyAccount')} <ArrowRight size={16} />
             </Link>

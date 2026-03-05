@@ -176,7 +176,7 @@ const sections = [
           <p className="text-2xl font-bold text-foreground">15:00</p>
           <p className="text-sm text-muted mt-1">uur op de aankomstdatum</p>
         </div>
-        <div className="bg-surface border border-border rounded-xl p-5 text-center">
+        <div className="bg-surface border rounded-xl p-5 text-center">
           <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Check-out</p>
           <p className="text-2xl font-bold text-foreground">11:00</p>
           <p className="text-sm text-muted mt-1">uur op de vertrekdatum</p>
@@ -201,7 +201,7 @@ const sections = [
     content: (
       <p className="text-muted leading-relaxed">
         Voor vragen over deze voorwaarden kunt u contact opnemen via{' '}
-        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary hover:underline font-medium">
+        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary font-medium">
           info@caravanverhuurcostabrava.com
         </a>.
       </p>
@@ -219,7 +219,7 @@ export default function VoorwaardenPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'1\' fill=\'white\'/%3E%3C/svg%3E")' }} />
         <div className="max-w-4xl mx-auto px-4 relative">
           <div className="flex items-center gap-3 text-primary-light text-sm mb-4">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="transition-colors">Home</Link>
             <ChevronRight size={14} />
             <span>{t('legal.terms')}</span>
           </div>
@@ -229,14 +229,14 @@ export default function VoorwaardenPage() {
       </section>
 
       {/* Quick nav */}
-      <section className="border-b border-border bg-white sticky top-0 z-30">
+      <section className="border-b bg-white sticky top-0 z-30">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-foreground hover:bg-surface-alt transition-colors"
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-muted transition-colors"
               >
                 {s.title.replace(/^\d+\.\s/, '')}
               </a>
@@ -251,7 +251,7 @@ export default function VoorwaardenPage() {
           {sections.map(s => {
             const Icon = s.icon;
             return (
-              <div key={s.id} id={s.id} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 scroll-mt-20">
+              <div key={s.id} id={s.id} className="bg-white rounded-2xl border p-6 sm:p-8 scroll-mt-20">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
                     <Icon size={20} className="text-primary" />
@@ -264,10 +264,10 @@ export default function VoorwaardenPage() {
           })}
 
           <div className="pt-4 flex items-center justify-between">
-            <Link href="/" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+            <Link href="/" className="text-primary text-sm font-medium flex items-center gap-1">
               ← {t('legal.backToHome')}
             </Link>
-            <Link href="/privacy" className="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+            <Link href="/privacy" className="text-primary text-sm font-medium flex items-center gap-1">
               {t('legal.privacy')} →
             </Link>
           </div>

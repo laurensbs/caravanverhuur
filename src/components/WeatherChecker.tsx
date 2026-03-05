@@ -69,15 +69,17 @@ export default function WeatherChecker() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm border transition-all duration-300 text-center"
             >
               <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{w.month}</div>
-              <WeatherIcon type={w.icon} size={28} />
+              <div className="flex items-center justify-center">
+                <WeatherIcon type={w.icon} size={28} />
+              </div>
               <div className="flex items-center justify-center gap-1 mt-2 mb-1">
                 <Thermometer size={12} className="text-orange-400" />
                 <span className="text-lg sm:text-xl font-bold text-foreground">{w.temp}°</span>
               </div>
-              <div className="text-[10px] text-muted flex items-center justify-center gap-0.5">
+              <div className="text-xs text-muted flex items-center justify-center gap-0.5">
                 <Droplets size={9} className="text-blue-300" />
                 {w.rain} {t('weather.rainDays')}
               </div>
@@ -97,9 +99,9 @@ export default function WeatherChecker() {
             href="https://www.google.com/search?q=weer+costa+brava+spanje"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary/5 hover:bg-primary/10 text-primary font-medium rounded-full transition-all duration-300 text-sm group"
+            className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary/5 text-primary font-medium rounded-full transition-all duration-300 text-sm group"
           >
-            <Sun size={16} className="text-amber-400 group-hover:rotate-45 transition-transform duration-300" />
+            <Sun size={16} className="text-amber-400 transition-transform duration-300" />
             {t('weather.viewCurrentWeather')}
             <ExternalLink size={14} />
           </a>

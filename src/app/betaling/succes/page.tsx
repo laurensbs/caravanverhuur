@@ -77,7 +77,7 @@ function SuccesContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-border/50 mb-8"
+            className="bg-white rounded-2xl p-6 shadow-sm border mb-8"
           >
             <div className="flex items-center gap-3 justify-center text-primary mb-3">
               <CheckCircle size={20} />
@@ -91,13 +91,13 @@ function SuccesContent() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/mijn-account"
-              className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold transition-colors"
             >
               {t('paymentPage.toMyAccount')} <ArrowRight size={16} />
             </Link>
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold hover:bg-surface-alt transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-surface-alt text-foreground-light px-6 py-3 rounded-xl font-semibold transition-colors"
             >
               {t('paymentPage.backToHome')}
             </Link>

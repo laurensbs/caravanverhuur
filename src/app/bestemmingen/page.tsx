@@ -108,7 +108,7 @@ export default function DestinationsPage() {
           {/* Region quick links */}
           <div className="flex flex-wrap justify-center gap-3">
             {regionOrder.map(region => (
-              <a key={region} href={`#${region.toLowerCase().replace(/\s/g, '-')}`} className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-md rounded-full text-white text-sm font-medium hover:bg-white/25 transition-colors">
+              <a key={region} href={`#${region.toLowerCase().replace(/\s/g, '-')}`} className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-md rounded-full text-white text-sm font-medium transition-colors">
                 {regionIcons[region]} {region}
               </a>
             ))}
@@ -126,10 +126,10 @@ export default function DestinationsPage() {
       {/* ===== FEATURED DESTINATION ===== */}
       <section className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 mb-12">
         <Link href={`/bestemmingen/${featured.slug}`} className="group block">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-border/50">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border">
             <div className="grid lg:grid-cols-2">
               <div className="relative h-64 lg:h-auto lg:min-h-[350px] overflow-hidden">
-                <Image src={featured.heroImage} alt={featured.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+                <Image src={featured.heroImage} alt={featured.name} fill className="object-cover transition-transform duration-700" unoptimized />
                 <div className="absolute top-4 left-4">
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-white text-xs font-bold rounded-full shadow-md">
                     <Star size={12} /> {t('destinations.recommended')}
@@ -140,7 +140,7 @@ export default function DestinationsPage() {
                 <div className="flex items-center gap-2 text-sm text-muted mb-2">
                   <MapPin size={14} /> {featured.region}
                 </div>
-                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">{featured.name}</h2>
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-3 transition-colors">{featured.name}</h2>
                 <p className="text-foreground-light mb-5 leading-relaxed">{featured.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-5">
@@ -162,7 +162,7 @@ export default function DestinationsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-primary font-semibold group-hover:gap-3 transition-all">
+                <div className="flex items-center gap-2 text-primary font-semibold transition-all">
                   {t('destinations.discover')} {featured.name} <ArrowRight size={18} />
                 </div>
               </div>
@@ -193,11 +193,11 @@ export default function DestinationsPage() {
                 <Link
                   key={dest.id}
                   href={`/bestemmingen/${dest.slug}`}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border/50 hover:border-border"
+                  className="group bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 border"
                 >
                   {/* Image */}
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" unoptimized />
+                    <Image src={dest.heroImage} alt={dest.name} fill className="object-cover transition-transform duration-700" unoptimized />
                     <div className="absolute inset-0 bg-black/30" />
 
                     {/* Weather badge */}
@@ -223,7 +223,7 @@ export default function DestinationsPage() {
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5 mb-4">
                       {dest.bestFor.map(tag => (
-                        <span key={tag} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full">
+                        <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full">
                           {bestForIcons[tag] || <Star size={10} />} {tagMap[tag] || tag}
                         </span>
                       ))}
@@ -240,12 +240,12 @@ export default function DestinationsPage() {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-3 text-xs text-muted">
                         <span className="flex items-center gap-1"><Waves size={13} className="text-primary" /> {dest.weather.water}</span>
                         <span className="flex items-center gap-1"><Users size={13} className="text-muted" /> {dest.nearestCampings.length} {t('destinations.campings')}</span>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-all">
                         {t('destinations.discover')} <ChevronRight size={14} />
                       </span>
                     </div>
@@ -270,7 +270,7 @@ export default function DestinationsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground">{d.name}</p>
-                    <p className="text-[10px] text-muted">{d.region}</p>
+                    <p className="text-xs text-muted">{d.region}</p>
                   </div>
                 </div>
                 <p className="text-xs text-foreground-light leading-relaxed">{d.travelTip}</p>
@@ -289,7 +289,7 @@ export default function DestinationsPage() {
           <div className="overflow-x-auto -mx-4 px-4">
             <table className="w-full min-w-[640px] border-collapse">
               <thead>
-                <tr className="border-b border-border/50">
+                <tr className="border-b">
                   <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thDestination')}</th>
                   <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thRegion')}</th>
                   <th className="text-left py-3 px-4 text-sm font-bold text-foreground">{t('destinations.thSummer')}</th>
@@ -301,7 +301,7 @@ export default function DestinationsPage() {
               </thead>
               <tbody>
                 {destinations.map(d => (
-                  <tr key={d.id} className="border-b border-border/30 hover:bg-surface/50 transition-colors">
+                  <tr key={d.id} className="border-b transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden relative shrink-0">
@@ -325,12 +325,12 @@ export default function DestinationsPage() {
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">
                         {d.bestFor.slice(0, 2).map(tag => (
-                          <span key={tag} className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{tagMap[tag] || tag}</span>
+                          <span key={tag} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{tagMap[tag] || tag}</span>
                         ))}
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <Link href={`/bestemmingen/${d.slug}`} className="text-primary hover:text-primary-dark transition-colors">
+                      <Link href={`/bestemmingen/${d.slug}`} className="text-primary transition-colors">
                         <ChevronRight size={18} />
                       </Link>
                     </td>
@@ -354,10 +354,10 @@ export default function DestinationsPage() {
             {t('destinations.ctaDesc')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl active:scale-95">
+            <Link href="/boeken" className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg">
               {t('destinations.bookNow')} <ArrowRight size={20} />
             </Link>
-            <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white px-6 py-4 rounded-full font-semibold transition-all">
+            <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-6 py-4 rounded-full font-semibold transition-all">
               {t('destinations.viewCaravans')} <ChevronRight size={18} />
             </Link>
           </div>

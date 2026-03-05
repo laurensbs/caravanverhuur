@@ -19,6 +19,7 @@ import {
   Trash2,
   Lock,
   AlertTriangle,
+  Tag,
 } from 'lucide-react';
 import {
   getBookingCaravan,
@@ -54,6 +55,13 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [showDiscount, setShowDiscount] = useState(false);
+  const [discountPassword, setDiscountPassword] = useState('');
+  const [discountAmount, setDiscountAmount] = useState('');
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountSaving, setDiscountSaving] = useState(false);
+  const [discountError, setDiscountError] = useState('');
+  const [discountSuccess, setDiscountSuccess] = useState(false);
 
   useEffect(() => {
     fetch(`/api/payments?bookingId=${booking.id}`)
@@ -221,6 +229,77 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             placeholder="Interne notities..."
           />
         </div>
+      </div>
+
+      {/* Discount section */}
+      <div>
+        <button
+          onClick={() => { setShowDiscount(!showDiscount); setDiscountError(''); setDiscountSuccess(false); }}
+          className="flex items-center gap-2 text-sm font-medium text-primary cursor-pointer"
+        >
+          <Tag className="w-4 h-4" />
+          {showDiscount ? 'Korting annuleren' : 'Korting toekennen'}
+        </button>
+        {showDiscount && (
+          <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+            {discountSuccess ? (
+              <div className="text-sm text-primary font-medium">Korting succesvol toegepast! Bedragen zijn bijgewerkt.</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-muted block mb-1">Kortingsbedrag (€)</label>
+                    <input type="number" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} placeholder="50"
+                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted block mb-1">Reden / Code</label>
+                    <input type="text" value={discountCode} onChange={e => setDiscountCode(e.target.value)} placeholder="ADMIN"
+                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> Wachtwoord</label>
+                    <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder="Admin wachtwoord"
+                      className="w-full px-3 py-2 bg-white border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+                </div>
+                {discountError && <p className="text-xs text-red-500">{discountError}</p>}
+                <button
+                  onClick={async () => {
+                    if (!discountAmount || !discountPassword) { setDiscountError('Vul alle velden in'); return; }
+                    setDiscountSaving(true); setDiscountError('');
+                    try {
+                      const res = await fetch('/api/admin/discount-codes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          password: discountPassword,
+                          action: 'applyToBooking',
+                          bookingId: booking.id,
+                          discountCode: discountCode || 'ADMIN',
+                          discountAmount: parseFloat(discountAmount),
+                        }),
+                      });
+                      if (res.status === 403) { setDiscountError('Onjuist wachtwoord'); setDiscountSaving(false); return; }
+                      if (!res.ok) { setDiscountError('Korting toepassen mislukt'); setDiscountSaving(false); return; }
+                      setDiscountSuccess(true);
+                      // Refresh payments
+                      fetch(`/api/payments?bookingId=${booking.id}`).then(r => r.json()).then(d => setPayments(d.payments || [])).catch(() => {});
+                    } catch {
+                      setDiscountError('Er ging iets mis');
+                    }
+                    setDiscountSaving(false);
+                  }}
+                  disabled={discountSaving}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 transition-colors"
+                >
+                  {discountSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
+                  Korting toepassen
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
