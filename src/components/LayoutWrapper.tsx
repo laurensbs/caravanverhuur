@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useState, useEffect } from 'react';
 import { LanguageProvider } from '@/i18n/context';
 import { dictionaries } from '@/i18n/translations';
+import ChatBot from '@/components/ChatBot';
 
 export function LayoutWrapper({
   children,
@@ -49,6 +50,7 @@ export function LayoutWrapper({
       {footer}
       {scrollToTop}
       {cookieConsent}
+      <ChatBot />
     </LanguageProvider>
   );
 }
