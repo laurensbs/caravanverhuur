@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'u.cubeupload.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'caravanstalling-spanje.com',
+      },
     ],
   },
 };
