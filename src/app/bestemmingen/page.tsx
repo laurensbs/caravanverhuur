@@ -69,29 +69,82 @@ const bestForIcons: Record<string, React.ReactNode> = {
 /* ------------------------------------------------------------------ */
 const beachPhotos: Record<string, string> = {
   'Platja Gran (Pals)': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Playa_de_Pals_%28Costa_Brava%29.jpg/1280px-Playa_de_Pals_%28Costa_Brava%29.jpg',
+  'Platja de Pals': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Playa_de_Pals_%28Costa_Brava%29.jpg/1280px-Playa_de_Pals_%28Costa_Brava%29.jpg',
+  'Platja del Grau': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Arr%C3%B2s_de_Pals.jpg/1280px-Arr%C3%B2s_de_Pals.jpg',
   "Platja de L'Estartit": 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Estartit_-_panoramio_%281%29.jpg/1280px-Estartit_-_panoramio_%281%29.jpg',
+  "Platja de l'Estartit": 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Estartit_-_panoramio_%281%29.jpg/1280px-Estartit_-_panoramio_%281%29.jpg',
+  'Platja de la Pletera': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Estartit.jpg/1200px-Estartit.jpg',
   'Platja de Santa Margarida': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Roses_mar.jpg/1280px-Roses_mar.jpg',
+  'Platja de Roses': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Golfo_de_Rosas.jpg/1280px-Golfo_de_Rosas.jpg',
+  'Cala Montjoi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Ciutadella_de_Roses-2022.jpg/1280px-Ciutadella_de_Roses-2022.jpg',
+  'Cala Jóncols': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Roses_mit_Sporthafen.jpg/1200px-Roses_mit_Sporthafen.jpg',
   'Platja de Lloret': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Lloret_de_Mar_2013.jpg/1280px-Lloret_de_Mar_2013.jpg',
-  'Portlligat': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Cadaques_Pueblo_Marinero.JPG/1200px-Cadaques_Pueblo_Marinero.JPG',
-  "Platja Gran (Cadaqu\u00e9s)": 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Cadaques_Pueblo_Marinero.JPG/1200px-Cadaques_Pueblo_Marinero.JPG',
+  'Cala Boadella': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Platja_de_sa_Boadella_%28Lloret_de_Mar%29.jpg/1280px-Platja_de_sa_Boadella_%28Lloret_de_Mar%29.jpg',
+  'Sa Caleta': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Platja_de_Lloret.jpg/1200px-Platja_de_Lloret.jpg',
+  'Cala Banys': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Platja_de_Lloret.jpg/1200px-Platja_de_Lloret.jpg',
+  'Portlligat': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Portlligat.jpg/1280px-Portlligat.jpg',
+  "Platja Gran (Cadaqués)": 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Cadaques_Pueblo_Marinero.JPG/1200px-Cadaques_Pueblo_Marinero.JPG',
+  'Cala Nans': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Cap_de_Creus_landscape.jpg/1280px-Cap_de_Creus_landscape.jpg',
   'Platja de Blanes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Blanes%2C_Spain_Overview.jpg/1200px-Blanes%2C_Spain_Overview.jpg',
   "Platja de S'Abanell": 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Blanes%2C_Spain_Overview.jpg/1200px-Blanes%2C_Spain_Overview.jpg',
   'Cala Sant Francesc': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Sa_Palomera_a_Blanes.jpg/1280px-Sa_Palomera_a_Blanes.jpg',
   'Platja de Sant Pere Pescador': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/SPP056.jpg/1200px-SPP056.jpg',
   'Platja Gran': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Tossa_de_Mar_Torre%C3%B3n_JMM.JPG/1200px-Tossa_de_Mar_Torre%C3%B3n_JMM.JPG',
   'Platja Mar Menuda': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Tossa_A%C3%A9rea.JPG/1280px-Tossa_A%C3%A9rea.JPG',
+  'Cala Pola': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Costa_Brava_-_Tossa_de_Mar_-_La_Vila_Vella_-_Passeig_del_Mar_-_View_ENE_through_Portal_%28Passeig_de_la_Vila_Vella%29.jpg/1280px-Costa_Brava_-_Tossa_de_Mar_-_La_Vila_Vella_-_Passeig_del_Mar_-_View_ENE_through_Portal_%28Passeig_de_la_Vila_Vella%29.jpg',
+  'Cala Giverola': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Tossa_A%C3%A9rea.JPG/1280px-Tossa_A%C3%A9rea.JPG',
   'Sa Tuna': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg',
+  'Aiguafreda': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BegurCastle.jpg/1280px-BegurCastle.jpg',
+  'Platja de Sa Riera': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Begur_-_2013-07-15_-_Albert_Torello.jpg/1280px-Begur_-_2013-07-15_-_Albert_Torello.jpg',
   'Aiguablava': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg',
   'Platja de Calella': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Calella_de_Palafrugell_%2826023087965%29.jpg/1200px-Calella_de_Palafrugell_%2826023087965%29.jpg',
   'Platja del Canadell': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Calella_de_Palafrugell_-_53619347398.jpg/1280px-Calella_de_Palafrugell_-_53619347398.jpg',
   'Platja de Llafranc': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Calella_de_Palafrugell_%2826023087965%29.jpg/1200px-Calella_de_Palafrugell_%2826023087965%29.jpg',
   "Platja Gran (Platja d'Aro)": 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Platja_Gran_Platja_d%27Aro.jpg/1280px-Platja_Gran_Platja_d%27Aro.jpg',
   'Cala Rovira': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Playa_de_Aro.jpg',
+  'Cala del Pi': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Playa_de_Aro.jpg',
   "Platja d'Empuriabrava": 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Panoramic_view_of_Empuriabrava_and_Roses_20090813_1.jpg/1280px-Panoramic_view_of_Empuriabrava_and_Roses_20090813_1.jpg',
-  "Platja Gran (Palam\u00f3s)": 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Palam%C3%B3s_-_view_from_beach.jpg/1280px-Palam%C3%B3s_-_view_from_beach.jpg',
+  "Platja Gran (Palamós)": 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Palam%C3%B3s_-_view_from_beach.jpg/1280px-Palam%C3%B3s_-_view_from_beach.jpg',
   'Platja de la Fosca': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Palam%C3%B3s_-_view_from_beach.jpg/1280px-Palam%C3%B3s_-_view_from_beach.jpg',
   "Cala S'Alguer": 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Cala_Margarida_Palam%C3%B3s.jpg/1280px-Cala_Margarida_Palam%C3%B3s.jpg',
   'Cala Margarida': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Cala_Margarida_Palam%C3%B3s.jpg/1280px-Cala_Margarida_Palam%C3%B3s.jpg',
+};
+
+/* ------------------------------------------------------------------ */
+/*  Activity photos (matched to locations)                             */
+/* ------------------------------------------------------------------ */
+const activityPhotos: Record<string, string> = {
+  'pals-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Playa_de_Pals_%28Costa_Brava%29.jpg/1280px-Playa_de_Pals_%28Costa_Brava%29.jpg',
+  'pals-2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Els_Masos_de_Pals.jpg/1280px-Els_Masos_de_Pals.jpg',
+  'pals-4': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Playa_de_Pals_%28Costa_Brava%29.jpg/1280px-Playa_de_Pals_%28Costa_Brava%29.jpg',
+  'pals-6': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg',
+  'pals-7': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Spain%2C_Catalonia%2C_Illes_Medes_%28Medes_Islands%29.JPG/1280px-Spain%2C_Catalonia%2C_Illes_Medes_%28Medes_Islands%29.JPG',
+  'est-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Spain%2C_Catalonia%2C_Illes_Medes_%28Medes_Islands%29.JPG/1280px-Spain%2C_Catalonia%2C_Illes_Medes_%28Medes_Islands%29.JPG',
+  'est-3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Estartit_-_panoramio_%281%29.jpg/1280px-Estartit_-_panoramio_%281%29.jpg',
+  'est-6': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Estartit.jpg/1200px-Estartit.jpg',
+  'ros-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Golfo_de_Rosas.jpg/1280px-Golfo_de_Rosas.jpg',
+  'ros-2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Ciutadella_de_Roses-2022.jpg/1280px-Ciutadella_de_Roses-2022.jpg',
+  'ros-3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Cap_de_Creus_landscape.jpg/1280px-Cap_de_Creus_landscape.jpg',
+  'ros-5': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Cadaques_Pueblo_Marinero.JPG/1200px-Cadaques_Pueblo_Marinero.JPG',
+  'llo-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Lloret_de_Mar_2013.jpg/1280px-Lloret_de_Mar_2013.jpg',
+  'llo-2': 'https://upload.wikimedia.org/wikipedia/commons/6/66/Jardins_de_Santa_Clotilde%2C_Lloret_de_Mar.JPG',
+  'llo-4': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Platja_de_sa_Boadella_%28Lloret_de_Mar%29.jpg/1280px-Platja_de_sa_Boadella_%28Lloret_de_Mar%29.jpg',
+  'llo-7': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Tossa_de_Mar_Torre%C3%B3n_JMM.JPG/1200px-Tossa_de_Mar_Torre%C3%B3n_JMM.JPG',
+  'spp-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/SPP056.jpg/1200px-SPP056.jpg',
+  'spp-2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Kitesurf_a_Sant_Pere_Pescador_-_panoramio.jpg/1280px-Kitesurf_a_Sant_Pere_Pescador_-_panoramio.jpg',
+  'spp-3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Animales-aiguamolls_l%27emporda-2013.JPG/1280px-Animales-aiguamolls_l%27emporda-2013.JPG',
+  'spp-6': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Teater_Museu_Gala_Salvador_Dali_building_from_outside.jpg/1200px-Teater_Museu_Gala_Salvador_Dali_building_from_outside.jpg',
+  'pda-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Platja_Gran_Platja_d%27Aro.jpg/1280px-Platja_Gran_Platja_d%27Aro.jpg',
+  'bla-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Marimurtra_Botanic_Garden_Blanes_Costa_Brava_Catalonia_Spain.jpg/1280px-Marimurtra_Botanic_Garden_Blanes_Costa_Brava_Catalonia_Spain.jpg',
+  'bla-2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Sa_Palomera_a_Blanes.jpg/1280px-Sa_Palomera_a_Blanes.jpg',
+  'bla-7': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Blanes%2C_Spain_Overview.jpg/1200px-Blanes%2C_Spain_Overview.jpg',
+  'cad-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Portlligat.jpg/1280px-Portlligat.jpg',
+  'cad-3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Cap_de_Creus_landscape.jpg/1280px-Cap_de_Creus_landscape.jpg',
+  'beg-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg',
+  'beg-3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BegurCastle.jpg/1280px-BegurCastle.jpg',
+  'esc-1': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/MSodaiguiSTPereFigueres1.jpg/1200px-MSodaiguiSTPereFigueres1.jpg',
+  'ce-2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Canal_principal_de_Empuriabrava.jpg/1280px-Canal_principal_de_Empuriabrava.jpg',
+  'ce-5': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Animales-aiguamolls_l%27emporda-2013.JPG/1280px-Animales-aiguamolls_l%27emporda-2013.JPG',
 };
 
 /* ------------------------------------------------------------------ */
@@ -185,10 +238,16 @@ function DestinationCard({ dest }: { dest: Destination }) {
 
 function BeachCard({ beach }: { beach: Beach & { destination: string; destSlug: string } }) {
   const vibeColors: Record<string, string> = {
-    rustig: 'bg-emerald-50 text-emerald-700',
-    levendig: 'bg-amber-50 text-amber-700',
-    wild: 'bg-violet-50 text-violet-700',
-    familiaal: 'bg-blue-50 text-blue-700',
+    rustig: 'bg-emerald-100/90 text-emerald-800',
+    levendig: 'bg-amber-100/90 text-amber-800',
+    wild: 'bg-violet-100/90 text-violet-800',
+    familiaal: 'bg-blue-100/90 text-blue-800',
+  };
+  const vibeIcons: Record<string, string> = {
+    rustig: '🌿',
+    levendig: '🎉',
+    wild: '🌊',
+    familiaal: '👨‍👩‍👧‍👦',
   };
   const typeLabels: Record<string, string> = {
     zand: 'Zandstrand',
@@ -196,35 +255,48 @@ function BeachCard({ beach }: { beach: Beach & { destination: string; destSlug: 
     rotsen: 'Rotsenstrand',
     mix: 'Gemengd',
   };
+  const typeIcons: Record<string, string> = {
+    zand: '🏖️',
+    kiezel: '🪨',
+    rotsen: '⛰️',
+    mix: '🏝️',
+  };
   const photo = beachPhotos[beach.name];
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      {photo && (
-        <div className="relative h-36 overflow-hidden">
-          <Image src={photo} alt={beach.name} fill className="object-cover" unoptimized />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <span className={`absolute top-2 right-2 text-[11px] font-semibold px-2 py-0.5 rounded-full ${vibeColors[beach.vibe] || 'bg-gray-100 text-gray-600'}`}>
-            {beach.vibe}
-          </span>
+    <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100">
+      <div className="relative h-44 overflow-hidden">
+        {photo ? (
+          <Image src={photo} alt={beach.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 flex items-center justify-center">
+            <Waves size={48} className="text-white/40" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <span className={`absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm ${vibeColors[beach.vibe] || 'bg-gray-100/90 text-gray-600'}`}>
+          {vibeIcons[beach.vibe] || ''} {beach.vibe}
+        </span>
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h4 className="font-bold text-white text-sm drop-shadow-lg">{beach.name}</h4>
+          <Link href={`/bestemmingen/${beach.destSlug}`} className="text-[11px] text-white/80 font-medium inline-flex items-center gap-1 hover:text-white transition-colors">
+            <MapPin size={10} /> {beach.destination}
+          </Link>
         </div>
-      )}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <h4 className="font-bold text-gray-900 text-sm">{beach.name}</h4>
-          {!photo && (
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${vibeColors[beach.vibe] || 'bg-gray-100 text-gray-600'}`}>
-              {beach.vibe}
+      </div>
+      <div className="p-3.5">
+        <p className="text-xs text-gray-600 mb-3 leading-relaxed line-clamp-2">{beach.description}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] text-gray-500">
+            <span className="inline-flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full font-medium">
+              {typeIcons[beach.type]} {typeLabels[beach.type]}
+            </span>
+          </div>
+          {beach.facilities && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
+              ✓ Faciliteiten
             </span>
           )}
-        </div>
-        <Link href={`/bestemmingen/${beach.destSlug}`} className="text-xs text-primary font-medium mb-2 inline-flex items-center gap-1 hover:underline">
-          <MapPin size={10} /> {beach.destination}
-        </Link>
-        <p className="text-xs text-gray-600 mb-2 leading-relaxed">{beach.description}</p>
-        <div className="flex items-center gap-3 text-[11px] text-gray-400">
-          <span className="inline-flex items-center gap-1"><Waves size={11} /> {typeLabels[beach.type]}</span>
-          {beach.facilities && <span className="inline-flex items-center gap-1 text-emerald-600">&check; Faciliteiten</span>}
         </div>
       </div>
     </div>
@@ -253,25 +325,73 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant & { destination
 }
 
 function ActivityCard({ activity, location }: { activity: Activity; location: string }) {
+  const catColors: Record<string, string> = {
+    strand: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    cultuur: 'bg-purple-50 text-purple-700 border-purple-200',
+    natuur: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    sport: 'bg-orange-50 text-orange-700 border-orange-200',
+    kinderen: 'bg-pink-50 text-pink-700 border-pink-200',
+    culinair: 'bg-amber-50 text-amber-700 border-amber-200',
+    uitstap: 'bg-blue-50 text-blue-700 border-blue-200',
+  };
+  const catBorder: Record<string, string> = {
+    strand: 'border-l-cyan-400',
+    cultuur: 'border-l-purple-400',
+    natuur: 'border-l-emerald-400',
+    sport: 'border-l-orange-400',
+    kinderen: 'border-l-pink-400',
+    culinair: 'border-l-amber-400',
+    uitstap: 'border-l-blue-400',
+  };
+  const photo = activityPhotos[activity.id];
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-3 mb-2">
-        <span className="text-2xl">{activity.icon}</span>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-gray-900 text-sm">{activity.title}</h4>
-          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
-            <MapPin size={10} /> {location}
-            {activity.distance && <span>&middot; {activity.distance}</span>}
+    <div className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 ${photo ? '' : `border-l-4 ${catBorder[activity.category] || 'border-l-gray-300'}`}`}>
+      {photo && (
+        <div className="relative h-36 overflow-hidden">
+          <Image src={photo} alt={activity.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl drop-shadow-lg">{activity.icon}</span>
+              <h4 className="font-bold text-white text-sm drop-shadow-lg">{activity.title}</h4>
+            </div>
           </div>
+          <span className={`absolute top-2.5 right-2.5 text-[11px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
+            {getCategoryLabel(activity.category)}
+          </span>
         </div>
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap">
-          {getCategoryLabel(activity.category)}
-        </span>
-      </div>
-      <p className="text-xs text-gray-600 leading-relaxed">{activity.description}</p>
-      {activity.tip && (
-        <p className="text-[11px] text-primary mt-2 italic">&#128161; {activity.tip}</p>
       )}
+      <div className="p-4">
+        {!photo && (
+          <div className="flex items-start gap-3 mb-2">
+            <span className="text-2xl">{activity.icon}</span>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-gray-900 text-sm">{activity.title}</h4>
+            </div>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
+              {getCategoryLabel(activity.category)}
+            </span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-2">
+          <MapPin size={10} /> {location}
+          {activity.distance && <span className="text-gray-300">&middot;</span>}
+          {activity.distance && <span>{activity.distance}</span>}
+        </div>
+        <p className="text-xs text-gray-600 leading-relaxed">{activity.description}</p>
+        {activity.tip && (
+          <div className="mt-2.5 flex items-start gap-2 bg-amber-50/80 rounded-lg px-3 py-2 border border-amber-100">
+            <span className="text-sm flex-shrink-0">💡</span>
+            <p className="text-[11px] text-amber-800 leading-relaxed">{activity.tip}</p>
+          </div>
+        )}
+        {activity.url && (
+          <a href={activity.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
+            Meer info <ChevronRight size={11} />
+          </a>
+        )}
+      </div>
     </div>
   );
 }
