@@ -223,7 +223,7 @@ export default function CaravansPage() {
 
   return (
     <>
-      <section className="pt-28 sm:pt-32 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
+      <section className="pt-24 sm:pt-28 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
           {/* Mobile: filter toggle + sort bar */}
           <div className="lg:hidden flex items-center gap-3 mb-4">
@@ -280,14 +280,7 @@ export default function CaravansPage() {
                 <p className="text-sm text-gray-500">
                   <span className="font-semibold text-gray-900">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} {t('caravans.resultsFound')}
                 </p>
-                <div className="flex items-center gap-3">
-                  {filtered.length > 0 && (
-                    <p className="text-xs text-primary font-medium flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                      {t('caravans.seasonAvailable')}
-                    </p>
-                  )}
-                </div>
+
               </div>
 
               {filtered.length === 0 ? (
@@ -315,16 +308,10 @@ export default function CaravansPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                           unoptimized
                         />
-                        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                        <div className="absolute top-3 left-3">
                           <span className="px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-primary">
                             {caravan.type}
                           </span>
-                          {caravan.status === 'BESCHIKBAAR' && (
-                            <span className="px-2 py-0.5 bg-primary text-white text-xs font-bold rounded-full flex items-center gap-1 w-fit">
-                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                              {t('caravans.available')}
-                            </span>
-                          )}
                         </div>
                         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
                           <span className="text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}/week</span>
@@ -361,6 +348,7 @@ export default function CaravansPage() {
                             {t('caravans.bookNow')}
                           </Link>
                         </div>
+                        <p className="text-[11px] text-gray-400 text-center mt-2">{t('caravans.orSimilar')}</p>
                       </div>
                     </div>
                   ))}

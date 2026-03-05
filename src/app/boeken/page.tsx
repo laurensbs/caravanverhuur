@@ -280,7 +280,7 @@ function BoekenContent() {
   return (
     <div className="min-h-screen bg-surface">
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm pt-28 sm:pt-32">
+      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm pt-24 sm:pt-28">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">

@@ -37,7 +37,7 @@ export default function OverOnsPage() {
   return (
     <>
       {/* Wat we doen */}
-      <section className="pt-28 sm:pt-32 pb-12 sm:pb-20">
+      <section className="pt-24 sm:pt-28 pb-12 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
@@ -226,20 +226,6 @@ export default function OverOnsPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-12 sm:py-20 bg-primary-dark text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">{t('about.ctaTitle')}</h2>
-          <p className="text-primary-light text-lg mb-8">{t('about.ctaSubtitle')}</p>
-          <Link
-            href="/boeken"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-full shadow-lg transition-all text-lg"
-          >
-            {t('about.ctaButton')}
-            <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
     </>
   );
 }

@@ -493,6 +493,7 @@ export default function HomePage() {
                       {t('nav.bookNow')}
                     </Link>
                   </div>
+                  <p className="text-[11px] text-muted text-center mt-2">{t('caravans.orSimilar')}</p>
                 </div>
               </motion.div>
             ))}
@@ -794,53 +795,6 @@ export default function HomePage() {
                 {badge.text}
               </div>
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ===== CTA SECTION ===== */}
-      <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
-        {/* Decorative rings */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-primary/5 rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-primary/10 rounded-full pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-lg animate-float-slow"
-            >
-              <Sun className="text-white" size={28} />
-            </motion.div>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-3 sm:mb-5 tracking-tight">
-              {t('home.ctaTitle')}
-            </h2>
-            <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
-              {t('home.ctaSubtitle')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Link
-                href="/boeken"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-white font-bold rounded-full shadow-lg transition-all duration-300 text-base sm:text-lg"
-              >
-                {t('home.ctaBookNow')}
-                <ArrowRight size={18} />
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-primary text-primary font-bold rounded-full transition-all duration-300 text-base sm:text-lg"
-              >
-                {t('nav.contact')}
-              </Link>
-            </div>
           </motion.div>
         </div>
       </section>

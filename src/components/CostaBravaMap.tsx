@@ -258,7 +258,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   }, [destinations, activeDestination, onMarkerClick]);
 
   return (
-    <div ref={containerRef} className={`relative w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200/60 bg-gray-100 ${isFullscreen ? 'rounded-none' : ''}`}>
+    <div ref={containerRef} className={`relative w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200/60 bg-gray-100 isolate z-0 ${isFullscreen ? 'rounded-none fixed inset-0 z-[60]' : ''}`}>
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-50 flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-3">
@@ -273,7 +273,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       {isLoaded && (
         <>
           {/* Top-left: destination counter */}
-          <div className="absolute top-3 left-3 z-[1000]">
+          <div className="absolute top-3 left-3 z-[9]">
             <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-100 flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-[#0EA5E9] rounded-full animate-pulse" />
               <span className="text-xs font-semibold text-gray-700">{destinations.length} bestemmingen</span>
@@ -281,7 +281,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           </div>
 
           {/* Bottom-left: control buttons */}
-          <div className="absolute bottom-3 left-3 z-[1000] flex flex-col gap-2">
+          <div className="absolute bottom-3 left-3 z-[9] flex flex-col gap-2">
             {/* Fullscreen toggle */}
             <button
               onClick={toggleFullscreen}
@@ -337,6 +337,12 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
         </div>
       )}
       <style jsx global>{`
+        .leaflet-pane { z-index: 1 !important; }
+        .leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+        .leaflet-overlay-pane { z-index: 3 !important; }
+        .leaflet-marker-pane { z-index: 4 !important; }
+        .leaflet-tooltip-pane { z-index: 5 !important; }
+        .leaflet-popup-pane { z-index: 6 !important; }
         /* ---- zoom controls ---- */
         .leaflet-control-zoom {
           border: none !important;

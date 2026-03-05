@@ -1047,31 +1047,7 @@ export default function DestinationsPage() {
         </div>
       </div>
 
-      {/* ===== CTA ===== */}
-      <section className="relative py-14 lg:py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Cadaques_Pueblo_Marinero.JPG/1200px-Cadaques_Pueblo_Marinero.JPG"
-            alt="Costa Brava"
-            fill className="object-cover" unoptimized
-          />
-          <div className="absolute inset-0 bg-primary/85" />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Klaar voor jouw Costa Brava avontuur?</h2>
-          <p className="text-white/70 text-base mb-6 max-w-xl mx-auto">
-            Kies je droombestemming, wij zorgen dat je caravan klaarstaat.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/boeken" className="inline-flex items-center gap-2 bg-white text-primary px-7 py-3 rounded-full font-bold hover:bg-gray-50 transition-all shadow-lg">
-              Boek nu <ArrowRight size={18} />
-            </Link>
-            <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-5 py-3 rounded-full font-semibold hover:bg-white/25 transition-all">
-              Bekijk caravans <ChevronRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* End of content */}
 
       <style jsx global>{`
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

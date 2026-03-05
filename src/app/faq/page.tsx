@@ -80,7 +80,7 @@ export default function FAQPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <section className="pt-28 sm:pt-32 pb-10 sm:pb-16">
+      <section className="pt-24 sm:pt-28 pb-10 sm:pb-16">
         <div className="max-w-3xl mx-auto px-4">
           {faqCategories.map((cat, catIdx) => (
             <div
