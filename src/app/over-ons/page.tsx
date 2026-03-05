@@ -38,7 +38,7 @@ export default function OverOnsPage() {
       {/* Header */}
       <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1757589223000-d23c4a72176e?w=1920&q=80"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sa_Riera_beach.JPG/1280px-Sa_Riera_beach.JPG"
           alt="Costa Brava kust"
           fill
           className="object-cover"
@@ -83,7 +83,7 @@ export default function OverOnsPage() {
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.2 }}>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1745419037385-18611f4fc7b4?w=800&q=80"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/La_banyera_de_la_russa-calella_de_palafurgell-8-2013.JPG/1280px-La_banyera_de_la_russa-calella_de_palafurgell-8-2013.JPG"
                   alt="Costa Brava camping"
                   width={600}
                   height={400}

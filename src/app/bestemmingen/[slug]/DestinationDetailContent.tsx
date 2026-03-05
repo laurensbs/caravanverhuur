@@ -12,7 +12,7 @@ const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[350px] bg-gray-100 rounded-xl flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#e07b12] border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   ),
 });
@@ -86,7 +86,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
               <span className="flex items-center gap-1"><Sun size={14} />{dest.weather.summer}</span>
               <span className="flex items-center gap-1"><Droplets size={14} />{dest.weather.water}</span>
               {dest.knownFor && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#e07b12] rounded-full text-white text-xs font-semibold">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-primary rounded-full text-white text-xs font-semibold">
                   <Sparkles size={11} /> {dest.knownFor}
                 </span>
               )}
@@ -114,7 +114,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {dest.gallery.length > 1 && (
               <div className="bg-white rounded-2xl p-5 sm:p-8">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Camera size={18} className="text-[#e07b12]" /> Foto&apos;s van {dest.name}
+                  <Camera size={18} className="text-primary" /> Foto&apos;s van {dest.name}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {dest.gallery.map((img, i) => (
@@ -129,14 +129,14 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {/* Highlights */}
             <div className="bg-white rounded-2xl p-5 sm:p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Star size={18} className="text-[#e07b12]" />
+                <Star size={18} className="text-primary" />
                 {t('destinations.highlights')}
               </h2>
               <div className="space-y-3">
                 {dest.highlights.map((h, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-[#e07b12]/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[#e07b12] text-xs font-bold">{i + 1}</span>
+                    <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-primary text-xs font-bold">{i + 1}</span>
                     </div>
                     <span className="text-sm text-gray-600">{h}</span>
                   </div>
@@ -148,7 +148,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {dest.beaches.length > 0 && (
               <div className="bg-white rounded-2xl p-5 sm:p-8">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Umbrella size={18} className="text-[#e07b12]" /> Stranden ({dest.beaches.length})
+                  <Umbrella size={18} className="text-primary" /> Stranden ({dest.beaches.length})
                 </h2>
                 <div className="space-y-4">
                   {dest.beaches.map((beach, i) => (
@@ -174,19 +174,19 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {dest.restaurants.length > 0 && (
               <div className="bg-white rounded-2xl p-5 sm:p-8">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <UtensilsCrossed size={18} className="text-[#e07b12]" /> Restaurants ({dest.restaurants.length})
+                  <UtensilsCrossed size={18} className="text-primary" /> Restaurants ({dest.restaurants.length})
                 </h2>
                 <div className="space-y-4">
                   {dest.restaurants.map((r, i) => (
                     <div key={i} className="border border-gray-100 rounded-xl p-4">
                       <div className="flex items-start justify-between mb-1">
                         <h4 className="font-bold text-gray-900">{r.name}</h4>
-                        <span className="text-sm font-bold text-[#e07b12]">{r.price}</span>
+                        <span className="text-sm font-bold text-primary">{r.price}</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-2">{r.cuisine}</p>
                       <p className="text-sm text-gray-600 mb-2">{r.description}</p>
                       {r.mustTry && (
-                        <div className="inline-flex items-center gap-1.5 text-xs text-[#e07b12] font-semibold bg-[#e07b12]/8 px-2.5 py-1 rounded-full">
+                        <div className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/8 px-2.5 py-1 rounded-full">
                           <Award size={12} /> Must try: {r.mustTry}
                         </div>
                       )}
@@ -200,7 +200,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {destActivities && destActivities.activities.length > 0 && (
               <div className="bg-white rounded-2xl p-5 sm:p-8">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Star size={18} className="text-[#e07b12]" /> Activiteiten ({destActivities.activities.length})
+                  <Star size={18} className="text-primary" /> Activiteiten ({destActivities.activities.length})
                 </h2>
                 <div className="space-y-3">
                   {destActivities.activities.map(a => (
@@ -215,7 +215,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                             </span>
                           </div>
                           <p className="text-sm text-gray-600">{a.description}</p>
-                          {a.tip && <p className="text-xs text-[#e07b12] mt-1 italic">💡 {a.tip}</p>}
+                          {a.tip && <p className="text-xs text-primary mt-1 italic">💡 {a.tip}</p>}
                           {a.distance && <p className="text-xs text-gray-400 mt-1">📍 {a.distance}</p>}
                         </div>
                       </div>
@@ -226,9 +226,9 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             )}
 
             {/* Travel tip */}
-            <div className="bg-[#e07b12]/5 border border-[#e07b12]/20 rounded-2xl p-5 sm:p-6 flex gap-4">
-              <div className="w-10 h-10 bg-[#e07b12]/10 rounded-full flex items-center justify-center shrink-0">
-                <Lightbulb size={18} className="text-[#e07b12]" />
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 sm:p-6 flex gap-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                <Lightbulb size={18} className="text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-sm mb-1">{t('destinations.travelTip')}</h3>
@@ -239,7 +239,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {/* Map */}
             <div className="bg-white rounded-2xl p-5 sm:p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <MapPin size={18} className="text-[#e07b12]" /> Locatie
+                <MapPin size={18} className="text-primary" /> Locatie
               </h2>
               <CostaBravaMap destinations={[dest]} activeDestination={dest.slug} />
             </div>
@@ -247,13 +247,13 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             {/* Campings */}
             <div className="bg-white rounded-2xl p-5 sm:p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Tent size={18} className="text-[#e07b12]" />
+                <Tent size={18} className="text-primary" />
                 {t('destinations.nearCampings')}
               </h2>
               <div className="space-y-2">
                 {dest.nearestCampings.map(c => (
                   <div key={c} className="flex items-center gap-3 py-2.5 px-3 bg-gray-50 rounded-xl">
-                    <MapPin size={14} className="text-[#e07b12] shrink-0" />
+                    <MapPin size={14} className="text-primary shrink-0" />
                     <span className="text-sm text-gray-600">{c}</span>
                   </div>
                 ))}
@@ -301,7 +301,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
 
               <div className="flex flex-wrap gap-1.5 mb-5">
                 {dest.bestFor.map(tag => (
-                  <span key={tag} className="text-xs font-semibold text-[#e07b12] bg-[#e07b12]/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <span key={tag} className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex items-center gap-1">
                     <Heart size={10} /> {tagMap[tag] || tag}
                   </span>
                 ))}
@@ -309,7 +309,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
 
               <Link
                 href={`/boeken?bestemming=${encodeURIComponent(dest.name)}`}
-                className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#e07b12] text-white font-bold rounded-xl hover:bg-[#c4650c] transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-[#c4650c] transition-colors"
               >
                 {t('destinations.bookCaravan')} <ArrowRight size={16} />
               </Link>
@@ -335,7 +335,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                     <ChevronRight size={14} className="text-gray-400 shrink-0" />
                   </Link>
                 ))}
-                <Link href="/bestemmingen" className="block text-center text-sm text-[#e07b12] font-medium pt-2 hover:underline">
+                <Link href="/bestemmingen" className="block text-center text-sm text-primary font-medium pt-2 hover:underline">
                   Alle bestemmingen →
                 </Link>
               </div>

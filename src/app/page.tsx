@@ -105,7 +105,7 @@ export default function HomePage() {
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
-            src="https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1600&q=80"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"
             alt={t('home.heroAlt')}
             fill
             className="object-cover"
@@ -578,7 +578,7 @@ export default function HomePage() {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <Image
-                  src="https://images.unsplash.com/photo-1599889917438-211ac4924647?w=800&q=80"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Golfo_de_Rosas.jpg/1280px-Golfo_de_Rosas.jpg"
                   alt="Caravan interieur volledig ingericht"
                   width={600}
                   height={400}
@@ -848,7 +848,7 @@ export default function HomePage() {
 
       {/* ===== WHATSAPP FLOATING BUTTON ===== */}
       <motion.a
-        href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20interesse%20in%20het%20huren%20van%20een%20caravan%20op%20de%20Costa%20Brava."
+        href="https://wa.me/34650036755?text=Hallo%2C%20ik%20heb%20interesse%20in%20het%20huren%20van%20een%20caravan%20op%20de%20Costa%20Brava."
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}

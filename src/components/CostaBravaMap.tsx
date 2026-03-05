@@ -72,7 +72,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
               <h3 style="margin:0 0 4px; font-size:16px; font-weight:700; color:#1a1a2e;">${dest.name}</h3>
               <p style="margin:0 0 4px; font-size:12px; color:#666;">${dest.region}</p>
               <p style="margin:0 0 8px; font-size:12px; color:#444; line-height:1.4;">${dest.description.substring(0, 100)}...</p>
-              <a href="/bestemmingen/${dest.slug}" style="display:inline-block; background:#e07b12; color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;">Ontdek meer →</a>
+              <a href="/bestemmingen/${dest.slug}" style="display:inline-block; background:#0EA5E9; color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;">Ontdek meer →</a>
             </div>
           </div>
         `, { maxWidth: 260 });
@@ -105,7 +105,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-3 border-[#e07b12] border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
             <p className="text-gray-500 text-sm">Kaart laden...</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           width: 30px;
           height: 30px;
           border-radius: 50% 50% 50% 0;
-          background: #e07b12;
+          background: #0EA5E9;
           position: absolute;
           transform: rotate(-45deg);
           left: 50%;

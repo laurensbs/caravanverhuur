@@ -161,9 +161,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="tel:+34600000000" className="text-muted transition-colors text-sm flex items-center gap-2">
+                <a href="tel:+34650036755" className="text-muted transition-colors text-sm flex items-center gap-2">
                   <Phone size={14} className="text-primary shrink-0" />
-                  +34 600 000 000
+                  +34 650 036 755
                 </a>
               </li>
               <li className="text-muted text-sm flex items-center gap-2">

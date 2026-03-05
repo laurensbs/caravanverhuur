@@ -19,7 +19,7 @@ const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
   loading: () => (
     <div className="w-full h-[500px] md:h-[600px] bg-gray-100 rounded-2xl flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-3 border-[#e07b12] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-gray-500 text-sm">Kaart laden...</p>
       </div>
     </div>
@@ -99,7 +99,7 @@ function DestinationCard({ dest }: { dest: Destination }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-800">
-            <Sun size={12} className="text-[#e07b12]" /> {dest.weather.summer}
+            <Sun size={12} className="text-primary" /> {dest.weather.summer}
           </span>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-5">
@@ -113,13 +113,13 @@ function DestinationCard({ dest }: { dest: Destination }) {
       <div className="p-5">
         <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">{dest.description}</p>
         {dest.knownFor && (
-          <p className="text-xs text-[#e07b12] font-semibold mb-3 flex items-center gap-1">
+          <p className="text-xs text-primary font-semibold mb-3 flex items-center gap-1">
             <Sparkles size={12} /> {dest.knownFor}
           </p>
         )}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {dest.bestFor.slice(0, 3).map(tag => (
-            <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-[#e07b12] bg-[#e07b12]/8 px-2 py-0.5 rounded-full">
+            <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full">
               {bestForIcons[tag] || <Star size={10} />} {tag}
             </span>
           ))}
@@ -133,7 +133,7 @@ function DestinationCard({ dest }: { dest: Destination }) {
               <span className="flex items-center gap-1"><UtensilsCrossed size={13} /> {dest.restaurants.length} restaurants</span>
             )}
           </div>
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#e07b12]">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
             Ontdek <ChevronRight size={14} />
           </span>
         </div>
@@ -164,7 +164,7 @@ function BeachCard({ beach }: { beach: Beach & { destination: string; destSlug: 
           {beach.vibe}
         </span>
       </div>
-      <Link href={`/bestemmingen/${beach.destSlug}`} className="text-xs text-[#e07b12] font-medium mb-2 inline-flex items-center gap-1 hover:underline">
+      <Link href={`/bestemmingen/${beach.destSlug}`} className="text-xs text-primary font-medium mb-2 inline-flex items-center gap-1 hover:underline">
         <MapPin size={11} /> {beach.destination}
       </Link>
       <p className="text-sm text-gray-600 mb-3 leading-relaxed">{beach.description}</p>
@@ -187,15 +187,15 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant & { destination
     <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-1">
         <h4 className="font-bold text-gray-900">{restaurant.name}</h4>
-        <span className="text-sm font-bold text-[#e07b12]">{restaurant.price}</span>
+        <span className="text-sm font-bold text-primary">{restaurant.price}</span>
       </div>
-      <Link href={`/bestemmingen/${restaurant.destSlug}`} className="text-xs text-[#e07b12] font-medium mb-2 inline-flex items-center gap-1 hover:underline">
+      <Link href={`/bestemmingen/${restaurant.destSlug}`} className="text-xs text-primary font-medium mb-2 inline-flex items-center gap-1 hover:underline">
         <MapPin size={11} /> {restaurant.destination}
       </Link>
       <p className="text-xs text-gray-500 mb-2">{restaurant.cuisine}</p>
       <p className="text-sm text-gray-600 mb-3 leading-relaxed">{restaurant.description}</p>
       {restaurant.mustTry && (
-        <div className="flex items-center gap-1.5 text-xs text-[#e07b12] font-semibold bg-[#e07b12]/8 px-2.5 py-1 rounded-full w-fit">
+        <div className="flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/8 px-2.5 py-1 rounded-full w-fit">
           <Award size={12} /> Must try: {restaurant.mustTry}
         </div>
       )}
@@ -221,7 +221,7 @@ function ActivityCard({ activity, location }: { activity: Activity; location: st
       </div>
       <p className="text-sm text-gray-600 leading-relaxed">{activity.description}</p>
       {activity.tip && (
-        <p className="text-xs text-[#e07b12] mt-2 italic">💡 {activity.tip}</p>
+        <p className="text-xs text-primary mt-2 italic">💡 {activity.tip}</p>
       )}
     </div>
   );
@@ -242,7 +242,7 @@ function StatsBar() {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {stats.map(s => (
         <div key={s.label} className="bg-white/80 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
-          <div className="flex justify-center text-[#e07b12] mb-2">{s.icon}</div>
+          <div className="flex justify-center text-primary mb-2">{s.icon}</div>
           <p className="text-2xl font-bold text-gray-900">{s.value}</p>
           <p className="text-xs text-gray-500">{s.label}</p>
         </div>
@@ -351,7 +351,7 @@ export default function DestinationsPage() {
             <Compass size={14} /> Encyclopedie
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 drop-shadow-lg">
-            Costa Brava <span className="text-[#e07b12]">Gids</span>
+            Costa Brava <span className="text-primary">Gids</span>
           </h1>
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto drop-shadow mb-6">
             Ontdek {destinations.length} bestemmingen, {allBeaches.length} stranden, {allRestaurants.length} restaurants en {allActivities.length}+ activiteiten aan de mooiste kust van Spanje.
@@ -383,7 +383,7 @@ export default function DestinationsPage() {
                   onClick={() => { setActiveTab(tab.key); setSearchQuery(''); setSelectedRegion(null); setBeachFilter(null); setPriceFilter(null); setActivityCat(null); }}
                   className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
                     activeTab === tab.key
-                      ? 'bg-[#e07b12] text-white shadow-md'
+                      ? 'bg-primary text-white shadow-md'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -399,7 +399,7 @@ export default function DestinationsPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Zoek..."
-                className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#e07b12]/30"
+                className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -421,7 +421,7 @@ export default function DestinationsPage() {
             <div className="mb-10">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <Map size={22} className="text-[#e07b12]" /> Interactieve Kaart
+                  <Map size={22} className="text-primary" /> Interactieve Kaart
                 </h2>
                 <button
                   onClick={() => setShowMap(!showMap)}
@@ -438,7 +438,7 @@ export default function DestinationsPage() {
               <button
                 onClick={() => setSelectedRegion(null)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  !selectedRegion ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  !selectedRegion ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 Alle regio&apos;s
@@ -448,7 +448,7 @@ export default function DestinationsPage() {
                   key={r}
                   onClick={() => setSelectedRegion(selectedRegion === r ? null : r)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    selectedRegion === r ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    selectedRegion === r ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {regionIcons[r]} {r}
@@ -473,17 +473,17 @@ export default function DestinationsPage() {
             <div className="grid lg:grid-cols-2 gap-8 mb-12">
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Umbrella size={18} className="text-[#e07b12]" /> Top stranden
+                  <Umbrella size={18} className="text-primary" /> Top stranden
                 </h3>
                 <div className="space-y-3">
                   {allBeaches.filter(b => b.facilities && b.type === 'zand').slice(0, 5).map((b, i) => (
                     <div key={`${b.destSlug}-${b.name}`} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
-                      <span className="text-2xl font-bold text-[#e07b12]/30">{i + 1}</span>
+                      <span className="text-2xl font-bold text-primary/30">{i + 1}</span>
                       <div className="flex-1">
                         <p className="font-semibold text-gray-900">{b.name}</p>
                         <p className="text-xs text-gray-500">{b.destination} · {b.vibe}</p>
                       </div>
-                      <Link href={`/bestemmingen/${b.destSlug}`} className="text-[#e07b12]">
+                      <Link href={`/bestemmingen/${b.destSlug}`} className="text-primary">
                         <ChevronRight size={18} />
                       </Link>
                     </div>
@@ -492,17 +492,17 @@ export default function DestinationsPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <UtensilsCrossed size={18} className="text-[#e07b12]" /> Culinaire highlights
+                  <UtensilsCrossed size={18} className="text-primary" /> Culinaire highlights
                 </h3>
                 <div className="space-y-3">
                   {allRestaurants.filter(r => r.price === '€€€' || r.price === '€€€€').slice(0, 5).map((r, i) => (
                     <div key={`${r.destSlug}-${r.name}`} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
-                      <span className="text-2xl font-bold text-[#e07b12]/30">{i + 1}</span>
+                      <span className="text-2xl font-bold text-primary/30">{i + 1}</span>
                       <div className="flex-1">
                         <p className="font-semibold text-gray-900">{r.name}</p>
                         <p className="text-xs text-gray-500">{r.destination} · {r.price}</p>
                       </div>
-                      <Link href={`/bestemmingen/${r.destSlug}`} className="text-[#e07b12]">
+                      <Link href={`/bestemmingen/${r.destSlug}`} className="text-primary">
                         <ChevronRight size={18} />
                       </Link>
                     </div>
@@ -523,11 +523,11 @@ export default function DestinationsPage() {
 
             {/* Region filter */}
             <div className="flex flex-wrap gap-2 mb-6">
-              <button onClick={() => setSelectedRegion(null)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${!selectedRegion ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              <button onClick={() => setSelectedRegion(null)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${!selectedRegion ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                 Alle regio&apos;s
               </button>
               {regionOrder.map(r => (
-                <button key={r} onClick={() => setSelectedRegion(selectedRegion === r ? null : r)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedRegion === r ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                <button key={r} onClick={() => setSelectedRegion(selectedRegion === r ? null : r)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedRegion === r ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                   {regionIcons[r]} {r}
                 </button>
               ))}
@@ -554,7 +554,7 @@ export default function DestinationsPage() {
                         </div>
                       </div>
                       {dest.knownFor && (
-                        <span className="text-xs font-semibold text-[#e07b12] bg-[#e07b12]/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex items-center gap-1">
                           <Sparkles size={11} /> {dest.knownFor}
                         </span>
                       )}
@@ -562,17 +562,17 @@ export default function DestinationsPage() {
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">{dest.description}</p>
                     <div className="flex flex-wrap gap-1.5 mb-4">
                       {dest.bestFor.map(tag => (
-                        <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-[#e07b12] bg-[#e07b12]/8 px-2 py-0.5 rounded-full">
+                        <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full">
                           {bestForIcons[tag] || <Star size={10} />} {tag}
                         </span>
                       ))}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-400">
-                      <span className="flex items-center gap-1"><Sun size={13} className="text-[#e07b12]" /> {dest.weather.summer}</span>
+                      <span className="flex items-center gap-1"><Sun size={13} className="text-primary" /> {dest.weather.summer}</span>
                       <span className="flex items-center gap-1"><Waves size={13} /> {dest.weather.water}</span>
                       <span className="flex items-center gap-1"><Umbrella size={13} /> {dest.beaches.length} stranden</span>
                       <span className="flex items-center gap-1"><UtensilsCrossed size={13} /> {dest.restaurants.length} restaurants</span>
-                      <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-[#e07b12]">
+                      <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-primary">
                         Meer info <ArrowRight size={14} />
                       </span>
                     </div>
@@ -611,7 +611,7 @@ export default function DestinationsPage() {
                   key={f.key ?? 'all'}
                   onClick={() => setBeachFilter(beachFilter === f.key ? null : f.key)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    beachFilter === f.key ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    beachFilter === f.key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {f.label}
@@ -654,7 +654,7 @@ export default function DestinationsPage() {
                   key={f.key ?? 'all'}
                   onClick={() => setPriceFilter(priceFilter === f.key ? null : f.key)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    priceFilter === f.key ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    priceFilter === f.key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {f.label}
@@ -699,7 +699,7 @@ export default function DestinationsPage() {
                   key={f.key ?? 'all'}
                   onClick={() => setActivityCat(activityCat === f.key ? null : f.key)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    activityCat === f.key ? 'bg-[#e07b12] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    activityCat === f.key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {f.label}
@@ -730,7 +730,7 @@ export default function DestinationsPage() {
             alt="Costa Brava"
             fill className="object-cover" unoptimized
           />
-          <div className="absolute inset-0 bg-[#e07b12]/85" />
+          <div className="absolute inset-0 bg-primary/85" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Klaar voor jouw Costa Brava avontuur?</h2>
@@ -738,7 +738,7 @@ export default function DestinationsPage() {
             Kies je droombestemming, wij zorgen dat je caravan klaarstaat. Boek vandaag nog en profiteer van vroegboekkorting.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/boeken" className="inline-flex items-center gap-2 bg-white text-[#e07b12] px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-50 transition-all shadow-lg">
+            <Link href="/boeken" className="inline-flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-50 transition-all shadow-lg">
               Boek nu <ArrowRight size={20} />
             </Link>
             <Link href="/caravans" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-6 py-4 rounded-full font-semibold hover:bg-white/25 transition-all">

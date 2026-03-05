@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1200&q=80",
+        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg",
         width: 1200,
         height: 630,
         alt: "Caravanvakantie op de Costa Brava",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Caravanverhuur Spanje — Zorgeloze Caravanvakantie",
     description: "Volledig uitgeruste caravan op de Costa Brava. Vanaf €50/dag. Boek seizoen 2026!",
-    images: ["https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1200&q=80"],
+    images: ["https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"],
   },
   metadataBase: new URL("https://caravanverhuurspanje.com"),
   alternates: {

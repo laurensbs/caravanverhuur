@@ -63,7 +63,7 @@ export default function ContactPage() {
       {/* Header */}
       <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
           alt="Costa Brava strand"
           fill
           className="object-cover"
@@ -105,13 +105,13 @@ export default function ContactPage() {
                       <div className="text-foreground font-medium">info@caravanverhuurspanje.com</div>
                     </div>
                   </a>
-                  <a href="tel:+34600000000" className="flex items-start gap-3 group">
+                  <a href="tel:+34650036755" className="flex items-start gap-3 group">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 transition-colors">
                       <Phone size={18} className="text-primary" />
                     </div>
                     <div>
                       <div className="text-sm text-muted">{t('contact.phoneWhatsapp')}</div>
-                      <div className="text-foreground font-medium">+34 600 000 000</div>
+                      <div className="text-foreground font-medium">+34 650 036 755</div>
                     </div>
                   </a>
                   <div className="flex items-start gap-3">
@@ -148,7 +148,7 @@ export default function ContactPage() {
               </div>
 
               <a
-                href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag%20over%20caravanverhuur."
+                href="https://wa.me/34650036755?text=Hallo%2C%20ik%20heb%20een%20vraag%20over%20caravanverhuur."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-[#25D366] text-white rounded-2xl p-5 transition-colors group"

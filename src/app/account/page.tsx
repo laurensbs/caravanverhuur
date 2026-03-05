@@ -101,7 +101,7 @@ export default function AccountPage() {
         <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden">
           <div className="absolute inset-0 opacity-15">
             <Image
-              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80"
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
               alt="Costa Brava strand"
               fill
               className="object-cover"

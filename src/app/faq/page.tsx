@@ -84,7 +84,7 @@ export default function FAQPage() {
       {/* Header */}
       <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1626680114529-3f6ffa002b80?w=1920&q=80"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"
           alt="Camping bij zonsondergang"
           fill
           className="object-cover"
@@ -170,7 +170,7 @@ export default function FAQPage() {
                 <ArrowRight size={18} />
               </Link>
               <a
-                href="https://wa.me/34600000000?text=Hallo%2C%20ik%20heb%20een%20vraag."
+                href="https://wa.me/34650036755?text=Hallo%2C%20ik%20heb%20een%20vraag."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold rounded-full transition-all shadow-md"

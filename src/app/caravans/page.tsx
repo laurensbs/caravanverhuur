@@ -78,7 +78,7 @@ export default function CaravansPage() {
       {/* Hero with Costa Brava image */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1757589945384-1cdd7cba6eb4?w=1920&q=80"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Bucht_von_Roses%2C_Spanien.jpg/1280px-Bucht_von_Roses%2C_Spanien.jpg"
           alt="Costa Brava kustlijn"
           fill
           className="object-cover"
