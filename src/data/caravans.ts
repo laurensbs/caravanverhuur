@@ -28,7 +28,7 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'Knaus',
     year: 1997,
-    description: 'Een hele nette caravan ideaal voor gezinnen met kinderen. Ruime indeling met rondzit, volledig uitgerust met keuken, douche en toilet. Inclusief voortent, luifel en grondzeil. Opbouw: 5,10m.',
+    description: 'Nette en ruime familiecaravan met rondzit, volledig uitgeruste keuken, douche en toilet. Inclusief voortent, luifel en grondzeil. Ideaal voor gezinnen met kinderen. Opbouw: 5,10m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/knaus-1997-1.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/knaus-1997-2.jpg',
@@ -49,7 +49,7 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'HomeCar',
     year: 2003,
-    description: 'Zeer nette caravan met een dak airco Dometic 2200 FJ. Inclusief Frans bed, rondzit, voortent, luifel en grondzeil. Caravan wordt geleverd met een kleine inventaris.',
+    description: 'Zeer nette caravan met dak-airco (Dometic 2200 FJ) voor heerlijk koele zomers. Voorzien van Frans bed, rondzit, voortent, luifel en grondzeil. Wordt geleverd met inventaris.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-1.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-2.jpg',
@@ -70,7 +70,7 @@ export const caravans: Caravan[] = [
     maxPersons: 5,
     manufacturer: 'Hobby',
     year: 2002,
-    description: 'Ruime Hobby Prestige 650 met rondzit, treinzit en vast bed. Ideaal voor grote gezinnen die veel ruimte nodig hebben. Deze caravan heeft geen toiletruimte. Wordt door ons elk jaar op de camping geplaatst. Tegen een kleine vergoeding uit te rusten met een volledige inventaris. Opbouw: 650.',
+    description: 'Extra ruime Hobby Prestige 650 met rondzit, treinzit en vast bed. Ideaal voor grote gezinnen die veel ruimte nodig hebben. Let op: deze caravan heeft geen toiletruimte. Wordt door ons elk jaar op de camping geplaatst. Optioneel uit te rusten met een volledige inventaris. Opbouw: 650.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/hobby-650.jpg',
     ],
@@ -90,7 +90,7 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'Adria',
     year: 2001,
-    description: 'Hele mooie Adria 430 Unica met luifel. Caravan wordt geleverd met een grote servicebeurt en een uitgebreide interne en externe reiniging. Caravan kan worden geleverd met een kleine inventaris. Opbouw: 4,30m.',
+    description: 'Mooie en compacte Adria 430 Unica met luifel, treinzit, vast bed en grondzeil. Wordt geleverd met een grote servicebeurt en uitgebreide reiniging. Optioneel uit te rusten met inventaris. Opbouw: 4,30m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/adria4302.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/adria430-min.png',
