@@ -178,21 +178,38 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               transition={{ delay: 0.35, duration: 0.4 }}
               className="space-y-4"
             >
-              {/* Username field */}
+              {/* Role selector */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-2">
                   <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                   {lt('auth.username')}
                 </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => { setUsername(e.target.value); setError(''); }}
-                  className="w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-base bg-surface"
-                  placeholder={lt('auth.enterUsername')}
-                  autoFocus
-                  autoComplete="username"
-                />
+                <div className="grid grid-cols-2 gap-3">
+                  {(['admin', 'staff'] as const).map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => { setUsername(u); setError(''); }}
+                      className={`py-3 rounded-xl font-semibold text-base transition-all cursor-pointer ${
+                        username === u
+                          ? 'bg-primary text-white shadow-lg shadow-primary/25 ring-2 ring-primary'
+                          : 'bg-surface text-muted hover:bg-gray-100'
+                      }`}
+                    >
+                      {u === 'admin' ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <User className="w-4 h-4" />
+                          Staff
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Password field */}
