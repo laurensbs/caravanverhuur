@@ -159,7 +159,7 @@ export default function AccountPage() {
           </div>
 
           {/* Form container */}
-          <div className="flex-1 flex items-start lg:items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-16 -mt-4 lg:mt-0">
+          <div className="flex-1 flex items-start justify-center px-4 sm:px-8 lg:px-12 xl:px-16 -mt-4 lg:mt-0 lg:pt-[8vh]">
             <div className="w-full max-w-[420px] py-6 lg:py-0">
               {/* Desktop heading */}
               <div className="hidden lg:block mb-8">
