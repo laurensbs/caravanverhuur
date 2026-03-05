@@ -417,6 +417,13 @@ export async function updateContactStatus(id: string, status: string) {
   `;
 }
 
+export async function getContactById(id: string) {
+  const result = await sql`
+    SELECT * FROM contacts WHERE id = ${id}
+  `;
+  return result.rows[0] || null;
+}
+
 export async function replyToContact(id: string, reply: string) {
   await sql`
     UPDATE contacts SET status = 'BEANTWOORD', admin_reply = ${reply} WHERE id = ${id}

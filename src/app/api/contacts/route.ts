@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createContact, getAllContacts, updateContactStatus, replyToContact } from '@/lib/db';
-import { sendContactAcknowledgmentEmail } from '@/lib/email';
+import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById } from '@/lib/db';
+import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
 
 export async function GET() {
   try {
@@ -45,7 +45,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (reply) {
+      const contact = await getContactById(id);
       await replyToContact(id, reply);
+
+      // Send reply email to the visitor (non-blocking)
+      if (contact?.email) {
+        sendContactReplyEmail(contact.email, contact.name, contact.subject, reply).catch(err =>
+          console.error('Contact reply email failed:', err)
+        );
+      }
     } else if (status) {
       await updateContactStatus(id, status);
     }

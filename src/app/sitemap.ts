@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },
   ];
 
-  const caravanIds = ['CV-001', 'CV-002', 'CV-003', 'CV-004', 'CV-005', 'CV-006'];
+  const caravanIds = ['1', '2', '3', '4'];
 
   const destinationSlugs = [
     'pals', 'estartit', 'begur', 'tossa-de-mar', 'platja-daro',

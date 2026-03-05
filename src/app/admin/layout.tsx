@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   alt="Caravanverhuur Spanje"
                   width={240}
                   height={70}
-                  className="w-44 xl:w-52 h-auto brightness-0 invert"
+                  className="w-44 xl:w-52 h-auto"
                   unoptimized
                 />
               </div>

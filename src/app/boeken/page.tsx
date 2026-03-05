@@ -502,7 +502,7 @@ function BoekenContent() {
                               layout
                               onClick={() => setCampingId(c.id)}
                               className={`w-full text-left px-3 py-2.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all ${
-                                isSelected ? 'border-primary bg-primary/5 shadow-md' : 'bg-white'
+                                isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-200 bg-white'
                               }`}
                             >
                               <div className="flex items-center justify-between gap-2">

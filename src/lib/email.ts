@@ -363,6 +363,35 @@ export async function sendContactAcknowledgmentEmail(to: string, name: string, s
   });
 }
 
+export async function sendContactReplyEmail(to: string, name: string, subject: string, reply: string) {
+  const firstName = name.split(' ')[0];
+
+  return sendEmail({
+    to,
+    subject: `Reactie op je bericht: ${subject}`,
+    html: emailWrapper(`
+      ${badge('💬', 'REACTIE OP JE BERICHT')}
+      ${heading(`Hallo ${firstName}!`)}
+      ${subtext(`We hebben gereageerd op je bericht over "<em>${subject}</em>".`)}
+
+      ${highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="vertical-align:top;">
+              <p style="margin:0 0 8px;color:#94A3B8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ons antwoord:</p>
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.7;white-space:pre-wrap;">${reply}</p>
+            </td>
+          </tr>
+        </table>
+      `, true)}
+
+      ${subtext('Heb je nog verdere vragen? Reageer gerust op deze e-mail of neem contact met ons op via onze website.')}
+
+      ${button('Neem contact op →', `${SITE_URL}/contact`)}
+    `, `Reactie op je bericht — ${subject}`),
+  });
+}
+
 export async function sendBorgChecklistEmail(data: {
   to: string;
   guestName: string;

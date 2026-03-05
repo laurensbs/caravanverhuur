@@ -178,7 +178,7 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
             >
               {[
-                { value: '6+', label: t('home.statCaravans'), color: 'text-primary-light' },
+                { value: '4', label: t('home.statCaravans'), color: 'text-primary-light' },
                 { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
                 { value: '100%', label: t('home.statRelaxed'), color: 'text-primary-light' },
               ].map((stat, si) => (
@@ -201,7 +201,7 @@ export default function HomePage() {
             className="hidden lg:flex gap-8 mt-8 max-w-md"
           >
             {[
-              { value: '6+', label: t('home.statCaravansAvailable'), color: 'text-primary-light' },
+              { value: '4', label: t('home.statCaravansAvailable'), color: 'text-primary-light' },
               { value: '30+', label: t('home.statCampingsCB'), color: 'text-white/80' },
               { value: '100%', label: t('home.statFullyRelaxed'), color: 'text-primary-light' },
             ].map((stat, si) => (

@@ -22,7 +22,7 @@ function StarIcon({ size, fill }: { size: number; fill: number }) {
   if (fill <= 0) {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0">
-        <path d={STAR_PATH} fill="#fbbf2430" stroke="#fbbf2430" strokeWidth="1" />
+        <path d={STAR_PATH} fill="#d1d5db" stroke="#d1d5db" strokeWidth="1" />
       </svg>
     );
   }
@@ -31,7 +31,7 @@ function StarIcon({ size, fill }: { size: number; fill: number }) {
       <defs>
         <linearGradient id={id}>
           <stop offset={`${fill * 100}%`} stopColor="#fbbf24" />
-          <stop offset={`${fill * 100}%`} stopColor="#fbbf2430" />
+          <stop offset={`${fill * 100}%`} stopColor="#d1d5db" />
         </linearGradient>
       </defs>
       <path d={STAR_PATH} fill={`url(#${id})`} stroke="#fbbf24" strokeWidth="1" />
@@ -39,7 +39,7 @@ function StarIcon({ size, fill }: { size: number; fill: number }) {
   );
 }
 
-const GoogleStars = ({ size = 14, rating = 4.7, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
+const GoogleStars = ({ size = 14, rating = 4.9, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
   <a
     href={GOOGLE_REVIEW_URL}
     target="_blank"
