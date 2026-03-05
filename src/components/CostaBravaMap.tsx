@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import type { Destination } from '@/data/destinations';
 
 interface CostaBravaMapProps {
@@ -19,9 +18,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Dynamically import Leaflet to avoid SSR issues
     import('leaflet').then((L) => {
-      // Load Leaflet CSS
       if (!document.querySelector('link[href*="leaflet.css"]')) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -30,65 +27,105 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       }
       if (!mapRef.current) return;
 
-      // Center on Costa Brava
+      const isSingle = destinations.length === 1;
+      const center: [number, number] = isSingle
+        ? [destinations[0].coordinates.lat, destinations[0].coordinates.lng]
+        : [42.0, 3.05];
+
       const map = L.default.map(mapRef.current, {
         scrollWheelZoom: false,
-        zoomControl: true,
-      }).setView([42.0, 3.05], 9);
+        zoomControl: false,
+        attributionControl: false,
+        fadeAnimation: true,
+        zoomAnimation: true,
+        markerZoomAnimation: true,
+      }).setView(center, isSingle ? 12 : 9);
 
-      L.default.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 18,
+      // Attribution in bottom-right (subtle)
+      L.default.control.attribution({ position: 'bottomright', prefix: '' }).addTo(map);
+
+      // Zoom control top-right
+      L.default.control.zoom({ position: 'topright' }).addTo(map);
+
+      // CartoDB Voyager tiles – prettier, cleaner than OSM
+      L.default.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OST</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 19,
+        subdomains: 'abcd',
       }).addTo(map);
 
-      // Custom marker icon
-      const defaultIcon = L.default.divIcon({
-        className: 'custom-map-marker',
-        html: `<div class="marker-pin"></div>`,
-        iconSize: [30, 40],
-        iconAnchor: [15, 40],
-        popupAnchor: [0, -40],
-      });
-
-      const activeIcon = L.default.divIcon({
-        className: 'custom-map-marker active',
-        html: `<div class="marker-pin active"></div>`,
-        iconSize: [36, 46],
-        iconAnchor: [18, 46],
-        popupAnchor: [0, -46],
-      });
+      // Custom SVG marker
+      const makeSvgIcon = (active: boolean) => {
+        const size = active ? 42 : 32;
+        const color = active ? '#c4650c' : '#0EA5E9';
+        return L.default.divIcon({
+          className: '',
+          html: `<svg width="${size}" height="${size + 10}" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <filter id="shadow${active ? 'A' : ''}" x="-20%" y="-10%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.25"/>
+            </filter>
+            <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 26 16 26s16-16 16-26C32 7.163 24.837 0 16 0z" fill="${color}" filter="url(#shadow${active ? 'A' : ''})" />
+            <circle cx="16" cy="15" r="7" fill="white"/>
+            <circle cx="16" cy="15" r="3.5" fill="${color}" opacity="0.7"/>
+          </svg>`,
+          iconSize: [size, size + 10],
+          iconAnchor: [size / 2, size + 10],
+          popupAnchor: [0, -(size + 6)],
+        });
+      };
 
       destinations.forEach((dest) => {
         const isActive = activeDestination === dest.slug;
         const marker = L.default.marker(
           [dest.coordinates.lat, dest.coordinates.lng],
-          { icon: isActive ? activeIcon : defaultIcon }
+          {
+            icon: makeSvgIcon(isActive),
+            riseOnHover: true,
+          }
         ).addTo(map);
 
         marker.bindPopup(`
-          <div style="min-width: 200px; font-family: 'DM Sans', sans-serif;">
-            <img src="${dest.heroImage}" alt="${dest.name}" style="width:100%; height:120px; object-fit:cover; border-radius:8px 8px 0 0; margin: -1px -1px 0 -1px; width: calc(100% + 2px);" loading="lazy" />
-            <div style="padding: 10px 4px 4px;">
-              <h3 style="margin:0 0 4px; font-size:16px; font-weight:700; color:#1a1a2e;">${dest.name}</h3>
-              <p style="margin:0 0 4px; font-size:12px; color:#666;">${dest.region}</p>
-              <p style="margin:0 0 8px; font-size:12px; color:#444; line-height:1.4;">${dest.description.substring(0, 100)}...</p>
-              <a href="/bestemmingen/${dest.slug}" style="display:inline-block; background:#0EA5E9; color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none;">Ontdek meer →</a>
+          <div class="map-popup-card">
+            <img src="${dest.heroImage}" alt="${dest.name}" class="map-popup-img" loading="lazy" />
+            <div class="map-popup-body">
+              <h3 class="map-popup-title">${dest.name}</h3>
+              <p class="map-popup-region">${dest.region}</p>
+              <p class="map-popup-desc">${dest.description.substring(0, 90)}…</p>
+              <a href="/bestemmingen/${dest.slug}" class="map-popup-btn">Ontdek meer →</a>
             </div>
           </div>
-        `, { maxWidth: 260 });
+        `, { maxWidth: 280, className: 'pretty-popup' });
 
         marker.on('click', () => {
           onMarkerClick?.(dest.slug);
+          map.flyTo([dest.coordinates.lat, dest.coordinates.lng], 12, {
+            duration: 0.8,
+            easeLinearity: 0.25,
+          });
+        });
+
+        // Hover effect (desktop)
+        marker.on('mouseover', () => {
+          if (!isActive) marker.setIcon(makeSvgIcon(true));
+        });
+        marker.on('mouseout', () => {
+          if (!isActive) marker.setIcon(makeSvgIcon(false));
         });
 
         markersRef.current.push(marker);
       });
 
+      // Enable scroll zoom on focus
+      map.on('focus', () => { map.scrollWheelZoom.enable(); });
+      map.on('blur', () => { map.scrollWheelZoom.disable(); });
+
+      // Touch: enable zoom on two-finger
+      map.on('click', () => { map.scrollWheelZoom.enable(); });
+
       mapInstanceRef.current = map;
       setIsLoaded(true);
 
-      // Invalidate size after render to fix tile loading
-      setTimeout(() => { map.invalidateSize(); }, 100);
+      setTimeout(() => { map.invalidateSize(); }, 150);
     });
 
     return () => {
@@ -101,68 +138,128 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
   }, [destinations, activeDestination, onMarkerClick]);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+    <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200/60 bg-gray-100">
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-gray-50 flex items-center justify-center z-10">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-500 text-sm">Kaart laden...</p>
+            <p className="text-gray-400 text-sm font-medium">Kaart laden...</p>
           </div>
         </div>
       )}
-      <div ref={mapRef} className="w-full h-[500px] md:h-[600px]" />
+      <div ref={mapRef} className="w-full h-[420px] sm:h-[500px] md:h-[560px]" />
       <style jsx global>{`
-        .custom-map-marker {
-          background: none !important;
+        /* ---- zoom controls ---- */
+        .leaflet-control-zoom {
           border: none !important;
-        }
-        .marker-pin {
-          width: 30px;
-          height: 30px;
-          border-radius: 50% 50% 50% 0;
-          background: #0EA5E9;
-          position: absolute;
-          transform: rotate(-45deg);
-          left: 50%;
-          top: 50%;
-          margin: -15px 0 0 -15px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          transition: all 0.3s ease;
-        }
-        .marker-pin::after {
-          content: '';
-          width: 14px;
-          height: 14px;
-          margin: 8px 0 0 8px;
-          background: #fff;
-          position: absolute;
-          border-radius: 50%;
-        }
-        .marker-pin.active {
-          width: 36px;
-          height: 36px;
-          margin: -18px 0 0 -18px;
-          background: #c4650c;
-        }
-        .marker-pin.active::after {
-          width: 16px;
-          height: 16px;
-          margin: 10px 0 0 10px;
-        }
-        .leaflet-popup-content-wrapper {
+          box-shadow: 0 2px 12px rgba(0,0,0,.12) !important;
           border-radius: 12px !important;
-          padding: 0 !important;
           overflow: hidden;
         }
-        .leaflet-popup-content {
+        .leaflet-control-zoom a {
+          width: 36px !important;
+          height: 36px !important;
+          line-height: 36px !important;
+          font-size: 18px !important;
+          color: #1a1a2e !important;
+          background: #fff !important;
+          border-bottom: 1px solid #eee !important;
+        }
+        .leaflet-control-zoom a:last-child {
+          border-bottom: none !important;
+        }
+        .leaflet-control-zoom a:hover {
+          background: #f5f5f5 !important;
+        }
+
+        /* ---- popup card ---- */
+        .pretty-popup .leaflet-popup-content-wrapper {
+          border-radius: 16px !important;
+          padding: 0 !important;
+          overflow: hidden;
+          box-shadow: 0 8px 30px rgba(0,0,0,.15) !important;
+          border: 1px solid rgba(0,0,0,.06);
+        }
+        .pretty-popup .leaflet-popup-content {
           margin: 0 !important;
           line-height: 1.4 !important;
+          width: 260px !important;
         }
-        .leaflet-popup-close-button {
+        .pretty-popup .leaflet-popup-tip {
+          box-shadow: 0 4px 12px rgba(0,0,0,.08);
+        }
+        .pretty-popup .leaflet-popup-close-button {
           color: #fff !important;
-          font-size: 20px !important;
+          font-size: 22px !important;
           z-index: 10;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+          text-shadow: 0 1px 4px rgba(0,0,0,.5);
+          top: 4px !important;
+          right: 6px !important;
+        }
+        .map-popup-card {
+          font-family: 'DM Sans', system-ui, sans-serif;
+        }
+        .map-popup-img {
+          width: 100%;
+          height: 130px;
+          object-fit: cover;
+          display: block;
+        }
+        .map-popup-body {
+          padding: 14px 16px 16px;
+        }
+        .map-popup-title {
+          margin: 0 0 2px;
+          font-size: 16px;
+          font-weight: 700;
+          color: #1a1a2e;
+        }
+        .map-popup-region {
+          margin: 0 0 6px;
+          font-size: 12px;
+          color: #888;
+          font-weight: 500;
+        }
+        .map-popup-desc {
+          margin: 0 0 12px;
+          font-size: 12.5px;
+          color: #555;
+          line-height: 1.5;
+        }
+        .map-popup-btn {
+          display: inline-block;
+          background: linear-gradient(135deg, #0EA5E9, #0284C7);
+          color: #fff !important;
+          padding: 8px 18px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          transition: transform 0.15s, box-shadow 0.15s;
+          box-shadow: 0 2px 8px rgba(14,165,233,.25);
+        }
+        .map-popup-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(14,165,233,.35);
+        }
+
+        /* ---- attribution ---- */
+        .leaflet-control-attribution {
+          font-size: 10px !important;
+          background: rgba(255,255,255,.7) !important;
+          padding: 2px 6px !important;
+          border-radius: 4px 0 0 0 !important;
+        }
+        .leaflet-control-attribution a {
+          color: #888 !important;
+        }
+
+        /* ---- touch hint ---- */
+        .leaflet-container {
+          cursor: grab;
+        }
+        .leaflet-container:active {
+          cursor: grabbing;
         }
       `}</style>
     </div>

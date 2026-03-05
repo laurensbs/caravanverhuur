@@ -991,9 +991,24 @@ export async function getSubscribedCustomerEmails() {
 }
 
 export async function setNewsletterSubscription(email: string, unsubscribed: boolean) {
-  await sql`
-    UPDATE customers SET newsletter_unsubscribed = ${unsubscribed} WHERE LOWER(email) = LOWER(${email})
-  `;
+  try {
+    await sql`
+      UPDATE customers SET newsletter_unsubscribed = ${unsubscribed} WHERE LOWER(email) = LOWER(${email})
+    `;
+  } catch (error) {
+    // Column might not exist yet — try to add it and retry
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('newsletter_unsubscribed') || msg.includes('column')) {
+      try {
+        await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS newsletter_unsubscribed BOOLEAN DEFAULT false`;
+        await sql`UPDATE customers SET newsletter_unsubscribed = ${unsubscribed} WHERE LOWER(email) = LOWER(${email})`;
+      } catch {
+        throw error;
+      }
+    } else {
+      throw error;
+    }
+  }
 }
 
 export async function getNewsletterSubscriptionStatus(email: string) {

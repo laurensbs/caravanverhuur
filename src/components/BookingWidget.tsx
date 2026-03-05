@@ -51,7 +51,7 @@ function MobileSheet({ open, onClose, title, children }: {
               </button>
             </div>
             {/* Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-[env(safe-area-inset-bottom)]">
               {children}
             </div>
           </motion.div>
@@ -154,7 +154,7 @@ export default function BookingWidget() {
       </div>
       <div>
         {filteredCampings.length === 0 ? (
-          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div> ) : ( filteredCampings.map(c => { const isSelected = campingId === c.id; return ( <button key={c.id} onClick={() => { setCampingId(c.id); setCampingOpen(false); setCampingSearch(''); }} className={`w-full text-left px-5 py-3.5 flex items-center justify-between ${ isSelected ?'bg-primary/5' : '' }`} > <div className="min-w-0">
+          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div> ) : ( filteredCampings.map(c => { const isSelected = campingId === c.id; return ( <button key={c.id} onClick={() => { setCampingId(c.id); setCampingOpen(false); setCampingSearch(''); }} className={`w-full text-left px-5 py-3.5 flex items-center justify-between overflow-hidden ${ isSelected ?'bg-primary/5' : '' }`} > <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-foreground truncate">{c.name}</div>
                   <div className="text-xs text-muted mt-0.5">{c.location}</div>
                 </div>

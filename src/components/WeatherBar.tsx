@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { X, Sun, Star } from 'lucide-react';
+import { X, Sun } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { StarIcon } from '@/components/Footer';
 
 const GOOGLE_REVIEW_URL = 'https://www.google.com/maps/place/Caravan+storage+spain/@41.9512941,3.091582,17z/data=!4m6!3m5!1s0x12baff513f9bfd3b:0xd29f4672d9b15353!8m2!3d41.9512941!4d3.091582!16s%2Fg%2F11cs3nd4xr';
 
@@ -26,19 +27,9 @@ export default function WeatherBar() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-0.5 transition-opacity hover:opacity-80"
           >
-            {[...Array(5)].map((_, i) => {
-              const fill = Math.min(1, Math.max(0, 4.7 - i));
-              if (fill >= 1) return <Star key={i} size={11} className="text-amber-400 fill-amber-400" />;
-              if (fill <= 0) return <Star key={i} size={11} className="text-amber-400/30" />;
-              return (
-                <span key={i} className="relative" style={{ width: 11, height: 11 }}>
-                  <Star size={11} className="absolute text-amber-400/30" />
-                  <span className="absolute overflow-hidden" style={{ width: `${fill * 100}%` }}>
-                    <Star size={11} className="text-amber-400 fill-amber-400" />
-                  </span>
-                </span>
-              );
-            })}
+            {[...Array(5)].map((_, i) => (
+              <StarIcon key={i} size={11} fill={Math.min(1, Math.max(0, 4.7 - i))} />
+            ))}
             <span className="text-white/90 font-semibold text-xs ml-0.5">4.7</span>
           </a>
           <span className="text-white/50 mx-0.5 hidden sm:inline">·</span>

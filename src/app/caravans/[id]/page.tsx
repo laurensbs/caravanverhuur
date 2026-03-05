@@ -241,7 +241,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Mobile sticky CTA bar */}
-        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white px-4 py-3 flex items-center gap-3">
+        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white px-4 py-3 flex items-center gap-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] border-t border-gray-100">
           <div className="flex-1">
             <div className="text-lg font-bold text-primary">&euro;{caravan.pricePerDay}<span className="text-xs text-muted font-normal">/{t('caravans.perDay')}</span></div>
             <div className="text-xs text-muted">&euro;{caravan.pricePerWeek}/{t('caravans.perWeek')}</div>

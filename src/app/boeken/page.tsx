@@ -317,7 +317,7 @@ function BoekenContent() {
       </section>
 
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[100px] lg:top-[72px] z-30 bg-white shadow-sm">
+      <div ref={contentRef} className="sticky top-[112px] lg:top-[72px] z-30 bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">

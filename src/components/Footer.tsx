@@ -2,10 +2,42 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, ExternalLink, ArrowRight, Star } from 'lucide-react';
+import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
 const GOOGLE_REVIEW_URL = 'https://www.google.com/maps/place/Caravan+storage+spain/@41.9512941,3.091582,17z/data=!4m6!3m5!1s0x12baff513f9bfd3b:0xd29f4672d9b15353!8m2!3d41.9512941!4d3.091582!16s%2Fg%2F11cs3nd4xr';
+
+/* SVG star path (viewBox 0 0 24 24) */
+const STAR_PATH = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z';
+
+function StarIcon({ size, fill }: { size: number; fill: number }) {
+  const id = `star-grad-${size}-${Math.round(fill * 100)}`;
+  if (fill >= 1) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0">
+        <path d={STAR_PATH} fill="#fbbf24" stroke="#fbbf24" strokeWidth="1" />
+      </svg>
+    );
+  }
+  if (fill <= 0) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0">
+        <path d={STAR_PATH} fill="#fbbf2430" stroke="#fbbf2430" strokeWidth="1" />
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0">
+      <defs>
+        <linearGradient id={id}>
+          <stop offset={`${fill * 100}%`} stopColor="#fbbf24" />
+          <stop offset={`${fill * 100}%`} stopColor="#fbbf2430" />
+        </linearGradient>
+      </defs>
+      <path d={STAR_PATH} fill={`url(#${id})`} stroke="#fbbf24" strokeWidth="1" />
+    </svg>
+  );
+}
 
 const GoogleStars = ({ size = 14, rating = 4.7, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
   <a
@@ -21,25 +53,15 @@ const GoogleStars = ({ size = 14, rating = 4.7, showLabel = true }: { size?: num
       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
     </svg>
     <span className="flex items-center gap-0.5">
-      {[...Array(5)].map((_, i) => {
-        const fill = Math.min(1, Math.max(0, rating - i));
-        if (fill >= 1) return <Star key={i} size={size} className="text-amber-400 fill-amber-400" />;
-        if (fill <= 0) return <Star key={i} size={size} className="text-amber-400/30" />;
-        return (
-          <span key={i} className="relative" style={{ width: size, height: size }}>
-            <Star size={size} className="absolute text-amber-400/30" />
-            <span className="absolute overflow-hidden" style={{ width: `${fill * 100}%` }}>
-              <Star size={size} className="text-amber-400 fill-amber-400" />
-            </span>
-          </span>
-        );
-      })}
+      {[...Array(5)].map((_, i) => (
+        <StarIcon key={i} size={size} fill={Math.min(1, Math.max(0, rating - i))} />
+      ))}
     </span>
     {showLabel && <span className="font-bold text-foreground text-xs ml-0.5">{rating}</span>}
   </a>
 );
 
-export { GoogleStars };
+export { GoogleStars, StarIcon, STAR_PATH };
 
 export default function Footer() {
   const { t } = useLanguage();

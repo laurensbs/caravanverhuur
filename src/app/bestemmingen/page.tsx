@@ -372,7 +372,7 @@ export default function DestinationsPage() {
       </section>
 
       {/* ===== TABS + SEARCH ===== */}
-      <section className="sticky top-[72px] z-30 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
+      <section className="sticky top-[112px] sm:top-[116px] z-30 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-3">
             {/* Tabs */}
@@ -567,11 +567,11 @@ export default function DestinationsPage() {
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <div className="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
                       <span className="flex items-center gap-1"><Sun size={13} className="text-primary" /> {dest.weather.summer}</span>
-                      <span className="flex items-center gap-1"><Waves size={13} /> {dest.weather.water}</span>
+                      <span className="flex items-center gap-1 hidden sm:flex"><Waves size={13} /> {dest.weather.water}</span>
                       <span className="flex items-center gap-1"><Umbrella size={13} /> {dest.beaches.length} stranden</span>
-                      <span className="flex items-center gap-1"><UtensilsCrossed size={13} /> {dest.restaurants.length} restaurants</span>
+                      <span className="flex items-center gap-1 hidden sm:flex"><UtensilsCrossed size={13} /> {dest.restaurants.length} restaurants</span>
                       <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-primary">
                         Meer info <ArrowRight size={14} />
                       </span>
