@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useMemo } from 'react';
+import { useState, useEffect, ReactNode, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -42,19 +42,44 @@ import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translat
 // The login form calls /api/admin/auth/login
 
 /* ── Nav items with role-based access ───────────── */
-const NAV_ITEMS: { sub: string; key: string; icon: typeof LayoutDashboard; roles: AdminRole[] }[] = [
-  { sub: '', key: 'nav.dashboard', icon: LayoutDashboard, roles: ['admin', 'staff'] },
-  { sub: '/planning', key: 'nav.planning', icon: ClipboardList, roles: ['admin', 'staff'] },
-  { sub: '/boekingen', key: 'nav.bookings', icon: CalendarCheck, roles: ['admin', 'staff'] },
-  { sub: '/betalingen', key: 'nav.payments', icon: CreditCard, roles: ['admin'] },
-  { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },
-  { sub: '/chat', key: 'nav.chat', icon: MessageCircle, roles: ['admin', 'staff'] },
-  { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
-  { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
-  { sub: '/borg', key: 'nav.deposit', icon: ClipboardCheck, roles: ['admin', 'staff'] },
-  { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin'] },
-  { sub: '/nieuwsbrieven', key: 'nav.newsletters', icon: Newspaper, roles: ['admin'] },
-  { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
+type NavItem = { sub: string; key: string; icon: typeof LayoutDashboard; roles: AdminRole[] };
+type NavSection = { sectionKey: string; items: NavItem[] };
+type NavItemWithHref = NavItem & { href: string };
+type NavSectionFiltered = { sectionKey: string; items: NavItemWithHref[] };
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    sectionKey: 'nav.section.overview',
+    items: [
+      { sub: '', key: 'nav.dashboard', icon: LayoutDashboard, roles: ['admin', 'staff'] },
+    ],
+  },
+  {
+    sectionKey: 'nav.section.bookings',
+    items: [
+      { sub: '/planning', key: 'nav.planning', icon: ClipboardList, roles: ['admin', 'staff'] },
+      { sub: '/boekingen', key: 'nav.bookings', icon: CalendarCheck, roles: ['admin', 'staff'] },
+      { sub: '/betalingen', key: 'nav.payments', icon: CreditCard, roles: ['admin'] },
+      { sub: '/borg', key: 'nav.deposit', icon: ClipboardCheck, roles: ['admin', 'staff'] },
+    ],
+  },
+  {
+    sectionKey: 'nav.section.customers',
+    items: [
+      { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin'] },
+      { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },
+      { sub: '/chat', key: 'nav.chat', icon: MessageCircle, roles: ['admin', 'staff'] },
+      { sub: '/nieuwsbrieven', key: 'nav.newsletters', icon: Newspaper, roles: ['admin'] },
+    ],
+  },
+  {
+    sectionKey: 'nav.section.website',
+    items: [
+      { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
+      { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
+      { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
+    ],
+  },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -359,13 +384,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   /* ── Authenticated Layout ───────────────────────── */
-  const filteredNav = NAV_ITEMS.filter(item => item.roles.includes(role));
-  const navItems = filteredNav.map(i => ({ ...i, href: p(i.sub) }));
+  const navSections: NavSectionFiltered[] = NAV_SECTIONS
+    .map(section => ({
+      sectionKey: section.sectionKey,
+      items: section.items
+        .filter(item => item.roles.includes(role))
+        .map(i => ({ ...i, href: p(i.sub) })),
+    }))
+    .filter(section => section.items.length > 0);
+  const allNavItems = navSections.flatMap(s => s.items);
 
   return (
     <AdminProvider role={role}>
       <AdminLayoutInner
-        navItems={navItems}
+        navSections={navSections}
+        allNavItems={allNavItems}
         role={role}
         pathname={pathname}
         sidebarOpen={sidebarOpen}
@@ -427,6 +460,7 @@ function SidebarNavItem({
   t: (key: string) => string;
 }) {
   const controls = useDragControls();
+  const isDraggingRef = useRef(false);
   const Icon = item.icon;
 
   return (
@@ -434,12 +468,20 @@ function SidebarNavItem({
       value={item.href}
       dragListener={false}
       dragControls={controls}
+      onDragStart={() => { isDraggingRef.current = true; }}
+      onDragEnd={() => { setTimeout(() => { isDraggingRef.current = false; }, 200); }}
       whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
       className="list-none"
     >
       <Link
         href={item.href}
-        onClick={() => onNavigate()}
+        onClick={(e) => {
+          if (isDraggingRef.current) {
+            e.preventDefault();
+            return;
+          }
+          onNavigate();
+        }}
         draggable={false}
         className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
           isActive
@@ -466,7 +508,8 @@ function SidebarNavItem({
 }
 
 function AdminLayoutInner({
-  navItems,
+  navSections,
+  allNavItems,
   role,
   pathname,
   sidebarOpen,
@@ -475,7 +518,8 @@ function AdminLayoutInner({
   onLogout,
   children,
 }: {
-  navItems: { sub: string; key: string; icon: typeof LayoutDashboard; href: string; roles: AdminRole[] }[];
+  navSections: NavSectionFiltered[];
+  allNavItems: NavItemWithHref[];
   role: AdminRole;
   pathname: string;
   sidebarOpen: boolean;
@@ -489,35 +533,38 @@ function AdminLayoutInner({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
-  const [navOrder, setNavOrder] = useState<string[]>([]);
+  const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
 
-  // Restore nav order from localStorage on mount
+  // Restore nav orders from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem(`admin_nav_order_${role}`);
+    const saved = localStorage.getItem(`admin_nav_orders_${role}`);
     if (saved) {
       try {
-        setNavOrder(JSON.parse(saved));
+        setNavOrders(JSON.parse(saved));
       } catch { /* ignore */ }
     }
   }, [role]);
 
-  // Compute ordered nav items from the saved order
-  const orderedNav = useMemo(() => {
-    if (navOrder.length === 0) return navItems;
-    const sorted = [...navItems].sort((a, b) => {
-      const ai = navOrder.indexOf(a.href);
-      const bi = navOrder.indexOf(b.href);
+  // Get ordered items for a section
+  const getOrderedItems = (sectionKey: string, items: NavItemWithHref[]) => {
+    const order = navOrders[sectionKey];
+    if (!order || order.length === 0) return items;
+    return [...items].sort((a, b) => {
+      const ai = order.indexOf(a.href);
+      const bi = order.indexOf(b.href);
       if (ai === -1 && bi === -1) return 0;
       if (ai === -1) return 1;
       if (bi === -1) return -1;
       return ai - bi;
     });
-    return sorted;
-  }, [navItems, navOrder]);
+  };
 
-  const handleNavReorder = (newOrder: string[]) => {
-    setNavOrder(newOrder);
-    localStorage.setItem(`admin_nav_order_${role}`, JSON.stringify(newOrder));
+  const handleSectionReorder = (sectionKey: string, newOrder: string[]) => {
+    setNavOrders(prev => {
+      const updated = { ...prev, [sectionKey]: newOrder };
+      localStorage.setItem(`admin_nav_orders_${role}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Show onboarding on first login
@@ -583,23 +630,33 @@ function AdminLayoutInner({
           </div>
         </div>
 
-        <nav className="flex-1 p-3 overflow-y-auto">
-          <Reorder.Group
-            axis="y"
-            values={orderedNav.map(i => i.href)}
-            onReorder={handleNavReorder}
-            className="space-y-1"
-          >
-            {orderedNav.map((item) => (
-              <SidebarNavItem
-                key={item.href}
-                item={item}
-                isActive={pathname === item.href}
-                onNavigate={() => setSidebarOpen(false)}
-                t={t}
-              />
-            ))}
-          </Reorder.Group>
+        <nav className="flex-1 p-3 overflow-y-auto space-y-4">
+          {navSections.map((section) => {
+            const orderedItems = getOrderedItems(section.sectionKey, section.items);
+            return (
+              <div key={section.sectionKey}>
+                <div className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                  {t(section.sectionKey)}
+                </div>
+                <Reorder.Group
+                  axis="y"
+                  values={orderedItems.map(i => i.href)}
+                  onReorder={(newOrder) => handleSectionReorder(section.sectionKey, newOrder)}
+                  className="space-y-0.5"
+                >
+                  {orderedItems.map((item) => (
+                    <SidebarNavItem
+                      key={item.href}
+                      item={item}
+                      isActive={pathname === item.href}
+                      onNavigate={() => setSidebarOpen(false)}
+                      t={t}
+                    />
+                  ))}
+                </Reorder.Group>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="p-3 space-y-1 border-t border-white/10">
@@ -640,8 +697,8 @@ function AdminLayoutInner({
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1">
-            {navItems.find((n) => n.href === pathname)
-              ? t(navItems.find((n) => n.href === pathname)!.key)
+            {allNavItems.find((n) => n.href === pathname)
+              ? t(allNavItems.find((n) => n.href === pathname)!.key)
               : 'Admin'}
           </h1>
           <button

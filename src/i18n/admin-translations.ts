@@ -115,6 +115,12 @@ export const translations: Record<AdminLocale, Dict> = {
       chat: 'Live Chat',
       viewWebsite: '← Website bekijken',
       logout: 'Uitloggen',
+      section: {
+        overview: 'Overzicht',
+        bookings: 'Boekingen & Planning',
+        customers: 'Klantenbeheer',
+        website: 'Website Beheer',
+      },
     },
 
     /* ── statuses (DB enum → display) ───── */
@@ -628,6 +634,12 @@ export const translations: Record<AdminLocale, Dict> = {
       chat: 'Live Chat',
       viewWebsite: '← View website',
       logout: 'Log out',
+      section: {
+        overview: 'Overview',
+        bookings: 'Bookings & Planning',
+        customers: 'Customer Management',
+        website: 'Website Management',
+      },
     },
 
     status: {
