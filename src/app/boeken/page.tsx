@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { caravans as staticCaravans, getCaravanById as getStaticCaravanById } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
-import { campings } from '@/data/campings';
+import { campings as staticCampings } from '@/data/campings';
 import { useLanguage } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
@@ -77,6 +77,7 @@ function BoekenContent() {
   const [submitError, setSubmitError] = useState('');
   const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  const [campings, setCampings] = useState(staticCampings.map(c => ({ ...c, active: true })));
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState<{ code: string; amount: number; type: string; value: number } | null>(null);
   const [discountError, setDiscountError] = useState('');
@@ -93,21 +94,30 @@ function BoekenContent() {
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
       .catch(() => {});
+    // Fetch campings from DB (falls back to static)
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.campings?.length) {
+          setCampings(data.campings);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
   const getCaravanById = (id: string) => caravans.find(c => c.id === id);
 
-  const locations = useMemo(() => [...new Set(campings.map(c => c.location))].sort(), []);
+  const locations = useMemo(() => [...new Set(campings.map(c => c.location))].sort(), [campings]);
   const filteredCampings = useMemo(() => {
-    let result = campings;
+    let result = campings.filter(c => c.active !== false);
     if (locationFilter !== 'all') result = result.filter(c => c.location === locationFilter);
     if (campingSearch.trim()) {
       const q = campingSearch.toLowerCase();
       result = result.filter(c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q));
     }
     return result;
-  }, [campingSearch, locationFilter]);
+  }, [campings, campingSearch, locationFilter]);
 
   const totalPersons = adults + children;
   const availableCaravans = caravans.filter(c => c.maxPersons >= totalPersons && !unavailableIds.includes(c.id));

@@ -49,6 +49,15 @@ export async function POST(request: Request) {
       // Table might not exist yet
     }
 
+    // Also try to load DB campings
+    let dbCampings: { id: string; name: string }[] = [];
+    try {
+      const campingResult = await pool.sql`SELECT id, name FROM campings WHERE active = true`;
+      dbCampings = campingResult.rows as { id: string; name: string }[];
+    } catch {
+      // Table might not exist yet
+    }
+
     const getCaravanName = (id: string) => {
       const s = caravans.find(c => c.id === id);
       if (s) return s.name;
@@ -57,6 +66,9 @@ export async function POST(request: Request) {
     };
 
     const getCampingName = (id: string) => {
+      // Try DB campings first
+      const db = dbCampings.find(camp => camp.id === id);
+      if (db) return db.name;
       const c = campings.find(camp => camp.id === id);
       return c?.name || 'Camping';
     };

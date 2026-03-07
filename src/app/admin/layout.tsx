@@ -4,7 +4,7 @@ import { useState, useEffect, ReactNode, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -30,6 +30,9 @@ import {
   MessageCircle,
   HelpCircle,
   ChevronRight,
+  Tent,
+  GripVertical,
+  ExternalLink,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -49,6 +52,7 @@ const NAV_ITEMS: { sub: string; key: string; icon: typeof LayoutDashboard; roles
   { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },
   { sub: '/chat', key: 'nav.chat', icon: MessageCircle, roles: ['admin', 'staff'] },
   { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
+  { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
   { sub: '/borg', key: 'nav.deposit', icon: ClipboardCheck, roles: ['admin', 'staff'] },
   { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin'] },
   { sub: '/nieuwsbrieven', key: 'nav.newsletters', icon: Newspaper, roles: ['admin'] },
@@ -400,6 +404,7 @@ const HELP_ITEMS_NL: Record<string, { title: string; tips: string[] }> = {
   '/admin/borg': { title: 'Borg', tips: ['Maak een nieuwe checklist aan voor een boeking.', 'Gebruik "Mobiel Inspecteren" voor een stapsgewijze inspectie op telefoon.', 'Na voltooien krijgt de klant automatisch een link.'] },
   '/admin/chat': { title: 'Chat', tips: ['Beantwoord live chats van klanten.', 'Klik op een gesprek om de berichten te lezen.', 'Je kunt chats verwijderen via het prullenbak-icoon.'] },
   '/admin/klanten': { title: 'Klanten', tips: ['Bekijk alle klantgegevens en communicatie.', 'Zoek op naam of e-mail.'] },
+  '/admin/campings': { title: 'Campings', tips: ['Voeg campings toe of verwijder ze.', 'Sleep campings om de volgorde aan te passen.', 'Actieve campings verschijnen op de boekingspagina.', 'Importeer de standaard 30 campings bij eerste gebruik.'] },
 };
 const HELP_ITEMS_EN: Record<string, { title: string; tips: string[] }> = {
   '/admin': { title: 'Dashboard', tips: ['Click a stat card to go to that page.', 'Open tasks appear automatically.', 'Use "Export" to download data (admin only).'] },
@@ -408,6 +413,7 @@ const HELP_ITEMS_EN: Record<string, { title: string; tips: string[] }> = {
   '/admin/borg': { title: 'Deposit', tips: ['Create a new checklist for a booking.', 'Use "Mobile Inspect" for step-by-step inspection on phone.', 'After completion, the customer gets a link automatically.'] },
   '/admin/chat': { title: 'Chat', tips: ['Answer live chats from customers.', 'Click a conversation to read messages.', 'Delete chats via the trash icon.'] },
   '/admin/klanten': { title: 'Customers', tips: ['View all customer data and communication.', 'Search by name or email.'] },
+  '/admin/campings': { title: 'Campings', tips: ['Add or remove campings.', 'Drag campings to reorder.', 'Active campings appear on the booking page.', 'Import the default 30 campings on first use.'] },
 };
 
 function AdminLayoutInner({
@@ -434,6 +440,34 @@ function AdminLayoutInner({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const [orderedNav, setOrderedNav] = useState(navItems);
+  const [isDraggingSidebar, setIsDraggingSidebar] = useState(false);
+
+  // Restore nav order from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(`admin_nav_order_${role}`);
+    if (saved) {
+      try {
+        const order: string[] = JSON.parse(saved);
+        const sorted = [...navItems].sort((a, b) => {
+          const ai = order.indexOf(a.href);
+          const bi = order.indexOf(b.href);
+          if (ai === -1 && bi === -1) return 0;
+          if (ai === -1) return 1;
+          if (bi === -1) return -1;
+          return ai - bi;
+        });
+        setOrderedNav(sorted);
+      } catch { setOrderedNav(navItems); }
+    } else {
+      setOrderedNav(navItems);
+    }
+  }, [navItems, role]);
+
+  const handleNavReorder = (newOrder: typeof navItems) => {
+    setOrderedNav(newOrder);
+    localStorage.setItem(`admin_nav_order_${role}`, JSON.stringify(newOrder.map(n => n.href)));
+  };
 
   // Show onboarding on first login
   useEffect(() => {
@@ -498,40 +532,50 @@ function AdminLayoutInner({
           </div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map((item, i) => {
-            const isActive = pathname === item.href;
-            return (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-              >
-                <Link
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-white/15 text-white shadow-sm'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
-                  }`}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          <Reorder.Group
+            axis="y"
+            values={orderedNav}
+            onReorder={handleNavReorder}
+            className="space-y-1"
+          >
+            {orderedNav.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Reorder.Item
+                  key={item.href}
+                  value={item}
+                  whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
+                  onDragStart={() => setIsDraggingSidebar(true)}
+                  onDragEnd={() => setIsDraggingSidebar(false)}
+                  className="list-none"
                 >
-                  <item.icon className="w-5 h-5" />
-                  {t(item.key)}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="ml-auto w-1.5 h-1.5 bg-primary-light rounded-full"
-                    />
-                  )}
-                </Link>
-              </motion.div>
-            );
-          })}
+                  <Link
+                    href={item.href}
+                    onClick={(e) => { if (isDraggingSidebar) { e.preventDefault(); return; } setSidebarOpen(false); }}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-white/15 text-white shadow-sm'
+                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <GripVertical className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing" />
+                    <item.icon className="w-5 h-5 shrink-0" />
+                    <span className="flex-1">{t(item.key)}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
+                      />
+                    )}
+                  </Link>
+                </Reorder.Item>
+              );
+            })}
+          </Reorder.Group>
         </nav>
 
-        <div className="p-3 space-y-1">
+        <div className="p-3 space-y-1 border-t border-white/10">
           {/* Language toggle */}
           <button
             onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
@@ -545,6 +589,7 @@ function AdminLayoutInner({
             href={mainSiteUrl}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors"
           >
+            <ExternalLink className="w-5 h-5" />
             {t('nav.viewWebsite')}
           </a>
           <button

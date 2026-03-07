@@ -281,6 +281,20 @@ export async function setupDatabase() {
     )
   `;
 
+  // Campings table (admin-managed)
+  await sql`
+    CREATE TABLE IF NOT EXISTS campings (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      location TEXT NOT NULL,
+      description TEXT,
+      website TEXT,
+      active BOOLEAN DEFAULT true,
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1446,4 +1460,44 @@ export async function updateChatSummary(conversationId: string, summary: string)
 export async function getCustomerByEmailSimple(email: string) {
   const result = await sql`SELECT id, email, name, phone FROM customers WHERE LOWER(email) = LOWER(${email})`;
   return result.rows[0] || null;
+}
+
+// ===== CAMPINGS =====
+
+export async function getAllCampings(activeOnly = false) {
+  if (activeOnly) {
+    const result = await sql`SELECT * FROM campings WHERE active = true ORDER BY sort_order ASC, name ASC`;
+    return result.rows;
+  }
+  const result = await sql`SELECT * FROM campings ORDER BY sort_order ASC, name ASC`;
+  return result.rows;
+}
+
+export async function createCamping(data: { name: string; location: string; description?: string; website?: string }) {
+  const id = generateId('camp');
+  const maxOrder = await sql`SELECT COALESCE(MAX(sort_order), 0) as max_order FROM campings`;
+  const sortOrder = (maxOrder.rows[0]?.max_order || 0) + 1;
+  await sql`
+    INSERT INTO campings (id, name, location, description, website, sort_order)
+    VALUES (${id}, ${data.name}, ${data.location}, ${data.description || ''}, ${data.website || ''}, ${sortOrder})
+  `;
+  return { id };
+}
+
+export async function updateCamping(id: string, data: { name?: string; location?: string; description?: string; website?: string; active?: boolean }) {
+  if (data.name !== undefined) await sql`UPDATE campings SET name = ${data.name} WHERE id = ${id}`;
+  if (data.location !== undefined) await sql`UPDATE campings SET location = ${data.location} WHERE id = ${id}`;
+  if (data.description !== undefined) await sql`UPDATE campings SET description = ${data.description} WHERE id = ${id}`;
+  if (data.website !== undefined) await sql`UPDATE campings SET website = ${data.website} WHERE id = ${id}`;
+  if (data.active !== undefined) await sql`UPDATE campings SET active = ${data.active} WHERE id = ${id}`;
+}
+
+export async function deleteCamping(id: string) {
+  await sql`DELETE FROM campings WHERE id = ${id}`;
+}
+
+export async function reorderCampings(orderedIds: string[]) {
+  for (let i = 0; i < orderedIds.length; i++) {
+    await sql`UPDATE campings SET sort_order = ${i} WHERE id = ${orderedIds[i]}`;
+  }
 }
