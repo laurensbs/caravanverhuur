@@ -1,20 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, AlertCircle,
-  CheckCircle, Loader2, Shield, Star, MapPin, Sun, Palmtree,
+  CheckCircle, Loader2, Shield, Star, MapPin, Sun, Palmtree, ArrowLeft,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
-export default function AccountPage() {
+function AccountPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+
+  // Determine initial mode from URL
+  const resetToken = searchParams.get('reset');
+  const initialMode = resetToken ? 'reset-password' : 'login';
+
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>(initialMode);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -42,6 +48,10 @@ export default function AccountPage() {
 
   const passwordStrength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 8 ? 2 : password.length < 12 ? 3 : 4;
   const strengthLabels = ['', t('account.strengthWeak'), t('account.strengthFair'), t('account.strengthGood'), t('account.strengthStrong')];
+
+  const modeTitle = mode === 'forgot-password' ? 'Wachtwoord vergeten' : mode === 'reset-password' ? 'Nieuw wachtwoord' : mode === 'login' ? t('account.welcomeBack') : t('account.createAccount');
+  const modeSubtitle = mode === 'forgot-password' ? 'Vul je e-mailadres in om een herstellink te ontvangen' : mode === 'reset-password' ? 'Kies een nieuw wachtwoord voor je account' : mode === 'login' ? t('account.loginSubtitle') : t('account.registerSubtitle');
+  const modeSubtitleDesktop = mode === 'forgot-password' ? 'Vul je e-mailadres in om een herstellink te ontvangen' : mode === 'reset-password' ? 'Kies een nieuw wachtwoord voor je account' : mode === 'login' ? t('account.loginSubtitleDesktop') : t('account.registerSubtitleDesktop');
   const strengthColors = ['', 'bg-danger', 'bg-primary', 'bg-primary', 'bg-primary'];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +61,44 @@ export default function AccountPage() {
     setSuccess('');
 
     try {
+      // Forgot password mode
+      if (mode === 'forgot-password') {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || t('account.errorGeneral'));
+          return;
+        }
+        setSuccess('Als dit e-mailadres bij ons bekend is, ontvang je binnen enkele minuten een link om je wachtwoord te herstellen.');
+        return;
+      }
+
+      // Reset password mode
+      if (mode === 'reset-password') {
+        if (password.length < 6) {
+          setError(t('account.errorPasswordLength'));
+          setLoading(false);
+          return;
+        }
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || t('account.errorGeneral'));
+          return;
+        }
+        setSuccess('Je wachtwoord is gewijzigd. Je wordt doorgestuurd...');
+        setTimeout(() => router.push('/mijn-account'), 1500);
+        return;
+      }
+
       if (mode === 'register' && !acceptTerms) {
         setError(t('account.errorTerms'));
         setLoading(false);
@@ -150,10 +198,10 @@ export default function AccountPage() {
           {/* Mobile hero header */}
           <div className="lg:hidden bg-primary-dark px-5 pt-6 pb-10">
             <h1 className="text-2xl font-bold text-white">
-              {mode === 'login' ? t('account.welcomeBack') : t('account.createAccount')}
+              {modeTitle}
             </h1>
             <p className="text-white/60 text-sm mt-1">
-              {mode === 'login' ? t('account.loginSubtitle') : t('account.registerSubtitle')}
+              {modeSubtitle}
             </p>
           </div>
 
@@ -163,12 +211,10 @@ export default function AccountPage() {
               {/* Desktop heading */}
               <div className="hidden lg:block mb-8">
                 <h1 className="text-2xl xl:text-3xl font-bold text-foreground">
-                  {mode === 'login' ? t('account.welcomeBack') : t('account.createAccount')}
+                  {modeTitle}
                 </h1>
                 <p className="text-muted text-sm mt-1.5">
-                  {mode === 'login'
-                    ? t('account.loginSubtitleDesktop')
-                    : t('account.registerSubtitleDesktop')}
+                  {modeSubtitleDesktop}
                 </p>
               </div>
 
@@ -178,7 +224,15 @@ export default function AccountPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-2xl shadow-sm p-5 sm:p-7"
               >
-                {/* Tab switcher */}
+                {/* Tab switcher / Back button */}
+                {(mode === 'forgot-password' || mode === 'reset-password') ? (
+                  <button
+                    onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                    className="flex items-center gap-2 text-sm font-semibold text-primary mb-5 hover:text-primary-dark transition-colors"
+                  >
+                    <ArrowLeft size={16} /> Terug naar inloggen
+                  </button>
+                ) : (
                 <div className="flex bg-surface rounded-xl p-1 mb-5">
                   <button
                     onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
@@ -192,21 +246,83 @@ export default function AccountPage() {
                     onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted'
-                    }`} > {t('account.tabRegister')} </button> </div> {/* Error / Success messages */} <AnimatePresence mode="wait"> {error && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border-danger/20" > <AlertCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{error}</span> </motion.div> )} {success && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border-primary-100" > <CheckCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{success}</span> </motion.div> )} </AnimatePresence> <form onSubmit={handleSubmit} className="space-y-3.5"> {/* Name (register) */} <AnimatePresence> {mode ==='register' && ( <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelName')}</label> <div className="relative"> <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'} className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </motion.div> )} </AnimatePresence> {/* Email */} <div> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelEmail')}</label> <div className="relative"> <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </div> {/* Password */} <div> <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPassword')}</label> <div className="relative"> <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={mode === 'register' ? t('account.placeholderPasswordNew') : '••••••••'} required autoComplete={mode === 'login' ? 'current-password' : 'new-password'} className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors"> {showPassword ? <EyeOff size={16} /> : <Eye size={16} />} </button> </div> {mode ==='login' && ( <p className="text-xs text-muted mt-1.5"> {t('account.forgotPassword')}{' '} <Link href="/contact" className="text-primary font-medium">{t('account.contactUs')}</Link> </p> )} {mode === 'register' && password.length > 0 && ( <div className="mt-2.5"> <div className="flex gap-1"> {[1, 2, 3, 4].map(i => ( <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-surface-alt'}`} />
-                          ))}
-                        </div>
-                        <p className={`text-xs mt-1 font-medium ${passwordStrength <= 1 ? 'text-danger' : passwordStrength <= 2 ? 'text-primary' : 'text-primary'}`}>
-                          {strengthLabels[passwordStrength]}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Phone (register) */}
+                    }`} > {t('account.tabRegister')} </button> </div>
+                )} {/* Error / Success messages */} <AnimatePresence mode="wait"> {error && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border-danger/20" > <AlertCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{error}</span> </motion.div> )} {success && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border-primary-100" > <CheckCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{success}</span> </motion.div> )} </AnimatePresence> <form onSubmit={handleSubmit} className="space-y-3.5">
+                  {/* Name (register only) */}
                   <AnimatePresence>
                     {mode === 'register' && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPhone')} <span className="text-muted font-normal">{t('account.optional')}</span></label> <div className="relative"> <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" /> <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" /> </div> </motion.div> )} </AnimatePresence> {/* Terms checkbox (register) */} <AnimatePresence> {mode ==='register' && (
+                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelName')}</label>
+                        <div className="relative">
+                          <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('account.placeholderName')} required={mode === 'register'} className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Email (not shown in reset-password) */}
+                  {mode !== 'reset-password' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelEmail')}</label>
+                      <div className="relative">
+                        <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('account.placeholderEmail')} required autoComplete="email" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Password (not shown in forgot-password) */}
+                  {mode !== 'forgot-password' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-foreground-light mb-1.5">
+                        {mode === 'reset-password' ? 'Nieuw wachtwoord' : t('account.labelPassword')}
+                      </label>
+                      <div className="relative">
+                        <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                        <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={mode === 'register' || mode === 'reset-password' ? t('account.placeholderPasswordNew') : '••••••••'} required autoComplete={mode === 'login' ? 'current-password' : 'new-password'} className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {mode === 'login' && (
+                        <p className="text-xs text-muted mt-1.5">
+                          <button type="button" onClick={() => { setMode('forgot-password'); setError(''); setSuccess(''); }} className="text-primary font-medium hover:underline">
+                            Wachtwoord vergeten?
+                          </button>
+                        </p>
+                      )}
+                      {(mode === 'register' || mode === 'reset-password') && password.length > 0 && (
+                        <div className="mt-2.5">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4].map(i => (
+                              <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= passwordStrength ? strengthColors[passwordStrength] : 'bg-surface-alt'}`} />
+                            ))}
+                          </div>
+                          <p className={`text-xs mt-1 font-medium ${passwordStrength <= 1 ? 'text-danger' : 'text-primary'}`}>
+                            {strengthLabels[passwordStrength]}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Phone (register only) */}
+                  <AnimatePresence>
+                    {mode === 'register' && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <label className="block text-xs font-semibold text-foreground-light mb-1.5">{t('account.labelPhone')} <span className="text-muted font-normal">{t('account.optional')}</span></label>
+                        <div className="relative">
+                          <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+31 6 12345678" className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Terms checkbox (register only) */}
+                  <AnimatePresence>
+                    {mode === 'register' && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-start gap-2.5 pt-1">
                         <input type="checkbox" id="acceptTerms" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
                           className="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary/20 cursor-pointer" />
@@ -224,14 +340,25 @@ export default function AccountPage() {
                   <button type="submit" disabled={loading}
                     className="w-full py-3.5 bg-primary disabled:opacity-60 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all mt-2 shadow-sm shadow-primary/20">
                     {loading ? <Loader2 size={18} className="animate-spin" /> : (
-                      <>{mode === 'login' ? t('account.btnLogin') : t('account.btnRegister')} <ArrowRight size={16} /></>
+                      <>
+                        {mode === 'forgot-password' ? 'Verstuur herstellink' :
+                         mode === 'reset-password' ? 'Wachtwoord opslaan' :
+                         mode === 'login' ? t('account.btnLogin') : t('account.btnRegister')}
+                        <ArrowRight size={16} />
+                      </>
                     )}
                   </button>
                 </form>
 
                 {/* Footer switch */}
                 <div className="mt-5 pt-4 text-center text-sm text-muted">
-                  {mode === 'login' ? (
+                  {(mode === 'forgot-password' || mode === 'reset-password') ? (
+                    <p>
+                      <button onClick={() => { setMode('login'); setError(''); setSuccess(''); }} className="text-primary font-semibold">
+                        Terug naar inloggen
+                      </button>
+                    </p>
+                  ) : mode === 'login' ? (
                     <p>{t('account.noAccount')}{' '}<button onClick={() => { setMode('register'); setError(''); }} className="text-primary font-semibold">{t('account.registerFree')}</button></p>
                   ) : (
                     <p>{t('account.hasAccount')}{' '}<button onClick={() => { setMode('login'); setError(''); }} className="text-primary font-semibold">{t('account.loginLink')}</button></p>
@@ -257,5 +384,17 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <Loader2 size={28} className="animate-spin text-primary" />
+      </div>
+    }>
+      <AccountPageInner />
+    </Suspense>
   );
 }

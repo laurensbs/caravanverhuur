@@ -701,3 +701,124 @@ export async function sendCountdownEmail(data: {
     `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`),
   });
 }
+
+// ===== PASSWORD RESET EMAIL =====
+
+export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
+  const firstName = name.split(' ')[0];
+
+  return sendEmail({
+    to,
+    subject: `🔑 Wachtwoord herstellen — ${BRAND_NAME}`,
+    html: emailWrapper(`
+      ${badge('🔑', 'WACHTWOORD HERSTELLEN')}
+      ${heading(`Hallo ${firstName}`)}
+      ${subtext('We hebben een verzoek ontvangen om je wachtwoord te herstellen. Klik op de knop hieronder om een nieuw wachtwoord in te stellen.')}
+
+      ${button('Nieuw wachtwoord instellen →', resetUrl)}
+
+      ${divider()}
+
+      ${highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="width:40px;vertical-align:top;padding-top:2px;">
+              <span style="font-size:20px;">⚠️</span>
+            </td>
+            <td style="vertical-align:top;">
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+                Deze link is <strong>1 uur geldig</strong>. Heb je dit verzoek niet gedaan? Dan kun je deze email veilig negeren.
+              </p>
+            </td>
+          </tr>
+        </table>
+      `)}
+    `, 'Herstel je wachtwoord'),
+  });
+}
+
+// ===== EMAIL VERIFICATION =====
+
+export async function sendVerificationEmail(to: string, name: string, verifyUrl: string) {
+  const firstName = name.split(' ')[0];
+
+  return sendEmail({
+    to,
+    subject: `✉️ Bevestig je e-mailadres — ${BRAND_NAME}`,
+    html: emailWrapper(`
+      ${badge('✉️', 'E-MAIL VERIFICATIE')}
+      ${heading(`Bevestig je e-mailadres`)}
+      ${subtext(`Hallo ${firstName}, klik op de knop hieronder om je e-mailadres te bevestigen. Zo weten we zeker dat we je op het juiste adres kunnen bereiken.`)}
+
+      ${button('E-mailadres bevestigen →', verifyUrl)}
+
+      ${divider()}
+
+      <p style="margin:0;color:#94A3B8;font-size:13px;line-height:1.6;">
+        Deze link is 24 uur geldig. Als je geen account hebt aangemaakt, kun je deze email negeren.
+      </p>
+    `, 'Bevestig je e-mailadres'),
+  });
+}
+
+// ===== CANCELLATION CONFIRMATION EMAIL =====
+
+export async function sendCancellationEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+  refundPercentage: number;
+  refundMessage: string;
+}) {
+  const firstName = data.guestName.split(' ')[0];
+  const formatDateNl = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  return sendEmail({
+    to: data.to,
+    subject: `❌ Boeking geannuleerd — ${data.reference}`,
+    html: emailWrapper(`
+      ${badge('❌', 'ANNULERING BEVESTIGD')}
+      ${heading('Boeking geannuleerd')}
+      ${subtext(`Hallo ${firstName}, je boeking is succesvol geannuleerd. Hieronder vind je de details.`)}
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        ${infoRow('Referentie', data.reference)}
+        ${infoRow('Caravan', data.caravanName)}
+        ${infoRow('Camping', data.campingName)}
+        ${infoRow('Check-in', formatDateNl(data.checkIn))}
+        ${infoRow('Check-out', formatDateNl(data.checkOut))}
+      </table>
+
+      ${highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="width:40px;vertical-align:top;padding-top:2px;">
+              <span style="font-size:20px;">💰</span>
+            </td>
+            <td style="vertical-align:top;">
+              <p style="margin:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">
+                Restitutie: ${data.refundPercentage}%
+              </p>
+              <p style="margin:0;color:#64748B;font-size:14px;line-height:1.65;">
+                ${data.refundMessage}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `, true)}
+
+      <p style="margin:0 0 20px;color:#64748B;font-size:14px;line-height:1.65;">
+        Eventuele restituties worden binnen 7 werkdagen verwerkt. Heb je vragen? Neem gerust contact op.
+      </p>
+
+      ${button('Contact opnemen →', `${SITE_URL}/contact`)}
+    `, `Boeking ${data.reference} is geannuleerd`),
+  });
+}

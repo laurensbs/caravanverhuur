@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerBySessionToken, getBookingById, updateBookingStatus } from '@/lib/db';
+import { sendCancellationEmail } from '@/lib/email';
+import { caravans } from '@/data/caravans';
+import { campings } from '@/data/campings';
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,6 +57,21 @@ export async function POST(request: NextRequest) {
 
     // Update booking status to GEANNULEERD
     await updateBookingStatus(bookingId, 'GEANNULEERD');
+
+    // Send cancellation confirmation email (non-blocking)
+    const caravanName = caravans.find(c => c.id === booking.caravan_id)?.name || `Caravan ${booking.caravan_id}`;
+    const campingName = campings.find(c => c.id === booking.camping_id)?.name || `Camping ${booking.camping_id}`;
+    sendCancellationEmail({
+      to: booking.guest_email,
+      guestName: booking.guest_name,
+      reference: booking.reference,
+      caravanName,
+      campingName,
+      checkIn: booking.check_in,
+      checkOut: booking.check_out,
+      refundPercentage,
+      refundMessage,
+    }).catch(err => console.error('Cancellation email failed:', err));
 
     return NextResponse.json({
       success: true,

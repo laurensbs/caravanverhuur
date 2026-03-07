@@ -1,15 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId } from '@/lib/db';
-
-// Simple password hashing (same as auth/register)
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomUUID();
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${salt}:${hashHex}`;
-}
+import { hashPassword } from '@/lib/password';
 
 // GET - List all customers or get chats for a specific customer
 export async function GET(request: NextRequest) {

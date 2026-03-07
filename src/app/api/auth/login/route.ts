@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerByEmail, createCustomerSession, updateCustomerLastLogin, setupDatabase } from '@/lib/db';
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const [salt, storedHash] = hash.split(':');
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const computedHash = await crypto.subtle.digest('SHA-256', data);
-  const computedHex = Array.from(new Uint8Array(computedHash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return computedHex === storedHash;
-}
+import { verifyPassword, hashPassword } from '@/lib/password';
+import { loginLimiter, getClientIp } from '@/lib/rate-limit';
+import { sql } from '@vercel/postgres';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request);
+    const rl = loginLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Te veel inlogpogingen. Probeer het over ${rl.retryAfter} seconden opnieuw.` },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+      );
+    }
+
     const body = await request.json();
     const { email, password } = body;
 
@@ -24,9 +28,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ongeldig e-mailadres of wachtwoord' }, { status: 401 });
     }
 
-    const valid = await verifyPassword(password, customer.password_hash);
+    const { valid, needsRehash } = await verifyPassword(password, customer.password_hash);
     if (!valid) {
       return NextResponse.json({ error: 'Ongeldig e-mailadres of wachtwoord' }, { status: 401 });
+    }
+
+    // Transparently upgrade legacy SHA-256 hash to bcrypt
+    if (needsRehash) {
+      const newHash = await hashPassword(password);
+      await sql`UPDATE customers SET password_hash = ${newHash} WHERE id = ${customer.id}`;
     }
 
     await updateCustomerLastLogin(customer.id);

@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCustomer, getCustomerByEmail, createCustomerSession, setupDatabase } from '@/lib/db';
-import { sendWelcomeEmail } from '@/lib/email';
-
-// Simple password hashing (SHA-256 with salt)
-async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomUUID();
-  const encoder = new TextEncoder();
-  const data = encoder.encode(salt + password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${salt}:${hashHex}`;
-}
+import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/email';
+import { hashPassword } from '@/lib/password';
+import { registerLimiter, getClientIp } from '@/lib/rate-limit';
+import { createEmailVerificationToken } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request);
+    const rl = registerLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Te veel registratiepogingen. Probeer het over ${rl.retryAfter} seconden opnieuw.` },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+      );
+    }
+
     const body = await request.json();
     const { email, password, name, phone } = body;
 
@@ -46,6 +49,12 @@ export async function POST(request: NextRequest) {
     sendWelcomeEmail(email.toLowerCase().trim(), name.trim()).catch(err => 
       console.error('Welcome email failed:', err)
     );
+
+    // Send email verification (non-blocking)
+    createEmailVerificationToken(id).then(token => {
+      const verifyUrl = `https://caravanverhuurspanje.com/api/auth/verify-email?token=${token}`;
+      return sendVerificationEmail(email.toLowerCase().trim(), name.trim(), verifyUrl);
+    }).catch(err => console.error('Verification email failed:', err));
 
     const response = NextResponse.json({ success: true, customerId: id });
     response.cookies.set('customer_session', session.token, {

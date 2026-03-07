@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById } from '@/lib/db';
 import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
+import { contactLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function GET() {
   try {
@@ -14,6 +15,16 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request);
+    const rl = contactLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Te veel berichten. Probeer het over ${rl.retryAfter} seconden opnieuw.` },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+      );
+    }
+
     const body = await request.json();
     const { name, email, phone, subject, message } = body;
 

@@ -137,6 +137,34 @@ export async function setupDatabase() {
     // Column might already exist or DB doesn't support IF NOT EXISTS — ignore
   }
 
+  // Migration: add email_verified to customers
+  try {
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`;
+  } catch { /* ignore */ }
+
+  // Password reset tokens table
+  await sql`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      used BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Email verification tokens table
+  await sql`
+    CREATE TABLE IF NOT EXISTS email_verification_tokens (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   // Custom caravans table (admin-added caravans)
   await sql`
     CREATE TABLE IF NOT EXISTS custom_caravans (
@@ -1500,4 +1528,66 @@ export async function reorderCampings(orderedIds: string[]) {
   for (let i = 0; i < orderedIds.length; i++) {
     await sql`UPDATE campings SET sort_order = ${i} WHERE id = ${orderedIds[i]}`;
   }
+}
+
+// ===== PASSWORD RESET TOKENS =====
+
+export async function createPasswordResetToken(customerId: string): Promise<string> {
+  const id = generateId('PRT');
+  const token = generateToken();
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+  // Invalidate any existing tokens for this customer
+  await sql`UPDATE password_reset_tokens SET used = true WHERE customer_id = ${customerId} AND used = false`;
+  await sql`
+    INSERT INTO password_reset_tokens (id, customer_id, token, expires_at)
+    VALUES (${id}, ${customerId}, ${token}, ${expiresAt})
+  `;
+  return token;
+}
+
+export async function verifyPasswordResetToken(token: string) {
+  const result = await sql`
+    SELECT prt.*, c.email, c.name FROM password_reset_tokens prt
+    JOIN customers c ON c.id = prt.customer_id
+    WHERE prt.token = ${token} AND prt.expires_at > NOW() AND prt.used = false
+  `;
+  return result.rows[0] || null;
+}
+
+export async function markPasswordResetTokenUsed(token: string) {
+  await sql`UPDATE password_reset_tokens SET used = true WHERE token = ${token}`;
+}
+
+export async function updateCustomerPassword(customerId: string, passwordHash: string) {
+  await sql`UPDATE customers SET password_hash = ${passwordHash} WHERE id = ${customerId}`;
+}
+
+// ===== EMAIL VERIFICATION =====
+
+export async function createEmailVerificationToken(customerId: string): Promise<string> {
+  const id = generateId('EVT');
+  const token = generateToken();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+  // Delete old tokens for this customer
+  await sql`DELETE FROM email_verification_tokens WHERE customer_id = ${customerId}`;
+  await sql`
+    INSERT INTO email_verification_tokens (id, customer_id, token, expires_at)
+    VALUES (${id}, ${customerId}, ${token}, ${expiresAt})
+  `;
+  return token;
+}
+
+export async function verifyEmailToken(token: string) {
+  const result = await sql`
+    SELECT evt.*, c.email FROM email_verification_tokens evt
+    JOIN customers c ON c.id = evt.customer_id
+    WHERE evt.token = ${token} AND evt.expires_at > NOW()
+  `;
+  if (result.rows.length === 0) return null;
+  const row = result.rows[0];
+  // Mark email as verified
+  await sql`UPDATE customers SET email_verified = true WHERE id = ${row.customer_id}`;
+  // Clean up token
+  await sql`DELETE FROM email_verification_tokens WHERE customer_id = ${row.customer_id}`;
+  return row;
 }
