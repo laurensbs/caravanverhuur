@@ -1,7 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { caravans } from '@/data/caravans';
+import { getAllCustomCaravans } from '@/lib/db';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = 'force-dynamic';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://caravanverhuurspanje.com';
   const now = new Date();
 
@@ -16,8 +19,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },
   ];
 
-  // Dynamic caravan IDs from static data (custom caravans can be added later via DB)
-  const caravanIds = caravans.map(c => c.id);
+  // Merge static + DB caravan IDs
+  const caravanIds = new Set(caravans.map(c => c.id));
+  try {
+    const dbCaravans = await getAllCustomCaravans();
+    for (const c of dbCaravans) caravanIds.add(c.id);
+  } catch { /* DB not available, use static only */ }
 
   const destinationSlugs = [
     'pals', 'estartit', 'begur', 'tossa-de-mar', 'platja-daro',
@@ -32,7 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: page.changeFrequency,
       priority: page.priority,
     })),
-    ...caravanIds.map(id => ({
+    ...Array.from(caravanIds).map(id => ({
       url: `${baseUrl}/caravans/${id}`,
       lastModified: now,
       changeFrequency: 'weekly' as const,

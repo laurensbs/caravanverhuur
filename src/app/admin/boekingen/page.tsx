@@ -30,6 +30,7 @@ import {
   formatDate,
   formatDateTime,
   formatCurrency,
+  loadCustomData,
   type Booking,
   type Payment,
   type BookingStatus,
@@ -401,7 +402,7 @@ export default function BookingenPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { fetchBookings(); }, [fetchBookings]);
+  useEffect(() => { loadCustomData(); fetchBookings(); }, [fetchBookings]);
 
   const handleStatusChange = (id: string, status: BookingStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));

@@ -29,6 +29,7 @@ import {
   getBookingCaravan,
   getBookingCamping,
   formatDate,
+  loadCustomData,
   type Booking,
 } from '@/data/admin';
 import { caravans } from '@/data/caravans';
@@ -432,7 +433,7 @@ export default function PlanningPage() {
     }
   }, [isNl]);
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  useEffect(() => { loadCustomData(); fetchTasks(); }, [fetchTasks]);
 
   const handleToggle = async (task: BookingTask) => {
     // Optimistic update

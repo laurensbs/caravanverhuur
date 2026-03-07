@@ -1,6 +1,31 @@
 import { caravans } from './caravans';
 import { campings } from './campings';
 
+// Module-level cache for custom (DB) caravans and campings
+// Set via loadCustomData() — persists for the page session
+/* eslint-disable @typescript-eslint/no-explicit-any */
+let _cachedCustomCaravans: any[] = [];
+let _cachedCustomCampings: any[] = [];
+let _dataLoaded = false;
+
+export function setCustomCaravansCache(data: any[]) { _cachedCustomCaravans = data; }
+export function setCustomCampingsCache(data: any[]) { _cachedCustomCampings = data; }
+
+/** Fetch custom caravans + campings from the API and cache module-level. Call once on mount. */
+export async function loadCustomData() {
+  if (_dataLoaded) return;
+  _dataLoaded = true;
+  try {
+    const [caravanRes, campingRes] = await Promise.all([
+      fetch('/api/admin/caravans').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/campings').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    if (caravanRes?.caravans) _cachedCustomCaravans = caravanRes.caravans;
+    if (campingRes?.campings) _cachedCustomCampings = campingRes.campings;
+  } catch { /* silent */ }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 // ===== TYPES (snake_case matching DB columns) =====
 
 export type BookingStatus = 'NIEUW' | 'BEVESTIGD' | 'AANBETAALD' | 'VOLLEDIG_BETAALD' | 'ACTIEF' | 'AFGEROND' | 'GEANNULEERD';
@@ -63,12 +88,13 @@ export interface ContactSubmission {
 
 // ===== HELPERS =====
 
-// These accept optional arrays of custom caravans/campings from the DB.
-// Falls back to static data, then returns a minimal object with just the ID.
+// These check static data first, then the module-level custom cache, then the optional parameter.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function getBookingCaravan(booking: Booking, customCaravans?: any[]) {
   const staticMatch = caravans.find(c => c.id === booking.caravan_id);
   if (staticMatch) return staticMatch;
+  const cacheMatch = _cachedCustomCaravans.find((c: any) => c.id === booking.caravan_id);
+  if (cacheMatch) return cacheMatch;
   const customMatch = customCaravans?.find((c: any) => c.id === booking.caravan_id);
   if (customMatch) return customMatch;
   // Fallback: return minimal object so displays don't break
@@ -79,6 +105,8 @@ export function getBookingCaravan(booking: Booking, customCaravans?: any[]) {
 export function getBookingCamping(booking: Booking, customCampings?: any[]) {
   const staticMatch = campings.find(c => c.id === booking.camping_id);
   if (staticMatch) return staticMatch;
+  const cacheMatch = _cachedCustomCampings.find((c: any) => c.id === booking.camping_id);
+  if (cacheMatch) return cacheMatch;
   const customMatch = customCampings?.find((c: any) => c.id === booking.camping_id);
   if (customMatch) return customMatch;
   // Fallback: return minimal object so displays don't break

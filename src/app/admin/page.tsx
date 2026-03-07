@@ -24,6 +24,7 @@ import {
   formatDate,
   formatDateTime,
   formatCurrency,
+  loadCustomData,
   type Booking,
   type ContactSubmission,
 } from '@/data/admin';
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
+    loadCustomData();
     fetch('/api/admin/dashboard')
       .then(async res => {
         if (!res.ok) {

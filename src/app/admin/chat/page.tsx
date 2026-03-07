@@ -85,10 +85,20 @@ export default function AdminChatPage() {
     fetchConversations().finally(() => setLoading(false));
   }, [fetchConversations]);
 
-  /* ── Poll conversations every 5s ──── */
+  /* ── Poll conversations every 15s (pauses when tab is hidden) ── */
   useEffect(() => {
-    const interval = setInterval(fetchConversations, 5000);
-    return () => clearInterval(interval);
+    let interval: NodeJS.Timeout;
+    const start = () => { interval = setInterval(fetchConversations, 15000); };
+    const handleVisibility = () => {
+      clearInterval(interval);
+      if (document.visibilityState === 'visible') {
+        fetchConversations(); // immediate refresh on return
+        start();
+      }
+    };
+    start();
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', handleVisibility); };
   }, [fetchConversations]);
 
   /* ── Fetch messages for active conversation ── */
@@ -100,7 +110,7 @@ export default function AdminChatPage() {
     } catch { /* silent */ }
   }, []);
 
-  /* ── Poll messages every 3s when chat is open ── */
+  /* ── Poll messages every 8s when chat is open (pauses when hidden) ── */
   useEffect(() => {
     if (!activeConv) {
       if (pollingRef.current) clearInterval(pollingRef.current);
@@ -108,10 +118,23 @@ export default function AdminChatPage() {
     }
 
     fetchMessages(activeConv.id);
-    pollingRef.current = setInterval(() => fetchMessages(activeConv.id), 3000);
+    const startPoll = () => {
+      pollingRef.current = setInterval(() => fetchMessages(activeConv.id), 8000);
+    };
+    startPoll();
+
+    const handleVis = () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      if (document.visibilityState === 'visible') {
+        fetchMessages(activeConv.id);
+        startPoll();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVis);
 
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
+      document.removeEventListener('visibilitychange', handleVis);
     };
   }, [activeConv, fetchMessages]);
 

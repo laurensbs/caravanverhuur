@@ -855,7 +855,7 @@ export default function ChatBot() {
             }
           }
         } catch { /* silent */ }
-      }, 3000);
+      }, 8000);
       return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
     }
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };

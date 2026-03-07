@@ -89,12 +89,6 @@ const jsonLd = {
     opens: "09:00",
     closes: "18:00",
   },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    reviewCount: "127",
-    bestRating: "5",
-  },
   sameAs: [],
 };
 
