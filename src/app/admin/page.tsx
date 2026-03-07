@@ -71,7 +71,7 @@ function StatCard({
           <div>
             <p className="text-xs sm:text-sm text-muted font-medium">{label}</p>
             <p className="text-lg sm:text-2xl font-bold text-foreground mt-0.5 sm:mt-1">{value}</p>
-            {sub && <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1">{sub}</p>}
+            {sub && <p className="text-xs text-muted mt-0.5 sm:mt-1">{sub}</p>}
           </div>
           <div className={`p-2 sm:p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
             <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -182,15 +182,15 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-6 mt-2 sm:mt-3">
           <div>
             <p className="text-xl sm:text-3xl font-bold">{bookingsThisMonth}</p>
-            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.bookingsThisMonth')}</p>
+            <p className="text-xs sm:text-sm text-white/60">{t('dashboard.bookingsThisMonth')}</p>
           </div>
           <div>
             <p className="text-xl sm:text-3xl font-bold">{formatCurrency(revenueThisMonth)}</p>
-            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.revenueThisMonth')}</p>
+            <p className="text-xs sm:text-sm text-white/60">{t('dashboard.revenueThisMonth')}</p>
           </div>
           <div>
             <p className="text-xl sm:text-3xl font-bold">{formatCurrency(totalOpen)}</p>
-            <p className="text-[10px] sm:text-sm text-white/60">{t('dashboard.outstanding')}</p>
+            <p className="text-xs sm:text-sm text-white/60">{t('dashboard.outstanding')}</p>
           </div>
         </div>
       </motion.div>
@@ -420,7 +420,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="text-xs sm:text-sm font-semibold text-foreground">{t('dashboard.exportData')}</h3>
-                <p className="text-[10px] sm:text-xs text-muted">{t('dashboard.exportDataDesc')}</p>
+                <p className="text-xs text-muted">{t('dashboard.exportDataDesc')}</p>
               </div>
             </div>
             <button

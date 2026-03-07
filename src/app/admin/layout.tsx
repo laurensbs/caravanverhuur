@@ -28,6 +28,8 @@ import {
   ArrowRight,
   ClipboardList,
   MessageCircle,
+  HelpCircle,
+  ChevronRight,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -376,6 +378,38 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 /* ── Inner layout (has access to AdminProvider context) ── */
+const ONBOARDING_STEPS_NL = [
+  { title: 'Welkom!', desc: 'Dit is het admin/staff portaal van Caravanverhuur Spanje. Hier beheer je alles rondom boekingen, caravans en klanten.', icon: '👋' },
+  { title: 'Navigatie', desc: 'Gebruik het menu links (of het hamburger-icoon op mobiel) om tussen pagina\'s te navigeren.', icon: '📱' },
+  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen, berichten en openstaande taken.', icon: '📊' },
+  { title: 'Borg & Inspectie', desc: 'Bij Borg kun je checklists aanmaken en de mobiele inspectie starten. Klanten krijgen automatisch een link.', icon: '📋' },
+  { title: 'Hulp nodig?', desc: 'Klik op het vraagteken-icoon rechtsboven voor hulp. Succes!', icon: '❓' },
+];
+const ONBOARDING_STEPS_EN = [
+  { title: 'Welcome!', desc: 'This is the admin/staff portal for Caravanverhuur Spanje. Manage bookings, caravans and customers here.', icon: '👋' },
+  { title: 'Navigation', desc: 'Use the sidebar (or hamburger icon on mobile) to navigate between pages.', icon: '📱' },
+  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings, messages and open tasks.', icon: '📊' },
+  { title: 'Deposit & Inspection', desc: 'Under Deposit you can create checklists and start a mobile inspection. Customers get a link automatically.', icon: '📋' },
+  { title: 'Need help?', desc: 'Click the question mark icon in the top-right for help. Good luck!', icon: '❓' },
+];
+
+const HELP_ITEMS_NL: Record<string, { title: string; tips: string[] }> = {
+  '/admin': { title: 'Dashboard', tips: ['Klik op een statistiek om naar die pagina te gaan.', 'Openstaande taken verschijnen automatisch.', 'Gebruik "Exporteer" om data te downloaden (alleen admin).'] },
+  '/admin/boekingen': { title: 'Boekingen', tips: ['Zoek op naam, e-mail of boekingsnummer.', 'Klik op een boeking voor details.', 'Filter op status met de tabbladen.'] },
+  '/admin/planning': { title: 'Planning', tips: ['Bekijk de bezetting per caravan en periode.', 'Sleep om de weergave te verschuiven.'] },
+  '/admin/borg': { title: 'Borg', tips: ['Maak een nieuwe checklist aan voor een boeking.', 'Gebruik "Mobiel Inspecteren" voor een stapsgewijze inspectie op telefoon.', 'Na voltooien krijgt de klant automatisch een link.'] },
+  '/admin/chat': { title: 'Chat', tips: ['Beantwoord live chats van klanten.', 'Klik op een gesprek om de berichten te lezen.', 'Je kunt chats verwijderen via het prullenbak-icoon.'] },
+  '/admin/klanten': { title: 'Klanten', tips: ['Bekijk alle klantgegevens en communicatie.', 'Zoek op naam of e-mail.'] },
+};
+const HELP_ITEMS_EN: Record<string, { title: string; tips: string[] }> = {
+  '/admin': { title: 'Dashboard', tips: ['Click a stat card to go to that page.', 'Open tasks appear automatically.', 'Use "Export" to download data (admin only).'] },
+  '/admin/boekingen': { title: 'Bookings', tips: ['Search by name, email or reference.', 'Click a booking for details.', 'Filter by status with the tabs.'] },
+  '/admin/planning': { title: 'Planning', tips: ['View occupancy per caravan and period.', 'Drag to shift the view.'] },
+  '/admin/borg': { title: 'Deposit', tips: ['Create a new checklist for a booking.', 'Use "Mobile Inspect" for step-by-step inspection on phone.', 'After completion, the customer gets a link automatically.'] },
+  '/admin/chat': { title: 'Chat', tips: ['Answer live chats from customers.', 'Click a conversation to read messages.', 'Delete chats via the trash icon.'] },
+  '/admin/klanten': { title: 'Customers', tips: ['View all customer data and communication.', 'Search by name or email.'] },
+};
+
 function AdminLayoutInner({
   navItems,
   role,
@@ -397,6 +431,31 @@ function AdminLayoutInner({
 }) {
   /* Use the admin context for translations */
   const { t, locale, setLocale } = useAdminCtx();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Show onboarding on first login
+  useEffect(() => {
+    const key = `admin_onboarded_${role}`;
+    if (!localStorage.getItem(key)) {
+      setShowOnboarding(true);
+    }
+  }, [role]);
+
+  const finishOnboarding = () => {
+    localStorage.setItem(`admin_onboarded_${role}`, 'true');
+    setShowOnboarding(false);
+    setOnboardingStep(0);
+  };
+
+  const onboardingSteps = locale === 'nl' ? ONBOARDING_STEPS_NL : ONBOARDING_STEPS_EN;
+  const helpItems = locale === 'nl' ? HELP_ITEMS_NL : HELP_ITEMS_EN;
+  const currentHelp = helpItems[pathname] || helpItems['/admin'];
+  const helpTitle = locale === 'nl' ? 'Hulp' : 'Help';
+  const helpGenericTips = locale === 'nl'
+    ? ['Gebruik het menu om te navigeren.', 'Op mobiel: tik op ☰ linksboven.', 'Klik op het ? icoon voor hulp.']
+    : ['Use the menu to navigate.', 'On mobile: tap ☰ top-left.', 'Click the ? icon for help.'];
 
   return (
     <div className="min-h-screen bg-surface-alt flex">
@@ -419,18 +478,24 @@ function AdminLayoutInner({
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="p-5">
+        <div className="p-4 lg:p-5">
           <div className="flex items-center justify-center">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={200}
               height={56}
-              className="w-44 h-auto drop-shadow-lg"
+              className="w-36 lg:w-44 h-auto drop-shadow-lg"
               unoptimized
             />
           </div>
-
+          <div className="mt-3 flex justify-center">
+            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+              role === 'admin' ? 'bg-amber-400/20 text-amber-200' : 'bg-white/15 text-white/70'
+            }`}>
+              {role === 'admin' ? '⚡ Admin' : '👤 Staff'}
+            </span>
+          </div>
         </div>
 
         <nav className="flex-1 p-3 space-y-1">
@@ -495,18 +560,25 @@ function AdminLayoutInner({
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30">
+        <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
+            className="lg:hidden p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1">
             {navItems.find((n) => n.href === pathname)
               ? t(navItems.find((n) => n.href === pathname)!.key)
               : 'Admin'}
           </h1>
+          <button
+            onClick={() => setShowHelp(true)}
+            className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+            aria-label={helpTitle}
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
         </header>
 
         {/* Page content with fade-in */}
@@ -520,6 +592,148 @@ function AdminLayoutInner({
           {children}
         </motion.main>
       </div>
+
+      {/* ═══ ONBOARDING MODAL ═══ */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+            onClick={finishOnboarding}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Progress dots */}
+              <div className="flex justify-center gap-2 mb-6">
+                {onboardingSteps.map((_, i) => (
+                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === onboardingStep ? 'w-6 bg-sky-500' : i < onboardingStep ? 'w-1.5 bg-sky-300' : 'w-1.5 bg-gray-200'
+                  }`} />
+                ))}
+              </div>
+
+              {/* Step content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={onboardingStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-center"
+                >
+                  <div className="text-4xl mb-4">{onboardingSteps[onboardingStep].icon}</div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">{onboardingSteps[onboardingStep].title}</h2>
+                  <p className="text-gray-600 leading-relaxed">{onboardingSteps[onboardingStep].desc}</p>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between mt-8">
+                <button
+                  onClick={finishOnboarding}
+                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  {locale === 'nl' ? 'Overslaan' : 'Skip'}
+                </button>
+                {onboardingStep < onboardingSteps.length - 1 ? (
+                  <button
+                    onClick={() => setOnboardingStep(s => s + 1)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 text-white rounded-xl font-semibold transition-colors hover:bg-sky-600 cursor-pointer active:scale-[0.98]"
+                  >
+                    {locale === 'nl' ? 'Volgende' : 'Next'}
+                    <ChevronRight size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={finishOnboarding}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 text-white rounded-xl font-semibold transition-colors hover:bg-sky-600 cursor-pointer active:scale-[0.98]"
+                  >
+                    {locale === 'nl' ? 'Aan de slag!' : 'Get started!'}
+                    <ArrowRight size={16} />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ HELP PANEL ═══ */}
+      <AnimatePresence>
+        {showHelp && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 z-[55] flex items-start justify-end"
+            onClick={() => setShowHelp(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="bg-white h-full w-full sm:w-96 sm:max-w-[85vw] shadow-2xl overflow-y-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-5 sm:p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <HelpCircle size={20} className="text-sky-500" />
+                    {helpTitle}
+                  </h2>
+                  <button onClick={() => setShowHelp(false)} className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Current page help */}
+                {currentHelp && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">{currentHelp.title}</h3>
+                    <div className="space-y-2">
+                      {currentHelp.tips.map((tip, i) => (
+                        <div key={i} className="flex items-start gap-2.5 bg-sky-50 rounded-xl px-4 py-3">
+                          <span className="text-sky-500 font-bold text-sm mt-0.5">{i + 1}.</span>
+                          <p className="text-sm text-gray-700">{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* General tips */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    {locale === 'nl' ? 'Algemene tips' : 'General tips'}
+                  </h3>
+                  <div className="space-y-2">
+                    {helpGenericTips.map((tip, i) => (
+                      <div key={i} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-4 py-3">
+                        <span className="text-gray-400 text-sm mt-0.5">•</span>
+                        <p className="text-sm text-gray-600">{tip}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Restart onboarding */}
+                <button
+                  onClick={() => { setShowHelp(false); setOnboardingStep(0); setShowOnboarding(true); }}
+                  className="w-full py-3 text-sm text-sky-600 bg-sky-50 rounded-xl font-medium hover:bg-sky-100 transition-colors cursor-pointer"
+                >
+                  {locale === 'nl' ? '🎓 Rondleiding opnieuw bekijken' : '🎓 View tour again'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -289,9 +289,9 @@ export default function AdminBorgPage() {
           { label: t('deposit.inProgress'), value: stats.inProgress, color: 'bg-primary-50 text-primary' },
           { label: t('deposit.completed'), value: stats.done, color: 'bg-primary-50 text-primary' },
         ].map(s => (
-          <div key={s.label} className={`${s.color} rounded-xl p-2.5 sm:p-4 text-center`}>
+          <div key={s.label} className={`${s.color} rounded-xl p-3 sm:p-4 text-center`}>
             <div className="text-xl sm:text-2xl font-bold">{s.value}</div>
-            <div className="text-[10px] sm:text-xs font-medium mt-0.5 sm:mt-1">{s.label}</div>
+            <div className="text-xs font-medium mt-0.5 sm:mt-1">{s.label}</div>
           </div>
         ))}
       </div>
@@ -430,18 +430,18 @@ export default function AdminBorgPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm text-foreground">{checklist.booking_ref}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                           checklist.type === 'INCHECKEN' ? 'bg-primary-50 text-primary' : 'bg-primary-50 text-primary'
                         }`}>
                           {checklist.type === 'INCHECKEN' ? 'Check-in' : 'Check-out'}
                         </span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[checklist.status] || 'bg-surface-alt text-muted'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[checklist.status] || 'bg-surface-alt text-muted'}`}>
                           {ts(checklist.status)}
                         </span>
                       </div>
                       <div className="text-xs text-muted mt-0.5 flex items-center gap-3 flex-wrap">
-                        <span className="flex items-center gap-1"><User size={10} /> {checklist.guest_name}</span>
-                        <span className="flex items-center gap-1"><Car size={10} /> {checklist.caravan_id}</span>
+                        <span className="flex items-center gap-1"><User size={12} /> {checklist.guest_name}</span>
+                        <span className="flex items-center gap-1"><Car size={12} /> {checklist.caravan_id}</span>
                         <span>{completedItems}/{allItems.length} {t('deposit.itemsCompleted')}</span>
                         {damagedItems > 0 && (
                           <span className="text-danger font-medium">{damagedItems} {t('deposit.problems')}</span>
@@ -517,13 +517,13 @@ export default function AdminBorgPage() {
                                         {itemStatusIcons[item.status]}
                                         <span className="text-sm text-foreground">{item.item}</span>
                                       </div>
-                                      <div className="flex items-center gap-2 sm:w-1/3">
+                                      <div className="flex items-center gap-1.5 sm:w-1/3">
                                         {(['goed', 'beschadigd', 'ontbreekt', 'nvt'] as const).map(st => (
                                           <button
                                             key={st}
                                             onClick={() => isEditable && handleItemUpdate(checklist.id, globalIdx, 'status', st)}
                                             disabled={!isEditable}
-                                            className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
+                                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                                               item.status === st
                                                 ? st === 'goed' ? 'bg-primary text-white'
                                                 : st === 'beschadigd' ? 'bg-primary text-white'
@@ -542,7 +542,7 @@ export default function AdminBorgPage() {
                                         onChange={(e) => isEditable && handleItemUpdate(checklist.id, globalIdx, 'notes', e.target.value)}
                                         placeholder={t("deposit.remarks")}
                                         disabled={!isEditable}
-                                        className="flex-1 px-2 py-1 rounded text-xs focus:outline-none focus:border-primary disabled:bg-surface-alt"
+                                        className="flex-1 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:border-primary disabled:bg-surface-alt"
                                       />
                                       {isEditable && (
                                         <button
@@ -569,7 +569,7 @@ export default function AdminBorgPage() {
                                 <select
                                   value={newItemCategory}
                                   onChange={(e) => setNewItemCategory(e.target.value)}
-                                  className="px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                  className="px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-primary sm:w-40"
                                 >
                                   <option value="">{t('deposit.category')}</option>
                                   {[...new Set(checklist.items.map(i => i.category))].map(cat => (
@@ -582,7 +582,7 @@ export default function AdminBorgPage() {
                                     type="text"
                                     placeholder={t("deposit.categoryName")}
                                     onChange={(e) => setNewItemCategory(e.target.value === '' ? '__new' : e.target.value)}
-                                    className="px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary sm:w-40"
+                                    className="px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-primary sm:w-40"
                                   />
                                 )}
                                 <input
@@ -590,20 +590,20 @@ export default function AdminBorgPage() {
                                   value={newItemName}
                                   onChange={(e) => setNewItemName(e.target.value)}
                                   placeholder={t("deposit.itemName")}
-                                  className="flex-1 px-2 py-1.5 rounded text-xs focus:outline-none focus:border-primary"
+                                  className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-primary"
                                   onKeyDown={(e) => e.key === 'Enter' && handleAddItem(checklist.id)}
                                 />
-                                <div className="flex gap-1">
+                                <div className="flex gap-2">
                                   <button
                                     onClick={() => handleAddItem(checklist.id)}
                                     disabled={!newItemCategory || newItemCategory === '__new' || !newItemName.trim()}
-                                    className="px-3 py-1.5 bg-primary text-white rounded text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 cursor-pointer"
                                   >
                                     {t('common.add')}
                                   </button>
                                   <button
                                     onClick={() => { setAddingItemTo(null); setNewItemName(''); setNewItemCategory(''); }}
-                                    className="px-3 py-1.5 bg-surface-alt text-muted rounded text-xs cursor-pointer"
+                                    className="px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm cursor-pointer"
                                   >
                                     {t('common.cancel')}
                                   </button>
@@ -672,8 +672,8 @@ export default function AdminBorgPage() {
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                 {t('deposit.completeAndSend')}
                               </button>
-                              <p className="w-full text-[11px] text-muted flex items-center gap-1 mt-0.5">
-                                <Mail size={11} /> {t('deposit.emailSentNote')}
+                              <p className="w-full text-xs text-muted flex items-center gap-1 mt-1">
+                                <Mail size={12} /> {t('deposit.emailSentNote')}
                               </p>
                             </>
                           )}
