@@ -116,11 +116,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID en wachtwoord zijn verplicht' }, { status: 400 });
     }
 
-    // Verify admin password
-    if (password !== 'CostaAdmin2026!') {
-      return NextResponse.json({ error: 'Onjuist wachtwoord' }, { status: 403 });
-    }
-
+    // Auth verified via middleware (admin session cookie)
     await deleteBookingById(id);
     return NextResponse.json({ success: true });
   } catch (error) {

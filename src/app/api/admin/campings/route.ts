@@ -6,11 +6,26 @@ import {
   deleteCamping,
   reorderCampings,
 } from '@/lib/db';
+import { campings as staticCampings } from '@/data/campings';
 
-// GET - List all campings
+// GET - List all campings (auto-seeds from static data if DB is empty)
 export async function GET() {
   try {
-    const campings = await getAllCampings();
+    let campings = await getAllCampings();
+
+    // Auto-seed static campings into DB if empty
+    if (campings.length === 0 && staticCampings.length > 0) {
+      for (const sc of staticCampings) {
+        await createCamping({
+          name: sc.name,
+          location: sc.location,
+          description: sc.description,
+          website: sc.website || '',
+        });
+      }
+      campings = await getAllCampings();
+    }
+
     return NextResponse.json({ campings });
   } catch (error) {
     console.error('Error fetching campings:', error);

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDiscountCodes, createDiscountCode, updateDiscountCode, deleteDiscountCode, applyBookingDiscount, validateDiscountCode, incrementDiscountCodeUsage } from '@/lib/db';
 
-const ADMIN_PASSWORD = 'CostaAdmin2026!';
-
 export async function GET() {
   try {
     const codes = await getAllDiscountCodes();
@@ -16,11 +14,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { password, code, type, value, maxUses, minAmount, validFrom, validUntil, action, bookingId, discountCode: dc, discountAmount } = body;
-
-    if (password !== ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const { code, type, value, maxUses, minAmount, validFrom, validUntil, action, bookingId, discountCode: dc, discountAmount } = body;
 
     // Apply discount to booking
     if (action === 'applyToBooking') {
@@ -57,11 +51,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { password, id, active, maxUses, validUntil } = body;
-
-    if (password !== ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const { id, active, maxUses, validUntil } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
@@ -78,11 +68,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { password, id } = body;
-
-    if (password !== ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const { id } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });

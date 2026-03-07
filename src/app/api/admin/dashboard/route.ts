@@ -35,14 +35,9 @@ export async function GET() {
   }
 }
 
-const ADMIN_PASSWORD = 'CostaAdmin2026!';
-
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    if (body.adminPassword !== ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Ongeldig wachtwoord' }, { status: 403 });
-    }
 
     const result = await purgeAllTestData();
     return NextResponse.json({ message: 'Alle testdata is verwijderd', ...result });

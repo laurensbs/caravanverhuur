@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId } from '@/lib/db';
 
-const ADMIN_PASSWORD = 'CostaAdmin2026!';
-
 // Simple password hashing (same as auth/register)
 async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomUUID();
@@ -106,10 +104,6 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json({ error: 'Klant-ID is verplicht' }, { status: 400 });
-    }
-
-    if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'Ongeldig admin wachtwoord' }, { status: 403 });
     }
 
     await deleteCustomer(id);

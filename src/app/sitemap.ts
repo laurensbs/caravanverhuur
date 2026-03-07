@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { caravans } from '@/data/caravans';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://caravanverhuurspanje.com';
@@ -15,7 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },
   ];
 
-  const caravanIds = ['1', '2', '3', '4'];
+  // Dynamic caravan IDs from static data (custom caravans can be added later via DB)
+  const caravanIds = caravans.map(c => c.id);
 
   const destinationSlugs = [
     'pals', 'estartit', 'begur', 'tossa-de-mar', 'platja-daro',

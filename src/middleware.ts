@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminToken } from '@/lib/admin-auth';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const { pathname } = request.nextUrl;
   const isAdminSubdomain = hostname.startsWith('admin.');
+
+  /* ── Protect /api/admin/* (except auth routes) ────────── */
+  if (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth')) {
+    const cookie = request.cookies.get('admin_session')?.value;
+    const authHeader = request.headers.get('authorization');
+    const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+
+    if (!token) {
+      return NextResponse.json({ error: 'Niet geautoriseerd' }, { status: 401 });
+    }
+
+    const session = await verifyAdminToken(token);
+    if (!session) {
+      return NextResponse.json({ error: 'Sessie verlopen' }, { status: 401 });
+    }
+
+    return NextResponse.next();
+  }
 
   /* ── Admin subdomain ──────────────────────────────────── */
   if (isAdminSubdomain) {

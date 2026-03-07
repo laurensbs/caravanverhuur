@@ -38,10 +38,8 @@ import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
 
 /* ── Credentials ─────────────────────────────────── */
-const CREDENTIALS: Record<string, { password: string; role: AdminRole }> = {
-  admin: { password: 'CostaAdmin2026!', role: 'admin' },
-  staff: { password: 'CostaStaff2026!', role: 'staff' },
-};
+// Credentials are now server-side only (src/lib/admin-auth.ts)
+// The login form calls /api/admin/auth/login
 
 /* ── Nav items with role-based access ───────────── */
 const NAV_ITEMS: { sub: string; key: string; icon: typeof LayoutDashboard; roles: AdminRole[] }[] = [
@@ -66,9 +64,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mainSiteUrl, setMainSiteUrl] = useState('/');
+  const [loginLoading, setLoginLoading] = useState(false);
   const [loginLocale, setLoginLocale] = useState<AdminLocale>('nl');
   const pathname = usePathname();
 
@@ -83,41 +81,51 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const savedLocale = localStorage.getItem('admin_locale') as AdminLocale | null;
     if (savedLocale && (savedLocale === 'nl' || savedLocale === 'en')) setLoginLocale(savedLocale);
 
-    /* Restore auth */
-    const storedAuth = sessionStorage.getItem('admin_auth') || localStorage.getItem('admin_auth');
-    const storedRole = (sessionStorage.getItem('admin_role') || localStorage.getItem('admin_role')) as AdminRole | null;
-    if (storedAuth === 'true') {
-      setAuthenticated(true);
-      if (storedRole === 'admin' || storedRole === 'staff') setRole(storedRole);
-    }
+    /* Verify existing session with server */
+    fetch('/api/admin/auth/me', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.authenticated) {
+          setAuthenticated(true);
+          setRole(data.role);
+        }
+      })
+      .catch(() => {});
+
     if (window.location.hostname.startsWith('admin.')) {
       setMainSiteUrl(`https://${window.location.hostname.replace('admin.', '')}`);
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cred = CREDENTIALS[username.toLowerCase()];
-    if (cred && password === cred.password) {
-      sessionStorage.setItem('admin_auth', 'true');
-      sessionStorage.setItem('admin_role', cred.role);
-      if (rememberMe) {
-        localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_role', cred.role);
+    setLoginLoading(true);
+    try {
+      const res = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ user: username.toLowerCase(), password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRole(data.role);
+        setAuthenticated(true);
+        setError('');
+      } else {
+        setError(data.error || lt('auth.wrongCredentials'));
       }
-      setRole(cred.role);
-      setAuthenticated(true);
-      setError('');
-    } else {
+    } catch {
       setError(lt('auth.wrongCredentials'));
+    } finally {
+      setLoginLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth');
-    sessionStorage.removeItem('admin_role');
-    localStorage.removeItem('admin_auth');
-    localStorage.removeItem('admin_role');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
     setAuthenticated(false);
     setPassword('');
     setUsername('');
@@ -310,24 +318,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                       )}
                     </AnimatePresence>
 
-                    {/* Remember me */}
-                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded text-primary focus:ring-primary/20 cursor-pointer accent-primary"
-                      />
-                      <span className="text-sm text-muted">{lt('auth.rememberMe')}</span>
-                    </label>
-
                     {/* Submit */}
                     <button
                       type="submit"
-                      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] cursor-pointer"
+                      disabled={loginLoading}
+                      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] cursor-pointer disabled:opacity-60"
                     >
-                      {lt('auth.login')}
-                      <ArrowRight size={16} />
+                      {loginLoading ? lt('auth.loggingIn') || 'Bezig...' : lt('auth.login')}
+                      {!loginLoading && <ArrowRight size={16} />}
                     </button>
                   </form>
                 </motion.div>
@@ -440,33 +438,36 @@ function AdminLayoutInner({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
-  const [orderedNav, setOrderedNav] = useState(navItems);
+  const [navOrder, setNavOrder] = useState<string[]>([]);
   const [isDraggingSidebar, setIsDraggingSidebar] = useState(false);
 
-  // Restore nav order from localStorage
+  // Restore nav order from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(`admin_nav_order_${role}`);
     if (saved) {
       try {
-        const order: string[] = JSON.parse(saved);
-        const sorted = [...navItems].sort((a, b) => {
-          const ai = order.indexOf(a.href);
-          const bi = order.indexOf(b.href);
-          if (ai === -1 && bi === -1) return 0;
-          if (ai === -1) return 1;
-          if (bi === -1) return -1;
-          return ai - bi;
-        });
-        setOrderedNav(sorted);
-      } catch { setOrderedNav(navItems); }
-    } else {
-      setOrderedNav(navItems);
+        setNavOrder(JSON.parse(saved));
+      } catch { /* ignore */ }
     }
-  }, [navItems, role]);
+  }, [role]);
 
-  const handleNavReorder = (newOrder: typeof navItems) => {
-    setOrderedNav(newOrder);
-    localStorage.setItem(`admin_nav_order_${role}`, JSON.stringify(newOrder.map(n => n.href)));
+  // Compute ordered nav items from the saved order
+  const orderedNav = useMemo(() => {
+    if (navOrder.length === 0) return navItems;
+    const sorted = [...navItems].sort((a, b) => {
+      const ai = navOrder.indexOf(a.href);
+      const bi = navOrder.indexOf(b.href);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+    return sorted;
+  }, [navItems, navOrder]);
+
+  const handleNavReorder = (newOrder: string[]) => {
+    setNavOrder(newOrder);
+    localStorage.setItem(`admin_nav_order_${role}`, JSON.stringify(newOrder));
   };
 
   // Show onboarding on first login
@@ -535,7 +536,7 @@ function AdminLayoutInner({
         <nav className="flex-1 p-3 overflow-y-auto">
           <Reorder.Group
             axis="y"
-            values={orderedNav}
+            values={orderedNav.map(i => i.href)}
             onReorder={handleNavReorder}
             className="space-y-1"
           >
@@ -544,11 +545,12 @@ function AdminLayoutInner({
               return (
                 <Reorder.Item
                   key={item.href}
-                  value={item}
+                  value={item.href}
                   whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
                   onDragStart={() => setIsDraggingSidebar(true)}
-                  onDragEnd={() => setIsDraggingSidebar(false)}
+                  onDragEnd={() => setTimeout(() => setIsDraggingSidebar(false), 100)}
                   className="list-none"
+                  dragListener={true}
                 >
                   <Link
                     href={item.href}

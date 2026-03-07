@@ -63,13 +63,29 @@ export interface ContactSubmission {
 
 // ===== HELPERS =====
 
-export function getBookingCaravan(booking: Booking) {
-  return caravans.find(c => c.id === booking.caravan_id);
+// These accept optional arrays of custom caravans/campings from the DB.
+// Falls back to static data, then returns a minimal object with just the ID.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export function getBookingCaravan(booking: Booking, customCaravans?: any[]) {
+  const staticMatch = caravans.find(c => c.id === booking.caravan_id);
+  if (staticMatch) return staticMatch;
+  const customMatch = customCaravans?.find((c: any) => c.id === booking.caravan_id);
+  if (customMatch) return customMatch;
+  // Fallback: return minimal object so displays don't break
+  if (booking.caravan_id) return { id: booking.caravan_id, name: `Caravan ${booking.caravan_id}`, reference: booking.caravan_id, type: '', maxPersons: 0, manufacturer: '', year: 0, description: '', photos: [] as string[], amenities: [] as string[], pricePerDay: 0, pricePerWeek: 0, deposit: 0 };
+  return undefined;
 }
 
-export function getBookingCamping(booking: Booking) {
-  return campings.find(c => c.id === booking.camping_id);
+export function getBookingCamping(booking: Booking, customCampings?: any[]) {
+  const staticMatch = campings.find(c => c.id === booking.camping_id);
+  if (staticMatch) return staticMatch;
+  const customMatch = customCampings?.find((c: any) => c.id === booking.camping_id);
+  if (customMatch) return customMatch;
+  // Fallback: return minimal object so displays don't break
+  if (booking.camping_id) return { id: booking.camping_id, name: `Camping ${booking.camping_id}`, location: '', description: '' };
+  return undefined;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function getStatusColor(status: BookingStatus): string {
   const colors: Record<BookingStatus, string> = {
