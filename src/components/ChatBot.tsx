@@ -763,10 +763,10 @@ export default function ChatBot() {
               phone: data.customer.phone || '',
             });
             const greeting = isNl
-              ? `Hoi **${data.customer.name}**! 👋 Welkom terug! Ik ben **Luna**, je persoonlijke assistent.\n\nJe bent ingelogd, dus ik heb je gegevens al. Waar kan ik je mee helpen? 😊`
+              ? `Hoi **${data.customer.name}**! 👋 Welkom terug!\n\nWaar kan ik je mee helpen? 😊`
               : isEs
-              ? `¡Hola **${data.customer.name}**! 👋 ¡Bienvenido de nuevo! Soy **Luna**. ¿En qué puedo ayudarte? 😊`
-              : `Hi **${data.customer.name}**! 👋 Welcome back! I'm **Luna**. How can I help you? 😊`;
+              ? `¡Hola **${data.customer.name}**! 👋 ¡Bienvenido! ¿En qué puedo ayudarte? 😊`
+              : `Hi **${data.customer.name}**! 👋 Welcome back! How can I help you? 😊`;
             setMessages([{
               id: '1', role: 'bot', text: greeting,
               quickReplies: isNl
@@ -777,20 +777,34 @@ export default function ChatBot() {
             }]);
           } else {
             const greeting = isNl
-              ? 'Hoi! 👋 Ik ben **Luna**, je persoonlijke assistent bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je beter helpen! 😊'
+              ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWaar kan ik je mee helpen? 😊'
               : isEs
-              ? '¡Hola! 👋 Soy **Luna**, tu asistente personal. ¿Como te llamas? 😊'
-              : "Hi! 👋 I'm **Luna**, your personal assistant at Caravanverhuur Spanje.\n\nWhat's your name? 😊";
-            setMessages([{ id: '1', role: 'bot', text: greeting, timestamp: new Date() }]);
+              ? '¡Hola! 👋 Bienvenido. ¿En qué puedo ayudarte? 😊'
+              : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nHow can I help you? 😊";
+            setMessages([{
+              id: '1', role: 'bot', text: greeting,
+              quickReplies: isNl
+                ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+                : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+                : ['What does it cost?', 'Which caravans?', 'How to book?'],
+              timestamp: new Date(),
+            }]);
           }
         })
         .catch(() => {
           const greeting = isNl
-            ? 'Hoi! 👋 Ik ben **Luna**, je persoonlijke assistent bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je beter helpen! 😊'
+            ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWaar kan ik je mee helpen? 😊'
             : isEs
-            ? '¡Hola! 👋 Soy **Luna**, tu asistente personal. ¿Como te llamas? 😊'
-            : "Hi! 👋 I'm **Luna**, your personal assistant at Caravanverhuur Spanje.\n\nWhat's your name? 😊";
-          setMessages([{ id: '1', role: 'bot', text: greeting, timestamp: new Date() }]);
+            ? '¡Hola! 👋 Bienvenido. ¿En qué puedo ayudarte? 😊'
+            : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nHow can I help you? 😊";
+          setMessages([{
+            id: '1', role: 'bot', text: greeting,
+            quickReplies: isNl
+              ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+              : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+              : ['What does it cost?', 'Which caravans?', 'How to book?'],
+            timestamp: new Date(),
+          }]);
         });
     }
   }, [isOpen, locale, messages.length, isNl, isEs]);
@@ -867,42 +881,6 @@ export default function ChatBot() {
     saveMessage('user', trimmed);
 
     if (chatMode === 'live-chat' || chatMode === 'waiting-human') return;
-
-    // Name detection
-    if (!userName) {
-      const words = trimmed.split(/\s+/);
-      if (words.length <= 3 && !/\?|prijs|boek|caravan|camping|kost|help|hoe|wat|welke/.test(trimmed.toLowerCase())) {
-        const detectedName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        setUserName(detectedName);
-        if (conversationId) {
-          fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'updateVisitor', conversationId, name: detectedName }),
-          }).catch(() => {});
-        }
-        setIsTyping(true);
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: (Date.now() + 1).toString(),
-            role: 'bot',
-            text: isNl
-              ? `Leuk je te leren kennen, **${detectedName}**! 😊\n\nIk kan je helpen met alles over onze caravans op de Costa Brava:\n• Prijzen & beschikbaarheid\n• Campings & bestemmingen\n• Boeken & betalen\n• Tips & aanbevelingen\n\nWat wil je weten?`
-              : isEs
-              ? `¡Encantada, **${detectedName}**! 😊\n\n¿En que puedo ayudarte?`
-              : `Nice to meet you, **${detectedName}**! 😊\n\nWhat would you like to know?`,
-            quickReplies: isNl
-              ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
-              : isEs ? ['¿Cuanto cuesta?', '¿Que caravanas?', '¿Como reservo?']
-              : ['What does it cost?', 'Which caravans?', 'How to book?'],
-            timestamp: new Date(),
-          }]);
-          setIsTyping(false);
-          saveMessage('bot', `Nice to meet you, ${detectedName}!`);
-        }, 500);
-        return;
-      }
-    }
 
     setIsTyping(true);
     setTimeout(() => {
@@ -1038,7 +1016,7 @@ export default function ChatBot() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-[13px] sm:text-sm flex items-center gap-1.5">
-                  Luna
+                  {isNl ? 'Persoonlijke Assistent' : isEs ? 'Asistente Personal' : 'Personal Assistant'}
                   {chatMode === 'live-chat' && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-medium">Live</span>}
                 </p>
                 <p className="text-white/70 text-[11px] sm:text-xs">
@@ -1148,7 +1126,7 @@ export default function ChatBot() {
             {/* Input */}
             {!showContactForm && (
               <form onSubmit={handleSubmit} className="shrink-0 bg-white border-t border-gray-100 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center gap-2 safe-area-bottom">
-                <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} placeholder={placeholders[locale] || placeholders.nl} enterKeyHint="send" autoComplete="off" className="flex-1 bg-gray-50 rounded-full px-3.5 sm:px-4 py-2.5 text-[14px] sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} placeholder={placeholders[locale] || placeholders.nl} enterKeyHint="send" autoComplete="off" className="flex-1 bg-gray-50 rounded-full px-3.5 sm:px-4 py-2.5 text-[16px] sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 <button type="submit" disabled={!input.trim()} className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-90 cursor-pointer">
                   <Send size={16} />
                 </button>
