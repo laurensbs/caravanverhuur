@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   Tent,
   PlusCircle,
@@ -30,6 +30,102 @@ interface Camping {
   active: boolean;
   sort_order: number;
   created_at: string;
+}
+
+/* ── Camping Reorder Item with dedicated drag handle ── */
+function CampingReorderItem({
+  camping,
+  isNl,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}: {
+  camping: Camping;
+  isNl: boolean;
+  onToggleActive: (c: Camping) => void;
+  onEdit: (c: Camping) => void;
+  onDelete: (id: string) => void;
+}) {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={camping}
+      dragListener={false}
+      dragControls={controls}
+      className="bg-white rounded-xl overflow-hidden list-none"
+      whileDrag={{ scale: 1.02, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', zIndex: 50 }}
+    >
+      <div className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 ${!camping.active ? 'opacity-60' : ''}`}>
+        {/* Drag handle */}
+        <div
+          className="cursor-grab active:cursor-grabbing text-muted hover:text-foreground transition-colors shrink-0"
+          onPointerDown={(e) => controls.start(e)}
+          style={{ touchAction: 'none' }}
+        >
+          <GripVertical size={18} />
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-sm text-foreground">{camping.name}</span>
+            {!camping.active && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-alt text-muted">
+                {isNl ? 'Inactief' : 'Inactive'}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
+            <MapPin size={11} />
+            <span>{camping.location}</span>
+            {camping.description && (
+              <>
+                <span className="hidden sm:inline">•</span>
+                <span className="hidden sm:inline truncate max-w-[200px]">{camping.description}</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          {camping.website && (
+            <a
+              href={camping.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors"
+              title="Website"
+            >
+              <ExternalLink size={14} />
+            </a>
+          )}
+          <button
+            onClick={() => onToggleActive(camping)}
+            className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors cursor-pointer"
+            title={camping.active ? (isNl ? 'Deactiveren' : 'Deactivate') : (isNl ? 'Activeren' : 'Activate')}
+          >
+            {camping.active ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+          <button
+            onClick={() => onEdit(camping)}
+            className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors cursor-pointer"
+            title={isNl ? 'Bewerken' : 'Edit'}
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            onClick={() => onDelete(camping.id)}
+            className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-danger transition-colors cursor-pointer"
+            title={isNl ? 'Verwijderen' : 'Delete'}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+    </Reorder.Item>
+  );
 }
 
 export default function AdminCampingsPage() {
@@ -146,7 +242,14 @@ export default function AdminCampingsPage() {
   };
 
   const handleReorder = async (newOrder: Camping[]) => {
-    setCampings(newOrder);
+    // Merge reordered filtered list back into full campings list
+    if (search.trim()) {
+      const reorderedIds = new Set(newOrder.map(c => c.id));
+      const rest = campings.filter(c => !reorderedIds.has(c.id));
+      setCampings([...newOrder, ...rest]);
+    } else {
+      setCampings(newOrder);
+    }
     try {
       await fetch('/api/admin/campings', {
         method: 'PUT',
@@ -365,77 +468,14 @@ export default function AdminCampingsPage() {
             className="space-y-2"
           >
             {filtered.map(camping => (
-              <Reorder.Item
+              <CampingReorderItem
                 key={camping.id}
-                value={camping}
-                className="bg-white rounded-xl overflow-hidden"
-                whileDrag={{ scale: 1.02, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', zIndex: 50 }}
-              >
-                <div className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 ${!camping.active ? 'opacity-60' : ''}`}>
-                  {/* Drag handle */}
-                  <div className="cursor-grab active:cursor-grabbing touch-none text-muted hover:text-foreground transition-colors shrink-0">
-                    <GripVertical size={18} />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm text-foreground">{camping.name}</span>
-                      {!camping.active && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-alt text-muted">
-                          {isNl ? 'Inactief' : 'Inactive'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
-                      <MapPin size={11} />
-                      <span>{camping.location}</span>
-                      {camping.description && (
-                        <>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="hidden sm:inline truncate max-w-[200px]">{camping.description}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {camping.website && (
-                      <a
-                        href={camping.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors"
-                        title="Website"
-                      >
-                        <ExternalLink size={14} />
-                      </a>
-                    )}
-                    <button
-                      onClick={() => handleToggleActive(camping)}
-                      className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors cursor-pointer"
-                      title={camping.active ? (isNl ? 'Deactiveren' : 'Deactivate') : (isNl ? 'Activeren' : 'Activate')}
-                    >
-                      {camping.active ? <Eye size={14} /> : <EyeOff size={14} />}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(camping)}
-                      className="p-2 rounded-lg hover:bg-surface-alt text-muted hover:text-foreground transition-colors cursor-pointer"
-                      title={isNl ? 'Bewerken' : 'Edit'}
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirm(camping.id)}
-                      className="p-2 rounded-lg hover:bg-red-50 text-muted hover:text-danger transition-colors cursor-pointer"
-                      title={isNl ? 'Verwijderen' : 'Delete'}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              </Reorder.Item>
+                camping={camping}
+                isNl={isNl}
+                onToggleActive={handleToggleActive}
+                onEdit={handleEdit}
+                onDelete={(id) => setDeleteConfirm(id)}
+              />
             ))}
           </Reorder.Group>
 

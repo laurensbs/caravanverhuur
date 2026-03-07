@@ -4,7 +4,7 @@ import { useState, useEffect, ReactNode, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -414,6 +414,57 @@ const HELP_ITEMS_EN: Record<string, { title: string; tips: string[] }> = {
   '/admin/campings': { title: 'Campings', tips: ['Add or remove campings.', 'Drag campings to reorder.', 'Active campings appear on the booking page.', 'Import the default 30 campings on first use.'] },
 };
 
+/* ── Sidebar Nav Item with dedicated drag handle ── */
+function SidebarNavItem({
+  item,
+  isActive,
+  onNavigate,
+  t,
+}: {
+  item: { href: string; key: string; icon: typeof LayoutDashboard };
+  isActive: boolean;
+  onNavigate: () => void;
+  t: (key: string) => string;
+}) {
+  const controls = useDragControls();
+  const Icon = item.icon;
+
+  return (
+    <Reorder.Item
+      value={item.href}
+      dragListener={false}
+      dragControls={controls}
+      whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
+      className="list-none"
+    >
+      <Link
+        href={item.href}
+        onClick={() => onNavigate()}
+        draggable={false}
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+          isActive
+            ? 'bg-white/15 text-white shadow-sm'
+            : 'text-white/70 hover:bg-white/10 hover:text-white'
+        }`}
+      >
+        <GripVertical
+          className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => controls.start(e)}
+          style={{ touchAction: 'none' }}
+        />
+        <Icon className="w-5 h-5 shrink-0" />
+        <span className="flex-1">{t(item.key)}</span>
+        {isActive && (
+          <motion.div
+            layoutId="activeIndicator"
+            className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
+          />
+        )}
+      </Link>
+    </Reorder.Item>
+  );
+}
+
 function AdminLayoutInner({
   navItems,
   role,
@@ -439,7 +490,6 @@ function AdminLayoutInner({
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [navOrder, setNavOrder] = useState<string[]>([]);
-  const [isDraggingSidebar, setIsDraggingSidebar] = useState(false);
 
   // Restore nav order from localStorage on mount
   useEffect(() => {
@@ -540,40 +590,15 @@ function AdminLayoutInner({
             onReorder={handleNavReorder}
             className="space-y-1"
           >
-            {orderedNav.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Reorder.Item
-                  key={item.href}
-                  value={item.href}
-                  whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
-                  onDragStart={() => setIsDraggingSidebar(true)}
-                  onDragEnd={() => setTimeout(() => setIsDraggingSidebar(false), 100)}
-                  className="list-none"
-                  dragListener={true}
-                >
-                  <Link
-                    href={item.href}
-                    onClick={(e) => { if (isDraggingSidebar) { e.preventDefault(); return; } setSidebarOpen(false); }}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-white/15 text-white shadow-sm'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <GripVertical className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing" />
-                    <item.icon className="w-5 h-5 shrink-0" />
-                    <span className="flex-1">{t(item.key)}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeIndicator"
-                        className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
-                      />
-                    )}
-                  </Link>
-                </Reorder.Item>
-              );
-            })}
+            {orderedNav.map((item) => (
+              <SidebarNavItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+                onNavigate={() => setSidebarOpen(false)}
+                t={t}
+              />
+            ))}
           </Reorder.Group>
         </nav>
 

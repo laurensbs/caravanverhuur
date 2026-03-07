@@ -5,6 +5,7 @@ import {
   updateCamping,
   deleteCamping,
   reorderCampings,
+  setupDatabase,
 } from '@/lib/db';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -28,6 +29,26 @@ export async function GET() {
 
     return NextResponse.json({ campings });
   } catch (error) {
+    // Auto-create tables if they don't exist yet
+    if (error instanceof Error && error.message.includes('does not exist')) {
+      try {
+        await setupDatabase();
+        // After setup, seed static campings
+        for (const sc of staticCampings) {
+          await createCamping({
+            name: sc.name,
+            location: sc.location,
+            description: sc.description,
+            website: sc.website || '',
+          });
+        }
+        const campings = await getAllCampings();
+        return NextResponse.json({ campings });
+      } catch (setupError) {
+        console.error('Error setting up database for campings:', setupError);
+        return NextResponse.json({ error: 'Fout bij database setup' }, { status: 500 });
+      }
+    }
     console.error('Error fetching campings:', error);
     return NextResponse.json({ error: 'Fout bij ophalen campings' }, { status: 500 });
   }
