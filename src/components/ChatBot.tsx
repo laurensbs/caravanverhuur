@@ -1029,34 +1029,35 @@ export default function ChatBot() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-5 z-[90] sm:w-[400px] sm:h-[560px] sm:max-h-[75vh] flex flex-col bg-white sm:rounded-2xl sm:shadow-2xl sm:border sm:border-gray-200 overflow-hidden"
+            style={{ height: '100dvh' }}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-primary-dark px-4 py-3 flex items-center gap-3 shrink-0 safe-area-top">
-              <button onClick={() => setIsOpen(false)} className="sm:hidden w-8 h-8 flex items-center justify-center text-white/80 hover:text-white cursor-pointer">
-                <ArrowLeft size={20} />
+            <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 safe-area-top">
+              <button onClick={() => setIsOpen(false)} className="sm:hidden w-9 h-9 flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-transform cursor-pointer -ml-1">
+                <ArrowLeft size={22} />
               </button>
-              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white/20 flex items-center justify-center shrink-0">
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Luna" width={30} height={30} className="object-contain" unoptimized />
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-primary" />
+              <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white/20 flex items-center justify-center shrink-0">
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Luna" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" unoptimized />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm flex items-center gap-1.5">
+                <p className="text-white font-bold text-[13px] sm:text-sm flex items-center gap-1.5">
                   Luna
                   {chatMode === 'live-chat' && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-medium">Live</span>}
                 </p>
-                <p className="text-white/70 text-xs">
+                <p className="text-white/70 text-[11px] sm:text-xs">
                   {chatMode === 'waiting-human' ? (isNl ? 'Medewerker zoeken...' : 'Finding staff...')
                     : chatMode === 'live-chat' ? (isNl ? 'Je praat met een medewerker' : 'Talking to staff')
                     : 'Caravanverhuur Spanje'}
                 </p>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer">
+              <button onClick={() => setIsOpen(false)} className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
                 <ChevronDown size={20} />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50 overscroll-contain">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2.5 sm:py-3 space-y-2.5 sm:space-y-3 bg-gray-50 overscroll-contain scroll-smooth">
               {messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.role !== 'user' && msg.role !== 'system' && (
@@ -1064,15 +1065,15 @@ export default function ChatBot() {
                       {msg.role === 'staff' ? <User className="w-3 h-3 text-primary" /> : <Sparkles className="w-3 h-3 text-primary" />}
                     </div>
                   )}
-                  <div className={`max-w-[80%] ${msg.role === 'user'
-                    ? 'bg-primary text-white rounded-2xl rounded-br-sm px-4 py-2.5'
+                  <div className={`max-w-[85%] sm:max-w-[80%] ${msg.role === 'user'
+                    ? 'bg-primary text-white rounded-2xl rounded-br-sm px-3.5 sm:px-4 py-2 sm:py-2.5'
                     : msg.role === 'staff'
-                    ? 'bg-blue-50 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2.5 border border-blue-200'
+                    ? 'bg-blue-50 text-gray-800 rounded-2xl rounded-bl-sm px-3.5 sm:px-4 py-2 sm:py-2.5 border border-blue-200'
                     : msg.role === 'system'
                     ? 'bg-gray-200 text-gray-600 rounded-xl px-3 py-1.5 text-xs text-center w-full max-w-full'
-                    : 'bg-white text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-sm border border-gray-100'
+                    : 'bg-white text-gray-800 rounded-2xl rounded-bl-sm px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-sm border border-gray-100'
                   }`}>
-                    <div className="text-sm leading-relaxed whitespace-pre-line">{renderMarkdown(msg.text)}</div>
+                    <div className="text-[13px] sm:text-sm leading-relaxed whitespace-pre-line">{renderMarkdown(msg.text)}</div>
                     {msg.role !== 'system' && (
                       <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-white/50' : 'text-gray-400'}`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1084,9 +1085,9 @@ export default function ChatBot() {
 
               {/* Quick replies */}
               {messages.length > 0 && messages[messages.length - 1].role === 'bot' && messages[messages.length - 1].quickReplies && !isTyping && chatMode === 'bot' && (
-                <div className="flex flex-wrap gap-1.5 pt-1 pl-8">
+                <div className="flex sm:flex-wrap gap-1.5 pt-1 pl-8 overflow-x-auto no-scrollbar pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 sm:overflow-x-visible">
                   {messages[messages.length - 1].quickReplies!.map((qr, i) => (
-                    <button key={i} onClick={() => sendMessage(qr)} className="px-3 py-1.5 bg-white border border-primary/30 text-primary text-xs font-medium rounded-full hover:bg-primary/5 transition-colors active:scale-95 cursor-pointer">
+                    <button key={i} onClick={() => sendMessage(qr)} className="px-3 py-2 sm:py-1.5 bg-white border border-primary/30 text-primary text-xs font-medium rounded-full hover:bg-primary/5 transition-colors active:scale-95 cursor-pointer whitespace-nowrap shrink-0 sm:shrink">
                       {qr}
                     </button>
                   ))}
@@ -1095,25 +1096,25 @@ export default function ChatBot() {
 
               {/* Contact form */}
               {showContactForm && (
-                <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-3">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 space-y-2.5 sm:space-y-3">
+                  <p className="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {isNl ? 'Laat je gegevens achter' : isEs ? 'Deja tus datos' : 'Leave your details'}
                   </p>
                   <div className="space-y-2">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="text" value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} placeholder={isNl ? 'Je naam *' : 'Your name *'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+                      <input type="text" value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} placeholder={isNl ? 'Je naam *' : 'Your name *'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-[13px] sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} placeholder={isNl ? 'E-mailadres' : 'Email address'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+                      <input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} placeholder={isNl ? 'E-mailadres' : 'Email address'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-[13px] sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="tel" value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} placeholder={isNl ? 'Telefoonnummer' : 'Phone number'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+                      <input type="tel" value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} placeholder={isNl ? 'Telefoonnummer' : 'Phone number'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-[13px] sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
                   </div>
-                  <button onClick={handleContactSubmit} disabled={!contactForm.name || (!contactForm.email && !contactForm.phone)} className="w-full py-2.5 bg-primary text-white text-sm font-semibold rounded-xl disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all">
+                  <button onClick={handleContactSubmit} disabled={!contactForm.name || (!contactForm.email && !contactForm.phone)} className="w-full py-2.5 bg-primary text-white text-[13px] sm:text-sm font-semibold rounded-xl disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all">
                     {isNl ? 'Versturen' : isEs ? 'Enviar' : 'Send'}
                   </button>
                 </div>
@@ -1150,9 +1151,9 @@ export default function ChatBot() {
 
             {/* Input */}
             {!showContactForm && (
-              <form onSubmit={handleSubmit} className="shrink-0 bg-white border-t border-gray-100 px-3 py-2.5 flex items-center gap-2 safe-area-bottom">
-                <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} placeholder={placeholders[locale] || placeholders.nl} className="flex-1 bg-gray-50 rounded-full px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                <button type="submit" disabled={!input.trim()} className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-95 cursor-pointer">
+              <form onSubmit={handleSubmit} className="shrink-0 bg-white border-t border-gray-100 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center gap-2 safe-area-bottom">
+                <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} placeholder={placeholders[locale] || placeholders.nl} enterKeyHint="send" autoComplete="off" className="flex-1 bg-gray-50 rounded-full px-3.5 sm:px-4 py-2.5 text-[14px] sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <button type="submit" disabled={!input.trim()} className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-90 cursor-pointer">
                   <Send size={16} />
                 </button>
               </form>
@@ -1169,13 +1170,13 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed bottom-[5.5rem] right-20 sm:bottom-[5.5rem] sm:right-24 z-[88] max-w-[220px]"
+            className="fixed bottom-[5rem] right-[4.5rem] sm:bottom-[5.5rem] sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
           >
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative">
               <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
                 <X size={10} className="text-gray-500" />
               </button>
-              <p className="text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
+              <p className="text-[13px] sm:text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
               <div className="absolute -right-2 bottom-3 w-4 h-4 bg-white border-r border-b border-gray-200 rotate-[-45deg]" />
             </div>
           </motion.div>
@@ -1188,7 +1189,7 @@ export default function ChatBot() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
         onClick={() => { setIsOpen(!isOpen); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}
-        className={`fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[89] w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer ${
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[89] w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer safe-area-fab ${
           isOpen ? 'bg-gray-600 rotate-90' : 'bg-primary hover:scale-110 hover:shadow-xl'
         }`}
         aria-label={isOpen ? 'Sluit chat' : 'Open chat'}
@@ -1206,7 +1207,14 @@ export default function ChatBot() {
       <style jsx>{`
         .safe-area-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
         .safe-area-bottom { padding-bottom: max(0.625rem, env(safe-area-inset-bottom)); }
-        @media (max-width: 639px) { .safe-area-top { padding-top: max(2.5rem, env(safe-area-inset-top)); } }
+        .safe-area-fab { margin-bottom: env(safe-area-inset-bottom, 0px); }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 639px) {
+          .safe-area-top { padding-top: max(2.5rem, env(safe-area-inset-top)); }
+          .w-13 { width: 3.25rem; }
+          .h-13 { height: 3.25rem; }
+        }
       `}</style>
     </>
   );
