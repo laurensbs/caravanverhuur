@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, ChevronDown, ArrowLeft, User, Mail, Phone, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, ChevronDown, User, Mail, Phone, Sparkles } from 'lucide-react';
 import { useLanguage, type Locale } from '@/i18n/context';
 import { caravans } from '@/data/caravans';
 import { campings } from '@/data/campings';
@@ -1028,14 +1028,10 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-5 z-[90] sm:w-[400px] sm:h-[560px] sm:max-h-[75vh] flex flex-col bg-white sm:rounded-2xl sm:shadow-2xl sm:border sm:border-gray-200 overflow-hidden"
-            style={{ height: '100dvh' }}
+            className="fixed bottom-[4.5rem] right-3 left-3 sm:left-auto sm:bottom-24 sm:right-5 z-[90] sm:w-[400px] h-[70vh] sm:h-[560px] max-h-[560px] sm:max-h-[75vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 safe-area-top">
-              <button onClick={() => setIsOpen(false)} className="sm:hidden w-9 h-9 flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-transform cursor-pointer -ml-1">
-                <ArrowLeft size={22} />
-              </button>
+            <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 rounded-t-2xl">
               <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white/20 flex items-center justify-center shrink-0">
                 <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Luna" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" unoptimized />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-primary" />
@@ -1051,7 +1047,7 @@ export default function ChatBot() {
                     : 'Caravanverhuur Spanje'}
                 </p>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
+              <button onClick={() => setIsOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
                 <ChevronDown size={20} />
               </button>
             </div>
@@ -1205,13 +1201,11 @@ export default function ChatBot() {
       </motion.button>
 
       <style jsx>{`
-        .safe-area-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
         .safe-area-bottom { padding-bottom: max(0.625rem, env(safe-area-inset-bottom)); }
         .safe-area-fab { margin-bottom: env(safe-area-inset-bottom, 0px); }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         @media (max-width: 639px) {
-          .safe-area-top { padding-top: max(2.5rem, env(safe-area-inset-top)); }
           .w-13 { width: 3.25rem; }
           .h-13 { height: 3.25rem; }
         }
