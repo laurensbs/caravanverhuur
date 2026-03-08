@@ -21,6 +21,7 @@ import { getActivitiesForLocation, getCategoryLabel, generalTips, groupActivitie
 import type { Activity } from '@/data/activities';
 import { useLanguage } from '@/i18n/context';
 import type { Locale } from '@/i18n/context';
+import { GOOGLE_REVIEW_URL } from '@/lib/constants';
 
 // ===== TYPES =====
 interface Customer {
@@ -823,6 +824,29 @@ function MijnAccountContent() {
                                 >
                                   Boeking annuleren
                                 </button>
+                              </div>
+                            )}
+
+                            {/* Google Review CTA for past bookings */}
+                            {isPast && booking.status !== 'GEANNULEERD' && (
+                              <div className="mt-4 pt-3 border-t border-border">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-muted leading-snug">{t('myAccount.pastBookingReview')}</p>
+                                  </div>
+                                  <a
+                                    href={GOOGLE_REVIEW_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="shrink-0 inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                                  >
+                                    <Star size={11} className="fill-white" />
+                                    {t('myAccount.pastBookingReviewBtn')}
+                                  </a>
+                                </div>
                               </div>
                             )}
                           </div>

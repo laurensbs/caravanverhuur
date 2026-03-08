@@ -3,9 +3,10 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowRight, Loader2, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
+import { GOOGLE_REVIEW_URL } from '@/lib/constants';
 
 function SuccesContent() {
   const searchParams = useSearchParams();
@@ -86,6 +87,28 @@ function SuccesContent() {
             <p className="text-sm text-muted">
               {t('paymentPage.receivedDesc')}
             </p>
+          </motion.div>
+
+          {/* Google Review CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-8"
+          >
+            <div className="flex items-center gap-2 justify-center mb-2">
+              <Star size={18} className="text-amber-400 fill-amber-400" />
+              <span className="font-semibold text-amber-800 text-sm">{t('paymentPage.reviewHint')}</span>
+            </div>
+            <a
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-amber-700 border border-amber-300 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-100 transition-colors"
+            >
+              <Star size={14} className="fill-amber-400 text-amber-400" />
+              {t('paymentPage.leaveReview')}
+            </a>
           </motion.div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

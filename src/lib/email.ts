@@ -6,6 +6,8 @@ const RESEND_API_URL = 'https://api.resend.com/emails';
 const SITE_URL = 'https://caravanverhuurspanje.com';
 const BRAND_NAME = 'Caravanverhuur Spanje';
 const LOGO_URL = 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png';
+export { GOOGLE_REVIEW_URL } from './constants';
+import { GOOGLE_REVIEW_URL } from './constants';
 
 interface EmailOptions {
   to: string;
@@ -820,5 +822,70 @@ export async function sendCancellationEmail(data: {
 
       ${button('Contact opnemen →', `${SITE_URL}/contact`)}
     `, `Boeking ${data.reference} is geannuleerd`),
+  });
+}
+
+// ===== POST-STAY REVIEW REQUEST EMAIL =====
+
+export async function sendReviewRequestEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+}) {
+  const firstName = data.guestName.split(' ')[0];
+  const formatDateNl = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  return sendEmail({
+    to: data.to,
+    subject: `⭐ ${firstName}, hoe was je vakantie? Laat een review achter!`,
+    html: emailWrapper(`
+      ${badge('⭐', 'REVIEW')}
+      ${heading(`Hoe was je vakantie, ${firstName}?`)}
+      ${subtext('We hopen dat je een fantastische tijd hebt gehad aan de Costa Brava! Je mening helpt andere vakantiegangers bij hun keuze — en het kost maar 1 minuut.')}
+
+      ${highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="width:40px;vertical-align:top;padding-top:2px;">
+              <span style="font-size:20px;">🏕️</span>
+            </td>
+            <td style="vertical-align:top;">
+              <p style="margin:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">
+                ${data.caravanName} — ${data.campingName}
+              </p>
+              <p style="margin:0;color:#64748B;font-size:13px;">
+                ${formatDateNl(data.checkIn)} t/m ${formatDateNl(data.checkOut)}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `, true)}
+
+      <div style="text-align:center;margin:0 0 20px;">
+        <div style="font-size:32px;letter-spacing:4px;margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
+        <p style="margin:0;color:#64748B;font-size:14px;">Hoe beoordeel jij je ervaring?</p>
+      </div>
+
+      ${button('Laat een Google Review achter ⭐', GOOGLE_REVIEW_URL, '#EA4335')}
+
+      <p style="margin:24px 0 0;color:#94A3B8;font-size:13px;text-align:center;line-height:1.6;">
+        Door een review achter te laten help je ons én andere vakantiegangers. Hartelijk dank! 🙏
+      </p>
+
+      ${divider()}
+
+      <p style="margin:0 0 8px;color:#64748B;font-size:13px;line-height:1.6;">
+        <strong>Was er iets niet goed?</strong> Laat het ons weten zodat we het kunnen verbeteren. Je kunt ons altijd bereiken via het contactformulier.
+      </p>
+
+      ${button('Feedback geven →', `${SITE_URL}/contact`, '#64748B')}
+    `, `Hoe was je vakantie? Deel je ervaring met een Google review ⭐`),
   });
 }
