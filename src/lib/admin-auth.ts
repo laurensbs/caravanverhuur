@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { type AdminRole } from '@/i18n/admin-translations';
 
-/* ── Credentials from env (with hardcoded fallback) ── */
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'CostaAdmin2026!';
-const STAFF_PASSWORD = process.env.STAFF_PASSWORD || 'CostaStaff2026!';
+/* ── Credentials (hardcoded) ─────────────────────── */
+const ADMIN_PASSWORD = 'CostaAdmin2026!';
+const STAFF_PASSWORD = 'CostaStaff2026!';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cvs-admin-secret-2026-hmac-key';
 
 const CREDENTIALS: Record<string, { password: string; role: AdminRole }> = {
