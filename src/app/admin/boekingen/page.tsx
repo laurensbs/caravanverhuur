@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -420,6 +420,9 @@ export default function BookingenPage() {
   const [cRequests, setCRequests] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [campingSearch, setCampingSearch] = useState('');
+  const [campingDropdownOpen, setCampingDropdownOpen] = useState(false);
+  const campingDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchBookings = useCallback(() => {
     fetch('/api/bookings')
@@ -434,6 +437,15 @@ export default function BookingenPage() {
     // Load caravans + campings for create form
     fetch('/api/admin/caravans').then(r => r.json()).then(d => setCustomCaravans(d.caravans || [])).catch(() => {});
     fetch('/api/campings').then(r => r.json()).then(d => { if (d.campings?.length) setAllCampings(d.campings); }).catch(() => {});
+
+    // Close camping dropdown on outside click
+    const handleClick = (e: MouseEvent) => {
+      if (campingDropdownRef.current && !campingDropdownRef.current.contains(e.target as Node)) {
+        setCampingDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, [fetchBookings]);
 
   const handleStatusChange = (id: string, status: BookingStatus) => {
@@ -449,8 +461,13 @@ export default function BookingenPage() {
     setExpandedId(null);
   };
 
-  // Create booking helpers
-  const allCaravans: Caravan[] = [...staticCaravans, ...customCaravans];
+  // Create booking helpers – deduplicate: custom overrides static by id
+  const allCaravans: Caravan[] = (() => {
+    const map = new Map<string, Caravan>();
+    for (const c of staticCaravans) map.set(c.id, c);
+    for (const c of customCaravans) map.set(c.id, c);
+    return Array.from(map.values());
+  })();
   const selectedCaravan = cCaravanId ? allCaravans.find(c => c.id === cCaravanId) : null;
   const cNights = (() => {
     if (!cCheckIn || !cCheckOut) return 0;
@@ -652,10 +669,36 @@ export default function BookingenPage() {
                       <option value="">{t('bookings.selectCaravan')}</option>
                       {allCaravans.map(c => <option key={c.id} value={c.id}>{c.name} — {c.maxPersons}p — €{c.pricePerWeek}/wk</option>)}
                     </select>
-                    <select value={cCampingId} onChange={e => setCCampingId(e.target.value)} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark appearance-none">
-                      <option value="">{t('bookings.selectCamping')}</option>
-                      {allCampings.filter(c => c.active !== false).map(c => <option key={c.id} value={c.id}>{c.name} — {c.location}</option>)}
-                    </select>
+                    <div className="relative" ref={campingDropdownRef}>
+                      <input
+                        type="text"
+                        value={campingSearch}
+                        onChange={e => { setCampingSearch(e.target.value); setCampingDropdownOpen(true); }}
+                        onFocus={() => setCampingDropdownOpen(true)}
+                        placeholder={cCampingId ? allCampings.find(c => c.id === cCampingId)?.name || t('bookings.selectCamping') : t('bookings.selectCamping')}
+                        className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+                      />
+                      {cCampingId && !campingSearch && (
+                        <button onClick={() => { setCCampingId(''); setCampingSearch(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">&times;</button>
+                      )}
+                      {campingDropdownOpen && (
+                        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
+                          {allCampings.filter(c => c.active !== false).filter(c => {
+                            if (!campingSearch) return true;
+                            const q = campingSearch.toLowerCase();
+                            return c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q);
+                          }).map(c => (
+                            <button
+                              key={c.id}
+                              onClick={() => { setCCampingId(c.id); setCampingSearch(''); setCampingDropdownOpen(false); }}
+                              className={`w-full text-left px-4 py-2 text-sm hover:bg-primary/10 cursor-pointer ${cCampingId === c.id ? 'bg-primary/5 font-medium' : ''}`}
+                            >
+                              {c.name} — {c.location}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <input value={cSpot} onChange={e => setCSpot(e.target.value)} placeholder={t('bookings.spotPlaceholder')} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
                   </div>
                 </div>

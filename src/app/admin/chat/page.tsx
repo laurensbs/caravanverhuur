@@ -191,6 +191,32 @@ export default function AdminChatPage() {
   const [cleanupConfirm, setCleanupConfirm] = useState(false);
   const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
+  /* ── Multi-select ────────────────── */
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      try { await fetch(`/api/admin/chat?id=${id}`, { method: 'DELETE' }); } catch { /* silent */ }
+    }
+    setSelectedIds(new Set());
+    setSelectMode(false);
+    setDeleteConfirm(null);
+    fetchConversations();
+    if (activeConv && selectedIds.has(activeConv.id)) {
+      setActiveConv(null);
+      setMessages([]);
+    }
+  };
+
   const handleDelete = async (convId: string) => {
     try {
       await fetch(`/api/admin/chat?id=${convId}`, { method: 'DELETE' });
@@ -277,7 +303,25 @@ export default function AdminChatPage() {
                 </span>
               )}
             </h1>
-            <div className="relative">
+            <div className="flex items-center gap-1.5">
+              {selectMode && selectedIds.size > 0 && (
+                <button
+                  onClick={() => setDeleteConfirm('bulk')}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {selectedIds.size}
+                </button>
+              )}
+              <button
+                onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}
+                className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                  selectMode ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {selectMode ? (isNl ? 'Klaar' : 'Done') : (isNl ? 'Selecteer' : 'Select')}
+              </button>
+              <div className="relative">
               {cleanupResult && (
                 <div className="absolute right-0 top-full mt-1 bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-green-200 whitespace-nowrap z-10 shadow-sm">
                   {cleanupResult}
@@ -308,6 +352,7 @@ export default function AdminChatPage() {
                   {isNl ? 'Opschonen' : 'Cleanup'}
                 </button>
               )}
+              </div>
             </div>
           </div>
 
@@ -366,12 +411,20 @@ export default function AdminChatPage() {
               return (
                 <div
                   key={conv.id}
-                  className={`relative w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors ${
+                  className={`group relative w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-white transition-colors ${
                     isActive ? 'bg-primary/5 border-l-2 border-l-primary' : ''
-                  }`}
+                  } ${selectMode ? 'pl-10' : ''}`}
                 >
+                  {selectMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(conv.id)}
+                      onChange={() => toggleSelect(conv.id)}
+                      className="absolute left-3 top-5 w-4 h-4 accent-primary cursor-pointer"
+                    />
+                  )}
                   <button
-                    onClick={() => setActiveConv(conv)}
+                    onClick={() => selectMode ? toggleSelect(conv.id) : setActiveConv(conv)}
                     className="w-full text-left cursor-pointer"
                   >
                     <div className="flex items-start gap-3">
@@ -425,11 +478,10 @@ export default function AdminChatPage() {
                         {isNl ? 'Annuleer' : 'Cancel'}
                       </button>
                     </div>
-                  ) : (
+                  ) : !selectMode && (
                     <button
                       onClick={(e) => { e.stopPropagation(); setDeleteConfirm(conv.id); }}
-                      className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                      style={{ opacity: isActive ? 1 : undefined }}
+                      className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                       title={isNl ? 'Verwijder gesprek' : 'Delete conversation'}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -441,6 +493,28 @@ export default function AdminChatPage() {
           )}
         </div>
       </div>
+
+      {/* Bulk delete confirmation */}
+      {deleteConfirm === 'bulk' && selectedIds.size > 0 && (
+        <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-gray-900 mb-2">
+              {isNl ? `${selectedIds.size} gesprek(ken) verwijderen?` : `Delete ${selectedIds.size} conversation(s)?`}
+            </p>
+            <p className="text-xs text-gray-500 mb-4">
+              {isNl ? 'Dit kan niet ongedaan worden gemaakt.' : 'This cannot be undone.'}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setDeleteConfirm(null)} className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 cursor-pointer">
+                {isNl ? 'Annuleer' : 'Cancel'}
+              </button>
+              <button onClick={handleBulkDelete} className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer">
+                {isNl ? 'Verwijderen' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Main: Chat View ── */}
       <div className={`${activeConv ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white`}>
