@@ -325,6 +325,20 @@ export default function AdminChatPage() {
                   {selectedIds.size}
                 </button>
               )}
+              {selectMode && (
+                <button
+                  onClick={() => {
+                    const allFilteredIds = new Set(filtered.map(c => c.id));
+                    const allSelected = filtered.length > 0 && filtered.every(c => selectedIds.has(c.id));
+                    setSelectedIds(allSelected ? new Set() : allFilteredIds);
+                  }}
+                  className="px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer bg-gray-100 text-gray-600 hover:bg-gray-200"
+                >
+                  {filtered.length > 0 && filtered.every(c => selectedIds.has(c.id))
+                    ? (isNl ? 'Deselecteer' : 'Deselect all')
+                    : (isNl ? 'Selecteer alles' : 'Select all')}
+                </button>
+              )}
               <button
                 onClick={() => { setSelectMode(!selectMode); setSelectedIds(new Set()); }}
                 className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
