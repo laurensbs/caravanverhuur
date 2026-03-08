@@ -312,7 +312,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
             </div>
 
             {/* Map */}
-            <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-gray-100 hidden lg:block">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <MapPin size={18} className="text-primary" /> Locatie
               </h2>

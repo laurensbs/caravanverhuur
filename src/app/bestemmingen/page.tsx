@@ -550,11 +550,11 @@ function SidebarFilters({
         </div>
       )}
 
-      {/* Map toggle */}
+      {/* Map toggle (desktop only — map hidden on mobile) */}
       {(activeTab === 'overzicht' || activeTab === 'steden') && (
         <button
           onClick={() => setShowMap(!showMap)}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+          className="w-full hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
         >
           <Map size={14} /> {showMap ? 'Verberg kaart' : 'Toon kaart'}
         </button>
@@ -874,7 +874,7 @@ export default function DestinationsPage() {
             {activeTab === 'overzicht' && (
               <>
                 {showMap && (
-                  <div className="mb-8">
+                  <div className="mb-8 hidden lg:block">
                     <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Map size={20} className="text-primary" /> Interactieve Kaart
                     </h2>
