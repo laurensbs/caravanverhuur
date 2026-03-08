@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
+import AdminHelpGuide from '@/components/AdminHelpGuide';
 
 /* ── Credentials ─────────────────────────────────── */
 // Credentials are now server-side only (src/lib/admin-auth.ts)
@@ -428,24 +429,6 @@ const ONBOARDING_STEPS_EN = [
   { title: 'Need help?', desc: 'Click the question mark icon in the top-right for help. Good luck!', icon: '❓' },
 ];
 
-const HELP_ITEMS_NL: Record<string, { title: string; tips: string[] }> = {
-  '/admin': { title: 'Dashboard', tips: ['Klik op een statistiek om naar die pagina te gaan.', 'Openstaande taken verschijnen automatisch.', 'Gebruik "Exporteer" om data te downloaden (alleen admin).'] },
-  '/admin/boekingen': { title: 'Boekingen', tips: ['Zoek op naam, e-mail of boekingsnummer.', 'Klik op een boeking voor details.', 'Filter op status met de tabbladen.'] },
-  '/admin/planning': { title: 'Planning', tips: ['Bekijk de bezetting per caravan en periode.', 'Sleep om de weergave te verschuiven.'] },
-  '/admin/borg': { title: 'Borg', tips: ['Maak een nieuwe checklist aan voor een boeking.', 'Gebruik "Mobiel Inspecteren" voor een stapsgewijze inspectie op telefoon.', 'Na voltooien krijgt de klant automatisch een link.'] },
-  '/admin/chat': { title: 'Chat', tips: ['Beantwoord live chats van klanten.', 'Klik op een gesprek om de berichten te lezen.', 'Je kunt chats verwijderen via het prullenbak-icoon.'] },
-  '/admin/klanten': { title: 'Klanten', tips: ['Bekijk alle klantgegevens en communicatie.', 'Zoek op naam of e-mail.'] },
-  '/admin/campings': { title: 'Campings', tips: ['Voeg campings toe of verwijder ze.', 'Sleep campings om de volgorde aan te passen.', 'Actieve campings verschijnen op de boekingspagina.', 'Importeer de standaard 30 campings bij eerste gebruik.'] },
-};
-const HELP_ITEMS_EN: Record<string, { title: string; tips: string[] }> = {
-  '/admin': { title: 'Dashboard', tips: ['Click a stat card to go to that page.', 'Open tasks appear automatically.', 'Use "Export" to download data (admin only).'] },
-  '/admin/boekingen': { title: 'Bookings', tips: ['Search by name, email or reference.', 'Click a booking for details.', 'Filter by status with the tabs.'] },
-  '/admin/planning': { title: 'Planning', tips: ['View occupancy per caravan and period.', 'Drag to shift the view.'] },
-  '/admin/borg': { title: 'Deposit', tips: ['Create a new checklist for a booking.', 'Use "Mobile Inspect" for step-by-step inspection on phone.', 'After completion, the customer gets a link automatically.'] },
-  '/admin/chat': { title: 'Chat', tips: ['Answer live chats from customers.', 'Click a conversation to read messages.', 'Delete chats via the trash icon.'] },
-  '/admin/klanten': { title: 'Customers', tips: ['View all customer data and communication.', 'Search by name or email.'] },
-  '/admin/campings': { title: 'Campings', tips: ['Add or remove campings.', 'Drag campings to reorder.', 'Active campings appear on the booking page.', 'Import the default 30 campings on first use.'] },
-};
 
 /* ── Sidebar Nav Item with dedicated drag handle ── */
 function SidebarNavItem({
@@ -582,12 +565,11 @@ function AdminLayoutInner({
   };
 
   const onboardingSteps = locale === 'nl' ? ONBOARDING_STEPS_NL : ONBOARDING_STEPS_EN;
-  const helpItems = locale === 'nl' ? HELP_ITEMS_NL : HELP_ITEMS_EN;
-  const currentHelp = helpItems[pathname] || helpItems['/admin'];
-  const helpTitle = locale === 'nl' ? 'Hulp' : 'Help';
-  const helpGenericTips = locale === 'nl'
-    ? ['Gebruik het menu om te navigeren.', 'Op mobiel: tik op ☰ linksboven.', 'Klik op het ? icoon voor hulp.']
-    : ['Use the menu to navigate.', 'On mobile: tap ☰ top-left.', 'Click the ? icon for help.'];
+
+  const restartTour = () => {
+    setOnboardingStep(0);
+    setShowOnboarding(true);
+  };
 
   return (
     <div className="min-h-screen bg-surface-alt flex">
@@ -704,7 +686,7 @@ function AdminLayoutInner({
           <button
             onClick={() => setShowHelp(true)}
             className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
-            aria-label={helpTitle}
+            aria-label={locale === 'nl' ? 'Hulp' : 'Help'}
           >
             <HelpCircle className="w-5 h-5" />
           </button>
@@ -794,75 +776,14 @@ function AdminLayoutInner({
         )}
       </AnimatePresence>
 
-      {/* ═══ HELP PANEL ═══ */}
-      <AnimatePresence>
-        {showHelp && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 z-[55] flex items-start justify-end"
-            onClick={() => setShowHelp(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 40 }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="bg-white h-full w-full sm:w-96 sm:max-w-[85vw] shadow-2xl overflow-y-auto"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <HelpCircle size={20} className="text-sky-500" />
-                    {helpTitle}
-                  </h2>
-                  <button onClick={() => setShowHelp(false)} className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
-                    <X size={18} />
-                  </button>
-                </div>
-
-                {/* Current page help */}
-                {currentHelp && (
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">{currentHelp.title}</h3>
-                    <div className="space-y-2">
-                      {currentHelp.tips.map((tip, i) => (
-                        <div key={i} className="flex items-start gap-2.5 bg-sky-50 rounded-xl px-4 py-3">
-                          <span className="text-sky-500 font-bold text-sm mt-0.5">{i + 1}.</span>
-                          <p className="text-sm text-gray-700">{tip}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* General tips */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-3">
-                    {locale === 'nl' ? 'Algemene tips' : 'General tips'}
-                  </h3>
-                  <div className="space-y-2">
-                    {helpGenericTips.map((tip, i) => (
-                      <div key={i} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-4 py-3">
-                        <span className="text-gray-400 text-sm mt-0.5">•</span>
-                        <p className="text-sm text-gray-600">{tip}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Restart onboarding */}
-                <button
-                  onClick={() => { setShowHelp(false); setOnboardingStep(0); setShowOnboarding(true); }}
-                  className="w-full py-3 text-sm text-sky-600 bg-sky-50 rounded-xl font-medium hover:bg-sky-100 transition-colors cursor-pointer"
-                >
-                  {locale === 'nl' ? '🎓 Rondleiding opnieuw bekijken' : '🎓 View tour again'}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ═══ HELP GUIDE ═══ */}
+      <AdminHelpGuide
+        show={showHelp}
+        onClose={() => setShowHelp(false)}
+        locale={locale as 'nl' | 'en'}
+        pathname={pathname}
+        onRestartTour={restartTour}
+      />
     </div>
   );
 }

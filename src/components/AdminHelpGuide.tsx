@@ -1,0 +1,1182 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  X,
+  HelpCircle,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  BookOpen,
+  LayoutDashboard,
+  CalendarCheck,
+  CreditCard,
+  ClipboardCheck,
+  Users,
+  Mail,
+  MessageCircle,
+  Newspaper,
+  CarFront,
+  Tent,
+  Tag,
+  Shield,
+  Lightbulb,
+  Banknote,
+} from 'lucide-react';
+
+/* ═══════════════════════════════════════════════════
+   Types
+   ═══════════════════════════════════════════════════ */
+type GuideSection = {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  paths?: string[];          // which admin pages this section is relevant to
+  description: string;       // short intro
+  content: string[];         // detailed paragraphs / instructions
+  tips: string[];            // quick tips
+  adminOnly?: boolean;       // mark sections only for admin role
+};
+
+type Props = {
+  show: boolean;
+  onClose: () => void;
+  locale: 'nl' | 'en';
+  pathname: string;
+  onRestartTour: () => void;
+};
+
+/* ═══════════════════════════════════════════════════
+   Guide content: DUTCH
+   ═══════════════════════════════════════════════════ */
+const ICON_CLASS = 'w-5 h-5';
+
+const GUIDE_NL: GuideSection[] = [
+  {
+    id: 'dashboard',
+    icon: <LayoutDashboard className={ICON_CLASS} />,
+    title: 'Dashboard',
+    paths: ['/admin'],
+    description: 'Het startscherm met een overzicht van alle belangrijke informatie.',
+    content: [
+      'Het dashboard toont statistieken zoals het aantal boekingen, openstaande betalingen, nieuwe berichten en de omzet van de huidige maand.',
+      'Klik op een statistiekkaart om direct naar de betreffende pagina te gaan (bijv. klik op "Boekingen" om alle boekingen te zien).',
+      'Openstaande taken (zoals onbeantwoorde berichten of verlopen betalingen) verschijnen automatisch in de takenlijst.',
+      'Admin-gebruikers kunnen data exporteren via de "Exporteer" knop. Staff-gebruikers zien deze optie niet.',
+    ],
+    tips: [
+      'Controleer het dashboard dagelijks voor nieuwe taken.',
+      'De omzetgrafiek toont de trend over de afgelopen maanden.',
+      'Rode badges geven dringende acties aan.',
+    ],
+  },
+  {
+    id: 'planning',
+    icon: <CalendarCheck className={ICON_CLASS} />,
+    title: 'Planning',
+    paths: ['/admin/planning'],
+    description: 'De visuele bezettingskalender voor alle caravans.',
+    content: [
+      'De planningsweergave toont een overzicht van alle caravans en hun beschikbaarheid per week/maand.',
+      'Boekingen worden weergegeven als gekleurde balken. De kleur geeft de status aan: groen = bevestigd, geel = in afwachting, rood = geannuleerd.',
+      'Scroll horizontaal om andere periodes te bekijken, of gebruik de navigatieknoppen om per maand te springen.',
+      'Klik op een boeking in de kalender om de details te bekijken.',
+    ],
+    tips: [
+      'Gebruik de planning om snel te zien welke caravans beschikbaar zijn.',
+      'Pas de weergave aan (week/maand) met de knoppen bovenaan.',
+    ],
+  },
+  {
+    id: 'boekingen',
+    icon: <CalendarCheck className={ICON_CLASS} />,
+    title: 'Boekingen',
+    paths: ['/admin/boekingen'],
+    description: 'Beheer alle boekingen: bekijken, filteren, en telefonische boekingen aanmaken.',
+    content: [
+      'Op de boekingenpagina zie je een overzicht van alle boekingen met status, datum, klantgegevens en bedrag.',
+      'Gebruik de zoekbalk om te zoeken op naam, e-mailadres of boekingsnummer.',
+      'Met de tabbladen bovenaan kun je filteren op status: Alles, In afwachting, Bevestigd, Geannuleerd, enz.',
+      'Klik op een boeking om de volledige details te zien, inclusief betaalinformatie en borgstatus.',
+      '── Telefonische boeking aanmaken ──',
+      'Klik op de "Nieuwe boeking" knop rechtsboven om een boeking aan te maken voor een klant die telefonisch belt.',
+      'Vul de klantgegevens in (naam, e-mail, telefoon), kies een caravan en camping, selecteer de data en het aantal reizigers.',
+      'Het systeem berekent automatisch de prijs op basis van de gekozen caravan, periode en reizigersaantal.',
+      'Na het aanmaken krijgt de klant automatisch een e-mail met een iDEAL/Wero betaallink.',
+      'Als de klant nog geen account heeft, wordt er automatisch een account aangemaakt en ontvangt de klant de inloggegevens per e-mail.',
+      'Je kunt de betaallink ook kopiëren en handmatig delen (bijv. via WhatsApp).',
+    ],
+    tips: [
+      'Zoek op boekingsnummer (bijv. "CVS-2025-0001") voor snelle resultaten.',
+      'Filter op "In afwachting" om boekingen te zien die nog betaald moeten worden.',
+      'Bij telefonische boekingen: controleer altijd het e-mailadres voordat je verstuurt.',
+      'Status kleuren: groen = bevestigd, oranje = in afwachting, rood = geannuleerd.',
+    ],
+  },
+  {
+    id: 'betalingen',
+    icon: <CreditCard className={ICON_CLASS} />,
+    title: 'Betalingen',
+    paths: ['/admin/betalingen'],
+    description: 'Overzicht van alle betalingen, statussen en terugbetalingen.',
+    adminOnly: true,
+    content: [
+      'De betalingenpagina toont alle betalingen gekoppeld aan boekingen, met status, bedrag en type.',
+      'Betalingsstatussen: BETAALD (groen), OPENSTAAND (oranje), VERLOPEN (rood), TERUGBETAALD (grijs).',
+      'Betalingstypen: HUUR (de huurbetaling), BORG (borgsom), BORG_RETOUR (borg terugbetaling).',
+      'Filter op type of status met de knoppen bovenaan.',
+      '── Terugbetalingen ──',
+      'Om een terugbetaling te doen: open de boeking via de boekingenpagina, scroll naar betalingen, klik op "Terugbetalen".',
+      'Terugbetalingen worden direct verwerkt via Stripe en de klant ontvangt het geld binnen 5-10 werkdagen.',
+      'Alleen betalingen met status BETAALD kunnen terugbetaald worden.',
+      '── Stripe ──',
+      'Alle betalingen worden verwerkt via Stripe (iDEAL en Wero). Je kunt het Stripe dashboard raadplegen voor gedetailleerde transactie-informatie.',
+    ],
+    tips: [
+      'Controleer dagelijks op verlopen betalingen.',
+      'Bij problemen met een betaling: controleer eerst de status in Stripe.',
+      'Terugbetalingen kunnen alleen door admin-gebruikers worden gedaan.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'borg',
+    icon: <ClipboardCheck className={ICON_CLASS} />,
+    title: 'Borg & Inspectie',
+    paths: ['/admin/borg'],
+    description: 'Beheer borgchecklists en voer mobiele inspecties uit.',
+    content: [
+      'De borgpagina toont alle borgchecklists gekoppeld aan boekingen.',
+      'Een borgchecklist wordt automatisch aangemaakt wanneer een boeking wordt bevestigd.',
+      '── Checklist items ──',
+      'De checklist bevat standaard items die gecontroleerd moeten worden bij in- en uitcheck (bijv. inventaris, schoonmaak, schade).',
+      'Elk item kan worden gemarkeerd als: Goed, Beschadigd, of Ontbreekt.',
+      'Bij schade of ontbrekende items kun je foto\'s toevoegen als bewijs.',
+      '── Mobiele inspectie ──',
+      'Klik op "Mobiel Inspecteren" om de inspectie stap-voor-stap uit te voeren op je telefoon.',
+      'Dit opent een fullscreen-weergave die ideaal is voor gebruik op locatie.',
+      'Na voltooiing van de inspectie krijgt de klant automatisch een e-mail met een link om de checklist te bekijken en goed te keuren.',
+      '── Borg terugbetaling ──',
+      'Als alles in orde is, kun je de borg terugbetalen via de borgpagina.',
+      'Bij schade kun je een gedeeltelijke borg terugbetaling doen en het schadebedrag inhouden.',
+    ],
+    tips: [
+      'Doe de inspectie altijd samen met de klant voor transparantie.',
+      'Maak foto\'s van eventuele schade als bewijs.',
+      'De klant krijgt automatisch een link om de inspectie te bekijken.',
+      'Controleer of alle items zijn afgevinkt voordat je de inspectie afrondt.',
+    ],
+  },
+  {
+    id: 'klanten',
+    icon: <Users className={ICON_CLASS} />,
+    title: 'Klanten',
+    paths: ['/admin/klanten'],
+    description: 'Bekijk en beheer alle klantaccounts.',
+    adminOnly: true,
+    content: [
+      'De klantenpagina toont een overzicht van alle geregistreerde klanten.',
+      'Je kunt zoeken op naam of e-mailadres.',
+      'Klik op een klant om diens boekinggeschiedenis, contactgegevens en accountstatus te bekijken.',
+      'Klantaccounts worden automatisch aangemaakt bij het plaatsen van een boeking (via de website of telefonisch door staff).',
+      'Elke klant heeft een uniek e-mailadres. Bij een telefonische boeking wordt gecontroleerd of het e-mailadres al bestaat.',
+    ],
+    tips: [
+      'Gebruik de zoekbalk om snel een klant te vinden.',
+      'Controleer het aantal boekingen per klant voor herhaalbezoekers.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'berichten',
+    icon: <Mail className={ICON_CLASS} />,
+    title: 'Berichten',
+    paths: ['/admin/berichten'],
+    description: 'Inkomende berichten van het contactformulier.',
+    adminOnly: true,
+    content: [
+      'Hier verschijnen alle berichten die binnenkomen via het contactformulier op de website.',
+      'Elk bericht bevat: naam, e-mailadres, onderwerp en tekst.',
+      'Berichten van het type "Campingaanvraag" komen van klanten die een camping hebben aangevraagd die niet in de lijst staat.',
+      'Markeer berichten als gelezen/beantwoord om het overzicht te bewaren.',
+      'Reageer op berichten door de klant direct per e-mail te mailen (kopieer het e-mailadres).',
+    ],
+    tips: [
+      'Controleer dagelijks op nieuwe berichten.',
+      'Campingaanvragen: voeg de gevraagde camping toe als deze geschikt is.',
+      'Bewaar je inbox schoon door gelezen berichten te markeren.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'chat',
+    icon: <MessageCircle className={ICON_CLASS} />,
+    title: 'Chat',
+    paths: ['/admin/chat'],
+    description: 'Live chatgesprekken met websitebezoekers.',
+    content: [
+      'De chatpagina toont alle live chatgesprekken die gestart zijn door bezoekers op de website.',
+      'Chatberichten verschijnen in realtime. Klik op een gesprek in de linkerkolom om het te openen.',
+      'Typ je antwoord onderaan en druk op Enter of klik op "Verstuur".',
+      'Gesprekken waarin de klant hulp nodig heeft worden gemarkeerd met een speciaal icoon.',
+      'Je kunt chats verwijderen via het prullenbak-icoon.',
+      'Oude chats worden na 30 dagen automatisch verwijderd.',
+    ],
+    tips: [
+      'Reageer zo snel mogelijk op chats — bezoekers verwachten een snel antwoord.',
+      'Gebruik de chat om veelgestelde vragen te beantwoorden.',
+      'Als een vraag complex is, verwijs de bezoeker naar het contactformulier of bel ze terug.',
+    ],
+  },
+  {
+    id: 'nieuwsbrieven',
+    icon: <Newspaper className={ICON_CLASS} />,
+    title: 'Nieuwsbrieven',
+    paths: ['/admin/nieuwsbrieven'],
+    description: 'Beheer nieuwsbrief-abonnees en hun voorkeuren.',
+    adminOnly: true,
+    content: [
+      'Op de nieuwsbrievenpagina zie je alle abonnees die zich via de website hebben aangemeld.',
+      'Je kunt abonnees bekijken, zoeken en hun status controleren (actief/afgemeld).',
+      'Abonnees die zich uitschrijven worden automatisch gemarkeerd als "Afgemeld".',
+      'Je kunt het e-mailadressenbestand exporteren voor gebruik in een extern e-mailsysteem.',
+    ],
+    tips: [
+      'Stuur niet te veel nieuwsbrieven — 1-2x per maand is ideaal.',
+      'Controleer de afmeldingsratio als indicator van klanttevredenheid.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'caravans',
+    icon: <CarFront className={ICON_CLASS} />,
+    title: 'Caravans',
+    paths: ['/admin/caravans'],
+    description: 'Beheer de caravans die beschikbaar zijn voor verhuur.',
+    adminOnly: true,
+    content: [
+      'Op de caravanpagina kun je caravans toevoegen, bewerken en verwijderen.',
+      'Elke caravan heeft: naam, beschrijving, foto\'s, capaciteit (personen), prijs per nacht, en faciliteiten.',
+      'Actieve caravans worden getoond op de website en zijn beschikbaar voor boeking.',
+      'Inactieve caravans zijn verborgen voor klanten maar blijven behouden in het systeem.',
+      '── Prijzen ──',
+      'Prijzen worden ingesteld per nacht en kunnen variëren per seizoen.',
+      'Het systeem berekent automatisch de totaalprijs bij het boeken op basis van de gekozen periode.',
+      '── Foto\'s ──',
+      'Upload meerdere foto\'s per caravan. De eerste foto wordt als hoofdfoto gebruikt op de website.',
+      'Gebruik hoge kwaliteit foto\'s (minimaal 1200x800 pixels) voor het beste resultaat.',
+    ],
+    tips: [
+      'Houd de caravanbeschrijvingen actueel en compleet.',
+      'Voeg minstens 5 foto\'s toe per caravan voor een goed beeld.',
+      'Controleer seizoensprijzen voor het nieuwe seizoen.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'campings',
+    icon: <Tent className={ICON_CLASS} />,
+    title: 'Campings',
+    paths: ['/admin/campings'],
+    description: 'Beheer de campings waar caravans geplaatst kunnen worden.',
+    adminOnly: true,
+    content: [
+      'De campingpagina toont alle campings die beschikbaar zijn in het boekingssysteem.',
+      'Campings kunnen worden toegevoegd, bewerkt en verwijderd.',
+      'Sleep campings om de volgorde aan te passen — dit is de volgorde waarin ze op de website worden getoond.',
+      'Actieve campings verschijnen in de campingkiezer tijdens het boekingsproces.',
+      '── Eerste gebruik ──',
+      'Bij eerste gebruik kun je de standaard 30 Costa Brava campings importeren met één klik.',
+      'Daarna kun je campings toevoegen of verwijderen naar wens.',
+      '── Campingaanvragen ──',
+      'Klanten kunnen via het boekingsformulier een camping aanvragen die niet in de lijst staat.',
+      'Deze aanvragen verschijnen als berichten op de Berichten-pagina.',
+      'Als een gevraagde camping geschikt is, kun je deze toevoegen aan de lijst.',
+    ],
+    tips: [
+      'Houd de campinglijst actueel — verwijder campings die niet meer beschikbaar zijn.',
+      'De volgorde is belangrijk: zet populaire campings bovenaan.',
+      'Controleer regelmatig de berichten voor campingaanvragen.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'kortingscodes',
+    icon: <Tag className={ICON_CLASS} />,
+    title: 'Kortingscodes',
+    paths: ['/admin/kortingscodes'],
+    description: 'Maak en beheer kortingscodes voor klanten.',
+    adminOnly: true,
+    content: [
+      'Op de kortingscodepagina kun je codes aanmaken die klanten kunnen invoeren tijdens het boeken.',
+      'Elke code heeft: een unieke code, type korting (percentage of vast bedrag), en optioneel een vervaldatum.',
+      'Je kunt instellen hoe vaak een code gebruikt mag worden (bijv. eenmalig of onbeperkt).',
+      'Verlopen codes worden automatisch gedeactiveerd.',
+      '── Een kortingscode aanmaken ──',
+      '1. Klik op "Nieuwe code".',
+      '2. Vul de code in (bijv. "ZOMER2025").',
+      '3. Kies het kortingstype (percentage of vast bedrag).',
+      '4. Stel de waarde in (bijv. 10% of €50).',
+      '5. Optioneel: stel een vervaldatum en/of maximaal gebruik in.',
+      '6. Klik op "Opslaan".',
+    ],
+    tips: [
+      'Gebruik duidelijke, makkelijk te onthouden codes (bijv. ZOMER2025).',
+      'Stel altijd een vervaldatum in om misbruik te voorkomen.',
+      'Controleer regelmatig welke codes veel gebruikt worden.',
+      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
+    ],
+  },
+  {
+    id: 'betalingsmodel',
+    icon: <Banknote className={ICON_CLASS} />,
+    title: 'Betalingsmodel',
+    description: 'Hoe het betalingssysteem werkt.',
+    content: [
+      '── Hoe werkt het? ──',
+      'Het systeem gebruikt één enkele huurbetaling (type: HUUR) per boeking — geen aanbetaling of restbetaling.',
+      '── Betaaldeadline ──',
+      'De betaaldeadline hangt af van wanneer de boeking is gemaakt:',
+      '• Meer dan 30 dagen voor aankomst: de klant heeft 7 dagen om te betalen.',
+      '• Minder dan 30 dagen voor aankomst: de klant moet direct betalen (binnen 24 uur).',
+      '── Betaalmethoden ──',
+      'Klanten betalen via iDEAL of Wero (via Stripe). Creditcard is ook mogelijk.',
+      '── Automatische herinneringen ──',
+      'Het systeem stuurt automatisch betaalherinneringen per e-mail als de deadline nadert (3 dagen en 1 dag voor de deadline).',
+      'Als een betaling niet op tijd binnenkomt, wordt de boeking automatisch geannuleerd.',
+      '── Annulering en terugbetaling ──',
+      'Klanten kunnen hun boeking annuleren via hun account. Bij annulering meer dan 30 dagen voor aankomst volgt een volledige terugbetaling.',
+      'Admin-gebruikers kunnen handmatig terugbetalingen doen via de betalingenpagina.',
+      '── Borg ──',
+      'De borgsom is een apart bedrag dat betaald wordt bij aankomst.',
+      'Na de inspectie bij vertrek wordt de borg terugbetaald (geheel of gedeeltelijk).',
+    ],
+    tips: [
+      'De betaaldeadline wordt automatisch berekend — je hoeft niets handmatig in te stellen.',
+      'Bij twijfel over een terugbetaling: neem altijd eerst contact op met de klant.',
+      'Check het Stripe dashboard voor gedetailleerde betalinginformatie.',
+    ],
+  },
+  {
+    id: 'rollen',
+    icon: <Shield className={ICON_CLASS} />,
+    title: 'Rollen & Rechten',
+    description: 'Verschil tussen Admin en Staff rechten.',
+    content: [
+      '── Admin ──',
+      'Admin-gebruikers hebben volledige toegang tot alle functies van het systeem:',
+      '• Dashboard (inclusief exportfunctie)',
+      '• Planning, Boekingen, Betalingen, Borg',
+      '• Klanten, Berichten, Chat, Nieuwsbrieven',
+      '• Caravans, Campings, Kortingscodes',
+      '• Terugbetalingen verwerken',
+      '• Data exporteren',
+      '',
+      '── Staff ──',
+      'Staff-gebruikers hebben beperkte toegang:',
+      '• Dashboard (zonder export)',
+      '• Planning, Boekingen, Borg',
+      '• Chat',
+      '',
+      'Staff heeft GEEN toegang tot:',
+      '• Betalingen (geen financieel inzicht)',
+      '• Klanten (geen klantgegevens)',
+      '• Berichten, Nieuwsbrieven',
+      '• Caravans, Campings, Kortingscodes (geen beheer)',
+      '• Terugbetalingen',
+    ],
+    tips: [
+      'Geef staff-accounts alleen aan medewerkers die op locatie werken.',
+      'Admin-accounts zijn bedoeld voor eigenaren en management.',
+      'Beide rollen kunnen boekingen aanmaken (bijv. telefonische boekingen).',
+    ],
+  },
+  {
+    id: 'tips',
+    icon: <Lightbulb className={ICON_CLASS} />,
+    title: 'Tips & Trucs',
+    description: 'Handige tips voor dagelijks gebruik.',
+    content: [
+      '── Navigatie ──',
+      'Gebruik het zijmenu om tussen pagina\'s te navigeren. Op mobiel: tik op het ☰ icoon linksboven.',
+      'Je kunt de volgorde van menu-items aanpassen door ze te verslepen.',
+      '',
+      '── Taal ──',
+      'Wissel tussen Nederlands en Engels via de taalknop onderaan het zijmenu.',
+      'Alle paginatitels, knoppen en meldingen worden automatisch vertaald.',
+      '',
+      '── Sneltoetsen ──',
+      'Klik op het ? icoon rechtsboven voor contextgevoelige hulp per pagina.',
+      'Gebruik de zoekbalken op pagina\'s om snel te vinden wat je zoekt.',
+      '',
+      '── Problemen oplossen ──',
+      'Pagina laadt niet? Ververs de pagina (Ctrl+R of Cmd+R).',
+      'Inlogprobleem? Controleer of je het juiste wachtwoord gebruikt. Neem contact op met de admin als het niet lukt.',
+      'Betaling niet verwerkt? Controleer de status in Stripe. Betaallinks zijn 24 uur geldig.',
+      'E-mail niet ontvangen? Controleer de spammap. E-mails worden verzonden via Resend.',
+      '',
+      '── Contact ──',
+      'Bij technische problemen: neem contact op met de systeembeheerder.',
+    ],
+    tips: [
+      'Sla de admin-URL op als favoriet voor snelle toegang.',
+      'Gebruik Chrome of Safari voor de beste ervaring.',
+      'Log altijd uit als je klaar bent (vooral op gedeelde apparaten).',
+    ],
+  },
+];
+
+/* ═══════════════════════════════════════════════════
+   Guide content: ENGLISH
+   ═══════════════════════════════════════════════════ */
+const GUIDE_EN: GuideSection[] = [
+  {
+    id: 'dashboard',
+    icon: <LayoutDashboard className={ICON_CLASS} />,
+    title: 'Dashboard',
+    paths: ['/admin'],
+    description: 'The home screen with an overview of all important information.',
+    content: [
+      'The dashboard shows statistics such as number of bookings, pending payments, new messages, and revenue for the current month.',
+      'Click a stat card to go directly to that page (e.g., click "Bookings" to see all bookings).',
+      'Open tasks (such as unanswered messages or expired payments) appear automatically in the task list.',
+      'Admin users can export data via the "Export" button. Staff users don\'t see this option.',
+    ],
+    tips: [
+      'Check the dashboard daily for new tasks.',
+      'The revenue graph shows the trend over recent months.',
+      'Red badges indicate urgent actions.',
+    ],
+  },
+  {
+    id: 'planning',
+    icon: <CalendarCheck className={ICON_CLASS} />,
+    title: 'Planning',
+    paths: ['/admin/planning'],
+    description: 'The visual occupancy calendar for all caravans.',
+    content: [
+      'The planning view shows an overview of all caravans and their availability per week/month.',
+      'Bookings are shown as colored bars. The color indicates status: green = confirmed, yellow = pending, red = cancelled.',
+      'Scroll horizontally to view other periods, or use the navigation buttons to jump by month.',
+      'Click a booking in the calendar to view its details.',
+    ],
+    tips: [
+      'Use the planning to quickly check which caravans are available.',
+      'Switch the view (week/month) with the buttons at the top.',
+    ],
+  },
+  {
+    id: 'boekingen',
+    icon: <CalendarCheck className={ICON_CLASS} />,
+    title: 'Bookings',
+    paths: ['/admin/boekingen'],
+    description: 'Manage all bookings: view, filter, and create phone bookings.',
+    content: [
+      'The bookings page shows an overview of all bookings with status, date, customer details, and amount.',
+      'Use the search bar to search by name, email address, or booking reference.',
+      'Use the tabs at the top to filter by status: All, Pending, Confirmed, Cancelled, etc.',
+      'Click a booking to view full details, including payment info and deposit status.',
+      '── Creating a phone booking ──',
+      'Click the "New booking" button in the top-right to create a booking for a customer who calls by phone.',
+      'Fill in customer details (name, email, phone), choose a caravan and camping, select dates and number of travelers.',
+      'The system automatically calculates the price based on the chosen caravan, period, and number of travelers.',
+      'After creation, the customer automatically receives an email with an iDEAL/Wero payment link.',
+      'If the customer doesn\'t have an account yet, one is automatically created and login credentials are sent by email.',
+      'You can also copy the payment link and share it manually (e.g., via WhatsApp).',
+    ],
+    tips: [
+      'Search by booking reference (e.g., "CVS-2025-0001") for quick results.',
+      'Filter by "Pending" to see bookings that still need payment.',
+      'For phone bookings: always verify the email address before submitting.',
+      'Status colors: green = confirmed, orange = pending, red = cancelled.',
+    ],
+  },
+  {
+    id: 'betalingen',
+    icon: <CreditCard className={ICON_CLASS} />,
+    title: 'Payments',
+    paths: ['/admin/betalingen'],
+    description: 'Overview of all payments, statuses, and refunds.',
+    adminOnly: true,
+    content: [
+      'The payments page shows all payments linked to bookings, with status, amount, and type.',
+      'Payment statuses: PAID (green), PENDING (orange), EXPIRED (red), REFUNDED (gray).',
+      'Payment types: HUUR (rent payment), BORG (deposit), BORG_RETOUR (deposit refund).',
+      'Filter by type or status using the buttons at the top.',
+      '── Refunds ──',
+      'To issue a refund: open the booking via the bookings page, scroll to payments, click "Refund".',
+      'Refunds are processed immediately through Stripe. The customer receives the money within 5-10 business days.',
+      'Only payments with status PAID can be refunded.',
+      '── Stripe ──',
+      'All payments are processed via Stripe (iDEAL and Wero). You can consult the Stripe dashboard for detailed transaction information.',
+    ],
+    tips: [
+      'Check daily for expired payments.',
+      'For payment issues: check the status in Stripe first.',
+      'Refunds can only be processed by admin users.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'borg',
+    icon: <ClipboardCheck className={ICON_CLASS} />,
+    title: 'Deposit & Inspection',
+    paths: ['/admin/borg'],
+    description: 'Manage deposit checklists and perform mobile inspections.',
+    content: [
+      'The deposit page shows all deposit checklists linked to bookings.',
+      'A deposit checklist is automatically created when a booking is confirmed.',
+      '── Checklist items ──',
+      'The checklist contains standard items that need to be checked at check-in and check-out (e.g., inventory, cleaning, damage).',
+      'Each item can be marked as: Good, Damaged, or Missing.',
+      'For damage or missing items, you can add photos as evidence.',
+      '── Mobile inspection ──',
+      'Click "Mobile Inspect" to perform the inspection step-by-step on your phone.',
+      'This opens a fullscreen view ideal for use on location.',
+      'After completing the inspection, the customer automatically receives an email with a link to view and approve the checklist.',
+      '── Deposit refund ──',
+      'If everything is in order, you can refund the deposit via the deposit page.',
+      'For damage, you can do a partial deposit refund and withhold the damage amount.',
+    ],
+    tips: [
+      'Always do the inspection together with the customer for transparency.',
+      'Take photos of any damage as evidence.',
+      'The customer automatically receives a link to view the inspection.',
+      'Make sure all items are checked before completing the inspection.',
+    ],
+  },
+  {
+    id: 'klanten',
+    icon: <Users className={ICON_CLASS} />,
+    title: 'Customers',
+    paths: ['/admin/klanten'],
+    description: 'View and manage all customer accounts.',
+    adminOnly: true,
+    content: [
+      'The customers page shows an overview of all registered customers.',
+      'You can search by name or email address.',
+      'Click a customer to view their booking history, contact details, and account status.',
+      'Customer accounts are automatically created when a booking is placed (via the website or by phone through staff).',
+      'Each customer has a unique email address. For phone bookings, the system checks if the email already exists.',
+    ],
+    tips: [
+      'Use the search bar to quickly find a customer.',
+      'Check the number of bookings per customer for repeat visitors.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'berichten',
+    icon: <Mail className={ICON_CLASS} />,
+    title: 'Messages',
+    paths: ['/admin/berichten'],
+    description: 'Incoming messages from the contact form.',
+    adminOnly: true,
+    content: [
+      'All messages received via the website\'s contact form appear here.',
+      'Each message contains: name, email address, subject, and text.',
+      'Messages with type "Camping request" come from customers who requested a camping that\'s not in the list.',
+      'Mark messages as read/answered to keep the overview clean.',
+      'Reply to messages by emailing the customer directly (copy the email address).',
+    ],
+    tips: [
+      'Check daily for new messages.',
+      'Camping requests: add the requested camping if it\'s suitable.',
+      'Keep your inbox clean by marking read messages.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'chat',
+    icon: <MessageCircle className={ICON_CLASS} />,
+    title: 'Chat',
+    paths: ['/admin/chat'],
+    description: 'Live chat conversations with website visitors.',
+    content: [
+      'The chat page shows all live chat conversations started by visitors on the website.',
+      'Chat messages appear in real-time. Click a conversation in the left column to open it.',
+      'Type your reply at the bottom and press Enter or click "Send".',
+      'Conversations where the customer needs help are marked with a special icon.',
+      'You can delete chats via the trash icon.',
+      'Old chats are automatically deleted after 30 days.',
+    ],
+    tips: [
+      'Respond as quickly as possible to chats — visitors expect a fast answer.',
+      'Use the chat to answer frequently asked questions.',
+      'If a question is complex, refer the visitor to the contact form or call them back.',
+    ],
+  },
+  {
+    id: 'nieuwsbrieven',
+    icon: <Newspaper className={ICON_CLASS} />,
+    title: 'Newsletters',
+    paths: ['/admin/nieuwsbrieven'],
+    description: 'Manage newsletter subscribers and their preferences.',
+    adminOnly: true,
+    content: [
+      'The newsletters page shows all subscribers who signed up via the website.',
+      'You can view, search, and check the status of subscribers (active/unsubscribed).',
+      'Subscribers who unsubscribe are automatically marked as "Unsubscribed".',
+      'You can export the email list for use in an external email system.',
+    ],
+    tips: [
+      'Don\'t send too many newsletters — 1-2x per month is ideal.',
+      'Monitor the unsubscribe rate as an indicator of customer satisfaction.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'caravans',
+    icon: <CarFront className={ICON_CLASS} />,
+    title: 'Caravans',
+    paths: ['/admin/caravans'],
+    description: 'Manage the caravans available for rent.',
+    adminOnly: true,
+    content: [
+      'On the caravans page, you can add, edit, and delete caravans.',
+      'Each caravan has: name, description, photos, capacity (persons), price per night, and facilities.',
+      'Active caravans are shown on the website and available for booking.',
+      'Inactive caravans are hidden from customers but remain in the system.',
+      '── Pricing ──',
+      'Prices are set per night and can vary by season.',
+      'The system automatically calculates the total price when booking based on the chosen period.',
+      '── Photos ──',
+      'Upload multiple photos per caravan. The first photo is used as the main photo on the website.',
+      'Use high-quality photos (minimum 1200x800 pixels) for the best result.',
+    ],
+    tips: [
+      'Keep caravan descriptions up to date and complete.',
+      'Add at least 5 photos per caravan for a good impression.',
+      'Check seasonal prices before the new season.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'campings',
+    icon: <Tent className={ICON_CLASS} />,
+    title: 'Campings',
+    paths: ['/admin/campings'],
+    description: 'Manage the campings where caravans can be placed.',
+    adminOnly: true,
+    content: [
+      'The campings page shows all campings available in the booking system.',
+      'Campings can be added, edited, and deleted.',
+      'Drag campings to adjust the order — this is the order they appear on the website.',
+      'Active campings appear in the camping selector during the booking process.',
+      '── First use ──',
+      'On first use, you can import the default 30 Costa Brava campings with one click.',
+      'After that, you can add or remove campings as needed.',
+      '── Camping requests ──',
+      'Customers can request a camping that\'s not in the list via the booking form.',
+      'These requests appear as messages on the Messages page.',
+      'If a requested camping is suitable, you can add it to the list.',
+    ],
+    tips: [
+      'Keep the camping list up to date — remove campings that are no longer available.',
+      'The order matters: put popular campings at the top.',
+      'Regularly check messages for camping requests.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'kortingscodes',
+    icon: <Tag className={ICON_CLASS} />,
+    title: 'Discount Codes',
+    paths: ['/admin/kortingscodes'],
+    description: 'Create and manage discount codes for customers.',
+    adminOnly: true,
+    content: [
+      'On the discount codes page, you can create codes that customers can enter during booking.',
+      'Each code has: a unique code, discount type (percentage or fixed amount), and optionally an expiry date.',
+      'You can set how many times a code can be used (e.g., one-time or unlimited).',
+      'Expired codes are automatically deactivated.',
+      '── Creating a discount code ──',
+      '1. Click "New code".',
+      '2. Enter the code (e.g., "SUMMER2025").',
+      '3. Choose the discount type (percentage or fixed amount).',
+      '4. Set the value (e.g., 10% or €50).',
+      '5. Optional: set an expiry date and/or maximum usage.',
+      '6. Click "Save".',
+    ],
+    tips: [
+      'Use clear, easy-to-remember codes (e.g., SUMMER2025).',
+      'Always set an expiry date to prevent abuse.',
+      'Regularly check which codes are being used frequently.',
+      'This page is only visible to admin users.',
+    ],
+  },
+  {
+    id: 'betalingsmodel',
+    icon: <Banknote className={ICON_CLASS} />,
+    title: 'Payment Model',
+    description: 'How the payment system works.',
+    content: [
+      '── How does it work? ──',
+      'The system uses a single rent payment (type: HUUR) per booking — no deposit or remaining payment.',
+      '── Payment deadline ──',
+      'The payment deadline depends on when the booking was made:',
+      '• More than 30 days before arrival: the customer has 7 days to pay.',
+      '• Less than 30 days before arrival: the customer must pay immediately (within 24 hours).',
+      '── Payment methods ──',
+      'Customers pay via iDEAL or Wero (through Stripe). Credit card is also available.',
+      '── Automatic reminders ──',
+      'The system automatically sends payment reminders by email as the deadline approaches (3 days and 1 day before the deadline).',
+      'If payment is not received on time, the booking is automatically cancelled.',
+      '── Cancellation and refund ──',
+      'Customers can cancel their booking via their account. For cancellations more than 30 days before arrival, a full refund is issued.',
+      'Admin users can manually issue refunds via the payments page.',
+      '── Deposit ──',
+      'The security deposit is a separate amount paid upon arrival.',
+      'After the departure inspection, the deposit is refunded (fully or partially).',
+    ],
+    tips: [
+      'The payment deadline is calculated automatically — you don\'t need to set anything manually.',
+      'If in doubt about a refund: always contact the customer first.',
+      'Check the Stripe dashboard for detailed payment information.',
+    ],
+  },
+  {
+    id: 'rollen',
+    icon: <Shield className={ICON_CLASS} />,
+    title: 'Roles & Permissions',
+    description: 'Difference between Admin and Staff permissions.',
+    content: [
+      '── Admin ──',
+      'Admin users have full access to all system features:',
+      '• Dashboard (including export function)',
+      '• Planning, Bookings, Payments, Deposit',
+      '• Customers, Messages, Chat, Newsletters',
+      '• Caravans, Campings, Discount Codes',
+      '• Process refunds',
+      '• Export data',
+      '',
+      '── Staff ──',
+      'Staff users have limited access:',
+      '• Dashboard (without export)',
+      '• Planning, Bookings, Deposit',
+      '• Chat',
+      '',
+      'Staff does NOT have access to:',
+      '• Payments (no financial insight)',
+      '• Customers (no customer data)',
+      '• Messages, Newsletters',
+      '• Caravans, Campings, Discount Codes (no management)',
+      '• Refunds',
+    ],
+    tips: [
+      'Give staff accounts only to employees who work on-site.',
+      'Admin accounts are intended for owners and management.',
+      'Both roles can create bookings (e.g., phone bookings).',
+    ],
+  },
+  {
+    id: 'tips',
+    icon: <Lightbulb className={ICON_CLASS} />,
+    title: 'Tips & Tricks',
+    description: 'Useful tips for daily use.',
+    content: [
+      '── Navigation ──',
+      'Use the sidebar menu to navigate between pages. On mobile: tap the ☰ icon in the top-left.',
+      'You can customize the order of menu items by dragging them.',
+      '',
+      '── Language ──',
+      'Switch between Dutch and English via the language button at the bottom of the sidebar.',
+      'All page titles, buttons, and messages are automatically translated.',
+      '',
+      '── Quick access ──',
+      'Click the ? icon in the top-right for context-sensitive help per page.',
+      'Use the search bars on pages to quickly find what you\'re looking for.',
+      '',
+      '── Troubleshooting ──',
+      'Page won\'t load? Refresh the page (Ctrl+R or Cmd+R).',
+      'Login issue? Make sure you\'re using the correct password. Contact the admin if it doesn\'t work.',
+      'Payment not processed? Check the status in Stripe. Payment links are valid for 24 hours.',
+      'Email not received? Check the spam folder. Emails are sent via Resend.',
+      '',
+      '── Contact ──',
+      'For technical issues: contact the system administrator.',
+    ],
+    tips: [
+      'Save the admin URL as a bookmark for quick access.',
+      'Use Chrome or Safari for the best experience.',
+      'Always log out when you\'re done (especially on shared devices).',
+    ],
+  },
+];
+
+/* ═══════════════════════════════════════════════════
+   Component
+   ═══════════════════════════════════════════════════ */
+export default function AdminHelpGuide({ show, onClose, locale, pathname, onRestartTour }: Props) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'page' | 'guide'>('page');
+
+  const guide = locale === 'nl' ? GUIDE_NL : GUIDE_EN;
+
+  // Find the section relevant to the current page
+  const currentPageSection = useMemo(() => {
+    return guide.find(s => s.paths?.includes(pathname));
+  }, [guide, pathname]);
+
+  // Filter guide sections by search query
+  const filteredGuide = useMemo(() => {
+    if (!searchQuery.trim()) return guide;
+    const q = searchQuery.toLowerCase();
+    return guide.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.description.toLowerCase().includes(q) ||
+      s.content.some(c => c.toLowerCase().includes(q)) ||
+      s.tips.some(t => t.toLowerCase().includes(q))
+    );
+  }, [guide, searchQuery]);
+
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const expandAll = () => {
+    setExpandedSections(new Set(filteredGuide.map(s => s.id)));
+  };
+
+  const collapseAll = () => {
+    setExpandedSections(new Set());
+  };
+
+  // Reset state when opening
+  const handleClose = () => {
+    setSearchQuery('');
+    setActiveTab('page');
+    onClose();
+  };
+
+  const labels = locale === 'nl'
+    ? {
+        help: 'Hulp & Gids',
+        thisPage: 'Deze pagina',
+        fullGuide: 'Complete gids',
+        searchPlaceholder: 'Zoek in de gids...',
+        expandAll: 'Alles openen',
+        collapseAll: 'Alles sluiten',
+        tips: 'Tips',
+        noResults: 'Geen resultaten gevonden.',
+        adminOnly: 'Alleen admin',
+        restartTour: '🎓 Rondleiding opnieuw bekijken',
+        generalTips: 'Algemene tips',
+        noPageHelp: 'Geen specifieke hulp voor deze pagina. Bekijk de complete gids voor alle informatie.',
+        goToGuide: 'Open complete gids →',
+      }
+    : {
+        help: 'Help & Guide',
+        thisPage: 'This page',
+        fullGuide: 'Complete guide',
+        searchPlaceholder: 'Search the guide...',
+        expandAll: 'Expand all',
+        collapseAll: 'Collapse all',
+        tips: 'Tips',
+        noResults: 'No results found.',
+        adminOnly: 'Admin only',
+        restartTour: '🎓 View tour again',
+        generalTips: 'General tips',
+        noPageHelp: 'No specific help for this page. Check the complete guide for all information.',
+        goToGuide: 'Open complete guide →',
+      };
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/30 z-[55] flex items-start justify-end"
+          onClick={handleClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 60 }}
+            transition={{ type: 'spring', damping: 25 }}
+            className="bg-white h-full w-full sm:w-[480px] sm:max-w-[90vw] shadow-2xl flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* ── Header ── */}
+            <div className="p-4 sm:p-5 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <BookOpen size={20} className="text-sky-500" />
+                  {labels.help}
+                </h2>
+                <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Tab switcher */}
+              <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                <button
+                  onClick={() => setActiveTab('page')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'page'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {labels.thisPage}
+                </button>
+                <button
+                  onClick={() => setActiveTab('guide')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'guide'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {labels.fullGuide}
+                </button>
+              </div>
+            </div>
+
+            {/* ── Content ── */}
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === 'page' ? (
+                /* ═══ THIS PAGE TAB ═══ */
+                <div className="p-4 sm:p-5">
+                  {currentPageSection ? (
+                    <>
+                      {/* Section header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-sky-50 rounded-xl text-sky-600">
+                          {currentPageSection.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{currentPageSection.title}</h3>
+                          <p className="text-sm text-gray-500">{currentPageSection.description}</p>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="space-y-2 mb-6">
+                        {currentPageSection.content.map((paragraph, i) => {
+                          if (paragraph === '') return <div key={i} className="h-2" />;
+                          if (paragraph.startsWith('──')) {
+                            return (
+                              <h4 key={i} className="font-semibold text-gray-800 text-sm pt-3 pb-1 border-b border-gray-100">
+                                {paragraph.replace(/──/g, '').trim()}
+                              </h4>
+                            );
+                          }
+                          if (paragraph.startsWith('•')) {
+                            return (
+                              <div key={i} className="flex items-start gap-2 pl-2">
+                                <span className="text-sky-500 mt-1 text-xs">●</span>
+                                <p className="text-sm text-gray-600">{paragraph.slice(2)}</p>
+                              </div>
+                            );
+                          }
+                          if (/^\d+\./.test(paragraph)) {
+                            return (
+                              <div key={i} className="flex items-start gap-2 pl-2">
+                                <span className="text-sky-500 font-semibold text-sm min-w-[1.5rem]">{paragraph.match(/^\d+/)?.[0]}.</span>
+                                <p className="text-sm text-gray-600">{paragraph.replace(/^\d+\.\s*/, '')}</p>
+                              </div>
+                            );
+                          }
+                          return (
+                            <p key={i} className="text-sm text-gray-600 leading-relaxed">{paragraph}</p>
+                          );
+                        })}
+                      </div>
+
+                      {/* Tips */}
+                      {currentPageSection.tips.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                            <Lightbulb size={14} className="text-amber-500" />
+                            {labels.tips}
+                          </h4>
+                          <div className="space-y-2">
+                            {currentPageSection.tips.map((tip, i) => (
+                              <div key={i} className="flex items-start gap-2.5 bg-amber-50 rounded-xl px-4 py-3">
+                                <span className="text-amber-500 font-bold text-sm mt-0.5">💡</span>
+                                <p className="text-sm text-gray-700">{tip}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* No page-specific help */
+                    <div className="text-center py-12">
+                      <HelpCircle size={40} className="mx-auto text-gray-300 mb-4" />
+                      <p className="text-sm text-gray-500 mb-4">{labels.noPageHelp}</p>
+                      <button
+                        onClick={() => setActiveTab('guide')}
+                        className="text-sm text-sky-600 font-medium hover:text-sky-700 cursor-pointer"
+                      >
+                        {labels.goToGuide}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* ═══ FULL GUIDE TAB ═══ */
+                <div className="p-4 sm:p-5">
+                  {/* Search bar */}
+                  <div className="relative mb-4">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder={labels.searchPlaceholder}
+                      className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-300 transition-all"
+                    />
+                  </div>
+
+                  {/* Expand/collapse controls */}
+                  <div className="flex items-center justify-end gap-3 mb-4">
+                    <button onClick={expandAll} className="text-xs text-sky-600 hover:text-sky-700 font-medium cursor-pointer">
+                      {labels.expandAll}
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button onClick={collapseAll} className="text-xs text-sky-600 hover:text-sky-700 font-medium cursor-pointer">
+                      {labels.collapseAll}
+                    </button>
+                  </div>
+
+                  {/* Guide sections accordion */}
+                  {filteredGuide.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Search size={32} className="mx-auto text-gray-300 mb-3" />
+                      <p className="text-sm text-gray-500">{labels.noResults}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {filteredGuide.map(section => {
+                        const isExpanded = expandedSections.has(section.id);
+                        return (
+                          <div key={section.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                            {/* Accordion header */}
+                            <button
+                              onClick={() => toggleSection(section.id)}
+                              className="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
+                              <div className={`p-1.5 rounded-lg ${isExpanded ? 'bg-sky-100 text-sky-600' : 'bg-gray-100 text-gray-500'} transition-colors`}>
+                                {section.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold text-gray-900 text-sm">{section.title}</h3>
+                                  {section.adminOnly && (
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                                      {labels.adminOnly}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 truncate">{section.description}</p>
+                              </div>
+                              <motion.div
+                                animate={{ rotate: isExpanded ? 180 : 0 }}
+                                transition={{ duration: 0.2 }}
+                              >
+                                <ChevronDown size={16} className="text-gray-400" />
+                              </motion.div>
+                            </button>
+
+                            {/* Accordion content */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="px-3 sm:px-4 pb-4 border-t border-gray-100 pt-3">
+                                    {/* Content paragraphs */}
+                                    <div className="space-y-2 mb-4">
+                                      {section.content.map((paragraph, i) => {
+                                        if (paragraph === '') return <div key={i} className="h-2" />;
+                                        if (paragraph.startsWith('──')) {
+                                          return (
+                                            <h4 key={i} className="font-semibold text-gray-800 text-sm pt-2 pb-1 border-b border-gray-100">
+                                              {paragraph.replace(/──/g, '').trim()}
+                                            </h4>
+                                          );
+                                        }
+                                        if (paragraph.startsWith('•')) {
+                                          return (
+                                            <div key={i} className="flex items-start gap-2 pl-2">
+                                              <span className="text-sky-500 mt-1 text-xs">●</span>
+                                              <p className="text-sm text-gray-600">{paragraph.slice(2)}</p>
+                                            </div>
+                                          );
+                                        }
+                                        if (/^\d+\./.test(paragraph)) {
+                                          return (
+                                            <div key={i} className="flex items-start gap-2 pl-2">
+                                              <span className="text-sky-500 font-semibold text-sm min-w-[1.5rem]">{paragraph.match(/^\d+/)?.[0]}.</span>
+                                              <p className="text-sm text-gray-600">{paragraph.replace(/^\d+\.\s*/, '')}</p>
+                                            </div>
+                                          );
+                                        }
+                                        return (
+                                          <p key={i} className="text-sm text-gray-600 leading-relaxed">{paragraph}</p>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Tips */}
+                                    {section.tips.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-gray-900 text-xs mb-2 flex items-center gap-1.5">
+                                          <Lightbulb size={12} className="text-amber-500" />
+                                          {labels.tips}
+                                        </h4>
+                                        <div className="space-y-1.5">
+                                          {section.tips.map((tip, i) => (
+                                            <div key={i} className="flex items-start gap-2 bg-amber-50/70 rounded-lg px-3 py-2">
+                                              <span className="text-amber-400 text-xs mt-0.5">💡</span>
+                                              <p className="text-xs text-gray-600">{tip}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ── Footer ── */}
+            <div className="p-4 sm:p-5 border-t border-gray-100">
+              <button
+                onClick={() => { handleClose(); onRestartTour(); }}
+                className="w-full py-3 text-sm text-sky-600 bg-sky-50 rounded-xl font-medium hover:bg-sky-100 transition-colors cursor-pointer"
+              >
+                {labels.restartTour}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
