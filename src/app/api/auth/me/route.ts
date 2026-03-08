@@ -118,7 +118,7 @@ export async function DELETE(request: NextRequest) {
       to: customer.email,
       name: customer.name,
       token: confirmation.token,
-    });
+    }, customer.locale);
 
     return NextResponse.json({ success: true, confirmationSent: true });
   } catch (error) {

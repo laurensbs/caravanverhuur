@@ -22,11 +22,13 @@ export async function POST(request: Request) {
     // Find bookings where checkout was exactly 2 days ago
     // Only completed/active bookings, not cancelled ones
     const result = await pool.sql`
-      SELECT id, reference, guest_name, guest_email, caravan_id, camping_id, check_in, check_out, status
-      FROM bookings
-      WHERE status NOT IN ('GEANNULEERD')
-        AND check_out::date = (CURRENT_DATE - INTERVAL '2 days')::date
-        AND id NOT IN (
+      SELECT b.id, b.reference, b.guest_name, b.guest_email, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status,
+             c.locale
+      FROM bookings b
+      LEFT JOIN customers c ON LOWER(c.email) = LOWER(b.guest_email)
+      WHERE b.status NOT IN ('GEANNULEERD')
+        AND b.check_out::date = (CURRENT_DATE - INTERVAL '2 days')::date
+        AND b.id NOT IN (
           SELECT COALESCE(booking_id, '') FROM review_emails_sent
         )
     `;
@@ -91,7 +93,7 @@ export async function POST(request: Request) {
           campingName: getCampingName(booking.camping_id),
           checkIn: booking.check_in,
           checkOut: booking.check_out,
-        });
+        }, booking.locale);
 
         if (emailResult.success) {
           // Track that we sent this review email

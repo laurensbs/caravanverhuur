@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const token = await createPasswordResetToken(customer.id);
     const resetUrl = `https://caravanverhuurspanje.com/account?reset=${token}`;
 
-    await sendPasswordResetEmail(customer.email, customer.name, resetUrl);
+    await sendPasswordResetEmail(customer.email, customer.name, resetUrl, customer.locale);
 
     return NextResponse.json({ success: true });
   } catch (error) {

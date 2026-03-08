@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       checkOut: booking.check_out,
       refundPercentage,
       refundMessage,
-    }).catch(err => console.error('Cancellation email failed:', err));
+    }, customer.locale).catch(err => console.error('Cancellation email failed:', err));
 
     return NextResponse.json({
       success: true,

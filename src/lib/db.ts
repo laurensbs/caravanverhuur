@@ -232,6 +232,13 @@ export async function setupDatabase() {
     // ignore
   }
 
+  // Migration: add locale column to customers (nl/en/es)
+  try {
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS locale TEXT DEFAULT 'nl'`;
+  } catch {
+    // ignore
+  }
+
   // Migration: add photos column to newsletters
   try {
     await sql`ALTER TABLE newsletters ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'`;
@@ -771,11 +778,11 @@ export async function customerAgreeBorgChecklist(token: string, agreed: boolean,
 
 // ===== CUSTOMER QUERIES =====
 
-export async function createCustomer(data: { email: string; passwordHash: string; name: string; phone?: string }) {
+export async function createCustomer(data: { email: string; passwordHash: string; name: string; phone?: string; locale?: string }) {
   const id = generateId('CU');
   await sql`
-    INSERT INTO customers (id, email, password_hash, name, phone)
-    VALUES (${id}, ${data.email}, ${data.passwordHash}, ${data.name}, ${data.phone || null})
+    INSERT INTO customers (id, email, password_hash, name, phone, locale)
+    VALUES (${id}, ${data.email}, ${data.passwordHash}, ${data.name}, ${data.phone || null}, ${data.locale || 'nl'})
   `;
   return { id };
 }

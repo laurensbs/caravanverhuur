@@ -5,6 +5,7 @@ import {
   getBorgChecklistById,
   getBorgChecklistsByBooking,
   updateBorgChecklist,
+  getCustomerByEmail,
 } from '@/lib/db';
 import { sendBorgChecklistEmail } from '@/lib/email';
 
@@ -74,6 +75,7 @@ export async function PUT(request: NextRequest) {
       try {
         const checklist = await getBorgChecklistById(id);
         if (checklist && checklist.guest_email) {
+          const borgCustomer = await getCustomerByEmail(checklist.guest_email).catch(() => null);
           await sendBorgChecklistEmail({
             to: checklist.guest_email,
             guestName: checklist.guest_name || 'Klant',
@@ -83,7 +85,7 @@ export async function PUT(request: NextRequest) {
             caravanName: checklist.caravan_id,
             checkIn: checklist.check_in ? new Date(checklist.check_in).toLocaleDateString('nl-NL') : undefined,
             checkOut: checklist.check_out ? new Date(checklist.check_out).toLocaleDateString('nl-NL') : undefined,
-          });
+          }, borgCustomer?.locale);
         }
       } catch (emailErr) {
         console.error('Borg email error (non-fatal):', emailErr);

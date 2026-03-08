@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
       : 'Direct';
 
     // 6. Send email to customer with booking details + payment link + (optional) account credentials
+    const manualCustomer = existing || await getCustomerByEmail(email).catch(() => null);
     sendManualBookingEmail(email, {
       guestName: guestName.trim(),
       reference: result.reference,
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
       paymentUrl: session.url || `${baseUrl}/mijn-account`,
       isNewAccount,
       password: isNewAccount ? plainPassword : undefined,
-    }).catch(err => console.error('Manual booking email failed:', err));
+    }, manualCustomer?.locale).catch(err => console.error('Manual booking email failed:', err));
 
     // 7. Auto-create borgchecklist
     createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })

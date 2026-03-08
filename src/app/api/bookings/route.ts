@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, getCustomerByEmail } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -74,6 +74,10 @@ export async function POST(request: NextRequest) {
       : 'nu';
     const immediatePayment = daysUntil <= 30;
 
+    // Look up customer locale
+    const bookingCustomer = await getCustomerByEmail(guestEmail.toLowerCase().trim()).catch(() => null);
+    const customerLocale = bookingCustomer?.locale || 'nl';
+
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
       reference: result.reference,
@@ -88,7 +92,7 @@ export async function POST(request: NextRequest) {
       paymentDeadline,
       immediatePayment,
       spotNumber,
-    }).catch(err => console.error('Booking confirmation email failed:', err));
+    }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
 
     // Auto-create borgchecklist for this booking (inchecken)
     createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, name, phone } = body;
+    const { email, password, name, phone, locale } = body;
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: 'Email, wachtwoord en naam zijn verplicht' }, { status: 400 });
@@ -35,25 +35,27 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
+    const customerLocale = ['nl', 'en', 'es'].includes(locale) ? locale : 'nl';
     const { id } = await createCustomer({
       email: email.toLowerCase().trim(),
       passwordHash,
       name: name.trim(),
       phone: phone?.trim(),
+      locale: customerLocale,
     });
 
     // Auto-login: create session
     const session = await createCustomerSession(id);
 
     // Send welcome email (non-blocking)
-    sendWelcomeEmail(email.toLowerCase().trim(), name.trim()).catch(err => 
+    sendWelcomeEmail(email.toLowerCase().trim(), name.trim(), customerLocale).catch(err => 
       console.error('Welcome email failed:', err)
     );
 
     // Send email verification (non-blocking)
     createEmailVerificationToken(id).then(token => {
       const verifyUrl = `https://caravanverhuurspanje.com/api/auth/verify-email?token=${token}`;
-      return sendVerificationEmail(email.toLowerCase().trim(), name.trim(), verifyUrl);
+      return sendVerificationEmail(email.toLowerCase().trim(), name.trim(), verifyUrl, customerLocale);
     }).catch(err => console.error('Verification email failed:', err));
 
     const response = NextResponse.json({ success: true, customerId: id });

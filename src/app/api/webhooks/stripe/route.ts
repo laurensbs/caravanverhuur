@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getAllPayments } from '@/lib/db';
+import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getAllPayments, getCustomerByEmail } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -51,13 +51,14 @@ export async function POST(request: NextRequest) {
             if (payment) {
               const booking = await getBookingById(payment.booking_id);
               if (booking) {
+                const whCustomer = await getCustomerByEmail(booking.guest_email).catch(() => null);
                 await sendPaymentConfirmationEmail(booking.guest_email, {
                   guestName: booking.guest_name,
                   reference: booking.reference,
                   type: payment.type,
                   amount: parseFloat(payment.amount),
                   paidAt,
-                });
+                }, whCustomer?.locale);
               }
             }
           } catch (emailErr) {

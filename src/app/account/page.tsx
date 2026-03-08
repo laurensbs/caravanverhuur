@@ -14,7 +14,7 @@ import { useLanguage } from '@/i18n/context';
 function AccountPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   // Determine initial mode from URL
   const resetToken = searchParams.get('reset');
@@ -111,7 +111,7 @@ function AccountPageInner() {
       }
 
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const body = mode === 'login' ? { email, password } : { email, password, name, phone };
+      const body = mode === 'login' ? { email, password } : { email, password, name, phone, locale };
 
       const res = await fetch(endpoint, {
         method: 'POST',

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById } from '@/lib/db';
+import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
@@ -76,13 +76,14 @@ export async function PATCH(request: NextRequest) {
         if (payment) {
           const booking = await getBookingById(payment.booking_id);
           if (booking) {
+            const payCustomer = await getCustomerByEmail(booking.guest_email).catch(() => null);
             sendPaymentConfirmationEmail(booking.guest_email, {
               guestName: booking.guest_name,
               reference: booking.reference,
               type: payment.type,
               amount: parseFloat(payment.amount),
               paidAt: paidAt || new Date().toISOString(),
-            }).catch(err => console.error('Payment confirmation email failed:', err));
+            }, payCustomer?.locale).catch(err => console.error('Payment confirmation email failed:', err));
           }
         }
       } catch (emailErr) {

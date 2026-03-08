@@ -1,12 +1,14 @@
 // ===== EMAIL SERVICE =====
 // Uses Resend API via fetch (no npm package required)
 // Set RESEND_API_KEY and EMAIL_FROM in .env.local
+// Supports multilingual emails: NL (default), EN, ES
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 const SITE_URL = 'https://caravanverhuurspanje.com';
 const BRAND_NAME = 'Caravanverhuur Spanje';
 const LOGO_URL = 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png';
 import { GOOGLE_REVIEW_URL } from './constants';
+import { getEmailTranslations } from './email-translations';
 
 interface EmailOptions {
   to: string;
@@ -53,9 +55,10 @@ async function sendEmail(options: EmailOptions): Promise<{ success: boolean; err
 
 // ===== SHARED TEMPLATE WRAPPER =====
 
-function emailWrapper(content: string, preheader?: string): string {
+function emailWrapper(content: string, preheader?: string, locale?: string): string {
+  const t = getEmailTranslations(locale);
   return `<!DOCTYPE html>
-<html lang="nl" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="${t.lang}" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -95,24 +98,23 @@ function emailWrapper(content: string, preheader?: string): string {
       <!-- Footer -->
       <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;margin-top:32px;">
         <tr><td align="center" style="padding:0 20px;">
-          <!-- Footer logo -->
           <a href="${SITE_URL}" style="text-decoration:none;display:inline-block;margin-bottom:16px;">
             <img src="${LOGO_URL}" alt="${BRAND_NAME}" width="120" style="width:120px;height:auto;display:block;opacity:0.5;" />
           </a>
           <p style="margin:0 0 8px;color:#94A3B8;font-size:13px;line-height:1.5;">
-            ${BRAND_NAME} &middot; Caravans aan de Costa Brava
+            ${BRAND_NAME} &middot; ${t.footerTagline}
           </p>
           <p style="margin:0 0 16px;color:#CBD5E1;font-size:12px;line-height:1.5;">
             <a href="${SITE_URL}" style="color:#0EA5E9;text-decoration:none;font-weight:500;">caravanverhuurspanje.com</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="${SITE_URL}/contact" style="color:#94A3B8;text-decoration:none;">Contact</a>
+            <a href="${SITE_URL}/contact" style="color:#94A3B8;text-decoration:none;">${t.footerContact}</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="${SITE_URL}/privacy" style="color:#94A3B8;text-decoration:none;">Privacy</a>
+            <a href="${SITE_URL}/privacy" style="color:#94A3B8;text-decoration:none;">${t.footerPrivacy}</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a href="${SITE_URL}/voorwaarden" style="color:#94A3B8;text-decoration:none;">Voorwaarden</a>
+            <a href="${SITE_URL}/voorwaarden" style="color:#94A3B8;text-decoration:none;">${t.footerTerms}</a>
           </p>
           <p style="margin:0;color:#CBD5E1;font-size:11px;">
-            &copy; ${new Date().getFullYear()} ${BRAND_NAME}. Alle rechten voorbehouden.
+            &copy; ${new Date().getFullYear()} ${BRAND_NAME}. ${t.footerCopyright}
           </p>
         </td></tr>
       </table>
@@ -162,38 +164,74 @@ function badge(emoji: string, label: string): string {
   </div>`;
 }
 
+// ===== LOCALE-AWARE DATE/PRICE HELPERS =====
+
+function formatDate(dateStr: string, locale?: string): string {
+  const t = getEmailTranslations(locale);
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(t.dateLocale, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateLong(dateStr: string, locale?: string): string {
+  const t = getEmailTranslations(locale);
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(t.dateLocale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateShort(dateStr: string, locale?: string): string {
+  const t = getEmailTranslations(locale);
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(t.dateLocale, { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatPrice(n: number): string {
+  return `\u20AC\u00A0${n.toFixed(2).replace('.', ',')}`;
+}
+
+function getPaymentTypeLabel(type: string, locale?: string): string {
+  const t = getEmailTranslations(locale);
+  switch (type) {
+    case 'HUUR': return t.paymentTypeRental;
+    case 'AANBETALING': return t.paymentTypeDeposit;
+    case 'RESTBETALING': return t.paymentTypeRemaining;
+    case 'BORG': return t.paymentTypeBorg;
+    default: return type;
+  }
+}
+
 // ===== EMAIL TEMPLATES =====
 
-export async function sendWelcomeEmail(to: string, name: string) {
+export async function sendWelcomeEmail(to: string, name: string, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
 
   return sendEmail({
     to,
-    subject: `Welkom bij ${BRAND_NAME}, ${firstName}! ☀️`,
+    subject: t.welcomeSubject(firstName),
     html: emailWrapper(`
-      ${badge('👋', 'WELKOM')}
-      ${heading(`Hallo ${firstName}!`)}
-      ${subtext('Wat leuk dat je een account hebt aangemaakt! Je bent nu helemaal klaar om jouw droomvakantie aan de Costa Brava te boeken.')}
+      ${badge('\uD83D\uDC4B', t.welcomeBadge)}
+      ${heading(t.welcomeHeading(firstName))}
+      ${subtext(t.welcomeSubtext)}
 
       <!-- Feature cards -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 32px;">
         <tr>
           <td style="padding:8px 4px 8px 0;width:33%;" valign="top">
             <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:14px;padding:20px 16px;text-align:center;height:100%;">
-              <div style="font-size:28px;margin-bottom:8px;">🏕️</div>
-              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">Caravans bekijken &amp; boeken</p>
+              <div style="font-size:28px;margin-bottom:8px;">\uD83C\uDFD5\uFE0F</div>
+              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">${t.welcomeCard1}</p>
             </div>
           </td>
           <td style="padding:8px 2px;width:33%;" valign="top">
             <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;padding:20px 16px;text-align:center;height:100%;">
-              <div style="font-size:28px;margin-bottom:8px;">📋</div>
-              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">Boekingen &amp; betalingen</p>
+              <div style="font-size:28px;margin-bottom:8px;">\uD83D\uDCCB</div>
+              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">${t.welcomeCard2}</p>
             </div>
           </td>
           <td style="padding:8px 0 8px 4px;width:33%;" valign="top">
             <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:14px;padding:20px 16px;text-align:center;height:100%;">
-              <div style="font-size:28px;margin-bottom:8px;">✅</div>
-              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">Borg-checklist tekenen</p>
+              <div style="font-size:28px;margin-bottom:8px;">\u2705</div>
+              <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">${t.welcomeCard3}</p>
             </div>
           </td>
         </tr>
@@ -201,12 +239,12 @@ export async function sendWelcomeEmail(to: string, name: string) {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          <strong>🌴 Wist je dat?</strong> Al onze caravans staan op toplocaties aan de Spaanse Costa Brava, met directe toegang tot stranden, restaurants en lokale markten.
+          ${t.welcomeTip}
         </p>
       `, true)}
 
-      ${button('Bekijk onze caravans →', `${SITE_URL}/caravans`)}
-    `, `Welkom bij ${BRAND_NAME} — je account is klaar!`),
+      ${button(t.welcomeButton, `${SITE_URL}/caravans`)}
+    `, t.welcomePreheader, locale),
   });
 }
 
@@ -224,41 +262,37 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   paymentDeadline: string;
   immediatePayment: boolean;
   spotNumber?: string;
-}) {
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
-  };
-  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
   const deadlineLabel = data.immediatePayment
-    ? 'Direct bij boeking'
-    : new Date(data.paymentDeadline).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    ? t.bookingDirectPayment
+    : formatDateShort(data.paymentDeadline, locale);
 
   return sendEmail({
     to,
-    subject: `Boeking ${data.reference} bevestigd ✅`,
+    subject: t.bookingSubject(data.reference),
     html: emailWrapper(`
-      ${badge('📝', 'NIEUWE BOEKING')}
-      ${heading('Boeking ontvangen')}
-      ${subtext(`Bedankt ${firstName}! We hebben je boeking ontvangen en gaan deze zo snel mogelijk bevestigen.`)}
+      ${badge('\uD83D\uDCDD', t.bookingBadge)}
+      ${heading(t.bookingHeading)}
+      ${subtext(t.bookingSubtext(firstName))}
 
       <!-- Reference card -->
       <div style="background:linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);border:1px solid #BAE6FD;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
-        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Referentienummer</p>
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#0284C7;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
-        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">⏳ Wacht op bevestiging</span>
+        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${t.bookingAwaitConfirm}</span>
       </div>
 
       <!-- Booking details -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Caravan', data.caravanName)}
-        ${infoRow('Camping', data.campingName)}
-        ${data.spotNumber ? infoRow('Plek', data.spotNumber) : ''}
-        ${infoRow('Inchecken', formatDate(data.checkIn))}
-        ${infoRow('Uitchecken', formatDate(data.checkOut))}
-        ${infoRow('Nachten', String(data.nights))}
-        ${infoRow('Gasten', `${data.adults} volw.${data.children > 0 ? ` + ${data.children} kind.` : ''}`)}
+        ${infoRow(t.bookingCaravan, data.caravanName)}
+        ${infoRow(t.bookingCamping, data.campingName)}
+        ${data.spotNumber ? infoRow(t.bookingSpot, data.spotNumber) : ''}
+        ${infoRow(t.bookingCheckIn, formatDate(data.checkIn, locale))}
+        ${infoRow(t.bookingCheckOut, formatDate(data.checkOut, locale))}
+        ${infoRow(t.bookingNights, String(data.nights))}
+        ${infoRow(t.bookingGuests, `${data.adults} ${t.bookingAdults}${data.children > 0 ? ` + ${data.children} ${t.bookingChildren}` : ''}`)}
       </table>
 
       ${divider()}
@@ -266,7 +300,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       <!-- Pricing -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         <tr>
-          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">Totaalprijs</td>
+          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">${t.bookingTotalPrice}</td>
           <td style="color:#0F172A;font-weight:800;font-size:22px;text-align:right;padding:8px 0;">${formatPrice(data.totalPrice)}</td>
         </tr>
         <tr>
@@ -274,7 +308,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="color:#64748B;font-size:13px;padding:4px 0;">📅 Betalen vóór</td>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
                   <td style="color:#0284C7;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${deadlineLabel}</td>
                 </tr>
               </table>
@@ -286,14 +320,14 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
           ${data.immediatePayment
-            ? `<strong>Let op:</strong> je vakantie begint binnen 30 dagen. Betaal ${formatPrice(data.totalPrice)} nu via iDEAL/Wero in je account om de boeking definitief te maken.`
-            : `<strong>Volgende stap:</strong> betaal ${formatPrice(data.totalPrice)} vóór ${deadlineLabel} via iDEAL/Wero in je account. Je ontvangt automatisch een herinnering.`
+            ? t.bookingImmediateNote(formatPrice(data.totalPrice), deadlineLabel)
+            : t.bookingLaterNote(formatPrice(data.totalPrice), deadlineLabel)
           }
         </p>
       `, true)}
 
-      ${button('Ga naar mijn account →', `${SITE_URL}/mijn-account`)}
-    `, `Boeking ${data.reference} — ${data.caravanName}, ${data.campingName}`),
+      ${button(t.bookingButton, `${SITE_URL}/mijn-account`)}
+    `, `${t.bookingSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
   });
 }
 
@@ -314,60 +348,56 @@ export async function sendManualBookingEmail(to: string, data: {
   paymentUrl: string;
   isNewAccount: boolean;
   password?: string;
-}) {
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
-  };
-  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
 
   const accountSection = data.isNewAccount && data.password ? `
     ${divider()}
     ${highlight(`
       <p style="margin:0 0 8px;color:#0F172A;font-size:14px;line-height:1.65;">
-        <strong>🔐 Jouw account</strong><br/>
-        Er is automatisch een account voor je aangemaakt zodat je je boeking kunt beheren, betalingen kunt doen en je borg kunt inzien.
+        <strong>${t.manualAccountTitle}</strong><br/>
+        ${t.manualAccountDesc}
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:8px 0 0;">
         <tr>
-          <td style="color:#64748B;font-size:13px;padding:4px 0;">E-mail</td>
+          <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.manualEmail}</td>
           <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${to}</td>
         </tr>
         <tr>
-          <td style="color:#64748B;font-size:13px;padding:4px 0;">Wachtwoord</td>
+          <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.manualPassword}</td>
           <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:4px 0;font-family:monospace;letter-spacing:1px;">${data.password}</td>
         </tr>
       </table>
-      <p style="margin:8px 0 0;color:#64748B;font-size:12px;">Je kunt je wachtwoord wijzigen na het inloggen.</p>
+      <p style="margin:8px 0 0;color:#64748B;font-size:12px;">${t.manualChangePassword}</p>
     `, true)}
-    ${button('Inloggen op je account →', `${SITE_URL}/mijn-account`)}
+    ${button(t.manualLoginButton, `${SITE_URL}/mijn-account`)}
   ` : '';
 
   return sendEmail({
     to,
-    subject: `Boeking ${data.reference} — betaallink & gegevens`,
+    subject: t.manualSubject(data.reference),
     html: emailWrapper(`
-      ${badge('📞', 'TELEFONISCHE BOEKING')}
-      ${heading('Je boeking is aangemaakt')}
-      ${subtext(`Hoi ${firstName}! Naar aanleiding van ons telefoongesprek hebben wij een boeking voor je aangemaakt. Hieronder vind je alle gegevens en de betaallink.`)}
+      ${badge('\uD83D\uDCDE', t.manualBadge)}
+      ${heading(t.manualHeading)}
+      ${subtext(t.manualSubtext(firstName))}
 
       <!-- Reference card -->
       <div style="background:linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);border:1px solid #86EFAC;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
-        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Referentienummer</p>
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#16A34A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
-        <span style="display:inline-block;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">✅ Bevestigd</span>
+        <span style="display:inline-block;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${t.manualConfirmed}</span>
       </div>
 
       <!-- Booking details -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Caravan', data.caravanName)}
-        ${infoRow('Camping', data.campingName)}
-        ${data.spotNumber ? infoRow('Plek', data.spotNumber) : ''}
-        ${infoRow('Inchecken', formatDate(data.checkIn))}
-        ${infoRow('Uitchecken', formatDate(data.checkOut))}
-        ${infoRow('Nachten', String(data.nights))}
-        ${infoRow('Gasten', `${data.adults} volw.${data.children > 0 ? ` + ${data.children} kind.` : ''}`)}
+        ${infoRow(t.bookingCaravan, data.caravanName)}
+        ${infoRow(t.bookingCamping, data.campingName)}
+        ${data.spotNumber ? infoRow(t.bookingSpot, data.spotNumber) : ''}
+        ${infoRow(t.bookingCheckIn, formatDate(data.checkIn, locale))}
+        ${infoRow(t.bookingCheckOut, formatDate(data.checkOut, locale))}
+        ${infoRow(t.bookingNights, String(data.nights))}
+        ${infoRow(t.bookingGuests, `${data.adults} ${t.bookingAdults}${data.children > 0 ? ` + ${data.children} ${t.bookingChildren}` : ''}`)}
       </table>
 
       ${divider()}
@@ -375,7 +405,7 @@ export async function sendManualBookingEmail(to: string, data: {
       <!-- Pricing & Payment -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         <tr>
-          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">Totaalprijs</td>
+          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">${t.bookingTotalPrice}</td>
           <td style="color:#0F172A;font-weight:800;font-size:22px;text-align:right;padding:8px 0;">${formatPrice(data.totalPrice)}</td>
         </tr>
         <tr>
@@ -383,7 +413,7 @@ export async function sendManualBookingEmail(to: string, data: {
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="color:#64748B;font-size:13px;padding:4px 0;">📅 Betalen vóór</td>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
                   <td style="color:#0284C7;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${data.paymentDeadline}</td>
                 </tr>
               </table>
@@ -394,16 +424,16 @@ export async function sendManualBookingEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          <strong>Betaal direct via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. Na betaling is je boeking definitief.
+          ${t.manualPayNote}
         </p>
       `, true)}
 
-      ${button(`Betaal ${formatPrice(data.totalPrice)} via iDEAL →`, data.paymentUrl)}
+      ${button(t.manualPayButton(formatPrice(data.totalPrice)), data.paymentUrl)}
 
-      <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">Of betaal later via je persoonlijke dashboard</p>
+      <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">${t.manualPayLater}</p>
 
       ${accountSection}
-    `, `Boeking ${data.reference} — ${data.caravanName}, ${data.campingName}`),
+    `, `${t.manualSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
   });
 }
 
@@ -413,95 +443,97 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
   type: string;
   amount: number;
   paidAt: string;
-}) {
-  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
-  const typeLabel = data.type === 'HUUR' ? 'Huurbedrag' : data.type === 'AANBETALING' ? 'Aanbetaling' : data.type === 'RESTBETALING' ? 'Restbetaling' : data.type === 'BORG' ? 'Borg' : data.type;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
+  const typeLabel = getPaymentTypeLabel(data.type, locale);
   const firstName = data.guestName.split(' ')[0];
-  const dateStr = new Date(data.paidAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = formatDateShort(data.paidAt, locale);
 
   return sendEmail({
     to,
-    subject: `Betaling ontvangen — ${data.reference}`,
+    subject: t.paymentSubject(data.reference),
     html: emailWrapper(`
-      ${badge('✅', 'BETALING ONTVANGEN')}
-      ${heading('Betaling geslaagd!')}
-      ${subtext(`Bedankt ${firstName}, je betaling is in goede orde ontvangen en verwerkt.`)}
+      ${badge('\u2705', t.paymentBadge)}
+      ${heading(t.paymentHeading)}
+      ${subtext(t.paymentSubtext(firstName))}
 
       <!-- Amount display -->
       <div style="background:linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);border:1px solid #BBF7D0;border-radius:16px;padding:28px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${typeLabel}</p>
         <p style="margin:0 0 8px;color:#16A34A;font-weight:800;font-size:36px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
-        <p style="margin:0;color:#22C55E;font-size:13px;font-weight:500;">✓ Betaald op ${dateStr}</p>
+        <p style="margin:0;color:#22C55E;font-size:13px;font-weight:500;">${t.paymentPaidOn(dateStr)}</p>
       </div>
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Referentie', data.reference)}
-        ${infoRow('Type', typeLabel)}
-        ${infoRow('Bedrag', formatPrice(data.amount))}
+        ${infoRow(t.paymentRef, data.reference)}
+        ${infoRow(t.paymentType, typeLabel)}
+        ${infoRow(t.paymentAmount, formatPrice(data.amount))}
       </table>
 
-      ${button('Bekijk mijn account →', `${SITE_URL}/mijn-account`)}
-    `, `Betaling van ${formatPrice(data.amount)} ontvangen voor ${data.reference}`),
+      ${button(t.paymentButton, `${SITE_URL}/mijn-account`)}
+    `, `${t.paymentSubject(data.reference)} — ${formatPrice(data.amount)}`, locale),
   });
 }
 
-export async function sendContactAcknowledgmentEmail(to: string, name: string, subject: string) {
+export async function sendContactAcknowledgmentEmail(to: string, name: string, subject: string, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
 
   return sendEmail({
     to,
-    subject: `We hebben je bericht ontvangen`,
+    subject: t.contactSubject,
     html: emailWrapper(`
-      ${badge('💬', 'BERICHT ONTVANGEN')}
-      ${heading('Bedankt voor je bericht!')}
-      ${subtext(`Hallo ${firstName}, we hebben je bericht over "<em>${subject}</em>" ontvangen en nemen zo snel mogelijk contact met je op.`)}
+      ${badge('\uD83D\uDCAC', t.contactBadge)}
+      ${heading(t.contactHeading)}
+      ${subtext(t.contactSubtext(firstName, subject))}
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">⏱️</span>
+              <span style="font-size:20px;">\u23F1\uFE0F</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-                <strong>Reactietijd:</strong> We reageren meestal binnen 24 uur. Bij dringende vragen kun je ons ook bereiken via WhatsApp of telefoon.
+                ${t.contactResponseTime}
               </p>
             </td>
           </tr>
         </table>
       `)}
 
-      ${button('Bekijk onze contactgegevens →', `${SITE_URL}/contact`)}
-    `, `We hebben je bericht ontvangen — ${subject}`),
+      ${button(t.contactButton, `${SITE_URL}/contact`)}
+    `, `${t.contactSubject} — ${subject}`, locale),
   });
 }
 
-export async function sendContactReplyEmail(to: string, name: string, subject: string, reply: string) {
+export async function sendContactReplyEmail(to: string, name: string, subject: string, reply: string, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
 
   return sendEmail({
     to,
-    subject: `Reactie op je bericht: ${subject}`,
+    subject: t.replySubject(subject),
     html: emailWrapper(`
-      ${badge('💬', 'REACTIE OP JE BERICHT')}
-      ${heading(`Hallo ${firstName}!`)}
-      ${subtext(`We hebben gereageerd op je bericht over "<em>${subject}</em>".`)}
+      ${badge('\uD83D\uDCAC', t.replyBadge)}
+      ${heading(t.replyHeading(firstName))}
+      ${subtext(t.replySubtext(subject))}
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="vertical-align:top;">
-              <p style="margin:0 0 8px;color:#94A3B8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ons antwoord:</p>
+              <p style="margin:0 0 8px;color:#94A3B8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${t.replyLabel}</p>
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.7;white-space:pre-wrap;">${reply}</p>
             </td>
           </tr>
         </table>
       `, true)}
 
-      ${subtext('Heb je nog verdere vragen? Reageer gerust op deze e-mail of neem contact met ons op via onze website.')}
+      ${subtext(t.replyFollowUp)}
 
-      ${button('Neem contact op →', `${SITE_URL}/contact`)}
-    `, `Reactie op je bericht — ${subject}`),
+      ${button(t.replyButton, `${SITE_URL}/contact`)}
+    `, `${t.replySubject(subject)}`, locale),
   });
 }
 
@@ -514,7 +546,8 @@ export async function sendBorgChecklistEmail(data: {
   caravanName?: string;
   checkIn?: string;
   checkOut?: string;
-}) {
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
   const typeLabel = data.type === 'INCHECKEN' ? 'check-in' : 'check-out';
   const checklistUrl = `${SITE_URL}/borg/${data.token}`;
@@ -522,41 +555,41 @@ export async function sendBorgChecklistEmail(data: {
 
   return sendEmail({
     to: data.to,
-    subject: `Borgchecklist klaar — ${data.reference}`,
+    subject: t.borgSubject(data.reference),
     html: emailWrapper(`
-      ${badge('🔍', 'INSPECTIE')}
-      ${heading('Inspectie afgerond')}
-      ${subtext(`Hallo ${firstName}, de ${typeLabel}-inspectie voor je boeking is afgerond. Bekijk de resultaten en geef je akkoord.`)}
+      ${badge('\uD83D\uDD0D', t.borgBadge)}
+      ${heading(t.borgHeading)}
+      ${subtext(t.borgSubtext(firstName, typeLabel))}
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Boeking', data.reference)}
-        ${data.caravanName ? infoRow('Caravan', data.caravanName) : ''}
-        ${infoRow('Type', data.type === 'INCHECKEN' ? '📥 Incheck-inspectie' : '📤 Uitcheck-inspectie')}
-        ${data.checkIn ? infoRow('Check-in', data.checkIn) : ''}
-        ${data.checkOut ? infoRow('Check-out', data.checkOut) : ''}
+        ${infoRow(t.borgBooking, data.reference)}
+        ${data.caravanName ? infoRow(t.bookingCaravan, data.caravanName) : ''}
+        ${infoRow(t.paymentType, data.type === 'INCHECKEN' ? t.borgCheckInType : t.borgCheckOutType)}
+        ${data.checkIn ? infoRow(t.bookingCheckIn, data.checkIn) : ''}
+        ${data.checkOut ? infoRow(t.bookingCheckOut, data.checkOut) : ''}
       </table>
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">📝</span>
+              <span style="font-size:20px;">\uD83D\uDCDD</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-                Bekijk de checklist en geef je akkoord of dien eventueel bezwaar in. Dit kan via onderstaande link of via je account.
+                ${t.borgNote}
               </p>
             </td>
           </tr>
         </table>
       `)}
 
-      ${button('Bekijk checklist & reageer →', checklistUrl)}
+      ${button(t.borgButton, checklistUrl)}
 
       <div style="text-align:center;margin-top:16px;">
-        <a href="${dashboardUrl}" style="color:#0EA5E9;font-size:13px;text-decoration:none;font-weight:500;">Of bekijk via je account →</a>
+        <a href="${dashboardUrl}" style="color:#0EA5E9;font-size:13px;text-decoration:none;font-weight:500;">${t.borgDashboardLink}</a>
       </div>
-    `, `Borgchecklist klaar voor boeking ${data.reference} — bekijk en reageer`),
+    `, `${t.borgSubject(data.reference)}`, locale),
   });
 }
 
@@ -566,28 +599,29 @@ export async function sendDeleteConfirmationEmail(data: {
   to: string;
   name: string;
   token: string;
-}) {
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.name.split(' ')[0];
   const confirmUrl = `${SITE_URL}/api/auth/delete-confirm?token=${data.token}`;
 
   return sendEmail({
     to: data.to,
-    subject: `Bevestig verwijdering van je account`,
+    subject: t.deleteSubject,
     html: emailWrapper(`
-      ${badge('⚠️', 'ACCOUNT VERWIJDEREN')}
-      ${heading('Account verwijderen')}
-      ${subtext(`Hallo ${firstName}, we hebben een verzoek ontvangen om je account te verwijderen.`)}
+      ${badge('\u26A0\uFE0F', t.deleteBadge)}
+      ${heading(t.deleteHeading)}
+      ${subtext(t.deleteSubtext(firstName))}
 
       <!-- Warning box -->
       <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:14px;padding:22px 26px;margin:0 0 28px;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:22px;">🚨</span>
+              <span style="font-size:22px;">\uD83D\uDEA8</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#991B1B;font-size:14px;line-height:1.65;font-weight:500;">
-                <strong>Dit is onomkeerbaar.</strong> Alle gegevens, boekingen en betalingshistorie worden permanent verwijderd.
+                ${t.deleteWarning}
               </p>
             </td>
           </tr>
@@ -595,26 +629,26 @@ export async function sendDeleteConfirmationEmail(data: {
       </div>
 
       <p style="margin:0 0 8px;color:#0F172A;font-size:15px;line-height:1.7;">
-        Klik op de onderstaande knop om de verwijdering te bevestigen. Deze link is <strong>24 uur</strong> geldig.
+        ${t.deleteInstruction}
       </p>
 
-      ${button('Ja, verwijder mijn account →', confirmUrl, '#DC2626')}
+      ${button(t.deleteButton, confirmUrl, '#DC2626')}
 
       <p style="margin:24px 0 0;color:#94A3B8;font-size:13px;line-height:1.6;text-align:center;">
-        Heb je dit verzoek niet gedaan? Negeer deze e-mail — er wordt niets verwijderd.
+        ${t.deleteIgnore}
       </p>
-    `, `Bevestig de verwijdering van je account bij ${BRAND_NAME}`),
+    `, `${t.deleteSubject}`, locale),
   });
 }
 
-// ===== NEWSLETTER EMAIL =====
+// ===== NEWSLETTER EMAIL (admin content — not translated per user locale) =====
 
 const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
-  activiteit: { label: 'Activiteit', emoji: '🎉' },
-  feestdag: { label: 'Feestdag', emoji: '🎊' },
-  markt: { label: 'Markt', emoji: '🛍️' },
-  evenement: { label: 'Evenement', emoji: '🎭' },
-  algemeen: { label: 'Nieuws', emoji: '📣' },
+  activiteit: { label: 'Activiteit', emoji: '\uD83C\uDF89' },
+  feestdag: { label: 'Feestdag', emoji: '\uD83C\uDF8A' },
+  markt: { label: 'Markt', emoji: '\uD83D\uDECD\uFE0F' },
+  evenement: { label: 'Evenement', emoji: '\uD83C\uDFAD' },
+  algemeen: { label: 'Nieuws', emoji: '\uD83D\uDCE3' },
 };
 
 export async function sendNewsletterEmail(data: {
@@ -635,7 +669,6 @@ export async function sendNewsletterEmail(data: {
 
   const hasDetails = data.eventDate || data.eventLocation;
 
-  // Photos section
   const photosHtml = data.photos && data.photos.length > 0
     ? `<div style="margin:0 0 28px;">
         ${data.photos.map(url =>
@@ -646,7 +679,6 @@ export async function sendNewsletterEmail(data: {
       </div>`
     : '';
 
-  // Unsubscribe footer
   const unsubscribeHtml = data.unsubscribeUrl
     ? `<div style="text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid #E2E8F0;">
         <p style="margin:0;color:#94A3B8;font-size:11px;">
@@ -667,11 +699,11 @@ export async function sendNewsletterEmail(data: {
         <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px 20px;margin:0 0 28px;">
           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
             ${data.eventDate ? `<tr>
-              <td style="color:#64748B;font-size:13px;padding:4px 0;font-weight:500;">📅 Datum</td>
+              <td style="color:#64748B;font-size:13px;padding:4px 0;font-weight:500;">\uD83D\uDCC5 Datum</td>
               <td style="color:#0F172A;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventDate}</td>
             </tr>` : ''}
             ${data.eventLocation ? `<tr>
-              <td style="color:#64748B;font-size:13px;padding:4px 0;font-weight:500;">📍 Locatie</td>
+              <td style="color:#64748B;font-size:13px;padding:4px 0;font-weight:500;">\uD83D\uDCCD Locatie</td>
               <td style="color:#0F172A;font-weight:600;font-size:13px;text-align:right;padding:4px 0;">${data.eventLocation}</td>
             </tr>` : ''}
           </table>
@@ -688,7 +720,7 @@ export async function sendNewsletterEmail(data: {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">🌴</span>
+              <span style="font-size:20px;">\uD83C\uDF34</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
@@ -699,7 +731,7 @@ export async function sendNewsletterEmail(data: {
         </table>
       `, true)}
 
-      ${button('Bekijk caravans →', `${SITE_URL}/caravans`)}
+      ${button('Bekijk caravans \u2192', `${SITE_URL}/caravans`)}
 
       ${unsubscribeHtml}
     `, `${cat.emoji} ${data.title} — ${BRAND_NAME}`),
@@ -717,12 +749,9 @@ export async function sendCountdownEmail(data: {
   checkIn: string;
   checkOut: string;
   daysUntil: number;
-}) {
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
-  const formatDateNl = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  };
 
   const weeks = Math.floor(data.daysUntil / 7);
   const remainingDays = data.daysUntil % 7;
@@ -732,38 +761,26 @@ export async function sendCountdownEmail(data: {
   let subjectLine: string;
 
   if (data.daysUntil === 30) {
-    emoji = '📅';
-    subjectLine = `Nog 30 dagen — je vakantie komt eraan!`;
-    countdownText = `Over precies 30 dagen begint je vakantie aan de Costa Brava! Tijd om alvast te gaan pakken en je reisgids te bekijken.`;
+    emoji = '\uD83D\uDCC5'; subjectLine = t.countdown30Subject; countdownText = t.countdown30Text;
   } else if (data.daysUntil === 14) {
-    emoji = '🌊';
-    subjectLine = `Nog 2 weken tot de Costa Brava!`;
-    countdownText = `De vakantie is bijna in zicht! Nog slechts twee weken en je geniet van de zon, zee en de prachtige Costa Brava.`;
+    emoji = '\uD83C\uDF0A'; subjectLine = t.countdown14Subject; countdownText = t.countdown14Text;
   } else if (data.daysUntil === 7) {
-    emoji = '☀️';
-    subjectLine = `Volgende week begint je vakantie!`;
-    countdownText = `Nog maar één week! Heb je alles ingepakt? Vergeet je reisdocumenten niet en neem genoeg zonnebrand mee.`;
+    emoji = '\u2600\uFE0F'; subjectLine = t.countdown7Subject; countdownText = t.countdown7Text;
   } else if (data.daysUntil === 3) {
-    emoji = '🎉';
-    subjectLine = `Over 3 dagen ben je op vakantie!`;
-    countdownText = `Het is bijna zover! Nog drie nachtjes slapen en je bent op je vakantiebestemming. We hebben alles klaarstaan!`;
+    emoji = '\uD83C\uDF89'; subjectLine = t.countdown3Subject; countdownText = t.countdown3Text;
   } else if (data.daysUntil === 1) {
-    emoji = '✈️';
-    subjectLine = `Morgen begint je vakantie!`;
-    countdownText = `Morgen is het zover! We hopen dat je een fantastische reis hebt. De caravan is schoon en klaar voor je komst.`;
+    emoji = '\u2708\uFE0F'; subjectLine = t.countdown1Subject; countdownText = t.countdown1Text;
   } else {
-    emoji = '🏖️';
-    subjectLine = `Nog ${data.daysUntil} dagen tot je vakantie!`;
-    countdownText = `Je vakantie aan de Costa Brava komt steeds dichterbij. Nog ${data.daysUntil} dagen!`;
+    emoji = '\uD83C\uDFD6\uFE0F'; subjectLine = t.countdownDefaultSubject(data.daysUntil); countdownText = t.countdownDefaultText(data.daysUntil);
   }
 
   return sendEmail({
     to: data.to,
     subject: `${emoji} ${subjectLine}`,
     html: emailWrapper(`
-      ${badge(emoji, 'COUNTDOWN')}
+      ${badge(emoji, t.countdownBadge)}
       ${heading(subjectLine)}
-      ${subtext(`Hallo ${firstName}, je vakantie komt in zicht!`)}
+      ${subtext(t.countdownHi(firstName))}
 
       <!-- Countdown blocks -->
       <div style="text-align:center;margin:0 0 32px;">
@@ -772,13 +789,13 @@ export async function sendCountdownEmail(data: {
             <td style="padding:0 8px;">
               <div style="background:linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);border:1px solid #BAE6FD;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
                 <div style="font-size:36px;font-weight:800;color:#0284C7;line-height:1;">${weeks}</div>
-                <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">weken</div>
+                <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">${t.countdownWeeks}</div>
               </div>
             </td>
             <td style="padding:0 8px;">
               <div style="background:linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);border:1px solid #BBF7D0;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
                 <div style="font-size:36px;font-weight:800;color:#16A34A;line-height:1;">${remainingDays}</div>
-                <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">dagen</div>
+                <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">${t.countdownDays}</div>
               </div>
             </td>
           </tr>
@@ -788,47 +805,48 @@ export async function sendCountdownEmail(data: {
       <p style="margin:0 0 28px;color:#0F172A;font-size:15px;line-height:1.7;">${countdownText}</p>
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Boeking', data.reference)}
-        ${infoRow('Caravan', data.caravanName)}
-        ${infoRow('Camping', data.campingName)}
-        ${infoRow('Check-in', formatDateNl(data.checkIn))}
-        ${infoRow('Check-out', formatDateNl(data.checkOut))}
+        ${infoRow(t.borgBooking, data.reference)}
+        ${infoRow(t.bookingCaravan, data.caravanName)}
+        ${infoRow(t.bookingCamping, data.campingName)}
+        ${infoRow(t.bookingCheckIn, formatDateLong(data.checkIn, locale))}
+        ${infoRow(t.bookingCheckOut, formatDateLong(data.checkOut, locale))}
       </table>
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">💡</span>
+              <span style="font-size:20px;">\uD83D\uDCA1</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-                <strong>Tip:</strong> Bewaar onze contactgegevens voor je reis. Bij vragen kun je ons bereiken via info@caravanverhuurspanje.com of WhatsApp.
+                ${t.countdownTip}
               </p>
             </td>
           </tr>
         </table>
       `, true)}
 
-      ${button('Bekijk mijn boeking →', `${SITE_URL}/mijn-account?tab=boekingen`)}
-    `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`),
+      ${button(t.countdownButton, `${SITE_URL}/mijn-account?tab=boekingen`)}
+    `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`, locale),
   });
 }
 
 // ===== PASSWORD RESET EMAIL =====
 
-export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
+export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
 
   return sendEmail({
     to,
-    subject: `🔑 Wachtwoord herstellen — ${BRAND_NAME}`,
+    subject: `${t.resetSubject} — ${BRAND_NAME}`,
     html: emailWrapper(`
-      ${badge('🔑', 'WACHTWOORD HERSTELLEN')}
-      ${heading(`Hallo ${firstName}`)}
-      ${subtext('We hebben een verzoek ontvangen om je wachtwoord te herstellen. Klik op de knop hieronder om een nieuw wachtwoord in te stellen.')}
+      ${badge('\uD83D\uDD11', t.resetBadge)}
+      ${heading(t.resetHeading(firstName))}
+      ${subtext(t.resetSubtext)}
 
-      ${button('Nieuw wachtwoord instellen →', resetUrl)}
+      ${button(t.resetButton, resetUrl)}
 
       ${divider()}
 
@@ -836,41 +854,42 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">⚠️</span>
+              <span style="font-size:20px;">\u26A0\uFE0F</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-                Deze link is <strong>1 uur geldig</strong>. Heb je dit verzoek niet gedaan? Dan kun je deze email veilig negeren.
+                ${t.resetExpiry}
               </p>
             </td>
           </tr>
         </table>
       `)}
-    `, 'Herstel je wachtwoord'),
+    `, t.resetSubject, locale),
   });
 }
 
 // ===== EMAIL VERIFICATION =====
 
-export async function sendVerificationEmail(to: string, name: string, verifyUrl: string) {
+export async function sendVerificationEmail(to: string, name: string, verifyUrl: string, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
 
   return sendEmail({
     to,
-    subject: `✉️ Bevestig je e-mailadres — ${BRAND_NAME}`,
+    subject: `${t.verifySubject} — ${BRAND_NAME}`,
     html: emailWrapper(`
-      ${badge('✉️', 'E-MAIL VERIFICATIE')}
-      ${heading(`Bevestig je e-mailadres`)}
-      ${subtext(`Hallo ${firstName}, klik op de knop hieronder om je e-mailadres te bevestigen. Zo weten we zeker dat we je op het juiste adres kunnen bereiken.`)}
+      ${badge('\u2709\uFE0F', t.verifyBadge)}
+      ${heading(t.verifyHeading)}
+      ${subtext(t.verifySubtext(firstName))}
 
-      ${button('E-mailadres bevestigen →', verifyUrl)}
+      ${button(t.verifyButton, verifyUrl)}
 
       ${divider()}
 
       <p style="margin:0;color:#94A3B8;font-size:13px;line-height:1.6;">
-        Deze link is 24 uur geldig. Als je geen account hebt aangemaakt, kun je deze email negeren.
+        ${t.verifyExpiry}
       </p>
-    `, 'Bevestig je e-mailadres'),
+    `, t.verifySubject, locale),
   });
 }
 
@@ -885,10 +904,9 @@ export async function sendPaymentReminderEmail(data: {
   checkIn: string;
   amount: number;
   daysUntil: number;
-}) {
-  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
-  const formatDateNl = (d: string) => new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
   const urgency = data.daysUntil <= 7 ? 'urgent' : 'normal';
   const accentColor = urgency === 'urgent' ? '#DC2626' : '#F59E0B';
   const bgColor = urgency === 'urgent' ? '#FEF2F2' : '#FFFBEB';
@@ -897,36 +915,36 @@ export async function sendPaymentReminderEmail(data: {
   return sendEmail({
     to: data.to,
     subject: urgency === 'urgent'
-      ? `⚠️ Betaling vereist — nog ${data.daysUntil} dagen tot aankomst (${data.reference})`
-      : `Herinnering: betaling voor je vakantie (${data.reference})`,
+      ? t.reminderUrgentSubject(data.daysUntil, data.reference)
+      : t.reminderNormalSubject(data.reference),
     html: emailWrapper(`
-      ${badge(urgency === 'urgent' ? '⚠️' : '💶', 'BETALINGSHERINNERING')}
-      ${heading(urgency === 'urgent' ? 'Actie vereist!' : 'Betaling openstaand')}
-      ${subtext(`Beste ${firstName}, de betaling voor je boeking is nog niet ontvangen. Je aankomst is over <strong>${data.daysUntil} dagen</strong>.`)}
+      ${badge(urgency === 'urgent' ? '\u26A0\uFE0F' : '\uD83D\uDCB6', t.reminderBadge)}
+      ${heading(urgency === 'urgent' ? t.reminderUrgentHeading : t.reminderNormalHeading)}
+      ${subtext(t.reminderSubtext(firstName, data.daysUntil))}
 
       <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:16px;padding:28px;text-align:center;margin:0 0 28px;">
-        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Nog te betalen</p>
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.reminderToPay}</p>
         <p style="margin:0 0 8px;color:${accentColor};font-weight:800;font-size:36px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
-        <p style="margin:0;color:#64748B;font-size:13px;">Betaling voor boeking ${data.reference}</p>
+        <p style="margin:0;color:#64748B;font-size:13px;">${t.reminderForBooking(data.reference)}</p>
       </div>
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Referentie', data.reference)}
-        ${infoRow('Caravan', data.caravanName)}
-        ${infoRow('Camping', data.campingName)}
-        ${infoRow('Aankomst', formatDateNl(data.checkIn))}
-        ${infoRow('Openstaand', formatPrice(data.amount))}
+        ${infoRow(t.reminderRef, data.reference)}
+        ${infoRow(t.bookingCaravan, data.caravanName)}
+        ${infoRow(t.bookingCamping, data.campingName)}
+        ${infoRow(t.reminderArrival, formatDateShort(data.checkIn, locale))}
+        ${infoRow(t.reminderOutstanding, formatPrice(data.amount))}
       </table>
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          <strong>💡 Betaal eenvoudig via iDEAL/Wero</strong> vanuit je account. De betaling wordt direct verwerkt.
-          ${urgency === 'urgent' ? '<br/><br/>⚠️ <strong>Let op:</strong> zonder betaling kan je verblijf niet doorgaan.' : ''}
+          ${t.reminderPayNote}
+          ${urgency === 'urgent' ? t.reminderUrgentNote : ''}
         </p>
       `, true)}
 
-      ${button('Nu betalen →', `${SITE_URL}/mijn-account`)}
-    `, `Betaling van ${formatPrice(data.amount)} voor ${data.reference} — nog ${data.daysUntil} dagen`),
+      ${button(t.reminderButton, `${SITE_URL}/mijn-account`)}
+    `, `${formatPrice(data.amount)} — ${data.reference}`, locale),
   });
 }
 
@@ -942,38 +960,35 @@ export async function sendCancellationEmail(data: {
   checkOut: string;
   refundPercentage: number;
   refundMessage: string;
-}) {
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
-  const formatDateNl = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  };
 
   return sendEmail({
     to: data.to,
-    subject: `❌ Boeking geannuleerd — ${data.reference}`,
+    subject: t.cancelSubject(data.reference),
     html: emailWrapper(`
-      ${badge('❌', 'ANNULERING BEVESTIGD')}
-      ${heading('Boeking geannuleerd')}
-      ${subtext(`Hallo ${firstName}, je boeking is succesvol geannuleerd. Hieronder vind je de details.`)}
+      ${badge('\u274C', t.cancelBadge)}
+      ${heading(t.cancelHeading)}
+      ${subtext(t.cancelSubtext(firstName))}
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow('Referentie', data.reference)}
-        ${infoRow('Caravan', data.caravanName)}
-        ${infoRow('Camping', data.campingName)}
-        ${infoRow('Check-in', formatDateNl(data.checkIn))}
-        ${infoRow('Check-out', formatDateNl(data.checkOut))}
+        ${infoRow(t.cancelRef, data.reference)}
+        ${infoRow(t.bookingCaravan, data.caravanName)}
+        ${infoRow(t.bookingCamping, data.campingName)}
+        ${infoRow(t.bookingCheckIn, formatDateLong(data.checkIn, locale))}
+        ${infoRow(t.bookingCheckOut, formatDateLong(data.checkOut, locale))}
       </table>
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">💰</span>
+              <span style="font-size:20px;">\uD83D\uDCB0</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">
-                Restitutie: ${data.refundPercentage}%
+                ${t.cancelRefundLabel(data.refundPercentage)}
               </p>
               <p style="margin:0;color:#64748B;font-size:14px;line-height:1.65;">
                 ${data.refundMessage}
@@ -984,11 +999,11 @@ export async function sendCancellationEmail(data: {
       `, true)}
 
       <p style="margin:0 0 20px;color:#64748B;font-size:14px;line-height:1.65;">
-        Eventuele restituties worden binnen 7 werkdagen verwerkt. Heb je vragen? Neem gerust contact op.
+        ${t.cancelRefundNote}
       </p>
 
-      ${button('Contact opnemen →', `${SITE_URL}/contact`)}
-    `, `Boeking ${data.reference} is geannuleerd`),
+      ${button(t.cancelButton, `${SITE_URL}/contact`)}
+    `, `${t.cancelSubject(data.reference)}`, locale),
   });
 }
 
@@ -1002,33 +1017,30 @@ export async function sendReviewRequestEmail(data: {
   campingName: string;
   checkIn: string;
   checkOut: string;
-}) {
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
-  const formatDateNl = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-  };
 
   return sendEmail({
     to: data.to,
-    subject: `⭐ ${firstName}, hoe was je vakantie? Laat een review achter!`,
+    subject: t.reviewSubject(firstName),
     html: emailWrapper(`
-      ${badge('⭐', 'REVIEW')}
-      ${heading(`Hoe was je vakantie, ${firstName}?`)}
-      ${subtext('We hopen dat je een fantastische tijd hebt gehad aan de Costa Brava! Je mening helpt andere vakantiegangers bij hun keuze — en het kost maar 1 minuut.')}
+      ${badge('\u2B50', t.reviewBadge)}
+      ${heading(t.reviewHeading(firstName))}
+      ${subtext(t.reviewSubtext)}
 
       ${highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="width:40px;vertical-align:top;padding-top:2px;">
-              <span style="font-size:20px;">🏕️</span>
+              <span style="font-size:20px;">\uD83C\uDFD5\uFE0F</span>
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">
                 ${data.caravanName} — ${data.campingName}
               </p>
               <p style="margin:0;color:#64748B;font-size:13px;">
-                ${formatDateNl(data.checkIn)} t/m ${formatDateNl(data.checkOut)}
+                ${t.reviewDateRange(formatDateShort(data.checkIn, locale), formatDateShort(data.checkOut, locale))}
               </p>
             </td>
           </tr>
@@ -1036,23 +1048,23 @@ export async function sendReviewRequestEmail(data: {
       `, true)}
 
       <div style="text-align:center;margin:0 0 20px;">
-        <div style="font-size:32px;letter-spacing:4px;margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
-        <p style="margin:0;color:#64748B;font-size:14px;">Hoe beoordeel jij je ervaring?</p>
+        <div style="font-size:32px;letter-spacing:4px;margin-bottom:8px;">\u2B50\u2B50\u2B50\u2B50\u2B50</div>
+        <p style="margin:0;color:#64748B;font-size:14px;">${t.reviewRateQuestion}</p>
       </div>
 
-      ${button('Laat een Google Review achter ⭐', GOOGLE_REVIEW_URL, '#EA4335')}
+      ${button(t.reviewButton, GOOGLE_REVIEW_URL, '#EA4335')}
 
       <p style="margin:24px 0 0;color:#94A3B8;font-size:13px;text-align:center;line-height:1.6;">
-        Door een review achter te laten help je ons én andere vakantiegangers. Hartelijk dank! 🙏
+        ${t.reviewThanks}
       </p>
 
       ${divider()}
 
       <p style="margin:0 0 8px;color:#64748B;font-size:13px;line-height:1.6;">
-        <strong>Was er iets niet goed?</strong> Laat het ons weten zodat we het kunnen verbeteren. Je kunt ons altijd bereiken via het contactformulier.
+        ${t.reviewFeedbackTitle}
       </p>
 
-      ${button('Feedback geven →', `${SITE_URL}/contact`, '#64748B')}
-    `, `Hoe was je vakantie? Deel je ervaring met een Google review ⭐`),
+      ${button(t.reviewFeedbackButton, `${SITE_URL}/contact`, '#64748B')}
+    `, `${t.reviewSubject(firstName)}`, locale),
   });
 }

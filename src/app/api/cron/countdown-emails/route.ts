@@ -23,10 +23,12 @@ export async function POST(request: Request) {
 
     // Get all active bookings with future check-in dates
     const result = await pool.sql`
-      SELECT id, reference, guest_name, guest_email, caravan_id, camping_id, check_in, check_out, status
-      FROM bookings
-      WHERE status NOT IN ('GEANNULEERD')
-        AND check_in > NOW()
+      SELECT b.id, b.reference, b.guest_name, b.guest_email, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status,
+             c.locale
+      FROM bookings b
+      LEFT JOIN customers c ON LOWER(c.email) = LOWER(b.guest_email)
+      WHERE b.status NOT IN ('GEANNULEERD')
+        AND b.check_in > NOW()
     `;
 
     const bookings = result.rows;
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
             checkIn: booking.check_in,
             checkOut: booking.check_out,
             daysUntil,
-          });
+          }, booking.locale);
 
           if (emailResult.success) {
             sentCount++;

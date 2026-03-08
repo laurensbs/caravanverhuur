@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById } from '@/lib/db';
+import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById, getCustomerByEmail } from '@/lib/db';
 import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
 import { contactLimiter, getClientIp } from '@/lib/rate-limit';
 
@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
     const result = await createContact({ name, email, phone, subject, message });
 
     // Send acknowledgment email (non-blocking)
-    sendContactAcknowledgmentEmail(email, name, subject).catch(err =>
+    const contactCustomer = await getCustomerByEmail(email.toLowerCase().trim()).catch(() => null);
+    sendContactAcknowledgmentEmail(email, name, subject, contactCustomer?.locale).catch(err =>
       console.error('Contact acknowledgment email failed:', err)
     );
 
@@ -73,7 +74,8 @@ export async function PATCH(request: NextRequest) {
 
       // Send reply email to the visitor (non-blocking)
       if (contact?.email) {
-        sendContactReplyEmail(contact.email, contact.name, contact.subject, reply).catch(err =>
+        const replyCustomer = await getCustomerByEmail(contact.email.toLowerCase().trim()).catch(() => null);
+        sendContactReplyEmail(contact.email, contact.name, contact.subject, reply, replyCustomer?.locale).catch(err =>
           console.error('Contact reply email failed:', err)
         );
       }

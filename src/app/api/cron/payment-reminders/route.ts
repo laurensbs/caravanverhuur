@@ -24,9 +24,11 @@ export async function POST(request: Request) {
     const result = await pool.sql`
       SELECT b.id, b.reference, b.guest_name, b.guest_email, b.caravan_id, b.camping_id,
              b.check_in, b.check_out, b.total_price, b.remaining_amount,
-             p.id as payment_id, p.amount as payment_amount
+             p.id as payment_id, p.amount as payment_amount,
+             c.locale
       FROM bookings b
       JOIN payments p ON p.booking_id = b.id
+      LEFT JOIN customers c ON LOWER(c.email) = LOWER(b.guest_email)
       WHERE b.status NOT IN ('GEANNULEERD')
         AND b.check_in > NOW()
         AND p.type IN ('HUUR', 'RESTBETALING')
@@ -77,7 +79,7 @@ export async function POST(request: Request) {
             checkIn: row.check_in,
             amount: parseFloat(row.payment_amount),
             daysUntil,
-          });
+          }, row.locale);
 
           if (emailResult.success) {
             sentCount++;
