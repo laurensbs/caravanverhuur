@@ -107,13 +107,40 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const savedLocale = localStorage.getItem('admin_locale') as AdminLocale | null;
     if (savedLocale && (savedLocale === 'nl' || savedLocale === 'en')) setLoginLocale(savedLocale);
 
+    /* Restore saved role */
+    const savedRole = localStorage.getItem('admin_role');
+    if (savedRole === 'admin' || savedRole === 'staff') setUsername(savedRole);
+
+    /* Restore saved password */
+    const savedPw = localStorage.getItem('admin_pw');
+    if (savedPw) setPassword(savedPw);
+
     /* Verify existing session with server */
     fetch('/api/admin/auth/me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then(async (data) => {
         if (data?.authenticated) {
           setAuthenticated(true);
           setRole(data.role);
+        } else {
+          /* Auto-login with saved credentials */
+          const autoRole = localStorage.getItem('admin_role');
+          const autoPw = localStorage.getItem('admin_pw');
+          if (autoRole && autoPw) {
+            try {
+              const res = await fetch('/api/admin/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ user: autoRole, password: autoPw }),
+              });
+              const loginData = await res.json();
+              if (res.ok && loginData.success) {
+                setRole(loginData.role);
+                setAuthenticated(true);
+              }
+            } catch {}
+          }
         }
       })
       .catch(() => {});
@@ -138,6 +165,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         setRole(data.role);
         setAuthenticated(true);
         setError('');
+        /* Remember credentials */
+        localStorage.setItem('admin_role', username);
+        localStorage.setItem('admin_pw', password);
       } else {
         setError(data.error || lt('auth.wrongCredentials'));
       }
@@ -152,6 +182,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     try {
       await fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {}
+    localStorage.removeItem('admin_role');
+    localStorage.removeItem('admin_pw');
     setAuthenticated(false);
     setPassword('');
     setUsername('');
