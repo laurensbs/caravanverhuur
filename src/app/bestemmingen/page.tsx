@@ -687,7 +687,7 @@ export default function DestinationsPage() {
       </section>
 
       {/* ===== MOBILE: Tab bar + Search + Filters ===== */}
-      <section className="lg:hidden sticky top-[72px] z-30 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
+      <section className="lg:hidden sticky top-[80px] sm:top-[96px] z-30 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
         <div className="px-4 py-2">
           <div className="flex gap-1 overflow-x-auto hide-scrollbar mb-2">
             {tabs.map(tab => (

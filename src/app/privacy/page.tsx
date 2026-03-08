@@ -174,7 +174,7 @@ export default function PrivacyPage() {
   return (
     <>
       {/* Quick nav */}
-      <section className="bg-white sticky top-[72px] z-30 border-b border-gray-100 pt-24 sm:pt-28">
+      <section className="bg-white sticky top-[80px] sm:top-[96px] z-30 border-b border-gray-100 pt-24 sm:pt-28">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {sections.map(s => (

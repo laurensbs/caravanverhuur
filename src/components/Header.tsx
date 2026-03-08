@@ -107,14 +107,14 @@ export default function Header() {
       <WeatherBar />
 
         <header className="bg-white/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-20 sm:h-24">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
-              width={280} height={70}
-              className="w-48 sm:w-60 lg:w-64 h-auto max-h-14 sm:max-h-16 object-contain"
+              width={320} height={80}
+              className="w-56 sm:w-64 lg:w-72 h-auto object-contain"
               unoptimized
             />
           </Link>
