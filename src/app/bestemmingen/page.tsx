@@ -217,7 +217,7 @@ function DestinationCard({ dest }: { dest: Destination }) {
         )}
         <div className="flex flex-wrap gap-1 mb-2">
           {dest.bestFor.slice(0, 3).map(tag => (
-            <span key={tag} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/8 px-1.5 py-0.5 rounded-full">
+            <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/8 px-1.5 py-0.5 rounded-full">
               {bestForIcons[tag] || <Star size={10} />} {tag}
             </span>
           ))}
@@ -274,12 +274,12 @@ function BeachCard({ beach }: { beach: Beach & { destination: string; destSlug: 
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-        <span className={`absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm ${vibeColors[beach.vibe] || 'bg-gray-100/90 text-gray-600'}`}>
+        <span className={`absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-sm ${vibeColors[beach.vibe] || 'bg-gray-100/90 text-gray-600'}`}>
           {vibeIcons[beach.vibe] || ''} {beach.vibe}
         </span>
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <h4 className="font-bold text-white text-sm drop-shadow-lg">{beach.name}</h4>
-          <Link href={`/bestemmingen/${beach.destSlug}`} className="text-[11px] text-white/80 font-medium inline-flex items-center gap-1 hover:text-white transition-colors">
+          <Link href={`/bestemmingen/${beach.destSlug}`} className="text-xs text-white/80 font-medium inline-flex items-center gap-1 hover:text-white transition-colors">
             <MapPin size={10} /> {beach.destination}
           </Link>
         </div>
@@ -287,13 +287,13 @@ function BeachCard({ beach }: { beach: Beach & { destination: string; destSlug: 
       <div className="p-3.5">
         <p className="text-xs text-gray-600 mb-3 leading-relaxed line-clamp-2">{beach.description}</p>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
             <span className="inline-flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full font-medium">
               {typeIcons[beach.type]} {typeLabels[beach.type]}
             </span>
           </div>
           {beach.facilities && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
               ✓ Faciliteiten
             </span>
           )}
@@ -313,10 +313,10 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant & { destination
       <Link href={`/bestemmingen/${restaurant.destSlug}`} className="text-xs text-primary font-medium mb-1 inline-flex items-center gap-1 hover:underline">
         <MapPin size={10} /> {restaurant.destination}
       </Link>
-      <p className="text-[11px] text-gray-500 mb-1">{restaurant.cuisine}</p>
+      <p className="text-xs text-gray-500 mb-1">{restaurant.cuisine}</p>
       <p className="text-xs text-gray-600 mb-2 leading-relaxed">{restaurant.description}</p>
       {restaurant.mustTry && (
-        <div className="flex items-center gap-1 text-[11px] text-primary font-semibold bg-primary/8 px-2 py-1 rounded-full w-fit">
+        <div className="flex items-center gap-1 text-xs text-primary font-semibold bg-primary/8 px-2 py-1 rounded-full w-fit">
           <Award size={11} /> Must try: {restaurant.mustTry}
         </div>
       )}
@@ -357,7 +357,7 @@ function ActivityCard({ activity, location }: { activity: Activity; location: st
               <h4 className="font-bold text-white text-sm drop-shadow-lg">{activity.title}</h4>
             </div>
           </div>
-          <span className={`absolute top-2.5 right-2.5 text-[11px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
+          <span className={`absolute top-2.5 right-2.5 text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
             {getCategoryLabel(activity.category)}
           </span>
         </div>
@@ -369,12 +369,12 @@ function ActivityCard({ activity, location }: { activity: Activity; location: st
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-gray-900 text-sm">{activity.title}</h4>
             </div>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${catColors[activity.category] || 'bg-gray-100 text-gray-600'}`}>
               {getCategoryLabel(activity.category)}
             </span>
           </div>
         )}
-        <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-2">
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
           <MapPin size={10} /> {location}
           {activity.distance && <span className="text-gray-300">&middot;</span>}
           {activity.distance && <span>{activity.distance}</span>}
@@ -383,11 +383,11 @@ function ActivityCard({ activity, location }: { activity: Activity; location: st
         {activity.tip && (
           <div className="mt-2.5 flex items-start gap-2 bg-amber-50/80 rounded-lg px-3 py-2 border border-amber-100">
             <span className="text-sm flex-shrink-0">💡</span>
-            <p className="text-[11px] text-amber-800 leading-relaxed">{activity.tip}</p>
+            <p className="text-xs text-amber-800 leading-relaxed">{activity.tip}</p>
           </div>
         )}
         {activity.url && (
-          <a href={activity.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
+          <a href={activity.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
             Meer info <ChevronRight size={11} />
           </a>
         )}
@@ -731,7 +731,7 @@ export default function DestinationsPage() {
         {showMobileFilters && (
           <div className="px-4 pb-3 pt-1 border-t border-gray-100 space-y-3">
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">Regio</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1.5">Regio</p>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setSelectedRegion(null)}
@@ -753,7 +753,7 @@ export default function DestinationsPage() {
 
             {activeTab === 'stranden' && (
               <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">Type</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-1.5">Type</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     { key: null, label: 'Alle' },
@@ -777,7 +777,7 @@ export default function DestinationsPage() {
 
             {activeTab === 'restaurants' && (
               <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">Prijs</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-1.5">Prijs</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     { key: null, label: 'Alle' },
@@ -800,7 +800,7 @@ export default function DestinationsPage() {
 
             {activeTab === 'activiteiten' && (
               <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase mb-1.5">Type</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-1.5">Type</p>
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     { key: null, label: 'Alle' },
@@ -823,7 +823,7 @@ export default function DestinationsPage() {
               </div>
             )}
 
-            <p className="text-[11px] text-gray-400"><span className="font-semibold text-gray-600">{filteredCount}</span> resultaten</p>
+            <p className="text-xs text-gray-400"><span className="font-semibold text-gray-600">{filteredCount}</span> resultaten</p>
           </div>
         )}
       </section>
@@ -960,13 +960,13 @@ export default function DestinationsPage() {
                             </div>
                           </div>
                           {dest.knownFor && (
-                            <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{dest.knownFor}</span>
+                            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{dest.knownFor}</span>
                           )}
                         </div>
                         <p className="text-sm text-gray-600 mb-3 leading-relaxed line-clamp-2">{dest.description}</p>
                         <div className="flex flex-wrap gap-1 mb-3">
                           {dest.bestFor.map(tag => (
-                            <span key={tag} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/8 px-1.5 py-0.5 rounded-full">
+                            <span key={tag} className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/8 px-1.5 py-0.5 rounded-full">
                               {bestForIcons[tag] || <Star size={10} />} {tag}
                             </span>
                           ))}

@@ -409,7 +409,7 @@ function MijnAccountContent() {
                   ].map((s, i) => (
                     <div key={i} className="text-center">
                       <div className="text-base font-bold text-foreground">{s.n}</div>
-                      <div className="text-[9px] text-muted leading-tight">{s.label}</div>
+                      <div className="text-xs text-muted leading-tight">{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -486,7 +486,7 @@ function MijnAccountContent() {
                   {tb.icon}
                   <span>{tb.label}</span>
                   {tb.badge ? (
-                    <span className={`ml-0.5 w-4 h-4 text-[9px] font-bold rounded-full flex items-center justify-center ${
+                    <span className={`ml-0.5 w-4 h-4 text-xs font-bold rounded-full flex items-center justify-center ${
                       tab === tb.key ? 'bg-white/25 text-white' : 'bg-primary text-white'
                     }`}>{tb.badge}</span>
                   ) : null}
@@ -805,7 +805,7 @@ function MijnAccountContent() {
                                   {booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
                                     <button
                                       onClick={() => setCancelConfirmId(booking.id)}
-                                      className="text-[11px] text-muted hover:text-danger transition-colors cursor-pointer"
+                                      className="text-xs text-muted hover:text-danger transition-colors cursor-pointer"
                                     >
                                       Annuleren
                                     </button>
@@ -820,7 +820,7 @@ function MijnAccountContent() {
                               <div className="mt-3 pt-2">
                                 <button
                                   onClick={() => setCancelConfirmId(booking.id)}
-                                  className="text-[11px] text-muted hover:text-danger transition-colors cursor-pointer"
+                                  className="text-xs text-muted hover:text-danger transition-colors cursor-pointer"
                                 >
                                   Boeking annuleren
                                 </button>
@@ -1068,7 +1068,7 @@ function MijnAccountContent() {
                                             <div className="flex-1 min-w-0">
                                               <div className="flex items-center gap-2 flex-wrap">
                                                 <span className="text-sm text-foreground-light">{item.item}</span>
-                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                                                   item.status === 'goed' ? 'bg-primary-light text-primary-dark' :
                                                   item.status === 'beschadigd' ? 'bg-primary-light text-primary' :
                                                   item.status === 'ontbreekt' ? 'bg-danger/10 text-danger' :
@@ -1356,7 +1356,7 @@ function MijnAccountContent() {
                                           <div className="flex items-center gap-2">
                                             <h5 className="text-sm font-semibold text-foreground leading-tight">{act.title}</h5>
                                             {act.distance && (
-                                              <span className="text-[9px] text-muted bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
+                                              <span className="text-xs text-muted bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
                                                 {act.distance}
                                               </span>
                                             )}

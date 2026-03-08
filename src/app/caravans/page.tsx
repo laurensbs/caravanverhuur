@@ -348,7 +348,7 @@ export default function CaravansPage() {
                             {t('caravans.bookNow')}
                           </Link>
                         </div>
-                        <p className="text-[11px] text-gray-400 text-center mt-2">{t('caravans.orSimilar')}</p>
+                        <p className="text-xs text-gray-400 text-center mt-2">{t('caravans.orSimilar')}</p>
                       </div>
                     </div>
                   ))}

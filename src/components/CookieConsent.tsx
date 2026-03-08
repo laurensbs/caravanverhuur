@@ -54,13 +54,13 @@ export default function CookieConsent() {
                 <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
                   <button
                     onClick={accept}
-                    className="px-4 sm:px-6 py-2 bg-primary text-white font-semibold rounded-full text-xs sm:text-sm transition-colors"
+                    className="px-4 sm:px-6 py-2.5 bg-primary text-white font-semibold rounded-full text-xs sm:text-sm transition-colors"
                   >
                     {t('cookie.accept')}
                   </button>
                   <button
                     onClick={decline}
-                    className="px-4 sm:px-6 py-2 text-muted font-medium rounded-full text-xs sm:text-sm transition-colors"
+                    className="px-4 sm:px-6 py-2.5 text-muted font-medium rounded-full text-xs sm:text-sm transition-colors"
                   >
                     {t('cookie.essentialOnly')}
                   </button>
@@ -68,7 +68,7 @@ export default function CookieConsent() {
               </div>
               <button
                 onClick={decline}
-                className="p-1 rounded-lg transition-colors shrink-0"
+                className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors shrink-0"
                 aria-label={t('cookie.close')}
               >
                 <X size={18} className="text-muted" />

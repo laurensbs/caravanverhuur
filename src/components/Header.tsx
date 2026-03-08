@@ -372,8 +372,8 @@ export default function Header() {
                 <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex-1">
                   {t('nav.caravans')}
                 </Link>
-                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-1 -mr-1">
-                  <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
+                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-2.5 -mr-1">
+                  <ChevronDown size={18} className={`text-muted transition-transform ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
                 </button>
               </div>
               <AnimatePresence>
@@ -401,8 +401,8 @@ export default function Header() {
                 <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex-1">
                   {t('nav.destinations')}
                 </Link>
-                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')} className="p-1 -mr-1">
-                  <ChevronDown size={16} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
+                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')} className="p-2.5 -mr-1">
+                  <ChevronDown size={18} className={`text-muted transition-transform ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
                 </button>
               </div>
               <AnimatePresence>

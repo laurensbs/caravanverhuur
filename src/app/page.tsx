@@ -494,7 +494,7 @@ export default function HomePage() {
                       {t('nav.bookNow')}
                     </Link>
                   </div>
-                  <p className="text-[11px] text-muted text-center mt-2">{t('caravans.orSimilar')}</p>
+                  <p className="text-xs text-muted text-center mt-2">{t('caravans.orSimilar')}</p>
                 </div>
               </motion.div>
             ))}
@@ -769,7 +769,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
-                    <span className="text-[9px] text-primary flex items-center gap-0.5"><CheckCircle size={10} />{t('home.reviewVerified')}</span>
+                    <span className="text-xs text-primary flex items-center gap-0.5"><CheckCircle size={10} />{t('home.reviewVerified')}</span>
                   </div>
                 </div>
               </motion.div>

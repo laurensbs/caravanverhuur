@@ -46,8 +46,8 @@ function MobileSheet({ open, onClose, title, children }: {
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-3">
               <h3 className="text-base font-bold text-foreground">{title}</h3>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-surface flex items-center justify-center">
-                <X size={16} className="text-muted" />
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center">
+                <X size={18} className="text-muted" />
               </button>
             </div>
             {/* Content */}

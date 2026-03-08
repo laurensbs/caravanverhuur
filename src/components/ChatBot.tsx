@@ -1059,15 +1059,15 @@ export default function ChatBot() {
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-[13px] sm:text-sm flex items-center gap-1.5">
                   {isNl ? 'Persoonlijke Assistent' : isEs ? 'Asistente Personal' : 'Personal Assistant'}
-                  {chatMode === 'live-chat' && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-medium">Live</span>}
+                  {chatMode === 'live-chat' && <span className="text-[11px] bg-white/20 px-1.5 py-0.5 rounded-full font-medium">Live</span>}
                 </p>
-                <p className="text-white/70 text-[11px] sm:text-xs">
+                <p className="text-white/70 text-xs sm:text-xs">
                   {chatMode === 'waiting-human' ? (isNl ? 'Medewerker zoeken...' : 'Finding staff...')
                     : chatMode === 'live-chat' ? (isNl ? 'Je praat met een medewerker' : 'Talking to staff')
                     : 'Caravanverhuur Spanje'}
                 </p>
               </div>
-              <button onClick={() => setIsOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
+              <button onClick={() => setIsOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
                 <ChevronDown size={20} />
               </button>
             </div>
@@ -1091,7 +1091,7 @@ export default function ChatBot() {
                   }`}>
                     <div className="text-[13px] sm:text-sm leading-relaxed whitespace-pre-line">{renderMarkdown(msg.text)}</div>
                     {msg.role !== 'system' && (
-                      <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-white/50' : 'text-gray-400'}`}>
+                      <p className={`text-[11px] mt-1 ${msg.role === 'user' ? 'text-white/50' : 'text-gray-400'}`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     )}
@@ -1113,7 +1113,7 @@ export default function ChatBot() {
               {/* Contact form */}
               {showContactForm && (
                 <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 space-y-2.5 sm:space-y-3">
-                  <p className="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <p className="text-xs sm:text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {isNl ? 'Laat je gegevens achter' : isEs ? 'Deja tus datos' : 'Leave your details'}
                   </p>
                   <div className="space-y-2">
@@ -1208,8 +1208,8 @@ export default function ChatBot() {
             className="fixed bottom-[5rem] right-[4.5rem] sm:bottom-[5.5rem] sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
           >
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative">
-              <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
-                <X size={10} className="text-gray-500" />
+              <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
+                <X size={12} className="text-gray-500" />
               </button>
               <p className="text-[13px] sm:text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
               <div className="absolute -right-2 bottom-3 w-4 h-4 bg-white border-r border-b border-gray-200 rotate-[-45deg]" />

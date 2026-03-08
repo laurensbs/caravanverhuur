@@ -43,10 +43,10 @@ export default function WeatherBar() {
         </p>
         <button
           onClick={() => setVisible(false)}
-          className="absolute right-3 p-1 rounded-full transition-colors"
+          className="absolute right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors"
           aria-label={t('weather.barClose')}
         >
-          <X size={13} />
+          <X size={14} />
         </button>
       </div>
     </div>
