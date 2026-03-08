@@ -82,6 +82,11 @@ function BoekenContent() {
   const [discountApplied, setDiscountApplied] = useState<{ code: string; amount: number; type: string; value: number } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [discountLoading, setDiscountLoading] = useState(false);
+  const [showCampingRequest, setShowCampingRequest] = useState(false);
+  const [campingRequestName, setCampingRequestName] = useState('');
+  const [campingRequestLocation, setCampingRequestLocation] = useState('');
+  const [campingRequestSending, setCampingRequestSending] = useState(false);
+  const [campingRequestSent, setCampingRequestSent] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -537,6 +542,75 @@ function BoekenContent() {
                           <div className="text-center py-10 text-muted">{t('booking.noCampings')}</div>
                         )}
                       </div>
+
+                      {/* Camping not listed */}
+                      {!campingRequestSent ? (
+                        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+                          {!showCampingRequest ? (
+                            <button
+                              onClick={() => setShowCampingRequest(true)}
+                              className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors py-1"
+                            >
+                              <Info size={16} />
+                              {t('booking.campingNotListed')}
+                            </button>
+                          ) : (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-semibold text-foreground">{t('booking.campingRequestTitle')}</p>
+                                <button onClick={() => setShowCampingRequest(false)} className="text-xs text-muted hover:text-foreground">✕</button>
+                              </div>
+                              <p className="text-xs text-muted">{t('booking.campingRequestDesc')}</p>
+                              <input
+                                type="text"
+                                value={campingRequestName}
+                                onChange={e => setCampingRequestName(e.target.value)}
+                                placeholder={t('booking.campingRequestNamePlaceholder')}
+                                className="w-full px-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm"
+                              />
+                              <input
+                                type="text"
+                                value={campingRequestLocation}
+                                onChange={e => setCampingRequestLocation(e.target.value)}
+                                placeholder={t('booking.campingRequestLocationPlaceholder')}
+                                className="w-full px-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm"
+                              />
+                              <button
+                                onClick={async () => {
+                                  if (!campingRequestName.trim()) return;
+                                  setCampingRequestSending(true);
+                                  try {
+                                    await fetch('/api/contacts', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        name: name || 'Boekingspagina bezoeker',
+                                        email: email || 'onbekend@caravanverhuurspanje.com',
+                                        phone: phone || '',
+                                        subject: 'Campingaanvraag',
+                                        message: `Camping: ${campingRequestName.trim()}${campingRequestLocation.trim() ? `\nLocatie: ${campingRequestLocation.trim()}` : ''}`,
+                                      }),
+                                    });
+                                    setCampingRequestSent(true);
+                                  } catch {
+                                    // silent
+                                  }
+                                  setCampingRequestSending(false);
+                                }}
+                                disabled={!campingRequestName.trim() || campingRequestSending}
+                                className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm disabled:opacity-50 transition-all hover:bg-primary/90"
+                              >
+                                {campingRequestSending ? t('booking.processing') : t('booking.campingRequestSubmit')}
+                              </button>
+                            </motion.div>
+                          )}
+                        </div>
+                      ) : (
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+                          <CheckCircle size={20} className="text-green-600 shrink-0" />
+                          <p className="text-sm text-green-800 font-medium">{t('booking.campingRequestSuccess')}</p>
+                        </motion.div>
+                      )}
 
                       {/* Spot number */}
                       {campingId && (
