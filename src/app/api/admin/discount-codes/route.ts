@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields (code, type, value)' }, { status: 400 });
     }
 
+    // Cap percentage discounts at 20%
+    if (type === 'percentage' && parseFloat(value) > 20) {
+      return NextResponse.json({ error: 'Maximum percentage discount is 20%' }, { status: 400 });
+    }
+
     const result = await createDiscountCode({
       code,
       type,

@@ -1282,10 +1282,12 @@ export async function createDiscountCode(data: {
   validFrom?: string;
   validUntil?: string;
 }) {
+  // Cap percentage discounts at 20%
+  const value = data.type === 'percentage' ? Math.min(data.value, 20) : data.value;
   const id = generateId('DSC');
   await sql`
     INSERT INTO discount_codes (id, code, type, value, max_uses, min_amount, valid_from, valid_until)
-    VALUES (${id}, ${data.code.toUpperCase()}, ${data.type}, ${data.value}, ${data.maxUses || null}, ${data.minAmount || 0}, ${data.validFrom || null}, ${data.validUntil || null})
+    VALUES (${id}, ${data.code.toUpperCase()}, ${data.type}, ${value}, ${data.maxUses || null}, ${data.minAmount || 0}, ${data.validFrom || null}, ${data.validUntil || null})
   `;
   return { id };
 }
@@ -1311,7 +1313,9 @@ export async function validateDiscountCode(code: string, totalAmount: number) {
 
   let discountAmount = 0;
   if (dc.type === 'percentage') {
-    discountAmount = Math.round(totalAmount * (parseFloat(dc.value) / 100));
+    // Cap at 20%
+    const pct = Math.min(parseFloat(dc.value), 20);
+    discountAmount = Math.round(totalAmount * (pct / 100));
   } else {
     discountAmount = Math.min(parseFloat(dc.value), totalAmount);
   }

@@ -5,7 +5,6 @@ import {
   Tag,
   Plus,
   Trash2,
-  Lock,
   Loader2,
   AlertTriangle,
   Check,
@@ -32,8 +31,6 @@ interface DiscountCode {
   created_at: string;
 }
 
-const ADMIN_PASSWORD_KEY = 'admin_discount_pw';
-
 import { useAdmin } from '@/i18n/admin-context';
 
 export default function KortingscodesPage() {
@@ -41,9 +38,6 @@ export default function KortingscodesPage() {
   const [codes, setCodes] = useState<DiscountCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [password, setPassword] = useState('');
-  const [passwordVerified, setPasswordVerified] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
 
   // Create form
   const [newCode, setNewCode] = useState('');
@@ -70,29 +64,10 @@ export default function KortingscodesPage() {
 
   useEffect(() => { fetchCodes(); }, [fetchCodes]);
 
-  const verifyPassword = async (pw: string) => {
-    try {
-      const res = await fetch('/api/admin/discount-codes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw, code: '__test__', type: 'percentage', value: 0 }),
-      });
-      if (res.status === 403) {
-        setPasswordError(t('discounts.wrongPassword'));
-        return false;
-      }
-      // Successful auth (code creation might fail for other reasons, but pw is correct)
-      setPasswordVerified(true);
-      setPasswordError('');
-      return true;
-    } catch {
-      setPasswordError(t('common.error'));
-      return false;
-    }
-  };
-
   const handleCreate = async () => {
     if (!newCode.trim() || !newValue) { setCreateError(t('discounts.codeValueRequired')); return; }
+    const val = parseFloat(newValue);
+    if (newType === 'percentage' && val > 20) { setCreateError(t('discounts.maxPercentage')); return; }
     setCreating(true);
     setCreateError('');
     try {
@@ -100,7 +75,6 @@ export default function KortingscodesPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          password,
           code: newCode.trim(),
           type: newType,
           value: parseFloat(newValue),
@@ -131,7 +105,7 @@ export default function KortingscodesPage() {
     await fetch('/api/admin/discount-codes', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, id, active: !currentActive }),
+      body: JSON.stringify({ id, active: !currentActive }),
     });
     setCodes(prev => prev.map(c => c.id === id ? { ...c, active: !currentActive } : c));
   };
@@ -141,7 +115,7 @@ export default function KortingscodesPage() {
     await fetch('/api/admin/discount-codes', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, id }),
+      body: JSON.stringify({ id }),
     });
     setCodes(prev => prev.filter(c => c.id !== id));
     setDeleteId(null);
@@ -152,37 +126,6 @@ export default function KortingscodesPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Password gate
-  if (!passwordVerified) {
-    return (
-      <div className="max-w-md mx-auto mt-20">
-        <div className="bg-white rounded-2xl p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">{t('discounts.title')}</h2>
-          <p className="text-sm text-muted">{t('discounts.gateDescription')}</p>
-          {passwordError && (
-            <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg">
-              <AlertTriangle className="w-4 h-4" /> {passwordError}
-            </div>
-          )}
-          <input
-            type="password"
-            value={password}
-            onChange={e => { setPassword(e.target.value); setPasswordError(''); }} placeholder={t("discounts.passwordPlaceholder")} className="w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" onKeyDown={e => e.key ==='Enter' && verifyPassword(password)}
-          />
-          <button
-            onClick={() => verifyPassword(password)}
-            className="w-full py-3 bg-primary text-white rounded-xl font-semibold cursor-pointer transition-colors"
-          >
-            Doorgaan
-          </button>
-        </div>
       </div>
     );
   }
@@ -208,7 +151,7 @@ export default function KortingscodesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{newType === 'percentage' ? t('discounts.valuePercent') : t('discounts.valueFixed')}</label>
-              <input type="number" value={newValue} onChange={e => setNewValue(e.target.value)} placeholder={newType === 'percentage' ? '10' : '50'} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.maxUsage')}</label> <input type="number" value={newMaxUses} onChange={e => setNewMaxUses(e.target.value)} placeholder={t("discounts.unlimited")} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.minAmount')}</label> <input type="number" value={newMinAmount} onChange={e => setNewMinAmount(e.target.value)} placeholder="0" className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> {t('discounts.validFrom')}</label> <input type="date" value={newValidFrom} onChange={e => setNewValidFrom(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> {t('discounts.validUntil')}</label> <input type="date" value={newValidUntil} onChange={e => setNewValidUntil(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> {createError && ( <div className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg flex items-center gap-2"> <AlertTriangle className="w-4 h-4" /> {createError} </div> )} <button onClick={handleCreate} disabled={creating} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold cursor-pointer disabled:opacity-50 transition-colors"> {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Kortingscode aanmaken </button> </div> )} {/* Codes list */} <div className="space-y-2"> {codes.map(code => ( <div key={code.id} className="bg-white rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"> <div className="flex-1 min-w-0"> <div className="flex items-center gap-2 flex-wrap mb-1"> <span className="font-mono font-bold text-foreground bg-surface px-2.5 py-1 rounded-lg text-sm">{code.code}</span> <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${code.active ?'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+              <input type="number" value={newValue} onChange={e => setNewValue(e.target.value)} max={newType === 'percentage' ? 20 : undefined} placeholder={newType === 'percentage' ? '10' : '50'} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.maxUsage')}</label> <input type="number" value={newMaxUses} onChange={e => setNewMaxUses(e.target.value)} placeholder={t("discounts.unlimited")} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.minAmount')}</label> <input type="number" value={newMinAmount} onChange={e => setNewMinAmount(e.target.value)} placeholder="0" className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> {t('discounts.validFrom')}</label> <input type="date" value={newValidFrom} onChange={e => setNewValidFrom(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> {t('discounts.validUntil')}</label> <input type="date" value={newValidUntil} onChange={e => setNewValidUntil(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> {createError && ( <div className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg flex items-center gap-2"> <AlertTriangle className="w-4 h-4" /> {createError} </div> )} <button onClick={handleCreate} disabled={creating} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold cursor-pointer disabled:opacity-50 transition-colors"> {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Kortingscode aanmaken </button> </div> )} {/* Codes list */} <div className="space-y-2"> {codes.map(code => ( <div key={code.id} className="bg-white rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"> <div className="flex-1 min-w-0"> <div className="flex items-center gap-2 flex-wrap mb-1"> <span className="font-mono font-bold text-foreground bg-surface px-2.5 py-1 rounded-lg text-sm">{code.code}</span> <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${code.active ?'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                   {code.active ? t('common.active') : t('common.inactive')}
                 </span>
                 <span className="text-xs text-muted bg-surface-alt px-2 py-0.5 rounded-full">
