@@ -290,13 +290,18 @@ function BoekenContent() {
   return (
     <div className="min-h-screen bg-surface">
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm pt-24 sm:pt-28">
+      <div ref={contentRef} className="sticky top-[72px] z-30 bg-white shadow-sm pt-4 sm:pt-6">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-foreground">{t('booking.stepXofY', { step: String(step) })}</span>
-              <span className="text-xs text-muted">{stepConfig[step - 1].desc}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{step}</span>
+                </div>
+                <span className="text-sm font-bold text-foreground">{t('booking.stepXofY', { step: String(step) })}</span>
+              </div>
+              <span className="text-xs text-muted font-medium">{stepConfig[step - 1].desc}</span>
             </div>
             <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
               <motion.div animate={{ width: `${(step / 5) * 100}%` }} transition={{ duration: 0.4, ease: 'easeOut' }} className="h-full bg-primary rounded-full" />
@@ -343,7 +348,7 @@ function BoekenContent() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <section className="py-8 lg:py-12">
+      <section className="py-5 lg:py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left: Step content (2 cols on lg) */}
@@ -353,29 +358,29 @@ function BoekenContent() {
 
                   {/* ===== STEP 1: DATES ===== */}
                   {step === 1 && (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h2>
-                        <p className="text-muted">{t('booking.s1Subtitle')}</p>
+                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h2>
+                        <p className="text-sm sm:text-base text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-6">
-                        <div className="grid sm:grid-cols-2 gap-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+                        <div className="grid sm:grid-cols-2 gap-4">
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <div className="w-6 h-6 bg-primary-100 rounded-md flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
+                              <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={15} className="text-primary" /></div>
                               {t('booking.arrivalLabel')}
                             </label>
                             <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm text-foreground font-medium" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <div className="w-6 h-6 bg-primary-100 rounded-md flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
+                              <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={15} className="text-primary" /></div>
                               {t('booking.departureLabel')}
                             </label>
                             <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-foreground font-medium" />
+                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm text-foreground font-medium" />
                           </div>
                         </div>
 
@@ -404,8 +409,8 @@ function BoekenContent() {
 
                       {/* Quick pick */}
                       <div>
-                        <p className="text-sm font-semibold text-muted mb-3">{t('booking.popularPeriods')}</p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <p className="text-sm font-semibold text-muted mb-2">{t('booking.popularPeriods')}</p>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
                           {[
                             { label: t('booking.oneWeek'), days: 7, icon: '🌴' },
                             { label: t('booking.twoWeeks'), days: 14, icon: '☀️' },
@@ -416,6 +421,7 @@ function BoekenContent() {
                             start.setDate(1);
                             const end = new Date(start);
                             end.setDate(start.getDate() + q.days);
+                            const isActive = checkIn === start.toISOString().split('T')[0] && checkOut === end.toISOString().split('T')[0];
                             return (
                               <button
                                 key={q.label}
@@ -423,10 +429,12 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className="bg-white rounded-xl p-4 text-left transition-all group"
+                                className={`rounded-xl p-3 sm:p-4 text-left transition-all border-2 ${
+                                  isActive ? 'border-primary bg-primary/5' : 'border-transparent bg-white'
+                                }`}
                               >
-                                <span className="text-2xl mb-1 block">{q.icon}</span>
-                                <p className="font-semibold text-foreground transition-colors">{q.label}</p>
+                                <span className="text-xl sm:text-2xl mb-1 block">{q.icon}</span>
+                                <p className="font-semibold text-sm text-foreground">{q.label}</p>
                                 <p className="text-xs text-muted mt-0.5">{q.days} {t('booking.nightPlural')}</p>
                               </button>
                             );
@@ -438,13 +446,13 @@ function BoekenContent() {
 
                   {/* ===== STEP 2: DESTINATION ===== */}
                   {step === 2 && (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s2Title')}</h2>
-                        <p className="text-muted">{t('booking.s2Subtitle')}</p>
+                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s2Title')}</h2>
+                        <p className="text-sm sm:text-base text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <div className="relative flex-1">
                             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
@@ -520,14 +528,14 @@ function BoekenContent() {
 
                   {/* ===== STEP 3: TRAVELERS + CARAVAN ===== */}
                   {step === 3 && (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s3Title')}</h2>
-                        <p className="text-muted">{t('booking.s3Subtitle')}</p>
+                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s3Title')}</h2>
+                        <p className="text-sm sm:text-base text-muted">{t('booking.s3Subtitle')}</p>
                       </div>
 
                       {/* Person counters */}
-                      <div className="bg-white rounded-2xl shadow-sm p-6">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
                         <div className="grid sm:grid-cols-2 gap-5">
                           <div className="flex items-center justify-between">
                             <div>
@@ -705,34 +713,34 @@ function BoekenContent() {
 
                   {/* ===== STEP 4: CONTACT DETAILS ===== */}
                   {step === 4 && (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s4Title')}</h2>
-                        <p className="text-muted">{t('booking.s4Subtitle')}</p>
+                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s4Title')}</h2>
+                        <p className="text-sm sm:text-base text-muted">{t('booking.s4Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-5">
                         <div>
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
                           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jan Jansen"
-                            className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                         </div>
-                        <div className="grid sm:grid-cols-2 gap-5">
+                        <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl"
-                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+31 6 12345678"
-                              className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                           </div>
                         </div>
                         <div>
@@ -740,7 +748,7 @@ function BoekenContent() {
                             <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
                           </label>
                           <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
-                            rows={3} className="w-full px-4 py-3.5 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none" />
+                            rows={3} className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none text-base sm:text-sm" />
                         </div>
                       </div>
 
@@ -762,10 +770,10 @@ function BoekenContent() {
 
                   {/* ===== STEP 5: CONFIRMATION ===== */}
                   {step === 5 && (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s5Title')}</h2>
-                        <p className="text-muted">{t('booking.s5Subtitle')}</p>
+                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s5Title')}</h2>
+                        <p className="text-sm sm:text-base text-muted">{t('booking.s5Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -873,15 +881,15 @@ function BoekenContent() {
               </AnimatePresence>
 
               {/* ===== NAVIGATION BUTTONS ===== */}
-              <div className="flex items-center justify-between mt-8 pt-6">
+              <div className="flex items-center justify-between mt-6 sm:mt-8 pt-4 sm:pt-6">
                 {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
+                  <button onClick={goBack} className="inline-flex items-center gap-2 px-4 sm:px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
                     <ArrowLeft size={18} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
+                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
                     {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
