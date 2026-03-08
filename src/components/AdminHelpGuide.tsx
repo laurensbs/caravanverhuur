@@ -815,10 +815,14 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
 
   const guide = locale === 'nl' ? GUIDE_NL : GUIDE_EN;
 
+  // Normalize pathname: strip /admin prefix for matching
+  // On admin subdomain: pathname = "/caravans", on localhost: pathname = "/admin/caravans"
+  const normalizedPath = pathname.startsWith('/admin') ? pathname : `/admin${pathname === '/' ? '' : pathname}`;
+
   // Find the section relevant to the current page
   const currentPageSection = useMemo(() => {
-    return guide.find(s => s.paths?.includes(pathname));
-  }, [guide, pathname]);
+    return guide.find(s => s.paths?.includes(normalizedPath));
+  }, [guide, normalizedPath]);
 
   // Filter guide sections by search query
   const filteredGuide = useMemo(() => {

@@ -414,19 +414,48 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 /* ── Inner layout (has access to AdminProvider context) ── */
-const ONBOARDING_STEPS_NL = [
-  { title: 'Welkom!', desc: 'Dit is het admin/staff portaal van Caravanverhuur Spanje. Hier beheer je alles rondom boekingen, caravans en klanten.', icon: '👋' },
-  { title: 'Navigatie', desc: 'Gebruik het menu links (of het hamburger-icoon op mobiel) om tussen pagina\'s te navigeren.', icon: '📱' },
-  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen, berichten en openstaande taken.', icon: '📊' },
-  { title: 'Borg & Inspectie', desc: 'Bij Borg kun je checklists aanmaken en de mobiele inspectie starten. Klanten krijgen automatisch een link.', icon: '📋' },
-  { title: 'Hulp nodig?', desc: 'Klik op het vraagteken-icoon rechtsboven voor hulp. Succes!', icon: '❓' },
+type OnboardingStep = { title: string; desc: string; icon: string };
+
+const ONBOARDING_ADMIN_NL: OnboardingStep[] = [
+  { title: 'Welkom, Admin!', desc: 'Dit is het beheerpaneel van Caravanverhuur Spanje. Als admin heb je volledige toegang tot alle functies.', icon: '👋' },
+  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen, berichten, openstaande taken en omzet. Klik op een statistiek om direct naar die pagina te gaan.', icon: '📊' },
+  { title: 'Boekingen & Planning', desc: 'Bekijk en beheer alle boekingen. Je kunt ook telefonische boekingen aanmaken via de "Nieuwe boeking" knop. De planning toont de bezetting per caravan.', icon: '📅' },
+  { title: 'Betalingen & Borg', desc: 'Beheer betalingen, verwerk terugbetalingen via Stripe, en beheer borgchecklists. Gebruik "Mobiel Inspecteren" voor inspecties op locatie.', icon: '💳' },
+  { title: 'Klanten & Berichten', desc: 'Bekijk klantgegevens, beantwoord berichten van het contactformulier, en reageer op live chats. Campingaanvragen verschijnen ook bij berichten.', icon: '👥' },
+  { title: 'Caravans & Campings', desc: 'Voeg caravans toe, pas prijzen aan, en beheer de campinglijst. Sleep campings om de volgorde op de website aan te passen.', icon: '🏕️' },
+  { title: 'Kortingscodes & Nieuwsbrieven', desc: 'Maak kortingscodes aan voor klanten en bekijk nieuwsbrief-abonnees. Stel altijd een vervaldatum in bij codes.', icon: '🏷️' },
+  { title: 'Hulp & Taal', desc: 'Klik op het ? icoon rechtsboven voor een complete gids. Wissel tussen NL/EN via de taalknop onderaan het menu. Succes!', icon: '❓' },
 ];
-const ONBOARDING_STEPS_EN = [
-  { title: 'Welcome!', desc: 'This is the admin/staff portal for Caravanverhuur Spanje. Manage bookings, caravans and customers here.', icon: '👋' },
-  { title: 'Navigation', desc: 'Use the sidebar (or hamburger icon on mobile) to navigate between pages.', icon: '📱' },
-  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings, messages and open tasks.', icon: '📊' },
-  { title: 'Deposit & Inspection', desc: 'Under Deposit you can create checklists and start a mobile inspection. Customers get a link automatically.', icon: '📋' },
-  { title: 'Need help?', desc: 'Click the question mark icon in the top-right for help. Good luck!', icon: '❓' },
+
+const ONBOARDING_ADMIN_EN: OnboardingStep[] = [
+  { title: 'Welcome, Admin!', desc: 'This is the management panel for Caravanverhuur Spanje. As admin, you have full access to all features.', icon: '👋' },
+  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings, messages, open tasks, and revenue. Click a stat card to go directly to that page.', icon: '📊' },
+  { title: 'Bookings & Planning', desc: 'View and manage all bookings. You can also create phone bookings via the "New booking" button. The planning shows occupancy per caravan.', icon: '📅' },
+  { title: 'Payments & Deposit', desc: 'Manage payments, process refunds via Stripe, and manage deposit checklists. Use "Mobile Inspect" for on-site inspections.', icon: '💳' },
+  { title: 'Customers & Messages', desc: 'View customer data, answer contact form messages, and respond to live chats. Camping requests also appear under messages.', icon: '👥' },
+  { title: 'Caravans & Campings', desc: 'Add caravans, adjust prices, and manage the camping list. Drag campings to adjust the order on the website.', icon: '🏕️' },
+  { title: 'Discount Codes & Newsletters', desc: 'Create discount codes for customers and view newsletter subscribers. Always set an expiry date on codes.', icon: '🏷️' },
+  { title: 'Help & Language', desc: 'Click the ? icon in the top-right for a complete guide. Switch between NL/EN via the language button at the bottom of the menu. Good luck!', icon: '❓' },
+];
+
+const ONBOARDING_STAFF_NL: OnboardingStep[] = [
+  { title: 'Welkom, Staff!', desc: 'Dit is het portaal van Caravanverhuur Spanje. Als staff kun je boekingen beheren, chats beantwoorden en inspecties uitvoeren.', icon: '👋' },
+  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen en openstaande taken. Controleer dit dagelijks voor nieuwe acties.', icon: '📊' },
+  { title: 'Boekingen', desc: 'Bekijk alle boekingen, zoek op naam of referentie, en maak telefonische boekingen aan via de "Nieuwe boeking" knop.', icon: '📅' },
+  { title: 'Planning', desc: 'De planning toont de bezetting per caravan. Gebruik dit om snel te zien welke caravans beschikbaar zijn voor een bepaalde periode.', icon: '🗓️' },
+  { title: 'Borg & Inspectie', desc: 'Bij Borg kun je checklists bekijken en de mobiele inspectie starten. Doe de inspectie samen met de klant voor transparantie.', icon: '📋' },
+  { title: 'Live Chat', desc: 'Beantwoord chats van websitebezoekers. Reageer zo snel mogelijk — bezoekers verwachten een snel antwoord.', icon: '💬' },
+  { title: 'Hulp & Taal', desc: 'Klik op het ? icoon rechtsboven voor een complete gids met uitleg over elke pagina. Wissel tussen NL/EN onderaan het menu. Succes!', icon: '❓' },
+];
+
+const ONBOARDING_STAFF_EN: OnboardingStep[] = [
+  { title: 'Welcome, Staff!', desc: 'This is the portal for Caravanverhuur Spanje. As staff, you can manage bookings, answer chats, and perform inspections.', icon: '👋' },
+  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings and open tasks. Check this daily for new actions.', icon: '📊' },
+  { title: 'Bookings', desc: 'View all bookings, search by name or reference, and create phone bookings via the "New booking" button.', icon: '📅' },
+  { title: 'Planning', desc: 'The planning shows occupancy per caravan. Use this to quickly check which caravans are available for a given period.', icon: '🗓️' },
+  { title: 'Deposit & Inspection', desc: 'Under Deposit you can view checklists and start a mobile inspection. Do the inspection together with the customer for transparency.', icon: '📋' },
+  { title: 'Live Chat', desc: 'Answer chats from website visitors. Respond as quickly as possible — visitors expect a fast reply.', icon: '💬' },
+  { title: 'Help & Language', desc: 'Click the ? icon in the top-right for a complete guide explaining every page. Switch between NL/EN at the bottom of the menu. Good luck!', icon: '❓' },
 ];
 
 
@@ -550,21 +579,23 @@ function AdminLayoutInner({
     });
   };
 
-  // Show onboarding on first login
+  // Show onboarding on first login (or after tour update)
   useEffect(() => {
-    const key = `admin_onboarded_${role}`;
+    const key = `admin_onboarded_v2_${role}`;
     if (!localStorage.getItem(key)) {
       setShowOnboarding(true);
     }
   }, [role]);
 
   const finishOnboarding = () => {
-    localStorage.setItem(`admin_onboarded_${role}`, 'true');
+    localStorage.setItem(`admin_onboarded_v2_${role}`, 'true');
     setShowOnboarding(false);
     setOnboardingStep(0);
   };
 
-  const onboardingSteps = locale === 'nl' ? ONBOARDING_STEPS_NL : ONBOARDING_STEPS_EN;
+  const onboardingSteps = role === 'admin'
+    ? (locale === 'nl' ? ONBOARDING_ADMIN_NL : ONBOARDING_ADMIN_EN)
+    : (locale === 'nl' ? ONBOARDING_STAFF_NL : ONBOARDING_STAFF_EN);
 
   const restartTour = () => {
     setOnboardingStep(0);
