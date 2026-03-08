@@ -114,7 +114,7 @@ export default function Header() {
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={280} height={70}
-              className="w-44 sm:w-56 lg:w-60 h-auto max-h-14 sm:max-h-16 object-contain"
+              className="w-48 sm:w-60 lg:w-64 h-auto max-h-14 sm:max-h-16 object-contain"
               unoptimized
             />
           </Link>

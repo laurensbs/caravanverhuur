@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { X, Sun } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { StarIcon } from '@/components/Footer';
@@ -17,6 +18,15 @@ export default function WeatherBar() {
   return (
     <div className="bg-primary-dark/80 text-white text-xs sm:text-sm relative">
       <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3">
+        <Link href="/" className="shrink-0 mr-1 hidden sm:block">
+          <Image
+            src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+            alt="Caravanverhuur"
+            width={120} height={30}
+            className="w-20 h-auto brightness-0 invert opacity-80"
+            unoptimized
+          />
+        </Link>
         <Sun size={14} className="text-primary-light shrink-0 hidden sm:block" />
         <p className="text-center flex items-center gap-1.5 flex-wrap justify-center">
           <span className="font-semibold">{t('weather.barSeason')}</span>

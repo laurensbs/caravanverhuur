@@ -136,7 +136,7 @@ export default function BookingWidget() {
     return campings.filter(
       c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q)
     );
-  }, [campingSearch]);
+  }, [campingSearch, campings]);
 
   const groupedCampings = useMemo(() => {
     const groups: Record<string, typeof campings> = {};
@@ -356,9 +356,9 @@ export default function BookingWidget() {
               <button className="flex items-center gap-2 w-full text-left min-w-0">
                 <MapPin size={16} className="text-primary shrink-0" />
                 <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
-                  <span className="block truncate">{selectedCamping ? selectedCamping.name : t('booking.widgetChoose')}</span>
+                  <span className="block truncate">{selectedCamping ? `✓ ${selectedCamping.name}` : t('booking.widgetChoose')}</span>
                 </span>
-                <ChevronDown size={14} className={`text-muted transition-transform ${campingOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-muted transition-transform shrink-0 ${campingOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Desktop dropdown only */}
