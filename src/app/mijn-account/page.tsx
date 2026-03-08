@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
-import { campings } from '@/data/campings';
+import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import { getActivitiesForLocation, getCategoryLabel, generalTips, groupActivitiesByCategory } from '@/data/activities';
 import type { Activity } from '@/data/activities';
@@ -186,11 +186,17 @@ function MijnAccountContent() {
 
   // Custom caravans (must be before any early returns to satisfy Rules of Hooks)
   const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
+  const [campings, setCampings] = useState<Camping[]>(staticCampings);
   const redirectingRef = useRef(false);
   useEffect(() => {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravansData(data.caravans || []))
+      .catch(() => {});
+    // Fetch campings from DB (admin-managed)
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => { if (data.campings?.length) setCampings(data.campings); })
       .catch(() => {});
   }, []);
 

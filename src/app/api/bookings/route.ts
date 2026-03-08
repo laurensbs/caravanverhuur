@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
-import { campings } from '@/data/campings';
+import { campings as staticCampings } from '@/data/campings';
+import { getAllCampings } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -50,7 +51,14 @@ export async function POST(request: NextRequest) {
         caravanName = custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string || caravanId;
       } catch { caravanName = caravanId; }
     }
-    const campingName = campings.find(c => c.id === campingId)?.name || campingId;
+    const campingName = await (async () => {
+      try {
+        const dbCampings = await getAllCampings();
+        const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
+        if (found) return found.name as string;
+      } catch {}
+      return staticCampings.find(c => c.id === campingId)?.name || campingId;
+    })();
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
       reference: result.reference,

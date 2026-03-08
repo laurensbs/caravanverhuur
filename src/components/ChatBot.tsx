@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send, ChevronDown, User, Mail, Phone, Sparkles } from 'lucide-react';
 import { useLanguage, type Locale } from '@/i18n/context';
 import { caravans } from '@/data/caravans';
-import { campings } from '@/data/campings';
+import { campings as staticCampings, type Camping } from '@/data/campings';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -147,6 +147,7 @@ function smartMatch(
   userName: string | undefined,
   ctx: ConversationContext,
   messageHistory: Message[],
+  campings: Camping[],
 ): { answer: string; followUp?: string[]; confidence: number; topic?: string } {
   const lower = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const entities = extractEntities(input);
@@ -727,6 +728,15 @@ export default function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch campings from DB (admin-managed)
+  const [campings, setCampings] = useState<Camping[]>(staticCampings);
+  useEffect(() => {
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => { if (data.campings?.length) setCampings(data.campings); })
+      .catch(() => {});
+  }, []);
   const { locale } = useLanguage();
   const isNl = locale === 'nl';
   const isEs = locale === 'es';
@@ -962,7 +972,7 @@ export default function ChatBot() {
         return;
       }
 
-      const result = smartMatch(trimmed, locale as Locale, userName, convContext, messages);
+      const result = smartMatch(trimmed, locale as Locale, userName, convContext, messages, campings);
 
       // Update last topic in context
       if (result.topic) {

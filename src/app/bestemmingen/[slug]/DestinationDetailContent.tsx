@@ -1,12 +1,13 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { MapPin, ArrowRight, Sun, Droplets, Lightbulb, ChevronRight, Tent, Star, Heart, Umbrella, UtensilsCrossed, Waves, Award, Sparkles, Camera, ThermometerSun, Users, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { type Destination } from '@/data/destinations';
-import { campings as allCampings } from '@/data/campings';
+import { campings as staticCampings } from '@/data/campings';
 import { locationActivities, getCategoryLabel } from '@/data/activities';
 
 const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
@@ -20,6 +21,15 @@ const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
 
 export default function DestinationDetailContent({ dest, otherDestinations }: { dest: Destination; otherDestinations: Destination[] }) {
   const { t } = useLanguage();
+
+  // Fetch campings from DB (admin-managed), fall back to static
+  const [allCampings, setAllCampings] = useState(staticCampings);
+  useEffect(() => {
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => { if (data.campings?.length) setAllCampings(data.campings); })
+      .catch(() => {});
+  }, []);
 
   // Find activities for this destination
   const destActivities = locationActivities.find(

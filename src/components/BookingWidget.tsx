@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, MapPin, Users, Minus, Plus, Search, ChevronDown, X, Check } from 'lucide-react';
-import { campings } from '@/data/campings';
+import { campings as staticCampings, type Camping } from '@/data/campings';
 import { useLanguage } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
@@ -78,6 +78,7 @@ export default function BookingWidget() {
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
+  const [campings, setCampings] = useState<Camping[]>(staticCampings);
   const campingRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
   const checkInRef = useRef<HTMLInputElement>(null);
@@ -90,6 +91,14 @@ export default function BookingWidget() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // Fetch campings from DB (admin-managed)
+  useEffect(() => {
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => { if (data.campings?.length) setCampings(data.campings); })
+      .catch(() => {});
   }, []);
 
   const openCheckIn = useCallback(() => {
