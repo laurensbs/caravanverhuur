@@ -11,8 +11,8 @@ import { useLanguage } from '@/i18n/context';
 /* ------------------------------------------------------------------ */
 /*  Mobile bottom-sheet overlay for dropdowns                          */
 /* ------------------------------------------------------------------ */
-function MobileSheet({ open, onClose, title, children }: {
-  open: boolean; onClose: () => void; title: string; children: React.ReactNode;
+function MobileSheet({ open, onClose, title, subtitle, children }: {
+  open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -45,8 +45,16 @@ function MobileSheet({ open, onClose, title, children }: {
             </div>
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-3">
-              <h3 className="text-base font-bold text-foreground">{title}</h3>
-              <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center">
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-foreground">{title}</h3>
+                {subtitle && (
+                  <p className="text-xs text-primary font-medium truncate mt-0.5 flex items-center gap-1">
+                    <Check size={11} className="shrink-0" />
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 ml-3">
                 <X size={18} className="text-muted" />
               </button>
             </div>
@@ -185,16 +193,19 @@ export default function BookingWidget() {
           <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div>
         ) : (
           groupedCampings.map(([location, locationCampings]) => {
-            const isExpanded = expandedLocations.has(location) || campingSearch.trim().length > 0;
+            const hasSelected = locationCampings.some(c => c.id === campingId);
+            const isExpanded = expandedLocations.has(location) || campingSearch.trim().length > 0 || hasSelected;
             return (
               <div key={location}>
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleLocation(location); }}
-                  className="w-full text-left px-4 py-3 flex items-center justify-between bg-gray-50/80 border-b border-gray-100"
+                  className={`w-full text-left px-4 py-3 flex items-center justify-between border-b border-gray-100 ${
+                    hasSelected ? 'bg-primary/5' : 'bg-gray-50/80'
+                  }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <MapPin size={15} className="text-primary shrink-0" />
-                    <span className="text-sm font-bold text-foreground truncate">{location}</span>
+                    <MapPin size={15} className={hasSelected ? 'text-primary' : 'text-primary shrink-0'} />
+                    <span className={`text-sm font-bold truncate ${hasSelected ? 'text-primary' : 'text-foreground'}`}>{location}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-muted bg-white rounded-full px-2 py-0.5 font-medium shadow-sm">
@@ -218,10 +229,10 @@ export default function BookingWidget() {
                         setCampingSearch('');
                       }}
                       className={`w-full text-left pl-10 pr-4 py-3 flex items-center justify-between border-b border-gray-50 ${
-                        isSelected ? 'bg-primary/5' : ''
+                        isSelected ? 'bg-primary/10 border-l-2 border-l-primary' : ''
                       }`}
                     >
-                      <span className="text-sm text-foreground truncate flex-1 min-w-0">{c.name}</span>
+                      <span className={`text-sm truncate flex-1 min-w-0 ${isSelected ? 'font-semibold text-primary' : 'text-foreground'}`}>{c.name}</span>
                       {isSelected && (
                         <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0 ml-3">
                           <Check size={12} className="text-white" />
@@ -308,6 +319,7 @@ export default function BookingWidget() {
             open={campingOpen}
             onClose={() => { setCampingOpen(false); setCampingSearch(''); }}
             title={t('booking.widgetCamping')}
+            subtitle={selectedCamping ? selectedCamping.name : undefined}
           >
             {campingListContent}
           </MobileSheet>
