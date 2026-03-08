@@ -84,17 +84,25 @@ export default function BookingWidget() {
   const [expandedLocations, setExpandedLocations] = useState<Set<string>>(new Set());
   const [campingOpen, setCampingOpen] = useState(false);
   const [guestsOpen, setGuestsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [campings, setCampings] = useState<Camping[]>(staticCampings);
   const campingRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
+  const campingDropRef = useRef<HTMLDivElement>(null);
+  const guestsDropRef = useRef<HTMLDivElement>(null);
   const checkInRef = useRef<HTMLInputElement>(null);
   const checkOutRef = useRef<HTMLInputElement>(null);
+
+  // Desktop dropdown portal positioning
+  const [campingDropdownPos, setCampingDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [guestsDropdownPos, setGuestsDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // Detect mobile (<1024px = lg breakpoint)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const check = () => setIsMobile(window.innerWidth < 1024);
     check();
     window.addEventListener('resize', check);
@@ -123,12 +131,39 @@ export default function BookingWidget() {
   useEffect(() => {
     if (isMobile) return;
     const handler = (e: MouseEvent) => {
-      if (campingRef.current && !campingRef.current.contains(e.target as Node)) setCampingOpen(false);
-      if (guestsRef.current && !guestsRef.current.contains(e.target as Node)) setGuestsOpen(false);
+      const target = e.target as Node;
+      const inCampingTrigger = campingRef.current?.contains(target);
+      const inCampingDrop = campingDropRef.current?.contains(target);
+      if (!inCampingTrigger && !inCampingDrop) setCampingOpen(false);
+      const inGuestsTrigger = guestsRef.current?.contains(target);
+      const inGuestsDrop = guestsDropRef.current?.contains(target);
+      if (!inGuestsTrigger && !inGuestsDrop) setGuestsOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [isMobile]);
+
+  // Update dropdown positions for desktop portals
+  useEffect(() => {
+    if (isMobile) return;
+    const updatePositions = () => {
+      if (campingOpen && campingRef.current) {
+        const rect = campingRef.current.getBoundingClientRect();
+        setCampingDropdownPos({ top: rect.bottom + 8, left: rect.left, width: Math.max(rect.width, 384) });
+      }
+      if (guestsOpen && guestsRef.current) {
+        const rect = guestsRef.current.getBoundingClientRect();
+        setGuestsDropdownPos({ top: rect.bottom + 8, left: rect.right - 288, width: 288 });
+      }
+    };
+    updatePositions();
+    window.addEventListener('scroll', updatePositions, true);
+    window.addEventListener('resize', updatePositions);
+    return () => {
+      window.removeEventListener('scroll', updatePositions, true);
+      window.removeEventListener('resize', updatePositions);
+    };
+  }, [isMobile, campingOpen, guestsOpen]);
 
   const filteredCampings = useMemo(() => {
     if (!campingSearch.trim()) return campings;
@@ -155,6 +190,14 @@ export default function BookingWidget() {
       return next;
     });
   }, []);
+
+  // Auto-expand all locations on desktop for better overview
+  useEffect(() => {
+    if (!isMobile && campingOpen) {
+      const allLocations = new Set(campings.map(c => c.location));
+      setExpandedLocations(allLocations);
+    }
+  }, [isMobile, campingOpen, campings]);
 
   const selectedCamping = campings.find(c => c.id === campingId);
 
@@ -356,21 +399,12 @@ export default function BookingWidget() {
               <button className="flex items-center gap-2 w-full text-left min-w-0">
                 <MapPin size={16} className="text-primary shrink-0" />
                 <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
-                  <span className="block truncate">{selectedCamping ? `✓ ${selectedCamping.name}` : t('booking.widgetChoose')}</span>
+                  <span className="block truncate">{selectedCamping ? selectedCamping.name : t('booking.widgetChoose')}</span>
                 </span>
                 <ChevronDown size={14} className={`text-muted transition-transform shrink-0 ${campingOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Desktop dropdown only */}
-              {!isMobile && campingOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute left-0 right-0 lg:left-auto lg:right-auto lg:w-96 top-full mt-2 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
-                >
-                  {campingListContent}
-                </motion.div>
-              )}
+              {/* Desktop dropdown rendered via portal (outside hero overflow-hidden) */}
             </div>
 
             {/* Guests */}
@@ -388,16 +422,7 @@ export default function BookingWidget() {
                 <ChevronDown size={14} className={`text-muted transition-transform ${guestsOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Desktop dropdown only */}
-              {!isMobile && guestsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute left-0 right-0 lg:left-auto lg:right-0 lg:w-72 top-full mt-2 bg-white rounded-2xl shadow-2xl z-50 p-4"
-                >
-                  {guestsContent}
-                </motion.div>
-              )}
+              {/* Desktop dropdown rendered via portal (outside hero overflow-hidden) */}
             </div>
 
             {/* Search button */}
@@ -413,6 +438,41 @@ export default function BookingWidget() {
           </div>
         </div>
       </motion.div>
+
+      {/* Desktop dropdown portals — rendered outside hero overflow-hidden */}
+      {!isMobile && mounted && campingOpen && campingDropdownPos && createPortal(
+        <div
+          ref={campingDropRef}
+          style={{ position: 'fixed', top: campingDropdownPos.top, left: campingDropdownPos.left, width: campingDropdownPos.width, zIndex: 9999 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden"
+          >
+            <div className="max-h-[420px] overflow-y-auto">
+              {campingListContent}
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
+
+      {!isMobile && mounted && guestsOpen && guestsDropdownPos && createPortal(
+        <div
+          ref={guestsDropRef}
+          style={{ position: 'fixed', top: guestsDropdownPos.top, left: guestsDropdownPos.left, width: guestsDropdownPos.width, zIndex: 9999 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden p-4"
+          >
+            {guestsContent}
+          </motion.div>
+        </div>,
+        document.body
+      )}
     </>
   );
 }
