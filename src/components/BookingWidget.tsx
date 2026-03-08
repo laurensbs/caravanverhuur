@@ -73,6 +73,7 @@ export default function BookingWidget() {
   const [checkOut, setCheckOut] = useState('');
   const [campingId, setCampingId] = useState('');
   const [campingSearch, setCampingSearch] = useState('');
+  const [expandedLocations, setExpandedLocations] = useState<Set<string>>(new Set());
   const [campingOpen, setCampingOpen] = useState(false);
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [adults, setAdults] = useState(2);
@@ -119,6 +120,24 @@ export default function BookingWidget() {
     );
   }, [campingSearch]);
 
+  const groupedCampings = useMemo(() => {
+    const groups: Record<string, typeof campings> = {};
+    for (const c of filteredCampings) {
+      if (!groups[c.location]) groups[c.location] = [];
+      groups[c.location].push(c);
+    }
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filteredCampings]);
+
+  const toggleLocation = useCallback((location: string) => {
+    setExpandedLocations(prev => {
+      const next = new Set(prev);
+      if (next.has(location)) next.delete(location);
+      else next.add(location);
+      return next;
+    });
+  }, []);
+
   const selectedCamping = campings.find(c => c.id === campingId);
 
   const handleSearch = () => {
@@ -152,18 +171,56 @@ export default function BookingWidget() {
           )}
         </div>
       </div>
-      <div>
-        {filteredCampings.length === 0 ? (
-          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div> ) : ( filteredCampings.map(c => { const isSelected = campingId === c.id; return ( <button key={c.id} onClick={() => { setCampingId(c.id); setCampingOpen(false); setCampingSearch(''); }} className={`w-full text-left px-5 py-3.5 flex items-center justify-between overflow-hidden ${ isSelected ?'bg-primary/5' : '' }`} > <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-foreground truncate">{c.name}</div>
-                  <div className="text-xs text-muted mt-0.5">{c.location}</div>
-                </div>
-                {isSelected && (
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0 ml-3">
-                    <Check size={14} className="text-white" />
+      <div className="pb-2">
+        {groupedCampings.length === 0 ? (
+          <div className="p-6 text-sm text-muted text-center">{t('booking.widgetNoCampings')}</div>
+        ) : (
+          groupedCampings.map(([location, locationCampings]) => {
+            const isExpanded = expandedLocations.has(location) || campingSearch.trim().length > 0;
+            return (
+              <div key={location}>
+                <button
+                  onClick={() => toggleLocation(location)}
+                  className="w-full text-left px-4 py-3 flex items-center justify-between bg-gray-50/80 border-b border-gray-100"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <MapPin size={15} className="text-primary shrink-0" />
+                    <span className="text-sm font-bold text-foreground truncate">{location}</span>
                   </div>
-                )}
-              </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted bg-white rounded-full px-2 py-0.5 font-medium shadow-sm">
+                      {locationCampings.length}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-muted transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                </button>
+                {isExpanded && locationCampings.map(c => {
+                  const isSelected = campingId === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setCampingId(c.id);
+                        setCampingOpen(false);
+                        setCampingSearch('');
+                      }}
+                      className={`w-full text-left pl-10 pr-4 py-3 flex items-center justify-between border-b border-gray-50 ${
+                        isSelected ? 'bg-primary/5' : ''
+                      }`}
+                    >
+                      <span className="text-sm text-foreground truncate flex-1 min-w-0">{c.name}</span>
+                      {isSelected && (
+                        <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0 ml-3">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             );
           })
         )}
