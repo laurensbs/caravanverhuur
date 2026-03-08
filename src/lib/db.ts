@@ -1485,6 +1485,15 @@ export async function updateChatSummary(conversationId: string, summary: string)
   await sql`UPDATE chat_conversations SET summary = ${summary} WHERE id = ${conversationId}`;
 }
 
+export async function deleteOldChatConversations(daysOld: number) {
+  const result = await sql`
+    DELETE FROM chat_conversations
+    WHERE last_message_at < NOW() - CAST(${daysOld + ' days'} AS INTERVAL)
+    RETURNING id
+  `;
+  return result.rows.length;
+}
+
 export async function getCustomerByEmailSimple(email: string) {
   const result = await sql`SELECT id, email, name, phone FROM customers WHERE LOWER(email) = LOWER(${email})`;
   return result.rows[0] || null;

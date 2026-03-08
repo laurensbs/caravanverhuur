@@ -17,6 +17,7 @@ import {
   Trash2,
   Link2,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 
@@ -187,6 +188,8 @@ export default function AdminChatPage() {
 
   /* ── Delete conversation ────────── */
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [cleanupConfirm, setCleanupConfirm] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
   const handleDelete = async (convId: string) => {
     try {
@@ -198,6 +201,27 @@ export default function AdminChatPage() {
       }
       setDeleteConfirm(null);
     } catch { /* silent */ }
+  };
+
+  const handleCleanup = async () => {
+    try {
+      const res = await fetch('/api/cron/cleanup-chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      setCleanupResult(
+        isNl
+          ? `${data.deleted || 0} oude chat(s) verwijderd`
+          : `${data.deleted || 0} old chat(s) deleted`
+      );
+      setCleanupConfirm(false);
+      fetchConversations();
+      setTimeout(() => setCleanupResult(null), 4000);
+    } catch {
+      setCleanupResult(isNl ? 'Opschonen mislukt' : 'Cleanup failed');
+      setTimeout(() => setCleanupResult(null), 4000);
+    }
   };
 
   /* ── Filtering ──────────────────── */
@@ -253,6 +277,38 @@ export default function AdminChatPage() {
                 </span>
               )}
             </h1>
+            <div className="relative">
+              {cleanupResult && (
+                <div className="absolute right-0 top-full mt-1 bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-green-200 whitespace-nowrap z-10 shadow-sm">
+                  {cleanupResult}
+                </div>
+              )}
+              {cleanupConfirm ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleCleanup}
+                    className="px-2.5 py-1 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                  >
+                    {isNl ? 'Bevestigen' : 'Confirm'}
+                  </button>
+                  <button
+                    onClick={() => setCleanupConfirm(false)}
+                    className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    {isNl ? 'Annuleer' : 'Cancel'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setCleanupConfirm(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  title={isNl ? 'Oude chats opschonen (30+ dagen)' : 'Clean up old chats (30+ days)'}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {isNl ? 'Opschonen' : 'Cleanup'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Search */}

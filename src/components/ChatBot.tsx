@@ -714,6 +714,8 @@ export default function ChatBot() {
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
   const [showContactForm, setShowContactForm] = useState(false);
   const [loggedInCustomer, setLoggedInCustomer] = useState<{ id: string; name: string; email: string; phone?: string } | null>(null);
+  const [askingName, setAskingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const [convContext, setConvContext] = useState<ConversationContext>({
     lastTopic: null,
     mentionedPersons: null,
@@ -776,33 +778,28 @@ export default function ChatBot() {
               timestamp: new Date(),
             }]);
           } else {
-            const greeting = isNl
-              ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWaar kan ik je mee helpen? 😊'
+            // Ask for name first
+            setAskingName(true);
+            const askNameMsg = isNl
+              ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je persoonlijk helpen! 😊'
               : isEs
-              ? '¡Hola! 👋 Bienvenido. ¿En qué puedo ayudarte? 😊'
-              : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nHow can I help you? 😊";
+              ? '¡Hola! 👋 Bienvenido. ¿Cómo te llamas? 😊'
+              : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nWhat's your name? So I can help you personally! 😊";
             setMessages([{
-              id: '1', role: 'bot', text: greeting,
-              quickReplies: isNl
-                ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
-                : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
-                : ['What does it cost?', 'Which caravans?', 'How to book?'],
+              id: '1', role: 'bot', text: askNameMsg,
               timestamp: new Date(),
             }]);
           }
         })
         .catch(() => {
-          const greeting = isNl
-            ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWaar kan ik je mee helpen? 😊'
+          setAskingName(true);
+          const askNameMsg = isNl
+            ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je persoonlijk helpen! 😊'
             : isEs
-            ? '¡Hola! 👋 Bienvenido. ¿En qué puedo ayudarte? 😊'
-            : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nHow can I help you? 😊";
+            ? '¡Hola! 👋 Bienvenido. ¿Cómo te llamas? 😊'
+            : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nWhat's your name? So I can help you personally! 😊";
           setMessages([{
-            id: '1', role: 'bot', text: greeting,
-            quickReplies: isNl
-              ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
-              : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
-              : ['What does it cost?', 'Which caravans?', 'How to book?'],
+            id: '1', role: 'bot', text: askNameMsg,
             timestamp: new Date(),
           }]);
         });
@@ -871,6 +868,51 @@ export default function ChatBot() {
       });
     } catch { /* silent */ }
   }, [conversationId]);
+
+  const handleNameSubmit = useCallback(() => {
+    const name = nameInput.trim();
+    if (!name) return;
+    setUserName(name);
+    setContactForm(prev => ({ ...prev, name }));
+    setAskingName(false);
+    setNameInput('');
+
+    // Save name to conversation
+    if (conversationId) {
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateVisitor', conversationId, name }),
+      }).catch(() => {});
+    }
+
+    // Show user's name as a message
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      role: 'user',
+      text: name,
+      timestamp: new Date(),
+    }]);
+
+    // Show welcome message with quick replies
+    setTimeout(() => {
+      const welcome = isNl
+        ? `Leuk je te ontmoeten, **${name}**! 😊\n\nWaar kan ik je mee helpen?`
+        : isEs
+        ? `¡Encantado, **${name}**! 😊 ¿En qué puedo ayudarte?`
+        : `Nice to meet you, **${name}**! 😊\n\nHow can I help you?`;
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'bot',
+        text: welcome,
+        quickReplies: isNl
+          ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+          : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+          : ['What does it cost?', 'Which caravans?', 'How to book?'],
+        timestamp: new Date(),
+      }]);
+    }, 300);
+  }, [nameInput, conversationId, isNl, isEs]);
 
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;
@@ -1124,7 +1166,26 @@ export default function ChatBot() {
             </div>
 
             {/* Input */}
-            {!showContactForm && (
+            {!showContactForm && askingName ? (
+              <form onSubmit={(e) => { e.preventDefault(); handleNameSubmit(); }} className="shrink-0 bg-white border-t border-gray-100 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center gap-2 safe-area-bottom">
+                <div className="relative flex-1">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    placeholder={isNl ? 'Je naam...' : isEs ? 'Tu nombre...' : 'Your name...'}
+                    enterKeyHint="send"
+                    autoComplete="name"
+                    className="w-full bg-gray-50 rounded-full pl-9 pr-4 py-2.5 text-[16px] sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <button type="submit" disabled={!nameInput.trim()} className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-90 cursor-pointer">
+                  <Send size={16} />
+                </button>
+              </form>
+            ) : !showContactForm && (
               <form onSubmit={handleSubmit} className="shrink-0 bg-white border-t border-gray-100 px-2.5 sm:px-3 py-2 sm:py-2.5 flex items-center gap-2 safe-area-bottom">
                 <input ref={inputRef} type="text" value={input} onChange={e => setInput(e.target.value)} placeholder={placeholders[locale] || placeholders.nl} enterKeyHint="send" autoComplete="off" className="flex-1 bg-gray-50 rounded-full px-3.5 sm:px-4 py-2.5 text-[16px] sm:text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 <button type="submit" disabled={!input.trim()} className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-90 cursor-pointer">
