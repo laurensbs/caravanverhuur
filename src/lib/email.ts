@@ -298,6 +298,116 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   });
 }
 
+export async function sendManualBookingEmail(to: string, data: {
+  guestName: string;
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  totalPrice: number;
+  paymentDeadline: string;
+  immediatePayment: boolean;
+  spotNumber?: string;
+  paymentUrl: string;
+  isNewAccount: boolean;
+  password?: string;
+}) {
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
+  const firstName = data.guestName.split(' ')[0];
+
+  const accountSection = data.isNewAccount && data.password ? `
+    ${divider()}
+    ${highlight(`
+      <p style="margin:0 0 8px;color:#0F172A;font-size:14px;line-height:1.65;">
+        <strong>🔐 Jouw account</strong><br/>
+        Er is automatisch een account voor je aangemaakt zodat je je boeking kunt beheren, betalingen kunt doen en je borg kunt inzien.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:8px 0 0;">
+        <tr>
+          <td style="color:#64748B;font-size:13px;padding:4px 0;">E-mail</td>
+          <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${to}</td>
+        </tr>
+        <tr>
+          <td style="color:#64748B;font-size:13px;padding:4px 0;">Wachtwoord</td>
+          <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:4px 0;font-family:monospace;letter-spacing:1px;">${data.password}</td>
+        </tr>
+      </table>
+      <p style="margin:8px 0 0;color:#64748B;font-size:12px;">Je kunt je wachtwoord wijzigen na het inloggen.</p>
+    `, true)}
+    ${button('Inloggen op je account →', `${SITE_URL}/mijn-account`)}
+  ` : '';
+
+  return sendEmail({
+    to,
+    subject: `Boeking ${data.reference} — betaallink & gegevens`,
+    html: emailWrapper(`
+      ${badge('📞', 'TELEFONISCHE BOEKING')}
+      ${heading('Je boeking is aangemaakt')}
+      ${subtext(`Hoi ${firstName}! Naar aanleiding van ons telefoongesprek hebben wij een boeking voor je aangemaakt. Hieronder vind je alle gegevens en de betaallink.`)}
+
+      <!-- Reference card -->
+      <div style="background:linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);border:1px solid #86EFAC;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Referentienummer</p>
+        <p style="margin:0 0 8px;color:#16A34A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
+        <span style="display:inline-block;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">✅ Bevestigd</span>
+      </div>
+
+      <!-- Booking details -->
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        ${infoRow('Caravan', data.caravanName)}
+        ${infoRow('Camping', data.campingName)}
+        ${data.spotNumber ? infoRow('Plek', data.spotNumber) : ''}
+        ${infoRow('Inchecken', formatDate(data.checkIn))}
+        ${infoRow('Uitchecken', formatDate(data.checkOut))}
+        ${infoRow('Nachten', String(data.nights))}
+        ${infoRow('Gasten', `${data.adults} volw.${data.children > 0 ? ` + ${data.children} kind.` : ''}`)}
+      </table>
+
+      ${divider()}
+
+      <!-- Pricing & Payment -->
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        <tr>
+          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">Totaalprijs</td>
+          <td style="color:#0F172A;font-weight:800;font-size:22px;text-align:right;padding:8px 0;">${formatPrice(data.totalPrice)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:8px 0 0;">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">📅 Betalen vóór</td>
+                  <td style="color:#0284C7;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${data.paymentDeadline}</td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      ${highlight(`
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+          <strong>Betaal direct via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. Na betaling is je boeking definitief.
+        </p>
+      `, true)}
+
+      ${button(`Betaal ${formatPrice(data.totalPrice)} via iDEAL →`, data.paymentUrl)}
+
+      <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">Of betaal later via je persoonlijke dashboard</p>
+
+      ${accountSection}
+    `, `Boeking ${data.reference} — ${data.caravanName}, ${data.campingName}`),
+  });
+}
+
 export async function sendPaymentConfirmationEmail(to: string, data: {
   guestName: string;
   reference: string;

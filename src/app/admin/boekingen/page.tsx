@@ -20,6 +20,11 @@ import {
   Lock,
   AlertTriangle,
   Tag,
+  Plus,
+  X,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import {
@@ -35,6 +40,9 @@ import {
   type Payment,
   type BookingStatus,
 } from '@/data/admin';
+import { caravans as staticCaravans } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
+import { campings as staticCampings } from '@/data/campings';
 
 const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
@@ -393,6 +401,25 @@ export default function BookingenPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALLE'>('ALLE');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  const [allCampings, setAllCampings] = useState(staticCampings.map(c => ({ ...c, active: true })));
+  const [createSuccess, setCreateSuccess] = useState<{ reference: string; paymentUrl: string; isNewAccount: boolean } | null>(null);
+
+  // Create form state
+  const [cName, setCName] = useState('');
+  const [cEmail, setCEmail] = useState('');
+  const [cPhone, setCPhone] = useState('');
+  const [cCaravanId, setCCaravanId] = useState('');
+  const [cCampingId, setCCampingId] = useState('');
+  const [cCheckIn, setCCheckIn] = useState('');
+  const [cCheckOut, setCCheckOut] = useState('');
+  const [cAdults, setCAdults] = useState(2);
+  const [cChildren, setCChildren] = useState(0);
+  const [cSpot, setCSpot] = useState('');
+  const [cRequests, setCRequests] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const fetchBookings = useCallback(() => {
     fetch('/api/bookings')
@@ -402,7 +429,12 @@ export default function BookingenPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadCustomData(); fetchBookings(); }, [fetchBookings]);
+  useEffect(() => {
+    loadCustomData(); fetchBookings();
+    // Load caravans + campings for create form
+    fetch('/api/admin/caravans').then(r => r.json()).then(d => setCustomCaravans(d.caravans || [])).catch(() => {});
+    fetch('/api/campings').then(r => r.json()).then(d => { if (d.campings?.length) setAllCampings(d.campings); }).catch(() => {});
+  }, [fetchBookings]);
 
   const handleStatusChange = (id: string, status: BookingStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
@@ -415,6 +447,57 @@ export default function BookingenPage() {
   const handleDelete = (id: string) => {
     setBookings(prev => prev.filter(b => b.id !== id));
     setExpandedId(null);
+  };
+
+  // Create booking helpers
+  const allCaravans: Caravan[] = [...staticCaravans, ...customCaravans];
+  const selectedCaravan = cCaravanId ? allCaravans.find(c => c.id === cCaravanId) : null;
+  const cNights = (() => {
+    if (!cCheckIn || !cCheckOut) return 0;
+    const d = Math.round((new Date(cCheckOut).getTime() - new Date(cCheckIn).getTime()) / 86400000);
+    return d > 0 ? d : 0;
+  })();
+  const cTotalPrice = selectedCaravan && cNights > 0
+    ? Math.floor(cNights / 7) * selectedCaravan.pricePerWeek + (cNights % 7) * selectedCaravan.pricePerDay
+    : 0;
+  const cBorgAmount = selectedCaravan?.deposit || 0;
+
+  const handleCreate = async () => {
+    if (!cName || !cEmail || !cPhone || !cCaravanId || !cCampingId || !cCheckIn || !cCheckOut || cNights <= 0) {
+      setCreateError(t('bookings.createMissingFields'));
+      return;
+    }
+    setCreating(true);
+    setCreateError('');
+    try {
+      const res = await fetch('/api/admin/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: cName, guestEmail: cEmail, guestPhone: cPhone,
+          caravanId: cCaravanId, campingId: cCampingId,
+          checkIn: cCheckIn, checkOut: cCheckOut, nights: cNights,
+          totalPrice: cTotalPrice, borgAmount: cBorgAmount,
+          adults: cAdults, children: cChildren,
+          spotNumber: cSpot || undefined, specialRequests: cRequests || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setCreateError(data.error || 'Fout bij aanmaken'); setCreating(false); return; }
+      setCreateSuccess({ reference: data.reference, paymentUrl: data.paymentUrl, isNewAccount: data.isNewAccount });
+      fetchBookings();
+    } catch {
+      setCreateError('Er ging iets mis');
+    }
+    setCreating(false);
+  };
+
+  const resetCreateForm = () => {
+    setShowCreate(false);
+    setCreateSuccess(null);
+    setCName(''); setCEmail(''); setCPhone(''); setCCaravanId(''); setCCampingId('');
+    setCCheckIn(''); setCCheckOut(''); setCAdults(2); setCChildren(0);
+    setCSpot(''); setCRequests(''); setCreateError('');
   };
 
   const filtered = bookings
@@ -470,7 +553,198 @@ export default function BookingenPage() {
             ))}
           </select>
         </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          {t('bookings.createNew')}
+        </button>
       </div>
+
+      {/* ===== CREATE BOOKING MODAL ===== */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-8 sm:pt-16 px-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mb-8">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-foreground">{t('bookings.createTitle')}</h2>
+              <button onClick={resetCreateForm} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {createSuccess ? (
+              <div className="p-6 space-y-5">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-1">{t('bookings.createSuccessTitle')}</h3>
+                  <p className="text-sm text-muted">{t('bookings.createSuccessDesc')}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted">{t('bookings.reference')}</span>
+                    <span className="text-sm font-bold text-foreground">{createSuccess.reference}</span>
+                  </div>
+                  {createSuccess.isNewAccount && (
+                    <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 rounded-lg p-3">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      {t('bookings.accountCreated')}
+                    </div>
+                  )}
+                  {createSuccess.paymentUrl && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted font-semibold uppercase">{t('bookings.paymentLink')}</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          readOnly
+                          value={createSuccess.paymentUrl}
+                          className="flex-1 text-xs bg-white border rounded-lg px-3 py-2 truncate"
+                        />
+                        <button
+                          onClick={() => navigator.clipboard.writeText(createSuccess.paymentUrl)}
+                          className="p-2 rounded-lg hover:bg-gray-100 text-muted"
+                          title="Kopiëren"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <a
+                          href={createSuccess.paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg hover:bg-gray-100 text-muted"
+                          title="Openen"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-blue-800">{t('bookings.emailSentNote')}</p>
+                </div>
+
+                <button onClick={resetCreateForm} className="w-full py-3 bg-primary-dark text-white rounded-xl font-semibold text-sm hover:bg-primary-dark/90 transition-colors">
+                  {t('bookings.close')}
+                </button>
+              </div>
+            ) : (
+              <div className="p-5 space-y-5">
+                {/* Guest details */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><User className="w-4 h-4 text-primary-dark" />{t('bookings.guestDetails')}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <input value={cName} onChange={e => setCName(e.target.value)} placeholder={t('bookings.namePlaceholder')} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                    <input value={cEmail} onChange={e => setCEmail(e.target.value)} placeholder={t('bookings.emailPlaceholder')} type="email" className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                    <input value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder={t('bookings.phonePlaceholder')} type="tel" className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                  </div>
+                </div>
+
+                {/* Caravan & Camping */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><CarFront className="w-4 h-4 text-primary-dark" />{t('bookings.caravanCamping')}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <select value={cCaravanId} onChange={e => setCCaravanId(e.target.value)} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark appearance-none">
+                      <option value="">{t('bookings.selectCaravan')}</option>
+                      {allCaravans.map(c => <option key={c.id} value={c.id}>{c.name} — {c.maxPersons}p — €{c.pricePerWeek}/wk</option>)}
+                    </select>
+                    <select value={cCampingId} onChange={e => setCCampingId(e.target.value)} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark appearance-none">
+                      <option value="">{t('bookings.selectCamping')}</option>
+                      {allCampings.filter(c => c.active !== false).map(c => <option key={c.id} value={c.id}>{c.name} — {c.location}</option>)}
+                    </select>
+                    <input value={cSpot} onChange={e => setCSpot(e.target.value)} placeholder={t('bookings.spotPlaceholder')} className="px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                  </div>
+                </div>
+
+                {/* Dates */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Calendar className="w-4 h-4 text-primary-dark" />{t('bookings.dates')}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted mb-1 block">{t('bookings.checkIn')}</label>
+                      <input type="date" value={cCheckIn} onChange={e => setCCheckIn(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted mb-1 block">{t('bookings.checkOut')}</label>
+                      <input type="date" value={cCheckOut} onChange={e => setCCheckOut(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark" />
+                    </div>
+                  </div>
+                  {cNights > 0 && <p className="text-xs text-muted mt-2">{cNights} {cNights === 1 ? 'nacht' : 'nachten'}</p>}
+                </div>
+
+                {/* Travelers */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><User className="w-4 h-4 text-primary-dark" />{t('bookings.travelers')}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted mb-1 block">{t('bookings.adults')}</label>
+                      <select value={cAdults} onChange={e => setCAdults(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark appearance-none">
+                        {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted mb-1 block">{t('bookings.children')}</label>
+                      <select value={cChildren} onChange={e => setCChildren(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark appearance-none">
+                        {[0,1,2,3,4].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Special requests */}
+                <div>
+                  <label className="text-xs text-muted mb-1 block">{t('bookings.specialRequests')}</label>
+                  <textarea value={cRequests} onChange={e => setCRequests(e.target.value)} rows={2} placeholder={t('bookings.requestsPlaceholder')} className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark resize-none" />
+                </div>
+
+                {/* Price summary */}
+                {cTotalPrice > 0 && (
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted">{t('bookings.totalPrice')}</span>
+                      <span className="text-lg font-bold text-foreground">{formatCurrency(cTotalPrice)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted">{t('bookings.borgLabel')}</span>
+                      <span className="text-sm text-muted">{formatCurrency(cBorgAmount)}</span>
+                    </div>
+                    <p className="text-xs text-muted pt-1 border-t border-gray-200">{t('bookings.autoCalcNote')}</p>
+                  </div>
+                )}
+
+                {/* Error */}
+                {createError && (
+                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-xl p-3">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    {createError}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <button onClick={resetCreateForm} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-muted hover:bg-gray-50 transition-colors">
+                    {t('bookings.cancel')}
+                  </button>
+                  <button
+                    onClick={handleCreate}
+                    disabled={creating || !cName || !cEmail || !cPhone || !cCaravanId || !cCampingId || !cCheckIn || !cCheckOut || cNights <= 0}
+                    className="flex-1 py-3 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {creating ? t('bookings.creating') : t('bookings.createBooking')}
+                  </button>
+                </div>
+
+                <p className="text-xs text-muted text-center">{t('bookings.createInfoNote')}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <p className="text-xs text-muted">
         {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
