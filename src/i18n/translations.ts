@@ -352,7 +352,7 @@ const nl: Dict = {
   },
   contact: {
     heroTitle: 'Contact',
-    heroSubtitle: 'Neem gerust contact met ons op',
+    heroSubtitle: 'Heb je een vraag of wil je meer weten? Neem gerust contact met ons op — we helpen je graag!',
     directlyAvailable: 'Direct bereikbaar',
     nameLabel: 'Naam',
     emailLabel: 'E-mailadres',
@@ -1339,7 +1339,7 @@ const en: Dict = {
   },
   contact: {
     heroTitle: 'Contact',
-    heroSubtitle: 'Feel free to reach out to us',
+    heroSubtitle: 'Have a question or want to learn more? Feel free to contact us — we\'re happy to help!',
     directlyAvailable: 'Get in touch',
     nameLabel: 'Name',
     emailLabel: 'Email address',
@@ -2313,7 +2313,7 @@ const es: Dict = {
   },
   contact: {
     heroTitle: 'Contacto',
-    heroSubtitle: 'No dudes en contactarnos',
+    heroSubtitle: '¿Tienes alguna pregunta o quieres saber más? No dudes en contactarnos — ¡estaremos encantados de ayudarte!',
     directlyAvailable: 'Contacto directo',
     nameLabel: 'Nombre',
     emailLabel: 'Correo electrónico',
