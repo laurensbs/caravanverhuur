@@ -111,15 +111,16 @@ export default function BookingWidget() {
     checkOutRef.current?.focus();
   }, []);
 
-  // Close dropdowns on outside click (desktop only)
+  // Close dropdowns on outside click (desktop only — skip on mobile where MobileSheet is used)
   useEffect(() => {
+    if (isMobile) return;
     const handler = (e: MouseEvent) => {
       if (campingRef.current && !campingRef.current.contains(e.target as Node)) setCampingOpen(false);
       if (guestsRef.current && !guestsRef.current.contains(e.target as Node)) setGuestsOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [isMobile]);
 
   const filteredCampings = useMemo(() => {
     if (!campingSearch.trim()) return campings;
@@ -170,8 +171,7 @@ export default function BookingWidget() {
             value={campingSearch}
             onChange={e => setCampingSearch(e.target.value)}
             placeholder={t('booking.widgetSearchCamping')}
-            className="flex-1 bg-transparent text-sm outline-none"
-            autoFocus
+            className="flex-1 bg-transparent text-base sm:text-sm outline-none"
           />
           {campingSearch && (
             <button onClick={() => setCampingSearch('')}>
@@ -189,7 +189,7 @@ export default function BookingWidget() {
             return (
               <div key={location}>
                 <button
-                  onClick={() => toggleLocation(location)}
+                  onClick={(e) => { e.stopPropagation(); toggleLocation(location); }}
                   className="w-full text-left px-4 py-3 flex items-center justify-between bg-gray-50/80 border-b border-gray-100"
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -211,7 +211,8 @@ export default function BookingWidget() {
                   return (
                     <button
                       key={c.id}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setCampingId(c.id);
                         setCampingOpen(false);
                         setCampingSearch('');
