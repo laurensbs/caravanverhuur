@@ -135,7 +135,7 @@ export default function HomePage() {
           transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut', delay: 2 }}
         />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-24 pb-16 sm:pt-28 sm:pb-20 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-8 pb-16 sm:pt-10 sm:pb-20 w-full">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}

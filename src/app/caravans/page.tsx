@@ -223,7 +223,7 @@ export default function CaravansPage() {
 
   return (
     <>
-      <section className="pt-24 sm:pt-28 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
+      <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
           {/* Mobile: filter toggle + sort bar */}
           <div className="lg:hidden flex items-center gap-3 mb-4">

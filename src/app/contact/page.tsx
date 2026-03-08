@@ -59,7 +59,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="pt-24 sm:pt-28 pb-10 sm:pb-16">
+      <section className="pt-8 sm:pt-10 pb-10 sm:pb-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Contact info */}

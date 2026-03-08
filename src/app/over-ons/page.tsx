@@ -37,7 +37,7 @@ export default function OverOnsPage() {
   return (
     <>
       {/* Wat we doen */}
-      <section className="pt-24 sm:pt-28 pb-12 sm:pb-20">
+      <section className="pt-8 sm:pt-10 pb-12 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
