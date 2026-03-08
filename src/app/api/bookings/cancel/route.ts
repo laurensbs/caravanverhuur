@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerBySessionToken, getBookingById, updateBookingStatus } from '@/lib/db';
+import { getCustomerBySessionToken, getBookingById, updateBookingStatus, getPaymentsByBookingId } from '@/lib/db';
 import { sendCancellationEmail } from '@/lib/email';
 import { caravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -42,15 +42,23 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const daysUntil = Math.ceil((checkIn.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
+    // Check if any payments have been made
+    const bookingPayments = await getPaymentsByBookingId(bookingId);
+    const hasPaid = bookingPayments.some((p: Record<string, unknown>) => p.status === 'BETAALD');
+
     let refundPercentage = 0;
     let refundMessage = '';
 
-    if (daysUntil > 30) {
+    if (!hasPaid) {
+      // No payment made yet — free cancellation
+      refundPercentage = 0;
+      refundMessage = 'Er is nog geen betaling ontvangen. De boeking wordt kosteloos geannuleerd.';
+    } else if (daysUntil > 30) {
       refundPercentage = 100;
-      refundMessage = 'Volledige restitutie van de aanbetaling (meer dan 30 dagen voor aankomst).';
+      refundMessage = 'Volledige restitutie (meer dan 30 dagen voor aankomst). Je ontvangt het bedrag binnen 7 werkdagen terug.';
     } else if (daysUntil >= 14) {
       refundPercentage = 50;
-      refundMessage = '50% restitutie van de aanbetaling (14-30 dagen voor aankomst).';
+      refundMessage = '50% restitutie (14-30 dagen voor aankomst). Je ontvangt het bedrag binnen 7 werkdagen terug.';
     } else {
       refundPercentage = 0;
       refundMessage = 'Geen restitutie mogelijk (minder dan 14 dagen voor aankomst).';

@@ -370,24 +370,14 @@ export async function createBooking(data: {
     VALUES (${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null})
   `;
 
-  // Create the deposit payment record
-  const depositPaymentId = generateId('P');
+  // Create a single payment record for the full amount (HUUR)
+  const paymentId = generateId('P');
   await sql`
     INSERT INTO payments (id, booking_id, type, amount, status, method)
-    VALUES (${depositPaymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'ideal')
+    VALUES (${paymentId}, ${id}, 'HUUR', ${data.totalPrice}, 'OPENSTAAND', 'ideal')
   `;
 
-  // Create the remaining payment record
-  let remainingPaymentId: string | undefined;
-  if (data.remainingAmount > 0) {
-    remainingPaymentId = generateId('P');
-    await sql`
-      INSERT INTO payments (id, booking_id, type, amount, status, method)
-      VALUES (${remainingPaymentId}, ${id}, 'RESTBETALING', ${data.remainingAmount}, 'OPENSTAAND', 'ideal')
-    `;
-  }
-
-  return { id, reference, depositPaymentId, remainingPaymentId };
+  return { id, reference, paymentId };
 }
 
 export async function getAllBookings() {

@@ -30,7 +30,7 @@ export async function loadCustomData() {
 
 export type BookingStatus = 'NIEUW' | 'BEVESTIGD' | 'AANBETAALD' | 'VOLLEDIG_BETAALD' | 'ACTIEF' | 'AFGEROND' | 'GEANNULEERD';
 export type PaymentStatus = 'OPENSTAAND' | 'BETAALD' | 'TERUGBETAALD' | 'MISLUKT';
-export type PaymentType = 'AANBETALING' | 'RESTBETALING' | 'BORG' | 'BORG_RETOUR';
+export type PaymentType = 'AANBETALING' | 'RESTBETALING' | 'HUUR' | 'BORG' | 'BORG_RETOUR';
 export type ContactStatus = 'NIEUW' | 'GELEZEN' | 'BEANTWOORD';
 
 export interface Booking {

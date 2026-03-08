@@ -23,7 +23,7 @@ import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUGBETAALD', 'MISLUKT'];
-const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'BORG', 'BORG_RETOUR'];
+const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'HUUR', 'BORG', 'BORG_RETOUR'];
 
 export default function BetalingenPage() {
   const { t, ts } = useAdmin();
@@ -33,6 +33,8 @@ export default function BetalingenPage() {
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'ALLE'>('ALLE');
   const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
 
   useEffect(() => {
@@ -66,6 +68,30 @@ export default function BetalingenPage() {
       // silent
     }
     setUpdatingId(null);
+  };
+
+  const handleRefund = async (paymentId: string) => {
+    setRefundingId(paymentId);
+    try {
+      const res = await fetch('/api/admin/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+      if (res.ok) {
+        setPayments(prev =>
+          prev.map(p =>
+            p.id === paymentId
+              ? { ...p, status: 'TERUGBETAALD' as PaymentStatus }
+              : p
+          )
+        );
+      }
+    } catch {
+      // silent
+    }
+    setRefundingId(null);
+    setRefundConfirm(null);
   };
 
   const getCaravanName = (caravanId?: string) => {
@@ -205,6 +231,32 @@ export default function BetalingenPage() {
                   >
                     {updatingId === payment.id ? '...' : t('payments.markPaid')}
                   </button>
+                )}
+                {payment.status === 'BETAALD' && (
+                  refundConfirm === payment.id ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleRefund(payment.id)}
+                        disabled={refundingId === payment.id}
+                        className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {refundingId === payment.id ? '...' : 'Bevestig'}
+                      </button>
+                      <button
+                        onClick={() => setRefundConfirm(null)}
+                        className="text-xs text-muted px-1 py-0.5"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setRefundConfirm(payment.id)}
+                      className="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Refund
+                    </button>
+                  )
                 )}
               </div>
 

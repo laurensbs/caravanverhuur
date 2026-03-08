@@ -222,8 +222,8 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   adults: number;
   children: number;
   totalPrice: number;
-  depositAmount: number;
-  remainingAmount: number;
+  paymentDeadline: string;
+  immediatePayment: boolean;
   spotNumber?: string;
 }) {
   const formatDate = (dateStr: string) => {
@@ -232,6 +232,9 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   };
   const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
   const firstName = data.guestName.split(' ')[0];
+  const deadlineLabel = data.immediatePayment
+    ? 'Direct bij boeking'
+    : new Date(data.paymentDeadline).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return sendEmail({
     to,
@@ -261,7 +264,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${divider()}
 
-      <!-- Pricing breakdown -->
+      <!-- Pricing -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         <tr>
           <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">Totaalprijs</td>
@@ -272,12 +275,8 @@ export async function sendBookingConfirmationEmail(to: string, data: {
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="color:#64748B;font-size:13px;padding:4px 0;">💳 Aanbetaling (30%)</td>
-                  <td style="color:#0284C7;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.depositAmount)}</td>
-                </tr>
-                <tr>
-                  <td style="color:#94A3B8;font-size:13px;padding:4px 0;">📅 Restbetaling</td>
-                  <td style="color:#94A3B8;font-size:13px;text-align:right;padding:4px 0;">${formatPrice(data.remainingAmount)}</td>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">📅 Betalen vóór</td>
+                  <td style="color:#0284C7;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${deadlineLabel}</td>
                 </tr>
               </table>
             </div>
@@ -287,7 +286,10 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          <strong>Volgende stap:</strong> betaal de aanbetaling van ${formatPrice(data.depositAmount)} via iDEAL/Wero in je account om de boeking definitief te maken.
+          ${data.immediatePayment
+            ? `<strong>Let op:</strong> je vakantie begint binnen 30 dagen. Betaal ${formatPrice(data.totalPrice)} nu via iDEAL/Wero in je account om de boeking definitief te maken.`
+            : `<strong>Volgende stap:</strong> betaal ${formatPrice(data.totalPrice)} vóór ${deadlineLabel} via iDEAL/Wero in je account. Je ontvangt automatisch een herinnering.`
+          }
         </p>
       `, true)}
 
@@ -304,7 +306,7 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
   paidAt: string;
 }) {
   const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
-  const typeLabel = data.type === 'AANBETALING' ? 'Aanbetaling' : data.type === 'RESTBETALING' ? 'Restbetaling' : data.type === 'BORG' ? 'Borg' : data.type;
+  const typeLabel = data.type === 'HUUR' ? 'Huurbedrag' : data.type === 'AANBETALING' ? 'Aanbetaling' : data.type === 'RESTBETALING' ? 'Restbetaling' : data.type === 'BORG' ? 'Borg' : data.type;
   const firstName = data.guestName.split(' ')[0];
   const dateStr = new Date(data.paidAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -760,6 +762,62 @@ export async function sendVerificationEmail(to: string, name: string, verifyUrl:
         Deze link is 24 uur geldig. Als je geen account hebt aangemaakt, kun je deze email negeren.
       </p>
     `, 'Bevestig je e-mailadres'),
+  });
+}
+
+// ===== PAYMENT REMINDER EMAIL =====
+
+export async function sendPaymentReminderEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  amount: number;
+  daysUntil: number;
+}) {
+  const formatPrice = (n: number) => `€\u00A0${n.toFixed(2).replace('.', ',')}`;
+  const firstName = data.guestName.split(' ')[0];
+  const formatDateNl = (d: string) => new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const urgency = data.daysUntil <= 7 ? 'urgent' : 'normal';
+  const accentColor = urgency === 'urgent' ? '#DC2626' : '#F59E0B';
+  const bgColor = urgency === 'urgent' ? '#FEF2F2' : '#FFFBEB';
+  const borderColor = urgency === 'urgent' ? '#FECACA' : '#FDE68A';
+
+  return sendEmail({
+    to: data.to,
+    subject: urgency === 'urgent'
+      ? `⚠️ Betaling vereist — nog ${data.daysUntil} dagen tot aankomst (${data.reference})`
+      : `Herinnering: betaling voor je vakantie (${data.reference})`,
+    html: emailWrapper(`
+      ${badge(urgency === 'urgent' ? '⚠️' : '💶', 'BETALINGSHERINNERING')}
+      ${heading(urgency === 'urgent' ? 'Actie vereist!' : 'Betaling openstaand')}
+      ${subtext(`Beste ${firstName}, de betaling voor je boeking is nog niet ontvangen. Je aankomst is over <strong>${data.daysUntil} dagen</strong>.`)}
+
+      <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:16px;padding:28px;text-align:center;margin:0 0 28px;">
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Nog te betalen</p>
+        <p style="margin:0 0 8px;color:${accentColor};font-weight:800;font-size:36px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
+        <p style="margin:0;color:#64748B;font-size:13px;">Betaling voor boeking ${data.reference}</p>
+      </div>
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        ${infoRow('Referentie', data.reference)}
+        ${infoRow('Caravan', data.caravanName)}
+        ${infoRow('Camping', data.campingName)}
+        ${infoRow('Aankomst', formatDateNl(data.checkIn))}
+        ${infoRow('Openstaand', formatPrice(data.amount))}
+      </table>
+
+      ${highlight(`
+        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+          <strong>💡 Betaal eenvoudig via iDEAL/Wero</strong> vanuit je account. De betaling wordt direct verwerkt.
+          ${urgency === 'urgent' ? '<br/><br/>⚠️ <strong>Let op:</strong> zonder betaling kan je verblijf niet doorgaan.' : ''}
+        </p>
+      `, true)}
+
+      ${button('Nu betalen →', `${SITE_URL}/mijn-account`)}
+    `, `Betaling van ${formatPrice(data.amount)} voor ${data.reference} — nog ${data.daysUntil} dagen`),
   });
 }
 

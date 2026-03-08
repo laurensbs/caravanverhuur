@@ -136,7 +136,19 @@ function BoekenContent() {
   }, [chosenCaravan, nights]);
 
   const discountedTotal = discountApplied ? Math.max(0, totalPrice - discountApplied.amount) : totalPrice;
-  const deposit = Math.round(discountedTotal * 0.3);
+
+  // Payment deadline: 30 days before check-in
+  const daysUntilCheckIn = useMemo(() => {
+    if (!checkIn) return 999;
+    return Math.ceil((new Date(checkIn).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  }, [checkIn]);
+  const immediatePayment = daysUntilCheckIn <= 30;
+  const paymentDeadline = useMemo(() => {
+    if (!checkIn) return '';
+    if (immediatePayment) return 'Direct bij boeking';
+    const d = new Date(new Date(checkIn).getTime() - 30 * 24 * 60 * 60 * 1000);
+    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  }, [checkIn, immediatePayment]);
 
   const canNext = () => {
     switch (step) {
@@ -184,8 +196,8 @@ function BoekenContent() {
           guestName: name, guestEmail: email, guestPhone: phone,
           adults, children, specialRequests: specialRequests || undefined,
           caravanId: selectedCaravan, campingId, spotNumber: spotNumber || undefined,
-          checkIn, checkOut, nights, totalPrice: discountedTotal, depositAmount: deposit,
-          remainingAmount: discountedTotal - deposit, borgAmount: chosenCaravan?.deposit || 0,
+          checkIn, checkOut, nights, totalPrice: discountedTotal,
+          borgAmount: chosenCaravan?.deposit || 0,
           discountCode: discountApplied?.code || undefined,
           discountAmount: discountApplied?.amount || 0,
         }),
@@ -193,6 +205,19 @@ function BoekenContent() {
       if (!res.ok) throw new Error('failed');
       const data = await res.json();
       setBookingRef(data.reference);
+      // If immediate payment required, redirect to Stripe checkout
+      if (data.immediatePayment && data.paymentId) {
+        const checkoutRes = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId: data.paymentId }),
+        });
+        const checkoutData = await checkoutRes.json();
+        if (checkoutData.url) {
+          window.location.href = checkoutData.url;
+          return;
+        }
+      }
       setSubmitted(true);
     } catch {
       setSubmitError(t('booking.errorSubmit'));
@@ -266,7 +291,6 @@ function BoekenContent() {
               </div>
               <div className="mt-4 pt-4 space-y-2">
                 <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{discountedTotal}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-semibold text-primary">&euro;{deposit}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
                 {discountApplied && (
                   <div className="flex justify-between text-sm"><span className="text-primary flex items-center gap-1"><Tag size={12} /> {t('booking.discountLabel')}</span><span className="font-medium text-primary">-&euro;{discountApplied.amount}</span></div>
@@ -275,7 +299,10 @@ function BoekenContent() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
-              <strong>{t('booking.nextStep')}</strong> {t('booking.nextStepText')} &euro;{deposit}.
+              <strong>{t('booking.nextStep')}</strong> {immediatePayment
+                ? 'Je wordt doorgestuurd naar de betaalpagina. Mocht dat niet lukken, betaal dan via je account.'
+                : `Betaling van €${discountedTotal} is verschuldigd vóór ${paymentDeadline}. Je kunt betalen via je account.`
+              }
             </motion.div>
 
             <Link href="/" className="inline-flex items-center gap-2 text-primary font-semibold">
@@ -832,8 +859,13 @@ function BoekenContent() {
                                 <span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span>
                               </div>
                             )}
-                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.depositPercent')}</span><span className="font-bold text-primary">&euro;{deposit}</span></div>
                             <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                            {immediatePayment && (
+                              <div className="flex justify-between text-sm"><span className="text-primary font-medium">💳 Direct betalen</span><span className="font-bold text-primary">&euro;{discountedTotal}</span></div>
+                            )}
+                            {!immediatePayment && (
+                              <div className="flex justify-between text-sm"><span className="text-muted">📅 Betalen vóór</span><span className="font-medium">{paymentDeadline}</span></div>
+                            )}
                           </div>
 
                           {/* Discount code input */}
@@ -963,10 +995,17 @@ function BoekenContent() {
                             <span className="text-primary font-medium">-&euro;{discountApplied.amount}</span>
                           </div>
                         )}
-                        <div className="flex justify-between text-xs">
-                          <span className="text-muted">{t('booking.depositPercent')}</span>
-                          <span className="font-semibold text-primary">&euro;{deposit}</span>
-                        </div>
+                        {immediatePayment ? (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-primary font-medium">💳 Direct betalen</span>
+                            <span className="font-semibold text-primary">&euro;{discountedTotal}</span>
+                          </div>
+                        ) : paymentDeadline ? (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted">📅 Betalen vóór</span>
+                            <span className="font-medium text-foreground-light">{paymentDeadline}</span>
+                          </div>
+                        ) : null}
                       </div>
                     )}
                   </div>

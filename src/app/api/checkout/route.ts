@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     const typeLabel =
       payment.type === 'AANBETALING' ? 'Aanbetaling' :
       payment.type === 'RESTBETALING' ? 'Restbetaling' :
+      payment.type === 'HUUR' ? 'Huurbedrag' :
       payment.type === 'BORG' ? 'Borgsom' :
       payment.type;
 

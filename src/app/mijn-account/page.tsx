@@ -364,6 +364,7 @@ function MijnAccountContent() {
   };
 
   const paymentTypeLabels: Record<string, string> = {
+    HUUR: t('myAccount.payTypeRental'),
     AANBETALING: t('myAccount.payTypeDeposit'),
     RESTBETALING: t('myAccount.payTypeRemaining'),
     BORG: t('myAccount.payTypeBorg'),
@@ -638,18 +639,31 @@ function MijnAccountContent() {
                   {/* Alerts */}
                   {(openPayments.length > 0) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {openPayments.length > 0 && (
-                        <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 transition-all group">
-                          <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
-                            <CreditCard size={18} className="text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
-                            <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))}</div>
-                          </div>
-                          <ArrowRight size={16} className="text-primary shrink-0 transition-transform" />
-                        </button>
-                      )}
+                      {openPayments.length > 0 && (() => {
+                        // Find nearest payment deadline
+                        const openBookings = openPayments.map(p => bookings.find(b => b.id === p.booking_id)).filter(Boolean);
+                        const nearestCheckIn = openBookings.length > 0 ? openBookings.reduce((nearest, b) => {
+                          if (!nearest) return b;
+                          return new Date(b!.check_in) < new Date(nearest!.check_in) ? b : nearest;
+                        }) : null;
+                        const deadline = nearestCheckIn ? (() => {
+                          const d = new Date(new Date(nearestCheckIn.check_in).getTime() - 30 * 24 * 60 * 60 * 1000);
+                          return d < new Date() ? 'zo snel mogelijk' : `vóór ${fd(d.toISOString())}`;
+                        })() : '';
+
+                        return (
+                          <button onClick={() => switchTab('betalingen')} className="bg-white rounded-2xl p-4 flex items-center gap-3 text-left border border-primary/15 transition-all group">
+                            <div className="w-10 h-10 bg-primary/8 rounded-xl flex items-center justify-center shrink-0">
+                              <CreditCard size={18} className="text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
+                              <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))} &middot; Betaal {deadline}</div>
+                            </div>
+                            <ArrowRight size={16} className="text-primary shrink-0 transition-transform" />
+                          </button>
+                        );
+                      })()}
                     </div>
                   )}
 
@@ -904,6 +918,20 @@ function MijnAccountContent() {
                   ) : (
                     payments.map(payment => {
                       const booking = bookings.find(b => b.id === payment.booking_id);
+                      // Calculate payment deadline: 30 days before check-in
+                      const paymentDeadline = booking ? (() => {
+                        const checkIn = new Date(booking.check_in);
+                        const deadline = new Date(checkIn.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        const now = new Date();
+                        if (deadline < now) return fd(booking.check_in); // Already past deadline, show check-in as urgency
+                        return fd(deadline.toISOString());
+                      })() : null;
+                      const daysUntilDeadline = booking ? (() => {
+                        const checkIn = new Date(booking.check_in);
+                        const deadline = new Date(checkIn.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        const now = new Date();
+                        return Math.ceil((Math.max(deadline.getTime(), now.getTime()) - now.getTime()) / (1000 * 60 * 60 * 24));
+                      })() : null;
                       return (
                         <div key={payment.id} className="bg-white rounded-2xl p-4 flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -913,7 +941,12 @@ function MijnAccountContent() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-sm text-foreground">{paymentTypeLabels[payment.type] || payment.type}</div>
-                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? fd(payment.paid_at) : t('myAccount.notPaidYet')}</div>
+                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? fd(payment.paid_at) : payment.status === 'OPENSTAAND' && paymentDeadline ? `Betalen vóór ${paymentDeadline}` : t('myAccount.notPaidYet')}</div>
+                            {payment.status === 'OPENSTAAND' && daysUntilDeadline !== null && daysUntilDeadline <= 14 && (
+                              <div className="text-xs text-danger font-semibold mt-0.5 flex items-center gap-1">
+                                <AlertCircle size={11} /> Nog {daysUntilDeadline} {daysUntilDeadline === 1 ? 'dag' : 'dagen'}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right shrink-0">
                             <div className="font-bold text-sm text-foreground">{fp(Number(payment.amount))}</div>
@@ -947,6 +980,11 @@ function MijnAccountContent() {
                       <p className="text-xs text-foreground-light leading-relaxed">
                         {t('myAccount.payViaIdealDesc')}
                       </p>
+                      <div className="mt-3 p-3 bg-white rounded-xl">
+                        <p className="text-xs text-muted leading-relaxed">
+                          <strong>💡 Annuleringsbeleid:</strong> Gratis annuleren zolang je nog niet betaald hebt. Na betaling: meer dan 30 dagen voor aankomst 100% terug, 14-30 dagen 50%, minder dan 14 dagen geen restitutie.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>

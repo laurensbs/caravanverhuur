@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, depositAmount, remainingAmount, borgAmount, spotNumber, discountCode, discountAmount } = body;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber, discountCode, discountAmount } = body;
 
     if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
       checkOut,
       nights,
       totalPrice,
-      depositAmount,
-      remainingAmount,
+      depositAmount: 0,
+      remainingAmount: totalPrice,
       borgAmount,
       spotNumber,
     });
@@ -59,6 +59,15 @@ export async function POST(request: NextRequest) {
       } catch {}
       return staticCampings.find(c => c.id === campingId)?.name || campingId;
     })();
+    // Determine payment deadline: 30 days before check-in, or now if < 30 days
+    const checkInDate = new Date(checkIn);
+    const now = new Date();
+    const daysUntil = Math.ceil((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const paymentDeadline = daysUntil > 30
+      ? new Date(checkInDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      : 'nu';
+    const immediatePayment = daysUntil <= 30;
+
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
       reference: result.reference,
@@ -70,8 +79,8 @@ export async function POST(request: NextRequest) {
       adults: adults || 2,
       children: children || 0,
       totalPrice,
-      depositAmount,
-      remainingAmount,
+      paymentDeadline,
+      immediatePayment,
       spotNumber,
     }).catch(err => console.error('Booking confirmation email failed:', err));
 
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
         .catch(err => console.error('Discount code usage increment failed:', err));
     }
 
-    return NextResponse.json({ ...result, depositPaymentId: result.depositPaymentId }, { status: 201 });
+    return NextResponse.json({ ...result, paymentId: result.paymentId, immediatePayment }, { status: 201 });
   } catch (error) {
     console.error('POST /api/bookings error:', error);
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
