@@ -747,11 +747,12 @@ export default function ChatBot() {
 
   useEffect(() => { scrollToBottom(); }, [messages, isTyping, scrollToBottom]);
 
-  // Playful bubble after 5s
+  // Playful bubble after 5s, auto-dismiss after 8s
   useEffect(() => {
     if (bubbleDismissed || isOpen) return;
-    const timer = setTimeout(() => setShowBubble(true), 5000);
-    return () => clearTimeout(timer);
+    const showTimer = setTimeout(() => setShowBubble(true), 5000);
+    const hideTimer = setTimeout(() => { setShowBubble(false); setBubbleDismissed(true); }, 13000);
+    return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
   }, [bubbleDismissed, isOpen]);
 
   // Init conversation

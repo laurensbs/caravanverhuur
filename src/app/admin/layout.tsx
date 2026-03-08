@@ -634,13 +634,6 @@ function AdminLayoutInner({
               unoptimized
             />
           </div>
-          <div className="mt-3 flex justify-center">
-            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-              role === 'admin' ? 'bg-amber-400/20 text-amber-200' : 'bg-white/15 text-white/70'
-            }`}>
-              {role === 'admin' ? '⚡ Admin' : '👤 Staff'}
-            </span>
-          </div>
         </div>
 
         <nav className="flex-1 p-3 overflow-y-auto space-y-4">
