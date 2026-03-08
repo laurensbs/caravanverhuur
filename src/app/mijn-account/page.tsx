@@ -395,7 +395,7 @@ function MijnAccountContent() {
     { key: 'boekingen', label: t('myAccount.tabBookings'), icon: <Calendar size={18} />, badge: activeBookings.length || undefined },
     { key: 'betalingen', label: t('myAccount.tabPayments'), icon: <CreditCard size={18} />, badge: openPayments.length || undefined },
     { key: 'borg', label: t('myAccount.tabBorg'), icon: <Shield size={18} />, badge: openBorg.length || undefined },
-    { key: 'tips', label: 'Tips', icon: <Compass size={18} /> },
+    { key: 'tips', label: t('myAccount.tipsTab'), icon: <Compass size={18} /> },
     { key: 'voorwaarden', label: t('myAccount.tabTerms'), icon: <ScrollText size={18} /> },
     { key: 'profiel', label: t('myAccount.tabProfile'), icon: <Settings size={18} /> },
   ];
@@ -660,7 +660,7 @@ function MijnAccountContent() {
                         }) : null;
                         const deadline = nearestCheckIn ? (() => {
                           const d = new Date(new Date(nearestCheckIn.check_in).getTime() - 30 * 24 * 60 * 60 * 1000);
-                          return d < new Date() ? 'zo snel mogelijk' : `vóór ${fd(d.toISOString())}`;
+                          return d < new Date() ? t('myAccount.payAsap') : `${t('myAccount.payDeadline')} ${fd(d.toISOString())}`;
                         })() : '';
 
                         return (
@@ -670,7 +670,7 @@ function MijnAccountContent() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold text-foreground text-sm">{t('myAccount.openPayments').replace('{count}', String(openPayments.length))}</div>
-                              <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))} &middot; Betaal {deadline}</div>
+                              <div className="text-xs text-muted">{fp(openPayments.reduce((s, p) => s + Number(p.amount), 0))} &middot; {t('myAccount.payBefore')} {deadline}</div>
                             </div>
                             <ArrowRight size={16} className="text-primary shrink-0 transition-transform" />
                           </button>
@@ -839,7 +839,7 @@ function MijnAccountContent() {
                                       onClick={() => setCancelConfirmId(booking.id)}
                                       className="text-xs text-muted hover:text-danger transition-colors cursor-pointer"
                                     >
-                                      Annuleren
+                                      {t('myAccount.cancelLabel')}
                                     </button>
                                   )}
                                   <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
@@ -854,7 +854,7 @@ function MijnAccountContent() {
                                   onClick={() => setCancelConfirmId(booking.id)}
                                   className="text-xs text-muted hover:text-danger transition-colors cursor-pointer"
                                 >
-                                  Boeking annuleren
+                                  {t('myAccount.cancelBookingLabel')}
                                 </button>
                               </div>
                             )}
@@ -953,10 +953,10 @@ function MijnAccountContent() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-sm text-foreground">{paymentTypeLabels[payment.type] || payment.type}</div>
-                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? fd(payment.paid_at) : payment.status === 'OPENSTAAND' && paymentDeadline ? `Betalen vóór ${paymentDeadline}` : t('myAccount.notPaidYet')}</div>
+                            <div className="text-xs text-muted">{booking?.reference || t('myAccount.booking')} &middot; {payment.paid_at ? fd(payment.paid_at) : payment.status === 'OPENSTAAND' && paymentDeadline ? `${t('myAccount.payBefore')} ${paymentDeadline}` : t('myAccount.notPaidYet')}</div>
                             {payment.status === 'OPENSTAAND' && daysUntilDeadline !== null && daysUntilDeadline <= 14 && (
                               <div className="text-xs text-danger font-semibold mt-0.5 flex items-center gap-1">
-                                <AlertCircle size={11} /> Nog {daysUntilDeadline} {daysUntilDeadline === 1 ? 'dag' : 'dagen'}
+                                <AlertCircle size={11} /> {(daysUntilDeadline === 1 ? t('myAccount.dayLeft') : t('myAccount.daysLeft')).replace('{count}', String(daysUntilDeadline))}
                               </div>
                             )}
                           </div>
@@ -994,7 +994,7 @@ function MijnAccountContent() {
                       </p>
                       <div className="mt-3 p-3 bg-white rounded-xl">
                         <p className="text-xs text-muted leading-relaxed">
-                          <strong>💡 Annuleringsbeleid:</strong> Gratis annuleren zolang je nog niet betaald hebt. Na betaling: meer dan 30 dagen voor aankomst 100% terug, 14-30 dagen 50%, minder dan 14 dagen geen restitutie.
+                          <strong>💡 {t('myAccount.cancellationPolicy').split(':')[0]}:</strong> {t('myAccount.cancellationPolicy').split(':').slice(1).join(':')}
                         </p>
                       </div>
                     </div>
@@ -1375,11 +1375,11 @@ function MijnAccountContent() {
                             <Compass size={20} className="text-primary" />
                           </div>
                           <div>
-                            <h2 className="text-xl font-bold text-foreground tracking-tight">Tips & activiteiten</h2>
+                            <h2 className="text-xl font-bold text-foreground tracking-tight">{t('myAccount.tipsTitle')}</h2>
                             <p className="text-sm text-muted">
-                              Ontdek de mooiste plekken bij {location}
+                              {t('myAccount.tipsSubtitle').replace('{location}', location)}
                               {dest && (
-                                <> &mdash; <Link href={`/bestemmingen/${dest.slug}`} className="text-primary font-medium hover:underline">Meer over {dest.name} →</Link></>
+                                <> &mdash; <Link href={`/bestemmingen/${dest.slug}`} className="text-primary font-medium hover:underline">{t('myAccount.tipsMoreAbout').replace('{name}', dest.name)} →</Link></>
                               )}
                             </p>
                           </div>
@@ -1436,7 +1436,7 @@ function MijnAccountContent() {
                             <div className="pt-4">
                               <h4 className="text-xs font-bold text-muted uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                 <Star size={10} className="text-primary" />
-                                Algemene tips Costa Brava
+                                {t('myAccount.generalTipsCostaBrava')}
                               </h4>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {generalTips.slice(0, 4).map((act) => (
@@ -1536,15 +1536,15 @@ function MijnAccountContent() {
                   <div className="bg-white rounded-2xl p-5">
                     <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
                       <Mail size={16} className="text-primary" />
-                      Nieuwsbrief
+                      {t('myAccount.newsletter')}
                     </h3>
                     <p className="text-xs text-muted mb-3 leading-relaxed">
-                      Ontvang updates over evenementen, activiteiten en aanbiedingen aan de Costa Brava.
+                      {t('myAccount.newsletterDesc')}
                     </p>
                     <div className="flex items-center justify-between">
                       <div>
                         <span className={`text-sm font-medium ${newsletterUnsubscribed ? 'text-muted' : 'text-primary'}`}>
-                          {togglingNewsletter ? 'Even geduld...' : newsletterUnsubscribed ? 'Uitgeschreven' : 'Ingeschreven'}
+                          {togglingNewsletter ? t('myAccount.newsletterLoading') : newsletterUnsubscribed ? t('myAccount.newsletterUnsubscribed') : t('myAccount.newsletterSubscribed')}
                         </span>
                       </div>
                       <button
@@ -1560,10 +1560,10 @@ function MijnAccountContent() {
                             if (res.ok) {
                               setNewsletterUnsubscribed(newValue);
                             } else {
-                              alert('Kon nieuwsbrief voorkeur niet opslaan. Probeer opnieuw.');
+                              alert(t('myAccount.newsletterSaveError'));
                             }
                           } catch {
-                            alert('Netwerkfout. Probeer opnieuw.');
+                            alert(t('myAccount.networkError'));
                           }
                           setTogglingNewsletter(false);
                         }}
@@ -1596,16 +1596,14 @@ function MijnAccountContent() {
                         <div className="flex items-start gap-2">
                           <Mail size={16} className="text-primary shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-sm font-semibold text-foreground">Bevestigingsmail verzonden</p>
-                            <p className="text-xs text-muted mt-0.5">
-                              We hebben een bevestigingslink naar <strong>{customer.email}</strong> gestuurd. Klik op de link in de e-mail om je account definitief te verwijderen.
-                            </p>
-                            <p className="text-xs text-muted mt-2">De link is 24 uur geldig.</p>
+                            <p className="text-sm font-semibold text-foreground">{t('myAccount.confirmEmailSent')}</p>
+                            <p className="text-xs text-muted mt-0.5" dangerouslySetInnerHTML={{ __html: t('myAccount.confirmEmailDesc').replace('{email}', customer.email) }} />
+                            <p className="text-xs text-muted mt-2">{t('myAccount.emailLinkValid')}</p>
                           </div>
                         </div>
                         <button onClick={() => { setShowDeleteConfirm(false); setDeleteEmailSent(false); }}
                           className="text-xs text-muted font-medium transition-colors">
-                          Sluiten
+                          {t('myAccount.close')}
                         </button>
                       </motion.div>
                     ) : (
@@ -1674,7 +1672,7 @@ function MijnAccountContent() {
               <div className="w-12 h-12 bg-danger/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <XCircle size={24} className="text-danger" />
               </div>
-              <h3 className="text-lg font-bold text-foreground text-center mb-2">Boeking annuleren?</h3>
+              <h3 className="text-lg font-bold text-foreground text-center mb-2">{t('myAccount.cancelBookingTitle')}</h3>
               {(() => {
                 const booking = bookings.find(b => b.id === cancelConfirmId);
                 if (!booking) return null;
@@ -1682,16 +1680,14 @@ function MijnAccountContent() {
                 const daysUntil = Math.ceil((checkIn.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                 let refundText = '';
                 let refundColor = '';
-                if (daysUntil > 30) { refundText = '100% restitutie aanbetaling'; refundColor = 'text-primary'; }
-                else if (daysUntil >= 14) { refundText = '50% restitutie aanbetaling'; refundColor = 'text-primary'; }
-                else { refundText = 'Geen restitutie mogelijk'; refundColor = 'text-danger'; }
+                if (daysUntil > 30) { refundText = t('myAccount.refund100'); refundColor = 'text-primary'; }
+                else if (daysUntil >= 14) { refundText = t('myAccount.refund50'); refundColor = 'text-primary'; }
+                else { refundText = t('myAccount.refundNone'); refundColor = 'text-danger'; }
                 return (
                   <div className="text-center space-y-2 mb-5">
-                    <p className="text-sm text-muted">
-                      Boeking <strong className="text-foreground">{booking.reference}</strong> ({daysUntil} dagen voor aankomst)
-                    </p>
+                    <p className="text-sm text-muted" dangerouslySetInnerHTML={{ __html: t('myAccount.cancelBookingRef').replace('{ref}', booking.reference).replace('{days}', String(daysUntil)) }} />
                     <p className={`text-sm font-semibold ${refundColor}`}>{refundText}</p>
-                    <p className="text-xs text-muted">Dit kan niet ongedaan worden gemaakt.</p>
+                    <p className="text-xs text-muted">{t('myAccount.cannotBeUndone')}</p>
                   </div>
                 );
               })()}
@@ -1700,7 +1696,7 @@ function MijnAccountContent() {
                   onClick={() => setCancelConfirmId(null)}
                   className="flex-1 py-2.5 text-sm font-semibold text-foreground bg-surface rounded-xl transition-colors cursor-pointer"
                 >
-                  Terug
+                  {t('myAccount.back')}
                 </button>
                 <button
                   onClick={() => handleCancelBooking(cancelConfirmId)}
@@ -1710,7 +1706,7 @@ function MijnAccountContent() {
                   {cancellingBookingId === cancelConfirmId ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : null}
-                  Annuleren
+                  {t('myAccount.cancelBtn')}
                 </button>
               </div>
             </motion.div>

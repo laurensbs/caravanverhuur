@@ -2,9 +2,17 @@
 
 import { usePathname } from 'next/navigation';
 import { ReactNode, useState, useEffect } from 'react';
-import { LanguageProvider } from '@/i18n/context';
+import { LanguageProvider, useLanguage } from '@/i18n/context';
 import { dictionaries } from '@/i18n/translations';
 import ChatBot from '@/components/ChatBot';
+
+function HtmlLangSync() {
+  const { locale } = useLanguage();
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+  return null;
+}
 
 export function LayoutWrapper({
   children,
@@ -38,6 +46,7 @@ export function LayoutWrapper({
   if (isBorg) {
     return (
       <LanguageProvider dictionaries={dictionaries}>
+        <HtmlLangSync />
         {children}
       </LanguageProvider>
     );
@@ -45,6 +54,7 @@ export function LayoutWrapper({
 
   return (
     <LanguageProvider dictionaries={dictionaries}>
+      <HtmlLangSync />
       {header}
       <main className="min-h-screen">{children}</main>
       {footer}

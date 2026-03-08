@@ -12,9 +12,6 @@ import {
   Users,
   Target,
   Award,
-  Instagram,
-  Facebook,
-
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -210,19 +207,6 @@ export default function OverOnsPage() {
               </motion.div>
             ))}
           </motion.div>
-
-          {/* Social media */}
-          <div className="mt-12 text-center">
-            <p className="text-muted text-sm mb-4">{t('about.socialText')}</p>
-            <div className="flex justify-center gap-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white transition-transform">
-                <Instagram size={22} />
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-primary-dark rounded-xl flex items-center justify-center text-white transition-transform">
-                <Facebook size={22} />
-              </a>
-            </div>
-          </div>
         </div>
       </section>
 

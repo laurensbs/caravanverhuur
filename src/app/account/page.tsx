@@ -49,9 +49,9 @@ function AccountPageInner() {
   const passwordStrength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 8 ? 2 : password.length < 12 ? 3 : 4;
   const strengthLabels = ['', t('account.strengthWeak'), t('account.strengthFair'), t('account.strengthGood'), t('account.strengthStrong')];
 
-  const modeTitle = mode === 'forgot-password' ? 'Wachtwoord vergeten' : mode === 'reset-password' ? 'Nieuw wachtwoord' : mode === 'login' ? t('account.welcomeBack') : t('account.createAccount');
-  const modeSubtitle = mode === 'forgot-password' ? 'Vul je e-mailadres in om een herstellink te ontvangen' : mode === 'reset-password' ? 'Kies een nieuw wachtwoord voor je account' : mode === 'login' ? t('account.loginSubtitle') : t('account.registerSubtitle');
-  const modeSubtitleDesktop = mode === 'forgot-password' ? 'Vul je e-mailadres in om een herstellink te ontvangen' : mode === 'reset-password' ? 'Kies een nieuw wachtwoord voor je account' : mode === 'login' ? t('account.loginSubtitleDesktop') : t('account.registerSubtitleDesktop');
+  const modeTitle = mode === 'forgot-password' ? t('account.forgotPasswordTitle') : mode === 'reset-password' ? t('account.resetPasswordTitle') : mode === 'login' ? t('account.welcomeBack') : t('account.createAccount');
+  const modeSubtitle = mode === 'forgot-password' ? t('account.forgotPasswordSubtitle') : mode === 'reset-password' ? t('account.resetPasswordSubtitle') : mode === 'login' ? t('account.loginSubtitle') : t('account.registerSubtitle');
+  const modeSubtitleDesktop = mode === 'forgot-password' ? t('account.forgotPasswordSubtitle') : mode === 'reset-password' ? t('account.resetPasswordSubtitle') : mode === 'login' ? t('account.loginSubtitleDesktop') : t('account.registerSubtitleDesktop');
   const strengthColors = ['', 'bg-danger', 'bg-primary', 'bg-primary', 'bg-primary'];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,7 +73,7 @@ function AccountPageInner() {
           setError(data.error || t('account.errorGeneral'));
           return;
         }
-        setSuccess('Als dit e-mailadres bij ons bekend is, ontvang je binnen enkele minuten een link om je wachtwoord te herstellen.');
+        setSuccess(t('account.forgotSuccess'));
         return;
       }
 
@@ -94,7 +94,7 @@ function AccountPageInner() {
           setError(data.error || t('account.errorGeneral'));
           return;
         }
-        setSuccess('Je wachtwoord is gewijzigd. Je wordt doorgestuurd...');
+        setSuccess(t('account.resetSuccess'));
         setTimeout(() => router.push('/mijn-account'), 1500);
         return;
       }
@@ -230,7 +230,7 @@ function AccountPageInner() {
                     onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
                     className="flex items-center gap-2 text-sm font-semibold text-primary mb-5 hover:text-primary-dark transition-colors"
                   >
-                    <ArrowLeft size={16} /> Terug naar inloggen
+                    <ArrowLeft size={16} /> {t('account.backToLogin')}
                   </button>
                 ) : (
                 <div className="flex bg-surface rounded-xl p-1 mb-5">
@@ -276,7 +276,7 @@ function AccountPageInner() {
                   {mode !== 'forgot-password' && (
                     <div>
                       <label className="block text-xs font-semibold text-foreground-light mb-1.5">
-                        {mode === 'reset-password' ? 'Nieuw wachtwoord' : t('account.labelPassword')}
+                        {mode === 'reset-password' ? t('account.resetPasswordLabel') : t('account.labelPassword')}
                       </label>
                       <div className="relative">
                         <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
@@ -288,7 +288,7 @@ function AccountPageInner() {
                       {mode === 'login' && (
                         <p className="text-xs text-muted mt-1.5">
                           <button type="button" onClick={() => { setMode('forgot-password'); setError(''); setSuccess(''); }} className="text-primary font-medium hover:underline">
-                            Wachtwoord vergeten?
+                            {t('account.forgotPassword')}
                           </button>
                         </p>
                       )}
@@ -341,8 +341,8 @@ function AccountPageInner() {
                     className="w-full py-3.5 bg-primary disabled:opacity-60 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all mt-2 shadow-sm shadow-primary/20">
                     {loading ? <Loader2 size={18} className="animate-spin" /> : (
                       <>
-                        {mode === 'forgot-password' ? 'Verstuur herstellink' :
-                         mode === 'reset-password' ? 'Wachtwoord opslaan' :
+                        {mode === 'forgot-password' ? t('account.sendResetLink') :
+                         mode === 'reset-password' ? t('account.savePassword') :
                          mode === 'login' ? t('account.btnLogin') : t('account.btnRegister')}
                         <ArrowRight size={16} />
                       </>
@@ -355,7 +355,7 @@ function AccountPageInner() {
                   {(mode === 'forgot-password' || mode === 'reset-password') ? (
                     <p>
                       <button onClick={() => { setMode('login'); setError(''); setSuccess(''); }} className="text-primary font-semibold">
-                        Terug naar inloggen
+                        {t('account.backToLogin')}
                       </button>
                     </p>
                   ) : mode === 'login' ? (

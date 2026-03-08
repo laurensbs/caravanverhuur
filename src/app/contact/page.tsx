@@ -113,17 +113,17 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">{t('contact.nameLabel')} *</label>
-                      <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Jan Jansen" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
+                      <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t('contact.placeholderName')} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">{t('contact.emailLabel')} *</label>
-                      <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@voorbeeld.nl" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
+                      <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t('contact.placeholderEmail')} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">{t('contact.phoneLabel')}</label>
-                      <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+31 6 12345678" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
+                      <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t('contact.placeholderPhone')} className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">{t('contact.subjectLabel')} *</label>

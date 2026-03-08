@@ -7,169 +7,179 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
-const sections = [
-  {
-    id: 'gegevens',
-    icon: Database,
-    title: '1. Welke gegevens verzamelen wij?',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">Wij verzamelen de volgende persoonsgegevens:</p>
+export default function PrivacyPage() {
+  const { t } = useLanguage();
+
+  const sections = [
+    {
+      id: 'gegevens',
+      icon: Database,
+      title: t('privacyPage.s1Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s1Intro')}</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {([
+              t('privacyPage.s1Item1'), t('privacyPage.s1Item2'), t('privacyPage.s1Item3'),
+              t('privacyPage.s1Item4'), t('privacyPage.s1Item5'), t('privacyPage.s1Item6'),
+              t('privacyPage.s1Item7'),
+            ]).map((item, i) => (
+              <div key={i} className="flex gap-3 bg-surface rounded-xl p-3.5">
+                <ChevronRight size={14} className="text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'doel',
+      icon: Eye,
+      title: t('privacyPage.s2Title'),
+      content: (
         <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            'Voor- en achternaam',
-            'E-mailadres',
-            'Telefoonnummer',
-            'Adresgegevens (indien nodig voor facturatie)',
-            'Betaalgegevens (via iDEAL/Wero/Stripe, niet door ons opgeslagen)',
-            'Boekingsgegevens (datum, camping, personen, caravankeuze)',
-            'Communicatie (berichten via contactformulier)',
-          ].map((item, i) => (
+          {([
+            t('privacyPage.s2Item1'), t('privacyPage.s2Item2'), t('privacyPage.s2Item3'),
+            t('privacyPage.s2Item4'), t('privacyPage.s2Item5'), t('privacyPage.s2Item6'),
+          ]).map((item, i) => (
             <div key={i} className="flex gap-3 bg-surface rounded-xl p-3.5">
               <ChevronRight size={14} className="text-primary shrink-0 mt-0.5" />
               <p className="text-sm text-muted">{item}</p>
             </div>
           ))}
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'doel',
-    icon: Eye,
-    title: '2. Waarvoor gebruiken wij uw gegevens?',
-    content: (
-      <div className="grid sm:grid-cols-2 gap-3">
-        {[
-          'Het verwerken en bevestigen van boekingen',
-          'Het versturen van betalingsherinneringen en boekingsbevestigingen',
-          'Communicatie over uw boeking',
-          'Het uitvoeren van de huurovereenkomst',
-          'Het verbeteren van onze dienstverlening',
-          'Voldoen aan wettelijke verplichtingen',
-        ].map((item, i) => (
-          <div key={i} className="flex gap-3 bg-surface rounded-xl p-3.5">
-            <ChevronRight size={14} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-sm text-muted">{item}</p>
+      ),
+    },
+    {
+      id: 'betalingen',
+      icon: CreditCard,
+      title: t('privacyPage.s3Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s3P1')}</p>
+          <div className="bg-primary-50 border-primary-light rounded-xl p-4 flex gap-3">
+            <Shield size={18} className="text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.s3Note') }} />
           </div>
-        ))}
-      </div>
-    ),
-  },
-  {
-    id: 'betalingen',
-    icon: CreditCard,
-    title: '3. Betalingsverwerking', content: ( <div className="space-y-4"> <p className="text-muted leading-relaxed"> Betalingen worden verwerkt via iDEAL/Wero, gefaciliteerd door Stripe, een PCI DSS Level 1 gecertificeerde betalingsverwerker. </p> <div className="bg-primary-50 border-primary-light rounded-xl p-4 flex gap-3"> <Shield size={18} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground leading-relaxed"> Wij slaan <strong>geen bankgegevens</strong> op onze servers op. Alle betaalgegevens worden direct en versleuteld verwerkt door uw bank via iDEAL/Wero. </p> </div> </div> ), }, { id:'bewaartermijn',
-    icon: Clock,
-    title: '4. Bewaartermijn',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">Wij bewaren uw gegevens niet langer dan noodzakelijk:</p>
-        <div className="space-y-3">
-          {[
-            { label: 'Boekingsgegevens', period: '7 jaar', note: 'Wettelijke bewaarplicht' },
-            { label: 'Contactformulierberichten', period: '1 jaar', note: '' },
-            { label: 'Marketingcommunicatie', period: 'Tot intrekking', note: 'U kunt uw toestemming altijd intrekken' },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-4 bg-surface rounded-xl p-4">
-              <span className="text-lg font-bold text-primary shrink-0 w-20 text-center">{item.period}</span>
-              <div>
-                <p className="font-semibold text-foreground text-sm">{item.label}</p>
-                {item.note && <p className="text-xs text-muted">{item.note}</p>}
+        </div>
+      ),
+    },
+    {
+      id: 'bewaartermijn',
+      icon: Clock,
+      title: t('privacyPage.s4Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s4Intro')}</p>
+          <div className="space-y-3">
+            {([
+              { label: t('privacyPage.s4Label1'), period: t('privacyPage.s4Period1'), note: t('privacyPage.s4Note1') },
+              { label: t('privacyPage.s4Label2'), period: t('privacyPage.s4Period2'), note: t('privacyPage.s4Note2') },
+              { label: t('privacyPage.s4Label3'), period: t('privacyPage.s4Period3'), note: t('privacyPage.s4Note3') },
+            ]).map(item => (
+              <div key={item.label} className="flex items-center gap-4 bg-surface rounded-xl p-4">
+                <span className="text-lg font-bold text-primary shrink-0 w-20 text-center">{item.period}</span>
+                <div>
+                  <p className="font-semibold text-foreground text-sm">{item.label}</p>
+                  {item.note && <p className="text-xs text-muted">{item.note}</p>}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'rechten',
-    icon: UserCheck,
-    title: '5. Uw Rechten',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">Onder de AVG/GDPR heeft u de volgende rechten:</p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            { right: 'Recht op inzage', desc: 'U kunt opvragen welke gegevens wij van u hebben' },
-            { right: 'Recht op rectificatie', desc: 'U kunt onjuiste gegevens laten corrigeren' },
-            { right: 'Recht op verwijdering', desc: 'U kunt verzoeken uw gegevens te verwijderen' },
-            { right: 'Recht op overdraagbaarheid', desc: 'U kunt uw gegevens in een gangbaar formaat opvragen' },
-            { right: 'Recht op bezwaar', desc: 'U kunt bezwaar maken tegen de verwerking' },
-          ].map(r => (
-            <div key={r.right} className="bg-surface rounded-xl p-4">
-              <p className="font-semibold text-foreground text-sm mb-1">{r.right}</p>
-              <p className="text-muted text-sm leading-relaxed">{r.desc}</p>
-            </div>
-          ))}
+      ),
+    },
+    {
+      id: 'rechten',
+      icon: UserCheck,
+      title: t('privacyPage.s5Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s5Intro')}</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {([
+              { right: t('privacyPage.s5Right1'), desc: t('privacyPage.s5Desc1') },
+              { right: t('privacyPage.s5Right2'), desc: t('privacyPage.s5Desc2') },
+              { right: t('privacyPage.s5Right3'), desc: t('privacyPage.s5Desc3') },
+              { right: t('privacyPage.s5Right4'), desc: t('privacyPage.s5Desc4') },
+              { right: t('privacyPage.s5Right5'), desc: t('privacyPage.s5Desc5') },
+            ]).map(r => (
+              <div key={r.right} className="bg-surface rounded-xl p-4">
+                <p className="font-semibold text-foreground text-sm mb-1">{r.right}</p>
+                <p className="text-muted text-sm leading-relaxed">{r.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'cookies',
-    icon: Cookie,
-    title: '6. Cookies',
-    content: (
-      <p className="text-muted leading-relaxed">
-        Onze website maakt gebruik van <strong className="text-foreground">functionele cookies</strong> die noodzakelijk zijn voor het functioneren van de website.
-        Wij gebruiken geen tracking cookies zonder uw toestemming.
-        Als wij analytics gebruiken, doen wij dit met een privacy-vriendelijke oplossing.
-      </p>
-    ),
-  },
-  {
-    id: 'beveiliging',
-    icon: Lock,
-    title: '7. Beveiliging',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">Wij nemen passende maatregelen om uw gegevens te beschermen:</p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            'SSL/TLS versleuteling op onze website',
-            'Versleutelde opslag van gevoelige gegevens',
-            'Beperkte toegang tot persoonsgegevens',
-            'Regelmatige beveiligingsaudits', ].map((item, i) => ( <div key={i} className="flex gap-3 bg-primary-50 border-primary-light rounded-xl p-3.5"> <Lock size={14} className="text-primary shrink-0 mt-0.5" /> <p className="text-sm text-foreground">{item}</p> </div> ))} </div> </div> ), }, { id:'derden',
-    icon: Share2,
-    title: '8. Delen met Derden',
-    content: (
-      <div className="space-y-4">
-        <p className="text-muted leading-relaxed">Wij delen uw gegevens niet met derden, behalve:</p>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            { party: 'Stripe / iDEAL/Wero', reason: 'Betalingsverwerking' },
-            { party: 'E-maildienstverlener', reason: 'Boekingsbevestigingen' },
-            { party: 'Campingbeheerders', reason: 'Voor uw reservering' },
-            { party: 'Overheid', reason: 'Wanneer wettelijk verplicht' },
-          ].map(p => (
-            <div key={p.party} className="bg-surface rounded-xl p-4">
-              <p className="font-semibold text-foreground text-sm mb-1">{p.party}</p>
-              <p className="text-muted text-sm">{p.reason}</p>
-            </div>
-          ))}
+      ),
+    },
+    {
+      id: 'cookies',
+      icon: Cookie,
+      title: t('privacyPage.s6Title'),
+      content: (
+        <p className="text-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.s6P1') }} />
+      ),
+    },
+    {
+      id: 'beveiliging',
+      icon: Lock,
+      title: t('privacyPage.s7Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s7Intro')}</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {([
+              t('privacyPage.s7Item1'), t('privacyPage.s7Item2'),
+              t('privacyPage.s7Item3'), t('privacyPage.s7Item4'),
+            ]).map((item, i) => (
+              <div key={i} className="flex gap-3 bg-primary-50 border-primary-light rounded-xl p-3.5">
+                <Lock size={14} className="text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'contact',
-    icon: Mail,
-    title: '9. Contact',
-    content: (
-      <p className="text-muted leading-relaxed">
-        Voor vragen over dit privacybeleid of om uw rechten uit te oefenen, kunt u contact opnemen via:{' '}
-        <a href="mailto:info@caravanverhuurspanje.com" className="text-primary font-medium">
-          info@caravanverhuurspanje.com
-        </a>
-      </p>
-    ),
-  },
-];
-
-export default function PrivacyPage() {
-  const { t } = useLanguage();
+      ),
+    },
+    {
+      id: 'derden',
+      icon: Share2,
+      title: t('privacyPage.s8Title'),
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted leading-relaxed">{t('privacyPage.s8Intro')}</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {([
+              { party: t('privacyPage.s8Party1'), reason: t('privacyPage.s8Reason1') },
+              { party: t('privacyPage.s8Party2'), reason: t('privacyPage.s8Reason2') },
+              { party: t('privacyPage.s8Party3'), reason: t('privacyPage.s8Reason3') },
+              { party: t('privacyPage.s8Party4'), reason: t('privacyPage.s8Reason4') },
+            ]).map(p => (
+              <div key={p.party} className="bg-surface rounded-xl p-4">
+                <p className="font-semibold text-foreground text-sm mb-1">{p.party}</p>
+                <p className="text-muted text-sm">{p.reason}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'contact',
+      icon: Mail,
+      title: t('privacyPage.s9Title'),
+      content: (
+        <p className="text-muted leading-relaxed">
+          {t('privacyPage.s9P1')}{' '}
+          <a href="mailto:info@caravanverhuurspanje.com" className="text-primary font-medium">
+            info@caravanverhuurspanje.com
+          </a>
+        </p>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -195,11 +205,7 @@ export default function PrivacyPage() {
         <div className="max-w-4xl mx-auto px-4 space-y-8">
           {/* Intro */}
           <div className="bg-white rounded-2xl p-6 sm:p-8">
-            <p className="text-muted leading-relaxed">
-              Caravanverhuur Costa Brava (onderdeel van Caravanstalling-Spanje) respecteert uw privacy en gaat zorgvuldig om met uw persoonsgegevens.
-              Dit privacybeleid beschrijft hoe wij uw gegevens verzamelen, gebruiken en beschermen conform de
-              <strong className="text-foreground"> Algemene Verordening Gegevensbescherming (AVG/GDPR)</strong>.
-            </p>
+            <p className="text-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.intro') }} />
           </div>
 
           {sections.map(s => {

@@ -1086,7 +1086,7 @@ export default function ChatBot() {
                     : 'Caravanverhuur Spanje'}
                 </p>
               </div>
-              <button onClick={() => setIsOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label="Sluit chat">
+              <button onClick={() => setIsOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" aria-label={isNl ? 'Sluit chat' : isEs ? 'Cerrar chat' : 'Close chat'}>
                 <ChevronDown size={20} />
               </button>
             </div>
@@ -1246,7 +1246,7 @@ export default function ChatBot() {
         className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[89] w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer safe-area-fab ${
           isOpen ? 'bg-gray-600 rotate-90' : 'bg-primary hover:scale-110 hover:shadow-xl'
         }`}
-        aria-label={isOpen ? 'Sluit chat' : 'Open chat'}
+        aria-label={isOpen ? (isNl ? 'Sluit chat' : isEs ? 'Cerrar chat' : 'Close chat') : (isNl ? 'Open chat' : isEs ? 'Abrir chat' : 'Open chat')}
       >
         {isOpen ? (
           <X size={22} className="text-white" />

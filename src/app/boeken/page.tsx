@@ -150,7 +150,7 @@ function BoekenContent() {
   const immediatePayment = daysUntilCheckIn <= 30;
   const paymentDeadline = useMemo(() => {
     if (!checkIn) return '';
-    if (immediatePayment) return 'Direct bij boeking';
+    if (immediatePayment) return t('booking.payImmediately');
     const d = new Date(new Date(checkIn).getTime() - 30 * 24 * 60 * 60 * 1000);
     return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
   }, [checkIn, immediatePayment]);
@@ -305,8 +305,8 @@ function BoekenContent() {
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
               <strong>{t('booking.nextStep')}</strong> {immediatePayment
-                ? 'Je wordt doorgestuurd naar de betaalpagina. Mocht dat niet lukken, betaal dan via je account.'
-                : `Betaling van €${discountedTotal} is verschuldigd vóór ${paymentDeadline}. Je kunt betalen via je account.`
+                ? t('booking.redirectToPayment')
+                : `${t('booking.paymentDueBefore')} €${discountedTotal} ${paymentDeadline}.`
               }
             </motion.div>
 
@@ -584,10 +584,10 @@ function BoekenContent() {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
                                       body: JSON.stringify({
-                                        name: name || 'Boekingspagina bezoeker',
+                                        name: name || t('booking.bookingPageVisitor'),
                                         email: email || 'onbekend@caravanverhuurspanje.com',
                                         phone: phone || '',
-                                        subject: 'Campingaanvraag',
+                                        subject: t('booking.campingRequest'),
                                         message: `Camping: ${campingRequestName.trim()}${campingRequestLocation.trim() ? `\nLocatie: ${campingRequestLocation.trim()}` : ''}`,
                                       }),
                                     });
@@ -825,7 +825,7 @@ function BoekenContent() {
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
-                          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Jan Jansen"
+                          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('contact.placeholderName')}
                             className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
@@ -833,14 +833,14 @@ function BoekenContent() {
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
-                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="jan@voorbeeld.nl"
+                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('contact.placeholderEmail')}
                               className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                           </div>
                           <div>
                             <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
-                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+31 6 12345678"
+                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('contact.placeholderPhone')}
                               className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
                           </div>
                         </div>
@@ -935,10 +935,10 @@ function BoekenContent() {
                             )}
                             <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
                             {immediatePayment && (
-                              <div className="flex justify-between text-sm"><span className="text-primary font-medium">💳 Direct betalen</span><span className="font-bold text-primary">&euro;{discountedTotal}</span></div>
+                              <div className="flex justify-between text-sm"><span className="text-primary font-medium">💳 {t('booking.payNow')}</span><span className="font-bold text-primary">&euro;{discountedTotal}</span></div>
                             )}
                             {!immediatePayment && (
-                              <div className="flex justify-between text-sm"><span className="text-muted">📅 Betalen vóór</span><span className="font-medium">{paymentDeadline}</span></div>
+                              <div className="flex justify-between text-sm"><span className="text-muted">📅 {t('booking.payBefore')}</span><span className="font-medium">{paymentDeadline}</span></div>
                             )}
                           </div>
 
@@ -1071,12 +1071,12 @@ function BoekenContent() {
                         )}
                         {immediatePayment ? (
                           <div className="flex justify-between text-xs">
-                            <span className="text-primary font-medium">💳 Direct betalen</span>
+                            <span className="text-primary font-medium">💳 {t('booking.payNow')}</span>
                             <span className="font-semibold text-primary">&euro;{discountedTotal}</span>
                           </div>
                         ) : paymentDeadline ? (
                           <div className="flex justify-between text-xs">
-                            <span className="text-muted">📅 Betalen vóór</span>
+                            <span className="text-muted">📅 {t('booking.payBefore')}</span>
                             <span className="font-medium text-foreground-light">{paymentDeadline}</span>
                           </div>
                         ) : null}

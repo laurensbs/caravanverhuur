@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { caravans } from '@/data/caravans';
+import { destinations } from '@/data/destinations';
 import { getAllCustomCaravans } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -26,11 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const c of dbCaravans) caravanIds.add(c.id);
   } catch { /* DB not available, use static only */ }
 
-  const destinationSlugs = [
-    'pals', 'estartit', 'begur', 'tossa-de-mar', 'platja-daro',
-    'palamos', 'roses', 'cadaques', 'lloret-de-mar', 'sant-feliu-de-guixols',
-    'blanes', 'calella-de-palafrugell',
-  ];
+  const destinationSlugs = destinations.map(d => d.slug);
 
   return [
     ...staticPages.map(page => ({
