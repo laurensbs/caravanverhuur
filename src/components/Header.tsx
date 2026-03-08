@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { caravans } from '@/data/caravans';
+import { caravans as staticCaravansData } from '@/data/caravans';
+import type { Caravan } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
 import WeatherBar from './WeatherBar';
 import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
@@ -14,11 +15,6 @@ import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
-
-const caravansByType = {
-  FAMILIE: caravans.filter(c => c.type === 'FAMILIE'),
-  COMPACT: caravans.filter(c => c.type === 'COMPACT'),
-};
 
 const typeLabel: Record<string, { name: string; color: string }> = {
   FAMILIE: { name: 'Familie', color: 'text-primary' },
@@ -32,9 +28,6 @@ destinations.forEach(d => {
 });
 const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'];
 
-const featuredCaravan = caravansByType.FAMILIE[0] || caravans[0];
-const featuredDest = destinations.find(d => d.slug === 'tossa-de-mar') || destinations[0];
-
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -46,6 +39,7 @@ export default function Header() {
   const [langDropdown, setLangDropdown] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
+  const [allCaravans, setAllCaravans] = useState<Caravan[]>(staticCaravansData);
   const pathname = usePathname();
   const router = useRouter();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -53,6 +47,21 @@ export default function Header() {
   const accountRef = useRef<HTMLDivElement>(null);
   const accountTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, locale, setLocale } = useLanguage();
+
+  // Fetch merged caravans (with DB overrides)
+  useEffect(() => {
+    fetch('/api/caravans')
+      .then(res => res.json())
+      .then(data => { if (data.caravans?.length) setAllCaravans(data.caravans); })
+      .catch(() => {});
+  }, []);
+
+  const caravansByType = {
+    FAMILIE: allCaravans.filter(c => c.type === 'FAMILIE'),
+    COMPACT: allCaravans.filter(c => c.type === 'COMPACT'),
+  };
+  const featuredCaravan = caravansByType.FAMILIE[0] || allCaravans[0];
+  const featuredDest = destinations.find(d => d.slug === 'tossa-de-mar') || destinations[0];
 
   // Check login status
   useEffect(() => {
@@ -383,7 +392,7 @@ export default function Header() {
                       <Link href="/caravans" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
                         {t('home.allCaravans')} →
                       </Link>
-                      {caravans.map(c => (
+                      {allCaravans.map(c => (
                         <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-foreground-light">
                           <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
                             <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />

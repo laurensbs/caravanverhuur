@@ -4,7 +4,7 @@ import { Suspense, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays, MapPin, Users, CheckCircle, ArrowRight, ArrowLeft,
   CreditCard, User, Mail, Phone, MessageSquare, Search, Hash,

@@ -5,11 +5,13 @@ import { getAllCustomCaravans, getAvailableCaravanIds } from '@/lib/db';
 // GET - Returns all caravans (static + custom, excluding unavailable)
 export async function GET() {
   try {
-    // Get custom caravans from DB
-    let customCaravans: ReturnType<typeof formatCustomCaravan>[] = [];
+    // Get all DB caravans (custom + static overrides)
+    let dbCaravans: ReturnType<typeof formatCustomCaravan>[] = [];
+    const dbIdSet = new Set<string>();
     try {
-      const dbCaravans = await getAllCustomCaravans();
-      customCaravans = dbCaravans.map(formatCustomCaravan);
+      const rawDbCaravans = await getAllCustomCaravans();
+      dbCaravans = rawDbCaravans.map(formatCustomCaravan);
+      rawDbCaravans.forEach(c => dbIdSet.add(c.id));
     } catch {
       // DB might not have the table yet — just use static
     }
@@ -22,10 +24,12 @@ export async function GET() {
       // ignore
     }
 
-    // Merge and filter
+    // Merge: static caravans (skip if DB override exists) + DB caravans
     const allCaravans = [
-      ...staticCaravans.map(c => ({ ...c, isCustom: false })),
-      ...customCaravans,
+      ...staticCaravans
+        .filter(c => !dbIdSet.has(c.id)) // skip static caravans that have DB overrides
+        .map(c => ({ ...c, isCustom: false })),
+      ...dbCaravans,
     ].filter(c => !unavailableIds.includes(c.id));
 
     return NextResponse.json({ caravans: allCaravans });
@@ -47,12 +51,13 @@ function formatCustomCaravan(c: Record<string, unknown>) {
     year: c.year as number,
     description: c.description as string,
     photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
+    videoUrl: (c.video_url as string) || undefined,
     amenities: typeof c.amenities === 'string' ? JSON.parse(c.amenities) : (c.amenities || []),
     inventory: typeof c.inventory === 'string' ? JSON.parse(c.inventory) : (c.inventory || []),
     pricePerDay: Number(c.price_per_day),
     pricePerWeek: Number(c.price_per_week),
     deposit: Number(c.deposit),
     status: c.status as string,
-    isCustom: true,
+    isCustom: !(c.is_static_override as boolean),
   };
 }

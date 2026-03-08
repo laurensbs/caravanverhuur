@@ -8,9 +8,9 @@ import { campings as staticCampings } from '@/data/campings';
 
 function generatePassword(): string {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-  let pw = '';
-  for (let i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
-  return pw;
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
 export async function POST(request: NextRequest) {

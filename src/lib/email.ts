@@ -6,7 +6,6 @@ const RESEND_API_URL = 'https://api.resend.com/emails';
 const SITE_URL = 'https://caravanverhuurspanje.com';
 const BRAND_NAME = 'Caravanverhuur Spanje';
 const LOGO_URL = 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png';
-export { GOOGLE_REVIEW_URL } from './constants';
 import { GOOGLE_REVIEW_URL } from './constants';
 
 interface EmailOptions {

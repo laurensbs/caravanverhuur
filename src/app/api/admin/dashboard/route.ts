@@ -37,7 +37,12 @@ export async function GET() {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Verify admin role (middleware checks session, but we also want admin-only)
+    const { verifyAdminRequest } = await import('@/lib/admin-auth');
+    const session = await verifyAdminRequest(request);
+    if (!session || session.role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
 
     const result = await purgeAllTestData();
     return NextResponse.json({ message: 'Alle testdata is verwijderd', ...result });

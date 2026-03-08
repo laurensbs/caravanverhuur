@@ -5,10 +5,12 @@ export async function GET(request: NextRequest) {
   // Only allow in development or with secret key
   const { searchParams } = new URL(request.url);
   const key = searchParams.get('key');
-  const secret = process.env.SETUP_SECRET || 'local-dev-only';
+  const secret = process.env.SETUP_SECRET;
 
-  if (process.env.NODE_ENV === 'production' && key !== secret) {
-    return NextResponse.json({ error: 'Niet toegestaan' }, { status: 403 });
+  if (!secret || key !== secret) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Niet toegestaan' }, { status: 403 });
+    }
   }
 
   try {

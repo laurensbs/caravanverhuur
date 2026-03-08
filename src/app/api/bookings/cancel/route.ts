@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerBySessionToken, getBookingById, updateBookingStatus, getPaymentsByBookingId } from '@/lib/db';
+import { getCustomerBySessionToken, getBookingById, updateBookingStatus, getPaymentsByBookingId, getAllCustomCaravans } from '@/lib/db';
 import { sendCancellationEmail } from '@/lib/email';
 import { caravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -68,7 +68,13 @@ export async function POST(request: NextRequest) {
     await updateBookingStatus(bookingId, 'GEANNULEERD');
 
     // Send cancellation confirmation email (non-blocking)
-    const caravanName = caravans.find(c => c.id === booking.caravan_id)?.name || `Caravan ${booking.caravan_id}`;
+    let caravanName = caravans.find(c => c.id === booking.caravan_id)?.name || '';
+    if (!caravanName) {
+      try {
+        const custom = await getAllCustomCaravans();
+        caravanName = custom.find((c: Record<string, unknown>) => c.id === booking.caravan_id)?.name as string || `Caravan ${booking.caravan_id}`;
+      } catch { caravanName = `Caravan ${booking.caravan_id}`; }
+    }
     const campingName = await (async () => {
       try {
         const dbCampings = await getAllCampings();

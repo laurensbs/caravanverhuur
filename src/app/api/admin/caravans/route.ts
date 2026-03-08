@@ -4,36 +4,88 @@ import {
   createCustomCaravan,
   updateCustomCaravan,
   deleteCustomCaravan,
+  upsertCaravan,
 } from '@/lib/db';
+import { caravans as staticCaravans } from '@/data/caravans';
 
-// GET - List all custom (admin-added) caravans
+// GET - List ALL caravans (static with DB overrides + custom)
 export async function GET() {
   try {
-    const caravans = await getAllCustomCaravans();
-    // Transform DB rows to match the Caravan interface
-    const formatted = caravans.map(c => ({
-      id: c.id,
-      reference: c.reference,
-      name: c.name,
-      type: c.type,
-      maxPersons: c.max_persons,
-      manufacturer: c.manufacturer,
-      year: c.year,
-      description: c.description,
-      photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
-      amenities: typeof c.amenities === 'string' ? JSON.parse(c.amenities) : (c.amenities || []),
-      inventory: typeof c.inventory === 'string' ? JSON.parse(c.inventory) : (c.inventory || []),
-      pricePerDay: Number(c.price_per_day),
-      pricePerWeek: Number(c.price_per_week),
-      deposit: Number(c.deposit),
-      status: c.status,
-      isCustom: true,
-      createdAt: c.created_at,
-    }));
+    const dbCaravans = await getAllCustomCaravans();
+    const dbMap = new Map(dbCaravans.map(c => [c.id, c]));
+
+    // Build unified list: static caravans (with DB overrides) + pure custom caravans
+    const formatted = [];
+
+    // 1. Static caravans — use DB override if exists, otherwise use static data
+    for (const sc of staticCaravans) {
+      const override = dbMap.get(sc.id);
+      if (override) {
+        formatted.push({
+          id: override.id,
+          reference: override.reference,
+          name: override.name,
+          type: override.type,
+          maxPersons: override.max_persons,
+          manufacturer: override.manufacturer,
+          year: override.year,
+          description: override.description,
+          photos: typeof override.photos === 'string' ? JSON.parse(override.photos) : (override.photos || []),
+          videoUrl: override.video_url || null,
+          amenities: typeof override.amenities === 'string' ? JSON.parse(override.amenities) : (override.amenities || []),
+          inventory: typeof override.inventory === 'string' ? JSON.parse(override.inventory) : (override.inventory || []),
+          pricePerDay: Number(override.price_per_day),
+          pricePerWeek: Number(override.price_per_week),
+          deposit: Number(override.deposit),
+          status: override.status,
+          isCustom: false,
+          isStaticOverride: true,
+          createdAt: override.created_at,
+        });
+        dbMap.delete(sc.id); // remove from map so it's not added again
+      } else {
+        formatted.push({
+          ...sc,
+          videoUrl: sc.videoUrl || null,
+          isCustom: false,
+          isStaticOverride: false,
+        });
+      }
+    }
+
+    // 2. Pure custom caravans (not static overrides)
+    for (const [, c] of dbMap) {
+      if (c.is_static_override) continue; // shouldn't happen but safety check
+      formatted.push({
+        id: c.id,
+        reference: c.reference,
+        name: c.name,
+        type: c.type,
+        maxPersons: c.max_persons,
+        manufacturer: c.manufacturer,
+        year: c.year,
+        description: c.description,
+        photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
+        videoUrl: c.video_url || null,
+        amenities: typeof c.amenities === 'string' ? JSON.parse(c.amenities) : (c.amenities || []),
+        inventory: typeof c.inventory === 'string' ? JSON.parse(c.inventory) : (c.inventory || []),
+        pricePerDay: Number(c.price_per_day),
+        pricePerWeek: Number(c.price_per_week),
+        deposit: Number(c.deposit),
+        status: c.status,
+        isCustom: true,
+        isStaticOverride: false,
+        createdAt: c.created_at,
+      });
+    }
+
     return NextResponse.json({ caravans: formatted });
   } catch (error) {
-    console.error('Error fetching custom caravans:', error);
-    return NextResponse.json({ error: 'Fout bij ophalen caravans' }, { status: 500 });
+    console.error('Error fetching caravans:', error);
+    // Fallback to static caravans
+    return NextResponse.json({
+      caravans: staticCaravans.map(c => ({ ...c, isCustom: false, isStaticOverride: false })),
+    });
   }
 }
 
@@ -41,7 +93,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, type, maxPersons, manufacturer, year, description, photos, amenities, inventory, pricePerDay, pricePerWeek, deposit } = body;
+    const { name, type, maxPersons, manufacturer, year, description, photos, videoUrl, amenities, inventory, pricePerDay, pricePerWeek, deposit } = body;
 
     if (!name || !manufacturer || !year) {
       return NextResponse.json({ error: 'Naam, fabrikant en bouwjaar zijn verplicht' }, { status: 400 });
@@ -55,6 +107,7 @@ export async function POST(request: NextRequest) {
       year: parseInt(year),
       description: description || '',
       photos: photos || [],
+      videoUrl: videoUrl || undefined,
       amenities: amenities || [],
       inventory: inventory || [],
       pricePerDay: parseFloat(pricePerDay) || 0,
@@ -69,16 +122,45 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH - Update caravan
+// PATCH - Update any caravan (custom or static override)
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, ...data } = body;
+    const { id, isStaticOverride, ...data } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Caravan-ID is verplicht' }, { status: 400 });
     }
 
+    // If this is a static caravan being edited, use upsert to create/update the override
+    if (isStaticOverride) {
+      const staticCaravan = staticCaravans.find(c => c.id === id);
+      if (!staticCaravan) {
+        return NextResponse.json({ error: 'Statische caravan niet gevonden' }, { status: 404 });
+      }
+
+      await upsertCaravan(id, staticCaravan.reference, {
+        name: data.name ?? staticCaravan.name,
+        type: data.type ?? staticCaravan.type,
+        maxPersons: data.maxPersons ?? staticCaravan.maxPersons,
+        manufacturer: data.manufacturer ?? staticCaravan.manufacturer,
+        year: data.year ?? staticCaravan.year,
+        description: data.description ?? staticCaravan.description,
+        photos: data.photos ?? staticCaravan.photos,
+        videoUrl: data.videoUrl ?? staticCaravan.videoUrl,
+        amenities: data.amenities ?? staticCaravan.amenities,
+        inventory: data.inventory ?? staticCaravan.inventory,
+        pricePerDay: data.pricePerDay ?? staticCaravan.pricePerDay,
+        pricePerWeek: data.pricePerWeek ?? staticCaravan.pricePerWeek,
+        deposit: data.deposit ?? staticCaravan.deposit,
+        status: data.status ?? staticCaravan.status,
+        isStaticOverride: true,
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    // Standard custom caravan update
     const result = await updateCustomCaravan(id, data);
     if (!result) {
       return NextResponse.json({ error: 'Caravan niet gevonden' }, { status: 404 });

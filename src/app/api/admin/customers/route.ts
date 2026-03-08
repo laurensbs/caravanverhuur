@@ -87,16 +87,17 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE - Delete customer (requires admin password)
+// DELETE - Delete customer (admin-only, protected by middleware)
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, adminPassword } = body;
+    const { id } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Klant-ID is verplicht' }, { status: 400 });
     }
 
+    // Note: Admin auth already verified by middleware for /api/admin/* routes
     await deleteCustomer(id);
 
     return NextResponse.json({ success: true });

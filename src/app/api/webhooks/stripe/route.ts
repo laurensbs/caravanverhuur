@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
       case 'checkout.session.expired': {
         // Session expired before payment — no action needed, payment stays OPENSTAAND
-        console.log('Checkout session expired:', event.data.object.id);
+        console.warn('Checkout session expired:', event.data.object.id);
         break;
       }
 

@@ -225,7 +225,7 @@ function MijnAccountContent() {
   // Sync tab with URL
   useEffect(() => {
     const urlTab = searchParams.get('tab') as Tab;
-    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'voorwaarden', 'profiel'].includes(urlTab)) {
+    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'tips', 'voorwaarden', 'profiel'].includes(urlTab)) {
       setTab(urlTab);
     }
   }, [searchParams]);
@@ -326,10 +326,10 @@ function MijnAccountContent() {
         setCancelResult({ refundPercentage: data.refundPercentage, refundMessage: data.refundMessage });
         setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'GEANNULEERD' } : b));
       } else {
-        alert(data.error || 'Er is een fout opgetreden');
+        alert(data.error || t('myAccount.cancelError'));
       }
     } catch {
-      alert('Er is een fout opgetreden');
+      alert(t('myAccount.cancelError'));
     } finally {
       setCancellingBookingId(null);
       setCancelConfirmId(null);
@@ -370,7 +370,7 @@ function MijnAccountContent() {
     BORG: t('myAccount.payTypeBorg'),
   };
 
-  const getCaravan = (id: string) => staticCaravans.find(c => c.id === id) || customCaravansData.find(c => c.id === id);
+  const getCaravan = (id: string) => customCaravansData.find(c => c.id === id) || staticCaravans.find(c => c.id === id);
   const getCamping = (id: string) => campings.find(c => c.id === id);
   const activeBookings = bookings.filter(b => !['GEANNULEERD', 'AFGEROND'].includes(b.status));
   const openPayments = payments.filter(p => p.status === 'OPENSTAAND');
@@ -1726,13 +1726,13 @@ function MijnAccountContent() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <CheckCircle size={24} className="text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Boeking geannuleerd</h3>
+              <h3 className="text-lg font-bold text-foreground mb-2">{t('myAccount.bookingCancelledTitle')}</h3>
               <p className="text-sm text-muted mb-4">{cancelResult.refundMessage}</p>
               <button
                 onClick={() => setCancelResult(null)}
                 className="w-full py-2.5 text-sm font-semibold text-white bg-primary rounded-xl transition-colors cursor-pointer"
               >
-                Sluiten
+                {t('common.close')}
               </button>
             </motion.div>
           </motion.div>

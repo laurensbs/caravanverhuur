@@ -109,6 +109,7 @@ export default function CaravansPage() {
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
+              aria-pressed={typeFilter === type}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 typeFilter === type ? 'bg-primary text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}
@@ -127,6 +128,7 @@ export default function CaravansPage() {
             <button
               key={num}
               onClick={() => setPersonFilter(num)}
+              aria-pressed={personFilter === num}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 personFilter === num ? 'bg-primary text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}

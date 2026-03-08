@@ -165,7 +165,7 @@ export async function setupDatabase() {
     )
   `;
 
-  // Custom caravans table (admin-added caravans)
+  // Custom caravans table (admin-added caravans + overrides for static caravans)
   await sql`
     CREATE TABLE IF NOT EXISTS custom_caravans (
       id TEXT PRIMARY KEY,
@@ -177,16 +177,24 @@ export async function setupDatabase() {
       year INTEGER NOT NULL,
       description TEXT NOT NULL,
       photos JSONB DEFAULT '[]',
+      video_url TEXT,
       amenities JSONB DEFAULT '[]',
       inventory JSONB DEFAULT '[]',
       price_per_day NUMERIC(10,2) NOT NULL,
       price_per_week NUMERIC(10,2) NOT NULL,
       deposit NUMERIC(10,2) NOT NULL,
       status TEXT NOT NULL DEFAULT 'BESCHIKBAAR',
+      is_static_override BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Add video_url and is_static_override columns if they don't exist
+  try {
+    await sql`ALTER TABLE custom_caravans ADD COLUMN IF NOT EXISTS video_url TEXT`;
+    await sql`ALTER TABLE custom_caravans ADD COLUMN IF NOT EXISTS is_static_override BOOLEAN DEFAULT FALSE`;
+  } catch { /* columns already exist */ }
 
   // Newsletters table
   await sql`
@@ -334,12 +342,19 @@ export function generateId(prefix: string): string {
 
 export async function generateBookingReference(): Promise<string> {
   const year = new Date().getFullYear();
+  const prefix = `BK-${year}-`;
   const result = await sql`
-    SELECT COUNT(*) as count FROM bookings 
-    WHERE reference LIKE ${'BK-' + year + '-%'}
+    SELECT reference FROM bookings 
+    WHERE reference LIKE ${prefix + '%'}
+    ORDER BY reference DESC LIMIT 1
   `;
-  const count = parseInt(result.rows[0].count) + 1;
-  return `BK-${year}-${count.toString().padStart(3, '0')}`;
+  let nextNum = 1;
+  if (result.rows.length > 0) {
+    const lastRef = result.rows[0].reference as string;
+    const lastNum = parseInt(lastRef.replace(prefix, ''), 10);
+    if (!isNaN(lastNum)) nextNum = lastNum + 1;
+  }
+  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
 }
 
 // ===== BOOKING QUERIES =====
@@ -898,6 +913,7 @@ export async function createCustomCaravan(data: {
   year: number;
   description: string;
   photos: string[];
+  videoUrl?: string;
   amenities: string[];
   inventory: string[];
   pricePerDay: number;
@@ -905,16 +921,75 @@ export async function createCustomCaravan(data: {
   deposit: number;
 }) {
   const id = generateId('CC');
-  // Generate reference like CV-007, CV-008, etc.
-  const countResult = await sql`SELECT COUNT(*) as count FROM custom_caravans`;
-  const refNum = parseInt(countResult.rows[0].count) + 7; // Start after existing 6 static caravans
-  const reference = `CV-${refNum.toString().padStart(3, '0')}`;
+  // Generate reference: find max existing CV-xxx number
+  const maxRefResult = await sql`SELECT reference FROM custom_caravans WHERE reference LIKE 'CV-%' ORDER BY reference DESC LIMIT 1`;
+  let nextNum = 5; // Start after 4 static caravans
+  if (maxRefResult.rows.length > 0) {
+    const lastRef = maxRefResult.rows[0].reference as string;
+    const lastNum = parseInt(lastRef.replace('CV-', ''));
+    nextNum = lastNum + 1;
+  }
+  const reference = `CV-${nextNum.toString().padStart(3, '0')}`;
 
   await sql`
-    INSERT INTO custom_caravans (id, reference, name, type, max_persons, manufacturer, year, description, photos, amenities, inventory, price_per_day, price_per_week, deposit)
-    VALUES (${id}, ${reference}, ${data.name}, ${data.type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${JSON.stringify(data.photos)}, ${JSON.stringify(data.amenities)}, ${JSON.stringify(data.inventory)}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit})
+    INSERT INTO custom_caravans (id, reference, name, type, max_persons, manufacturer, year, description, photos, video_url, amenities, inventory, price_per_day, price_per_week, deposit)
+    VALUES (${id}, ${reference}, ${data.name}, ${data.type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${JSON.stringify(data.photos)}, ${data.videoUrl || null}, ${JSON.stringify(data.amenities)}, ${JSON.stringify(data.inventory)}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit})
   `;
   return { id, reference };
+}
+
+// Upsert a caravan — used when editing a static caravan (creates override in DB)
+export async function upsertCaravan(id: string, reference: string, data: {
+  name: string;
+  type: string;
+  maxPersons: number;
+  manufacturer: string;
+  year: number;
+  description: string;
+  photos: string[];
+  videoUrl?: string;
+  amenities: string[];
+  inventory: string[];
+  pricePerDay: number;
+  pricePerWeek: number;
+  deposit: number;
+  status?: string;
+  isStaticOverride?: boolean;
+}) {
+  const existing = await getCustomCaravanById(id);
+  const photosJson = JSON.stringify(data.photos);
+  const amenitiesJson = JSON.stringify(data.amenities);
+  const inventoryJson = JSON.stringify(data.inventory);
+  const status = data.status || 'BESCHIKBAAR';
+  const isStaticOverride = data.isStaticOverride ?? false;
+
+  if (existing) {
+    await sql`
+      UPDATE custom_caravans SET
+        name = ${data.name},
+        type = ${data.type},
+        max_persons = ${data.maxPersons},
+        manufacturer = ${data.manufacturer},
+        year = ${data.year},
+        description = ${data.description},
+        photos = ${photosJson},
+        video_url = ${data.videoUrl || null},
+        amenities = ${amenitiesJson},
+        inventory = ${inventoryJson},
+        price_per_day = ${data.pricePerDay},
+        price_per_week = ${data.pricePerWeek},
+        deposit = ${data.deposit},
+        status = ${status},
+        updated_at = NOW()
+      WHERE id = ${id}
+    `;
+  } else {
+    await sql`
+      INSERT INTO custom_caravans (id, reference, name, type, max_persons, manufacturer, year, description, photos, video_url, amenities, inventory, price_per_day, price_per_week, deposit, status, is_static_override)
+      VALUES (${id}, ${reference}, ${data.name}, ${data.type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${photosJson}, ${data.videoUrl || null}, ${amenitiesJson}, ${inventoryJson}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit}, ${status}, ${isStaticOverride})
+    `;
+  }
+  return { success: true };
 }
 
 export async function updateCustomCaravan(id: string, data: {
@@ -925,6 +1000,7 @@ export async function updateCustomCaravan(id: string, data: {
   year?: number;
   description?: string;
   photos?: string[];
+  videoUrl?: string;
   amenities?: string[];
   inventory?: string[];
   pricePerDay?: number;
@@ -943,6 +1019,7 @@ export async function updateCustomCaravan(id: string, data: {
   const year = data.year ?? existing.year;
   const description = data.description ?? existing.description;
   const photos = data.photos ? JSON.stringify(data.photos) : existing.photos;
+  const videoUrl = data.videoUrl !== undefined ? data.videoUrl : (existing.video_url || null);
   const amenities = data.amenities ? JSON.stringify(data.amenities) : existing.amenities;
   const inventory = data.inventory ? JSON.stringify(data.inventory) : existing.inventory;
   const pricePerDay = data.pricePerDay ?? existing.price_per_day;
@@ -959,6 +1036,7 @@ export async function updateCustomCaravan(id: string, data: {
       year = ${year},
       description = ${description},
       photos = ${photos},
+      video_url = ${videoUrl},
       amenities = ${amenities},
       inventory = ${inventory},
       price_per_day = ${pricePerDay},
@@ -1137,7 +1215,7 @@ export async function purgeAllTestData() {
 // ===== DELETE CONFIRMATION =====
 
 export async function createDeleteConfirmation(customerId: string) {
-  const id = generateId('DC');
+  const id = generateId('DEL');
   const token = generateToken();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
   await sql`
@@ -1177,7 +1255,7 @@ export async function createNewsletterWithPhotos(data: {
   eventLocation?: string;
   photos?: string[];
 }) {
-  const id = generateId('NL');
+  const id = generateId('NWS');
   const photos = JSON.stringify(data.photos || []);
   await sql`
     INSERT INTO newsletters (id, title, content, category, event_date, event_location, photos)
@@ -1197,7 +1275,7 @@ export async function createDiscountCode(data: {
   validFrom?: string;
   validUntil?: string;
 }) {
-  const id = generateId('DC');
+  const id = generateId('DSC');
   await sql`
     INSERT INTO discount_codes (id, code, type, value, max_uses, min_amount, valid_from, valid_until)
     VALUES (${id}, ${data.code.toUpperCase()}, ${data.type}, ${data.value}, ${data.maxUses || null}, ${data.minAmount || 0}, ${data.validFrom || null}, ${data.validUntil || null})

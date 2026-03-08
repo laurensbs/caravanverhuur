@@ -3,7 +3,13 @@ import { createContact, getAllContacts, updateContactStatus, replyToContact, get
 import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
 import { contactLimiter, getClientIp } from '@/lib/rate-limit';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Require admin auth to list contacts
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const contacts = await getAllContacts();
     return NextResponse.json({ contacts });
@@ -47,6 +53,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Require admin auth for contact updates
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, status, reply } = body;

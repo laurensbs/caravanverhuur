@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { setNewsletterSubscription, getNewsletterSubscriptionStatus } from '@/lib/db';
 import crypto from 'crypto';
 
-const SECRET = process.env.NEWSLETTER_SECRET || 'caravanverhuur-newsletter-2026';
+const SECRET = process.env.NEWSLETTER_SECRET;
+if (!SECRET) console.warn('[newsletter] NEWSLETTER_SECRET env var not set');
 
 export function generateUnsubscribeToken(email: string): string {
-  return crypto.createHmac('sha256', SECRET).update(email.toLowerCase()).digest('hex').slice(0, 32);
+  return crypto.createHmac('sha256', SECRET || '').update(email.toLowerCase()).digest('hex').slice(0, 32);
 }
 
 function verifyToken(email: string, token: string): boolean {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
         <body><div class="card">
           <div class="icon">✅</div>
           <h1>Opnieuw ingeschreven!</h1>
-          <p>Je ontvangt weer onze nieuwsbrieven op <strong>${email}</strong>.</p>
+          <p>Je ontvangt weer onze nieuwsbrieven op <strong>${email.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>.</p>
           <p style="margin-top:20px"><a href="https://caravanverhuurspanje.com">Terug naar de website →</a></p>
         </div></body></html>
       `, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
       <body><div class="card">
         <div class="icon">📭</div>
         <h1>Uitgeschreven</h1>
-        <p>Je ontvangt geen nieuwsbrieven meer op <strong>${email}</strong>.</p>
+        <p>Je ontvangt geen nieuwsbrieven meer op <strong>${email.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong>.</p>
         <p>Per ongeluk gedaan? <a href="${resubUrl}">Schrijf je opnieuw in →</a></p>
         <p style="margin-top:20px"><a href="https://caravanverhuurspanje.com" class="btn">Terug naar de website</a></p>
       </div></body></html>

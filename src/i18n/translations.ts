@@ -929,6 +929,8 @@ const nl: Dict = {
     termsFullTitle: 'Volledige voorwaarden',
     termsFullDesc: 'Lees alle voorwaarden op onze website.',
     termsReadFull: 'Bekijken',
+    bookingCancelledTitle: 'Boeking geannuleerd',
+    cancelError: 'Er is een fout opgetreden',
   },
   borgPage: {
     title: 'Borgchecklist',
@@ -1903,6 +1905,8 @@ const en: Dict = {
     termsFullTitle: 'Full terms and conditions',
     termsFullDesc: 'Read all terms on our website.',
     termsReadFull: 'Read',
+    bookingCancelledTitle: 'Booking cancelled',
+    cancelError: 'An error occurred',
   },
   borgPage: {
     title: 'Deposit Checklist',
@@ -2877,6 +2881,8 @@ const es: Dict = {
     termsFullTitle: 'Condiciones completas',
     termsFullDesc: 'Lee todas las condiciones en nuestro sitio web.',
     termsReadFull: 'Leer',
+    bookingCancelledTitle: 'Reserva cancelada',
+    cancelError: 'Se produjo un error',
   },
   borgPage: {
     title: 'Checklist de fianza',

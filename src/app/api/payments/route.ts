@@ -7,9 +7,16 @@ export async function GET(request: NextRequest) {
     const bookingId = request.nextUrl.searchParams.get('bookingId');
 
     if (bookingId) {
+      // Allow per-booking lookup (used by customer account page)
       const payments = await getPaymentsByBookingId(bookingId);
       return NextResponse.json({ payments });
     }
+
+    // Listing ALL payments requires admin auth
+    const cookie = request.cookies.get('admin_session')?.value;
+    const authHeader = request.headers.get('authorization');
+    const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const payments = await getAllPayments();
     return NextResponse.json({ payments });
@@ -20,6 +27,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Require admin auth to create payments
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { bookingId, type, amount, status, method } = body;
@@ -37,6 +50,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Require admin auth to update payments
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, status, paidAt } = body;

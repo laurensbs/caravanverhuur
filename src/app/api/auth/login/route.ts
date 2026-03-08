@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerByEmail, createCustomerSession, updateCustomerLastLogin, setupDatabase } from '@/lib/db';
+import { getCustomerByEmail, createCustomerSession, updateCustomerLastLogin, setupDatabase, updateCustomerPassword } from '@/lib/db';
 import { verifyPassword, hashPassword } from '@/lib/password';
 import { loginLimiter, getClientIp } from '@/lib/rate-limit';
-import { sql } from '@vercel/postgres';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Transparently upgrade legacy SHA-256 hash to bcrypt
     if (needsRehash) {
       const newHash = await hashPassword(password);
-      await sql`UPDATE customers SET password_hash = ${newHash} WHERE id = ${customer.id}`;
+      await updateCustomerPassword(customer.id, newHash);
     }
 
     await updateCustomerLastLogin(customer.id);

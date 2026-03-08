@@ -23,20 +23,23 @@ const amenityIcons: Record<string, React.ReactNode> = {
 export default function CaravanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  const [loadingCustom, setLoadingCustom] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const touchStartX = useRef(0);
   const { t } = useLanguage();
 
   useEffect(() => {
-    fetch('/api/admin/caravans')
+    fetch('/api/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoadingCustom(false));
   }, []);
 
-  const caravan = getStaticCaravanById(id) || customCaravans.find(c => c.id === id) || null;
-  const allCaravans = [...staticCaravans, ...customCaravans];
+  // Prefer API data (which includes DB overrides) over static
+  const caravan = customCaravans.find(c => c.id === id) || (!loadingCustom ? getStaticCaravanById(id) : null);
+  const allCaravans = customCaravans.length > 0 ? customCaravans : staticCaravans;
 
   const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: TouchEvent) => {
@@ -49,6 +52,13 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
   };
 
   if (!caravan) {
+    if (loadingCustom) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      );
+    }
     notFound();
   }
 
@@ -74,7 +84,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
             <div className="flex-1 relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <Image
                 src={caravan.photos[activePhoto]}
-                alt={caravan.name}
+                alt={`${caravan.name} foto ${activePhoto + 1}`}
                 fill
                 className="object-contain"
                 unoptimized
@@ -164,7 +174,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
                 <div className="absolute top-3 left-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
                     caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
-                  }`}>{caravan.type}</span> </div> </button> {caravan.photos.slice(1).map((photo, i) => ( <button key={i} onClick={() => { setActivePhoto(i + 1); setLightboxOpen(true); }} className="relative rounded-xl overflow-hidden group" > <Image src={photo} alt="" fill className="object-cover transition-transform duration-500" unoptimized /> </button> ))} </div> </div> </div> {/* Content */} <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 lg:pb-8"> <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"> {/* Main */} <div className="lg:col-span-2 space-y-3 sm:space-y-6"> {/* Title & meta */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <div className="flex items-start justify-between mb-1"> <span className="text-[11px] font-mono text-muted">{caravan.reference}</span> <div className="flex items-center gap-1 text-primary"> <Star size={14} className="fill-primary" /> <span className="text-xs font-semibold">{caravan.type}</span> </div> </div> <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2">{caravan.name}</h1> <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted mb-3"> <span className="flex items-center gap-1 bg-surface px-2 py-1 rounded-full"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span> <span className="bg-surface px-2 py-1 rounded-full">{caravan.manufacturer}</span> <span className="bg-surface px-2 py-1 rounded-full">{t('caravans.yearBuilt')} {caravan.year}</span> </div> <p className="text-foreground-light text-sm leading-relaxed">{caravan.description}</p> </div> {/* Video */} {caravan.videoUrl && (() => { const match = caravan.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]+)/); const videoId = match?.[1]; return videoId ? ( <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">Video</h2> <div className="relative w-full aspect-video rounded-xl overflow-hidden"> <iframe src={`https://www.youtube.com/embed/${videoId}`} title={caravan.name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" /> </div> </div> ) : null; })()} {/* Amenities */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">{t('caravans.amenities')}</h2> <div className="grid grid-cols-2 gap-2"> {caravan.amenities.map(a => ( <div key={a} className="flex items-center gap-2 py-2 px-2.5 bg-surface rounded-xl"> <span className="text-primary">{amenityIcons[a] || <CheckCircle size={14} />}</span> <span className="text-xs sm:text-sm text-foreground-light">{a}</span> </div> ))} </div> </div> {/* Inventory */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">{t('caravans.inventory')}</h2> <p className="text-[11px] text-muted mb-3">{t('caravans.inventoryIncluded')}</p> <div className="grid grid-cols-2 gap-1.5"> {caravan.inventory.map(item => ( <div key={item} className="flex items-center gap-2 text-xs sm:text-sm text-foreground-light py-0.5"> <CheckCircle size={13} className="text-primary shrink-0" /> {item} </div> ))} </div> </div> {/* Trust signals */} <div className="grid grid-cols-3 gap-2 sm:gap-3"> {[ { icon: <Shield size={18} className="text-primary" />, label: t('caravans.trustSafe') }, { icon: <Calendar size={18} className="text-primary" />, label: t('caravans.trustFlex') }, { icon: <MapPin size={18} className="text-primary" />, label: t('caravans.trustCampings') }, ].map(t2 => ( <div key={t2.label} className="bg-white rounded-xl p-2.5 sm:p-3 text-center"> <div className="flex justify-center mb-1">{t2.icon}</div> <span className="text-[10px] sm:text-xs font-medium text-foreground-light leading-tight">{t2.label}</span> </div> ))} </div> </div> {/* Sidebar - pricing & CTA */} <div className="space-y-4"> <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32"> <h3 className="font-bold text-foreground mb-4">{t('caravans.prices')}</h3> <div className="space-y-3 mb-5"> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerDay')}</span> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerDay}</span> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span> <div className="text-right"> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span> <div className="text-xs text-muted"> {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')} </div> </div> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-surface rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.depositReturn')}</span> <span className="text-lg font-semibold text-foreground-light">&euro;{caravan.deposit}</span> </div> </div> <Link href={`/boeken?caravan=${caravan.id}`}
+                  }`}>{caravan.type}</span> </div> </button> {caravan.photos.slice(1).map((photo, i) => ( <button key={i} onClick={() => { setActivePhoto(i + 1); setLightboxOpen(true); }} className="relative rounded-xl overflow-hidden group" > <Image src={photo} alt={`${caravan.name} foto ${i + 2}`} fill className="object-cover transition-transform duration-500" unoptimized /> </button> ))} </div> </div> </div> {/* Content */} <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 lg:pb-8"> <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"> {/* Main */} <div className="lg:col-span-2 space-y-3 sm:space-y-6"> {/* Title & meta */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <div className="flex items-start justify-between mb-1"> <span className="text-[11px] font-mono text-muted">{caravan.reference}</span> <div className="flex items-center gap-1 text-primary"> <Star size={14} className="fill-primary" /> <span className="text-xs font-semibold">{caravan.type}</span> </div> </div> <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2">{caravan.name}</h1> <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted mb-3"> <span className="flex items-center gap-1 bg-surface px-2 py-1 rounded-full"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span> <span className="bg-surface px-2 py-1 rounded-full">{caravan.manufacturer}</span> <span className="bg-surface px-2 py-1 rounded-full">{t('caravans.yearBuilt')} {caravan.year}</span> </div> <p className="text-foreground-light text-sm leading-relaxed">{caravan.description}</p> </div> {/* Video */} {caravan.videoUrl && (() => { const match = caravan.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]+)/); const videoId = match?.[1]; return videoId ? ( <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">Video</h2> <div className="relative w-full aspect-video rounded-xl overflow-hidden"> <iframe src={`https://www.youtube.com/embed/${videoId}`} title={caravan.name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" /> </div> </div> ) : null; })()} {/* Amenities */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">{t('caravans.amenities')}</h2> <div className="grid grid-cols-2 gap-2"> {caravan.amenities.map(a => ( <div key={a} className="flex items-center gap-2 py-2 px-2.5 bg-surface rounded-xl"> <span className="text-primary">{amenityIcons[a] || <CheckCircle size={14} />}</span> <span className="text-xs sm:text-sm text-foreground-light">{a}</span> </div> ))} </div> </div> {/* Inventory */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">{t('caravans.inventory')}</h2> <p className="text-[11px] text-muted mb-3">{t('caravans.inventoryIncluded')}</p> <div className="grid grid-cols-2 gap-1.5"> {caravan.inventory.map(item => ( <div key={item} className="flex items-center gap-2 text-xs sm:text-sm text-foreground-light py-0.5"> <CheckCircle size={13} className="text-primary shrink-0" /> {item} </div> ))} </div> </div> {/* Trust signals */} <div className="grid grid-cols-3 gap-2 sm:gap-3"> {[ { icon: <Shield size={18} className="text-primary" />, label: t('caravans.trustSafe') }, { icon: <Calendar size={18} className="text-primary" />, label: t('caravans.trustFlex') }, { icon: <MapPin size={18} className="text-primary" />, label: t('caravans.trustCampings') }, ].map(t2 => ( <div key={t2.label} className="bg-white rounded-xl p-2.5 sm:p-3 text-center"> <div className="flex justify-center mb-1">{t2.icon}</div> <span className="text-[10px] sm:text-xs font-medium text-foreground-light leading-tight">{t2.label}</span> </div> ))} </div> </div> {/* Sidebar - pricing & CTA */} <div className="space-y-4"> <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32"> <h3 className="font-bold text-foreground mb-4">{t('caravans.prices')}</h3> <div className="space-y-3 mb-5"> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerDay')}</span> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerDay}</span> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span> <div className="text-right"> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span> <div className="text-xs text-muted"> {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')} </div> </div> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-surface rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.depositReturn')}</span> <span className="text-lg font-semibold text-foreground-light">&euro;{caravan.deposit}</span> </div> </div> <Link href={`/boeken?caravan=${caravan.id}`}
                   className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors mb-2"
                 >
                   {t('caravans.bookThisCaravan')}
@@ -192,8 +202,8 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
             <h2 className="text-xl font-bold text-foreground mb-4">{t('caravans.guestReviews')}</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                { name: t('caravans.review1Name'), text: t('caravans.review1Text'), rating: 5, date: 'Okt 2025' },
-                { name: t('caravans.review2Name'), text: t('caravans.review2Text'), rating: 5, date: 'Sep 2025' },
+                { name: t('caravans.review1Name'), text: t('caravans.review1Text'), rating: 5, date: t('caravans.review1Date') },
+                { name: t('caravans.review2Name'), text: t('caravans.review2Text'), rating: 5, date: t('caravans.review2Date') },
               ].map((review, ri) => (
                 <div key={ri} className="bg-white rounded-2xl p-5 relative">
                   <Quote size={28} className="absolute top-4 right-4 text-primary/10" />

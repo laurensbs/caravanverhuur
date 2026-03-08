@@ -5,7 +5,13 @@ import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Only allow admin-authenticated requests to list all bookings
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const bookings = await getAllBookings();
     return NextResponse.json({ bookings });
@@ -102,6 +108,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Require admin auth for status/notes changes
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, status, adminNotes } = body;
@@ -125,15 +137,20 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  // Require admin auth
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
-    const { id, password } = body;
+    const { id } = body;
 
-    if (!id || !password) {
-      return NextResponse.json({ error: 'ID en wachtwoord zijn verplicht' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
     }
 
-    // Auth verified via middleware (admin session cookie)
     await deleteBookingById(id);
     return NextResponse.json({ success: true });
   } catch (error) {
