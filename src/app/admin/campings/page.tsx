@@ -161,6 +161,18 @@ export default function AdminCampingsPage() {
 
   useEffect(() => { fetchCampings(); }, []);
 
+  // Close modals on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (deleteConfirm) setDeleteConfirm(null);
+        else if (showForm) { setShowForm(false); }
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [deleteConfirm, showForm]);
+
   const filtered = useMemo(() => {
     if (!search.trim()) return campings;
     const q = search.toLowerCase();

@@ -424,6 +424,17 @@ export default function BookingenPage() {
   const [campingDropdownOpen, setCampingDropdownOpen] = useState(false);
   const campingDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close create modal on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showCreate) setShowCreate(false);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [showCreate]);
+
   const fetchBookings = useCallback(() => {
     fetch('/api/bookings')
       .then(res => res.json())

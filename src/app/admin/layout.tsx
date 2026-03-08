@@ -634,6 +634,19 @@ function AdminLayoutInner({
     setShowOnboarding(true);
   };
 
+  // Close modals/sidebar on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showOnboarding) finishOnboarding();
+        else if (showHelp) setShowHelp(false);
+        else if (sidebarOpen) setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [showOnboarding, showHelp, sidebarOpen]);
+
   return (
     <div className="min-h-screen bg-surface-alt flex">
       {/* Mobile overlay */}

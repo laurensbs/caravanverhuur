@@ -140,6 +140,14 @@ export default function AdminNieuwsbrieven() {
     fetchNewsletters();
   }, [fetchNewsletters]);
 
+  // Close modal on Escape
+  useEffect(() => {
+    if (!modal) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') { setModal(null); } };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [modal]);
+
   const filtered = newsletters.filter(n => {
     const q = search.toLowerCase();
     const matchSearch = !q || n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q);

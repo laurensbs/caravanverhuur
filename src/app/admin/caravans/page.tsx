@@ -149,6 +149,14 @@ function CaravanFormModal({ isOpen, onClose, onSave, initialData, isEdit, saving
 
   useEffect(() => { if (isOpen) { setForm(initialData); setError(""); setSuccess(""); } }, [isOpen, initialData]);
 
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const toggleAmenity = (item: string) => {
@@ -473,6 +481,20 @@ export default function CaravansAdminPage() {
   const [deleting, setDeleting] = useState(false);
   const [resetCaravan, setResetCaravan] = useState<AdminCaravan | null>(null);
   const [resetting, setResetting] = useState(false);
+
+  // Close modals on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (deleteCaravan) setDeleteCaravan(null);
+        else if (resetCaravan) setResetCaravan(null);
+        else if (editingCaravan) setEditingCaravan(null);
+        else if (showNewModal) setShowNewModal(false);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [deleteCaravan, resetCaravan, editingCaravan, showNewModal]);
 
   const fetchCaravans = useCallback(async () => {
     try {

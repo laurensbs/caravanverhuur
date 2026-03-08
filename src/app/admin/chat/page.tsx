@@ -217,6 +217,18 @@ export default function AdminChatPage() {
     }
   };
 
+  // Close modals on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (deleteConfirm) setDeleteConfirm(null);
+        else if (cleanupConfirm) setCleanupConfirm(false);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [deleteConfirm, cleanupConfirm]);
+
   const handleDelete = async (convId: string) => {
     try {
       await fetch(`/api/admin/chat?id=${convId}`, { method: 'DELETE' });

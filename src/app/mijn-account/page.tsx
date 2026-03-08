@@ -184,6 +184,18 @@ function MijnAccountContent() {
   const [newsletterUnsubscribed, setNewsletterUnsubscribed] = useState(false);
   const [togglingNewsletter, setTogglingNewsletter] = useState(false);
 
+  // Close modals on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (cancelConfirmId) setCancelConfirmId(null);
+        if (cancelResult) setCancelResult(null);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [cancelConfirmId, cancelResult]);
+
   // Custom caravans (must be before any early returns to satisfy Rules of Hooks)
   const [customCaravansData, setCustomCaravansData] = useState<Caravan[]>([]);
   const [campings, setCampings] = useState<Camping[]>(staticCampings);

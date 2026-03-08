@@ -747,6 +747,14 @@ export default function ChatBot() {
 
   useEffect(() => { scrollToBottom(); }, [messages, isTyping, scrollToBottom]);
 
+  // Close chat on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [isOpen]);
+
   // Playful bubble after 5s, auto-dismiss after 8s
   useEffect(() => {
     if (bubbleDismissed || isOpen) return;

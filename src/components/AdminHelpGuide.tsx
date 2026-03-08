@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -891,6 +891,14 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
         noPageHelp: 'No specific help for this page. Check the complete guide for all information.',
         goToGuide: 'Open complete guide →',
       };
+
+  // Close on Escape
+  useEffect(() => {
+    if (!show) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [show, handleClose]);
 
   return (
     <AnimatePresence>

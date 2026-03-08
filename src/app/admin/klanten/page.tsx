@@ -80,6 +80,18 @@ export default function AdminKlanten() {
 
   // Customer detail view with communication
   const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
+
+  // Close modals on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (modal) setModal(null);
+        else if (detailCustomer) setDetailCustomer(null);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [modal, detailCustomer]);
   const [customerChats, setCustomerChats] = useState<ChatHistory[]>([]);
   const [loadingChats, setLoadingChats] = useState(false);
 

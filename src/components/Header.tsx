@@ -87,6 +87,20 @@ export default function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
+  // Close menus/dropdowns on Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (menuOpen) setMenuOpen(false);
+        if (megaMenu) setMegaMenu(null);
+        if (langDropdown) setLangDropdown(false);
+        if (accountDropdown) setAccountDropdown(false);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [menuOpen, megaMenu, langDropdown, accountDropdown]);
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setLangDropdown(false);

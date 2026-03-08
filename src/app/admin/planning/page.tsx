@@ -420,6 +420,14 @@ export default function PlanningPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Close task detail on Escape
+  useEffect(() => {
+    if (!selectedTask) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedTask(null); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [selectedTask]);
+
   const fetchTasks = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/tasks');

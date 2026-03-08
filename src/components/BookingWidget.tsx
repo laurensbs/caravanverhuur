@@ -23,6 +23,14 @@ function MobileSheet({ open, onClose, title, subtitle, children }: {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [open, onClose]);
+
   if (!mounted) return null;
 
   return createPortal(

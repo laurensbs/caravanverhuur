@@ -29,6 +29,14 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
   const touchStartX = useRef(0);
   const { t } = useLanguage();
 
+  // Close lightbox on Escape
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxOpen(false); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [lightboxOpen]);
+
   useEffect(() => {
     fetch('/api/caravans')
       .then(res => res.json())
