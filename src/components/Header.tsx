@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
@@ -133,7 +133,7 @@ export default function Header() {
             <div className="relative" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
                 {t('nav.destinations')}
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-8 h-8 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Language"> <Globe size={17} /> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg py-1 min-w-[140px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors ${locale === l ?'text-primary font-semibold' : 'text-foreground-light'}`}>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-10 h-10 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Language"> <Globe size={18} /> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg py-1 min-w-[140px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors ${locale === l ?'text-primary font-semibold' : 'text-foreground-light'}`}>
                         <span className="text-base">{localeFlags[l]}</span>
                         {l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}
                       </button>
@@ -148,13 +148,13 @@ export default function Header() {
               {loggedInUser ? (
                 <button
                   onClick={() => setAccountDropdown(!accountDropdown)}
-                  className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs transition-colors"
+                  className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-sm transition-colors"
                 >
                   {loggedInUser.name.charAt(0).toUpperCase()}
                 </button>
               ) : (
-                <Link href="/account" className="w-8 h-8 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Account">
-                  <User size={17} />
+                <Link href="/account" className="w-10 h-10 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Account">
+                  <User size={18} />
                 </Link>
               )}
               <AnimatePresence>
@@ -212,6 +212,11 @@ export default function Header() {
                 )}
               </AnimatePresence>
             </div>
+
+            <a href="tel:+34650036755" className="hidden xl:flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors ml-1">
+              <Phone size={14} className="text-primary" />
+              +34 650 036 755
+            </a>
 
             <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary text-white text-[15px] font-semibold rounded-full transition-all flex items-center gap-2 shadow-sm">
               {t('nav.bookNow')} <ArrowRight size={16} />
@@ -353,8 +358,8 @@ export default function Header() {
               <Link href="/" onClick={() => setMenuOpen(false)}>
                 <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-36 h-auto" unoptimized />
               </Link>
-              <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center">
-                <X size={16} className="text-muted" />
+              <button onClick={() => setMenuOpen(false)} className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center">
+                <X size={18} className="text-muted" />
               </button>
             </div>
 

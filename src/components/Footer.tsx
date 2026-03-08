@@ -97,7 +97,7 @@ export default function Footer() {
             unoptimized
           />
           <GoogleStars size={13} />
-          <p className="text-muted text-xs leading-relaxed max-w-xs mt-2">
+          <p className="text-muted text-sm leading-relaxed max-w-xs mt-2">
             {t('footer.tagline')}
           </p>
         </div>
@@ -106,7 +106,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-4 lg:hidden">
           {/* Quick links */}
           <div>
-            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
+            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
             <ul className="space-y-1.5">
               {[
                 { href: '/caravans', label: t('footer.ourCaravans') },
@@ -117,7 +117,7 @@ export default function Footer() {
                 { href: '/contact', label: t('nav.contact') },
               ].map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-muted text-xs">{link.label}</Link>
+                  <Link href={link.href} className="text-muted text-sm">{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -125,7 +125,7 @@ export default function Footer() {
 
           {/* Legal + Contact combined */}
           <div>
-            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
+            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
             <ul className="space-y-1.5 mb-4">
               {[
                 { href: '/voorwaarden', label: t('footer.terms') },
@@ -133,26 +133,26 @@ export default function Footer() {
                 { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
               ].map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-muted text-xs">{link.label}</Link>
+                  <Link href={link.href} className="text-muted text-sm">{link.label}</Link>
                 </li>
               ))}
             </ul>
-            <h3 className="font-semibold text-xs mb-2 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
+            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
             <ul className="space-y-1.5">
               <li>
-                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted text-xs flex items-center gap-1.5">
-                  <Mail size={12} className="text-primary shrink-0" />
+                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted text-sm flex items-center gap-1.5">
+                  <Mail size={13} className="text-primary shrink-0" />
                   <span className="truncate">info@caravanverhuur...</span>
                 </a>
               </li>
               <li>
-                <a href="tel:+34650036755" className="text-muted text-xs flex items-center gap-1.5">
-                  <Phone size={12} className="text-primary shrink-0" />
+                <a href="tel:+34650036755" className="text-muted text-sm flex items-center gap-1.5">
+                  <Phone size={13} className="text-primary shrink-0" />
                   +34 650 036 755
                 </a>
               </li>
-              <li className="text-muted text-xs flex items-center gap-1.5">
-                <MapPin size={12} className="text-primary shrink-0" />
+              <li className="text-muted text-sm flex items-center gap-1.5">
+                <MapPin size={13} className="text-primary shrink-0" />
                 {t('footer.location')}
               </li>
             </ul>

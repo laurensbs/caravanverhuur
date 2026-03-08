@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { MapPin, ArrowRight, Sun, Droplets, Lightbulb, ChevronRight, Tent, Star, Heart, Umbrella, UtensilsCrossed, Waves, Award, Sparkles, Camera, ThermometerSun, Users } from 'lucide-react';
+import { MapPin, ArrowRight, Sun, Droplets, Lightbulb, ChevronRight, Tent, Star, Heart, Umbrella, UtensilsCrossed, Waves, Award, Sparkles, Camera, ThermometerSun, Users, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { type Destination } from '@/data/destinations';
+import { campings as allCampings } from '@/data/campings';
 import { locationActivities, getCategoryLabel } from '@/data/activities';
 
 const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
@@ -316,15 +317,38 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                 <Tent size={18} className="text-primary" />
                 {t('destinations.nearCampings')}
               </h2>
-              <div className="space-y-2">
-                {dest.nearestCampings.map(c => (
-                  <div key={c} className="flex items-center gap-3 py-3 px-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors">
-                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                      <Tent size={14} className="text-primary" />
+              <div className="space-y-3">
+                {dest.nearestCampings.map(campingName => {
+                  const campingData = allCampings.find(c => c.name.toLowerCase() === campingName.toLowerCase());
+                  return (
+                    <div key={campingName} className="bg-gray-50 rounded-xl p-4 hover:bg-primary/5 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                              <Tent size={14} className="text-primary" />
+                            </div>
+                            <h3 className="text-sm font-semibold text-gray-900">{campingName}</h3>
+                          </div>
+                          {campingData?.description && (
+                            <p className="text-sm text-gray-500 mt-1 ml-10">{campingData.description}</p>
+                          )}
+                          {campingData?.website && (
+                            <a href={campingData.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary mt-1.5 ml-10 hover:underline">
+                              <ExternalLink size={11} /> Website
+                            </a>
+                          )}
+                        </div>
+                        <Link
+                          href={`/boeken?camping=${encodeURIComponent(campingData?.id || campingName)}`}
+                          className="shrink-0 inline-flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:opacity-90 transition-opacity mt-0.5"
+                        >
+                          {t('destinations.bookCaravan')} <ArrowRight size={12} />
+                        </Link>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{c}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
