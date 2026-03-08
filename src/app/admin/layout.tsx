@@ -710,28 +710,44 @@ function AdminLayoutInner({
           })}
         </nav>
 
-        <div className="p-3 space-y-1 border-t border-white/10">
+        <div className="p-3 space-y-2 border-t border-white/10">
           {/* Language toggle */}
-          <button
-            onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors w-full cursor-pointer"
-          >
-            <Globe className="w-5 h-5" />
-            {locale === 'nl' ? 'English' : 'Nederlands'}
-          </button>
+          <div className="flex items-center gap-2 px-3 py-2">
+            <Globe className="w-4 h-4 text-white/40 shrink-0" />
+            <div className="flex bg-white/10 rounded-lg p-0.5 flex-1">
+              <button
+                onClick={() => setLocale('nl')}
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-all cursor-pointer ${locale === 'nl' ? 'bg-white/20 text-white shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+              >
+                NL
+              </button>
+              <button
+                onClick={() => setLocale('en')}
+                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-all cursor-pointer ${locale === 'en' ? 'bg-white/20 text-white shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+              >
+                EN
+              </button>
+            </div>
+          </div>
 
           <a
             href={mainSiteUrl}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm text-white/50 hover:bg-white/10 hover:text-white/80 transition-colors"
           >
-            <ExternalLink className="w-5 h-5" />
-            {t('nav.viewWebsite')}
+            <ExternalLink className="w-4 h-4" />
+            <span className="flex-1">{t('nav.viewWebsite')}</span>
+            <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
           </a>
+
+          <div className="mx-3 border-t border-white/5" />
+
           <button
             onClick={onLogout}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors w-full cursor-pointer"
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm text-red-400/80 hover:bg-red-500/15 hover:text-red-300 transition-colors w-full cursor-pointer"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             {t('nav.logout')}
           </button>
         </div>
