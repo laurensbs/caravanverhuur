@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdmin } from '@/i18n/admin-context';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,6 +25,7 @@ import {
   Trash2,
   Mail,
   PlusCircle,
+  Search,
 } from 'lucide-react';
 
 interface BorgItem {
@@ -99,6 +100,9 @@ export default function AdminBorgPage() {
   const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
   const [newItemCategory, setNewItemCategory] = useState('');
   const [newItemName, setNewItemName] = useState('');
+  const [bookingSearch, setBookingSearch] = useState('');
+  const [bookingDropdownOpen, setBookingDropdownOpen] = useState(false);
+  const bookingDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -118,6 +122,17 @@ export default function AdminBorgPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Close booking dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (bookingDropdownRef.current && !bookingDropdownRef.current.contains(e.target as Node)) {
+        setBookingDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -310,21 +325,89 @@ export default function AdminBorgPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.booking')}</label>
-                <select
-                  value={newBookingId}
-                  onChange={(e) => setNewBookingId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
-                  required
-                >
-                  <option value="">{t('deposit.selectBooking')}</option>
-                  {bookings
-                    .filter(b => b.status !== 'GEANNULEERD')
-                    .map(b => (
-                      <option key={b.id} value={b.id}>
-                        {b.reference} — {b.guest_name}
-                      </option>
-                    ))}
-                </select>
+                <div ref={bookingDropdownRef} className="relative">
+                  <div
+                    className="w-full px-3 py-2.5 rounded-lg text-sm focus-within:border-primary flex items-center gap-2 bg-white cursor-pointer border border-gray-200"
+                    onClick={() => setBookingDropdownOpen(true)}
+                  >
+                    <Search size={14} className="text-muted shrink-0" />
+                    <input
+                      type="text"
+                      value={bookingSearch}
+                      onChange={(e) => {
+                        setBookingSearch(e.target.value);
+                        setBookingDropdownOpen(true);
+                        if (!e.target.value) setNewBookingId('');
+                      }}
+                      onFocus={() => setBookingDropdownOpen(true)}
+                      placeholder={newBookingId ? bookings.find(b => b.id === newBookingId)?.reference + ' — ' + bookings.find(b => b.id === newBookingId)?.guest_name : t('deposit.selectBooking')}
+                      className="flex-1 bg-transparent outline-none text-sm min-w-0 placeholder:text-muted"
+                    />
+                    {newBookingId && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setNewBookingId(''); setBookingSearch(''); }}
+                        className="text-muted hover:text-foreground cursor-pointer shrink-0"
+                      >
+                        <XCircle size={14} />
+                      </button>
+                    )}
+                  </div>
+                  {bookingDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto z-50">
+                      {bookings
+                        .filter(b => b.status !== 'GEANNULEERD')
+                        .filter(b => {
+                          if (!bookingSearch) return true;
+                          const q = bookingSearch.toLowerCase();
+                          return (
+                            b.reference?.toLowerCase().includes(q) ||
+                            b.guest_name?.toLowerCase().includes(q) ||
+                            b.caravan_id?.toLowerCase().includes(q)
+                          );
+                        })
+                        .length === 0 ? (
+                          <div className="px-3 py-3 text-sm text-muted text-center">
+                            {t('common.noResults') || 'Geen resultaten'}
+                          </div>
+                        ) : (
+                          bookings
+                            .filter(b => b.status !== 'GEANNULEERD')
+                            .filter(b => {
+                              if (!bookingSearch) return true;
+                              const q = bookingSearch.toLowerCase();
+                              return (
+                                b.reference?.toLowerCase().includes(q) ||
+                                b.guest_name?.toLowerCase().includes(q) ||
+                                b.caravan_id?.toLowerCase().includes(q)
+                              );
+                            })
+                            .map(b => (
+                              <button
+                                key={b.id}
+                                type="button"
+                                onClick={() => {
+                                  setNewBookingId(b.id);
+                                  setBookingSearch('');
+                                  setBookingDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors cursor-pointer flex items-center gap-3 ${
+                                  newBookingId === b.id ? 'bg-primary/10' : ''
+                                }`}
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-foreground">{b.reference} — {b.guest_name}</div>
+                                  <div className="text-xs text-muted mt-0.5">
+                                    {b.caravan_id} · {b.check_in ? new Date(b.check_in).toLocaleDateString('nl-NL') : ''} - {b.check_out ? new Date(b.check_out).toLocaleDateString('nl-NL') : ''}
+                                  </div>
+                                </div>
+                                {newBookingId === b.id && <CheckCircle2 size={14} className="text-primary shrink-0" />}
+                              </button>
+                            ))
+                        )}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.checklistType')}</label>
