@@ -131,10 +131,10 @@ export default function CaravanDetailContent({ id }: { id: string }) {
 
       <div className="min-h-screen bg-surface">
         {/* Breadcrumb - mobile compact */}
-        <div className="bg-white">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <Link href="/caravans" className="inline-flex items-center gap-1.5 text-sm text-primary transition-colors">
-              <ArrowLeft size={16} />
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-6xl mx-auto px-4 py-2.5">
+            <Link href="/caravans" className="inline-flex items-center gap-2 text-sm font-medium text-foreground-light hover:text-primary transition-colors bg-surface hover:bg-surface-alt px-3 py-1.5 rounded-full">
+              <ArrowLeft size={15} />
               <span className="sm:hidden">{t('caravans.back')}</span>
               <span className="hidden sm:inline">{t('caravans.backToCaravans')}</span>
             </Link>
