@@ -329,14 +329,44 @@ export async function setupDatabase() {
     CREATE TABLE IF NOT EXISTS campings (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      slug TEXT,
       location TEXT NOT NULL,
+      region TEXT DEFAULT 'Baix Empordà',
       description TEXT,
+      long_description TEXT,
       website TEXT,
+      photos JSONB DEFAULT '[]'::jsonb,
+      facilities JSONB DEFAULT '[]'::jsonb,
+      best_for JSONB DEFAULT '[]'::jsonb,
+      nearest_destinations JSONB DEFAULT '[]'::jsonb,
+      latitude DOUBLE PRECISION,
+      longitude DOUBLE PRECISION,
       active BOOLEAN DEFAULT true,
       sort_order INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Add new columns to existing campings table if they don't exist
+  const newCols = [
+    { name: 'slug', def: 'TEXT' },
+    { name: 'region', def: "TEXT DEFAULT 'Baix Empordà'" },
+    { name: 'long_description', def: 'TEXT' },
+    { name: 'photos', def: "JSONB DEFAULT '[]'::jsonb" },
+    { name: 'facilities', def: "JSONB DEFAULT '[]'::jsonb" },
+    { name: 'best_for', def: "JSONB DEFAULT '[]'::jsonb" },
+    { name: 'nearest_destinations', def: "JSONB DEFAULT '[]'::jsonb" },
+    { name: 'latitude', def: 'DOUBLE PRECISION' },
+    { name: 'longitude', def: 'DOUBLE PRECISION' },
+  ];
+  for (const col of newCols) {
+    try {
+      const res = await sql`SELECT 1 FROM information_schema.columns WHERE table_name = 'campings' AND column_name = ${col.name}`;
+      if (res.rows.length === 0) {
+        await sql([`ALTER TABLE campings ADD COLUMN ${col.name} ${col.def}`] as unknown as TemplateStringsArray);
+      }
+    } catch { /* column already exists or table doesn't exist yet */ }
+  }
 
   return { success: true, message: 'Database tables created successfully' };
 }
@@ -1589,23 +1619,49 @@ export async function getAllCampings(activeOnly = false) {
   return result.rows;
 }
 
-export async function createCamping(data: { name: string; location: string; description?: string; website?: string }) {
+export async function createCamping(data: {
+  name: string; location: string; description?: string; website?: string;
+  slug?: string; region?: string; long_description?: string;
+  photos?: string[]; facilities?: string[]; best_for?: string[]; nearest_destinations?: string[];
+  latitude?: number; longitude?: number;
+}) {
   const id = generateId('camp');
   const maxOrder = await sql`SELECT COALESCE(MAX(sort_order), 0) as max_order FROM campings`;
   const sortOrder = (maxOrder.rows[0]?.max_order || 0) + 1;
+  const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   await sql`
-    INSERT INTO campings (id, name, location, description, website, sort_order)
-    VALUES (${id}, ${data.name}, ${data.location}, ${data.description || ''}, ${data.website || ''}, ${sortOrder})
+    INSERT INTO campings (id, name, slug, location, region, description, long_description, website, photos, facilities, best_for, nearest_destinations, latitude, longitude, sort_order)
+    VALUES (
+      ${id}, ${data.name}, ${slug}, ${data.location}, ${data.region || 'Baix Empordà'},
+      ${data.description || ''}, ${data.long_description || ''}, ${data.website || ''},
+      ${JSON.stringify(data.photos || [])}::jsonb, ${JSON.stringify(data.facilities || [])}::jsonb,
+      ${JSON.stringify(data.best_for || [])}::jsonb, ${JSON.stringify(data.nearest_destinations || [])}::jsonb,
+      ${data.latitude || null}, ${data.longitude || null}, ${sortOrder}
+    )
   `;
   return { id };
 }
 
-export async function updateCamping(id: string, data: { name?: string; location?: string; description?: string; website?: string; active?: boolean }) {
+export async function updateCamping(id: string, data: {
+  name?: string; location?: string; description?: string; website?: string; active?: boolean;
+  slug?: string; region?: string; long_description?: string;
+  photos?: string[]; facilities?: string[]; best_for?: string[]; nearest_destinations?: string[];
+  latitude?: number; longitude?: number;
+}) {
   if (data.name !== undefined) await sql`UPDATE campings SET name = ${data.name} WHERE id = ${id}`;
+  if (data.slug !== undefined) await sql`UPDATE campings SET slug = ${data.slug} WHERE id = ${id}`;
   if (data.location !== undefined) await sql`UPDATE campings SET location = ${data.location} WHERE id = ${id}`;
+  if (data.region !== undefined) await sql`UPDATE campings SET region = ${data.region} WHERE id = ${id}`;
   if (data.description !== undefined) await sql`UPDATE campings SET description = ${data.description} WHERE id = ${id}`;
+  if (data.long_description !== undefined) await sql`UPDATE campings SET long_description = ${data.long_description} WHERE id = ${id}`;
   if (data.website !== undefined) await sql`UPDATE campings SET website = ${data.website} WHERE id = ${id}`;
   if (data.active !== undefined) await sql`UPDATE campings SET active = ${data.active} WHERE id = ${id}`;
+  if (data.photos !== undefined) await sql`UPDATE campings SET photos = ${JSON.stringify(data.photos)}::jsonb WHERE id = ${id}`;
+  if (data.facilities !== undefined) await sql`UPDATE campings SET facilities = ${JSON.stringify(data.facilities)}::jsonb WHERE id = ${id}`;
+  if (data.best_for !== undefined) await sql`UPDATE campings SET best_for = ${JSON.stringify(data.best_for)}::jsonb WHERE id = ${id}`;
+  if (data.nearest_destinations !== undefined) await sql`UPDATE campings SET nearest_destinations = ${JSON.stringify(data.nearest_destinations)}::jsonb WHERE id = ${id}`;
+  if (data.latitude !== undefined) await sql`UPDATE campings SET latitude = ${data.latitude} WHERE id = ${id}`;
+  if (data.longitude !== undefined) await sql`UPDATE campings SET longitude = ${data.longitude} WHERE id = ${id}`;
 }
 
 export async function deleteCamping(id: string) {

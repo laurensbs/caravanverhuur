@@ -19,9 +19,18 @@ export async function GET() {
       for (const sc of staticCampings) {
         await createCamping({
           name: sc.name,
+          slug: sc.slug,
           location: sc.location,
+          region: sc.region,
           description: sc.description,
+          long_description: sc.longDescription || '',
           website: sc.website || '',
+          photos: sc.photos || [],
+          facilities: sc.facilities || [],
+          best_for: sc.bestFor || [],
+          nearest_destinations: sc.nearestDestinations || [],
+          latitude: sc.coordinates?.lat,
+          longitude: sc.coordinates?.lng,
         });
       }
       campings = await getAllCampings();
@@ -37,9 +46,18 @@ export async function GET() {
         for (const sc of staticCampings) {
           await createCamping({
             name: sc.name,
+            slug: sc.slug,
             location: sc.location,
+            region: sc.region,
             description: sc.description,
+            long_description: sc.longDescription || '',
             website: sc.website || '',
+            photos: sc.photos || [],
+            facilities: sc.facilities || [],
+            best_for: sc.bestFor || [],
+            nearest_destinations: sc.nearestDestinations || [],
+            latitude: sc.coordinates?.lat,
+            longitude: sc.coordinates?.lng,
           });
         }
         const campings = await getAllCampings();
@@ -58,13 +76,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, location, description, website } = body;
+    const { name, location, description, website, slug, region, long_description, photos, facilities, best_for, nearest_destinations, latitude, longitude } = body;
 
     if (!name || !location) {
       return NextResponse.json({ error: 'Naam en locatie zijn verplicht' }, { status: 400 });
     }
 
-    const result = await createCamping({ name, location, description, website });
+    const result = await createCamping({
+      name, location, description, website, slug, region, long_description,
+      photos, facilities, best_for, nearest_destinations, latitude, longitude,
+    });
     return NextResponse.json({ success: true, id: result.id });
   } catch (error) {
     console.error('Error creating camping:', error);
@@ -84,12 +105,15 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update single camping
-    const { id, name, location, description, website, active } = body;
+    const { id, name, location, description, website, active, slug, region, long_description, photos, facilities, best_for, nearest_destinations, latitude, longitude } = body;
     if (!id) {
       return NextResponse.json({ error: 'ID is verplicht' }, { status: 400 });
     }
 
-    await updateCamping(id, { name, location, description, website, active });
+    await updateCamping(id, {
+      name, location, description, website, active, slug, region, long_description,
+      photos, facilities, best_for, nearest_destinations, latitude, longitude,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating camping:', error);

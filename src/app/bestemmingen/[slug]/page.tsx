@@ -75,7 +75,6 @@ export default async function CampingDetailPage({ params }: { params: Promise<{ 
       name: f,
       value: true,
     })),
-    ...(camping.stars && { starRating: { '@type': 'Rating', ratingValue: camping.stars } }),
     ...(camping.website && { url: camping.website }),
     containedInPlace: {
       '@type': 'Place',

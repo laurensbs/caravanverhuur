@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import {
-  MapPin, ArrowRight, Star, Search, X, Tent, Globe, ChevronLeft, ChevronRight as ChevronRightIcon,
+  MapPin, ArrowRight, Search, X, Tent, Globe, ChevronLeft, ChevronRight as ChevronRightIcon,
   Waves, Users, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
   Dumbbell, Landmark, UtensilsCrossed,
 } from 'lucide-react';
@@ -36,19 +36,6 @@ const facilityIcons: Record<string, React.ReactNode> = {
 const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'] as const;
 
 /* ------------------------------------------------------------------ */
-/*  Stars component                                                    */
-/* ------------------------------------------------------------------ */
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
-      ))}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Camping card                                                       */
 /* ------------------------------------------------------------------ */
 function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => string }) {
@@ -70,15 +57,6 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {/* Stars badge */}
-        {camping.stars && (
-          <div className="absolute top-3 right-3">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-800 shadow-sm">
-              <Stars count={camping.stars} />
-            </span>
-          </div>
-        )}
 
         {/* Region badge */}
         <div className="absolute top-3 left-3">
@@ -139,33 +117,6 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
         </span>
       </div>
     </Link>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  DB camping card (simpler, for admin-added campings without photos) */
-/* ------------------------------------------------------------------ */
-function DbCampingCard({ camping, t }: { camping: Record<string, unknown>; t: (k: string) => string }) {
-  const name = camping.name as string;
-  const location = camping.location as string;
-  const description = camping.description as string;
-
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 flex flex-col">
-      {/* Placeholder image */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-cyan-50 flex items-center justify-center">
-        <Tent size={48} className="text-primary/30" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/40 to-transparent">
-          <h3 className="text-lg font-bold text-white drop-shadow-lg">{name}</h3>
-          <div className="flex items-center gap-1.5 text-white/80 text-xs">
-            <MapPin size={12} /> {location}
-          </div>
-        </div>
-      </div>
-      <div className="p-4 flex-1">
-        <p className="text-sm text-gray-600 line-clamp-2">{description || t('destinations.noCampingDesc')}</p>
-      </div>
-    </div>
   );
 }
 
@@ -241,17 +192,54 @@ export default function BestemmingenPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'campings' | 'plaatsen' | 'bezienswaardigheden'>('all');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [dbCampings, setDbCampings] = useState<Record<string, unknown>[]>([]);
+  const [allCampings, setAllCampings] = useState<Camping[]>(staticCampings);
 
-  // Fetch DB campings (admin-managed)
+  // Fetch DB campings (admin-managed) and merge with static
   useEffect(() => {
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => {
-        if (data.source === 'db' && data.campings?.length) {
-          const staticNames = new Set(staticCampings.map(c => c.name.toLowerCase()));
-          const extra = data.campings.filter((c: Record<string, unknown>) => !staticNames.has((c.name as string).toLowerCase()));
-          setDbCampings(extra);
+        if (data.campings?.length) {
+          // Map DB campings to Camping interface
+          const dbMapped: Camping[] = data.campings.map((c: Record<string, unknown>) => ({
+            id: String(c.id),
+            name: (c.name as string) || '',
+            slug: (c.slug as string) || '',
+            location: (c.location as string) || '',
+            region: (c.region as string) || 'Baix Empordà',
+            description: (c.description as string) || '',
+            longDescription: (c.long_description as string) || '',
+            website: (c.website as string) || '',
+            photos: (Array.isArray(c.photos) ? c.photos : []) as string[],
+            coordinates: { lat: Number(c.latitude) || 0, lng: Number(c.longitude) || 0 },
+            facilities: (Array.isArray(c.facilities) ? c.facilities : []) as string[],
+            nearestDestinations: (Array.isArray(c.nearest_destinations) ? c.nearest_destinations : []) as string[],
+            bestFor: (Array.isArray(c.best_for) ? c.best_for : []) as string[],
+          }));
+
+          // Merge: DB campings override static by name match, plus add new ones
+          const dbNameMap = new Map(dbMapped.map(c => [c.name.toLowerCase(), c]));
+          const merged: Camping[] = [];
+          const usedDbNames = new Set<string>();
+
+          // Start with static, override with DB version if exists
+          for (const sc of staticCampings) {
+            const dbVersion = dbNameMap.get(sc.name.toLowerCase());
+            if (dbVersion && dbVersion.photos?.length > 0) {
+              merged.push(dbVersion);
+              usedDbNames.add(sc.name.toLowerCase());
+            } else {
+              merged.push(sc);
+              usedDbNames.add(sc.name.toLowerCase());
+            }
+          }
+          // Add DB-only campings (not in static)
+          for (const dc of dbMapped) {
+            if (!usedDbNames.has(dc.name.toLowerCase())) {
+              merged.push(dc);
+            }
+          }
+          setAllCampings(merged);
         }
       })
       .catch((e) => console.error('Fetch error:', e));
@@ -267,7 +255,7 @@ export default function BestemmingenPage() {
 
   // Filter campings
   const filteredCampings = useMemo(() => {
-    let result = staticCampings;
+    let result = allCampings;
     if (selectedRegion) result = result.filter(c => c.region === selectedRegion);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -277,7 +265,7 @@ export default function BestemmingenPage() {
       );
     }
     return result;
-  }, [search, selectedRegion]);
+  }, [search, selectedRegion, allCampings]);
 
   // Filter destinations
   const filteredDests = useMemo(() => {
@@ -289,7 +277,7 @@ export default function BestemmingenPage() {
     );
   }, [search]);
 
-  const totalCampings = staticCampings.length + dbCampings.length;
+  const totalCampings = allCampings.length;
   const tabs = [
     { key: 'all' as const, label: 'Alles', icon: <Globe size={16} /> },
     { key: 'campings' as const, label: `Campings (${totalCampings})`, icon: <Tent size={16} /> },
@@ -410,18 +398,11 @@ export default function BestemmingenPage() {
               href="#campings" linkText="Alle campings"
             />
             <ScrollRow>
-              {staticCampings.slice(0, 12).map(c => (
+              {allCampings.slice(0, 12).map(c => (
                 <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-cyan-50">
                     <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                    {c.stars && (
-                      <div className="absolute top-2.5 right-2.5">
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[11px] font-semibold">
-                          <Stars count={c.stars} />
-                        </span>
-                      </div>
-                    )}
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <h3 className="text-base font-bold text-white">{c.name}</h3>
                       <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {c.location}</p>
@@ -520,7 +501,7 @@ export default function BestemmingenPage() {
                 <button key={r} onClick={() => setSelectedRegion(selectedRegion === r ? null : r)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${selectedRegion === r ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 >
-                  {r} ({staticCampings.filter(c => c.region === r).length})
+                  {r} ({allCampings.filter(c => c.region === r).length})
                 </button>
               ))}
             </div>
@@ -536,7 +517,7 @@ export default function BestemmingenPage() {
             </div>
           ) : !search && !selectedRegion && activeTab === 'campings' ? (
             regionOrder.map(region => {
-              const rc = staticCampings.filter(c => c.region === region);
+              const rc = allCampings.filter(c => c.region === region);
               return (
                 <div key={region} className="mb-10">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">{region} <span className="text-sm font-normal text-gray-400">— {rc.length} campings</span></h3>

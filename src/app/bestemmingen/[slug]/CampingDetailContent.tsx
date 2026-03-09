@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  MapPin, ArrowRight, Star, ChevronRight, Tent, Globe, ExternalLink,
+  MapPin, ArrowRight, ChevronRight, Tent, Globe, ExternalLink,
   Waves, Users, Heart, TreePine, Sparkles, Umbrella, Wifi, ShoppingCart,
   Dumbbell, CheckCircle, Navigation, Sun, Droplets,
 } from 'lucide-react';
@@ -39,19 +39,7 @@ const facilityIcons: Record<string, React.ReactNode> = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Stars component                                                    */
-/* ------------------------------------------------------------------ */
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} size={14} className="text-amber-400 fill-amber-400" />
-      ))}
-    </div>
-  );
-}
 
-/* ------------------------------------------------------------------ */
 /*  Props                                                              */
 /* ------------------------------------------------------------------ */
 interface Props {
@@ -108,12 +96,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
               <span className="text-white/40">·</span>
               <span className="flex items-center gap-1.5"><Globe size={14} /> {camping.region}</span>
-              {camping.stars && (
-                <>
-                  <span className="text-white/40">·</span>
-                  <Stars count={camping.stars} />
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -130,13 +112,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{camping.location}</p>
                 <p className="text-xs text-gray-500">{t('destinations.locationLabel')}</p>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Star size={18} className="text-amber-500" />
-                </div>
-                <p className="text-sm font-semibold text-gray-900">{camping.stars || '–'} {t('destinations.starsLabel')}</p>
-                <p className="text-xs text-gray-500">{t('destinations.classificationLabel')}</p>
               </div>
               <div className="text-center">
                 <div className="w-10 h-10 bg-cyan-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
@@ -301,12 +276,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                   <span className="text-gray-500">{t('destinations.regionLabel')}</span>
                   <span className="font-medium text-gray-900">{camping.region}</span>
                 </div>
-                {camping.stars && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500">{t('destinations.classification')}</span>
-                    <Stars count={camping.stars} />
-                  </div>
-                )}
               </div>
             </div>
 
