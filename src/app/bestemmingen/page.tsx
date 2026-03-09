@@ -219,7 +219,7 @@ export default function BestemmingenPage() {
   // Fetch campings from API — only active campings are returned
   // DB campings replace static entirely so active/inactive is respected
   useEffect(() => {
-    fetch('/api/campings')
+    fetch('/api/campings', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data.campings?.length) {

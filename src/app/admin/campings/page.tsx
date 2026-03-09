@@ -156,7 +156,7 @@ export default function AdminCampingsPage() {
 
   const fetchCampings = async () => {
     try {
-      const res = await fetch('/api/admin/campings');
+      const res = await fetch('/api/admin/campings', { cache: 'no-store' });
       const data = await res.json();
       setCampings(data.campings || []);
     } catch {
@@ -203,17 +203,21 @@ export default function AdminCampingsPage() {
     setSaving(true);
     try {
       if (editingId) {
-        await fetch('/api/admin/campings', {
+        const res = await fetch('/api/admin/campings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
           body: JSON.stringify({ id: editingId, name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
+        if (!res.ok) console.error('PUT failed:', await res.text());
       } else {
-        await fetch('/api/admin/campings', {
+        const res = await fetch('/api/admin/campings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
           body: JSON.stringify({ name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
+        if (!res.ok) console.error('POST failed:', await res.text());
       }
       resetForm();
       setShowForm(false);

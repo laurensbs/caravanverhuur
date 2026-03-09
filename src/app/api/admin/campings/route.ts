@@ -11,6 +11,15 @@ import {
 import { campings as staticCampings } from '@/data/campings';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 
+// Never cache admin API responses
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  'Pragma': 'no-cache',
+};
+
 // GET - List all campings (auto-seeds from static data if DB is empty)
 export async function GET() {
   try {
@@ -44,7 +53,7 @@ export async function GET() {
       photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
     }));
 
-    return NextResponse.json({ campings: parsed });
+    return NextResponse.json({ campings: parsed }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     // Auto-create tables if they don't exist yet
     if (error instanceof Error && error.message.includes('does not exist')) {
@@ -73,7 +82,7 @@ export async function GET() {
           ...c,
           photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
         }));
-        return NextResponse.json({ campings: parsed });
+        return NextResponse.json({ campings: parsed }, { headers: NO_CACHE_HEADERS });
       } catch (setupError) {
         console.error('Error setting up database for campings:', setupError);
         return NextResponse.json({ error: 'Fout bij database setup' }, { status: 500 });

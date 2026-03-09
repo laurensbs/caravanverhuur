@@ -6,6 +6,11 @@ import { campings as staticCampings } from '@/data/campings';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  'Pragma': 'no-cache',
+};
+
 function mapStaticCamping(c: typeof staticCampings[0]) {
   return {
     id: c.id,
@@ -66,13 +71,13 @@ export async function GET() {
           active: true,
         };
       });
-      return NextResponse.json({ campings: parsed, source: 'db' });
+      return NextResponse.json({ campings: parsed, source: 'db' }, { headers: NO_CACHE_HEADERS });
     }
     // Fallback to static campings if no DB campings exist yet
     return NextResponse.json({
       campings: staticCampings.map(mapStaticCamping),
       source: 'static',
-    });
+    }, { headers: NO_CACHE_HEADERS });
   } catch {
     // Fallback to static
     return NextResponse.json({
