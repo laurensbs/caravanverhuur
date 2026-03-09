@@ -322,7 +322,7 @@ function BoekenContent() {
   return (
     <div className="min-h-screen bg-surface">
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[80px] sm:top-[96px] z-30 bg-white shadow-sm pt-4 sm:pt-6">
+      <div ref={contentRef} className="sticky top-[100px] sm:top-[96px] z-30 bg-white shadow-sm pt-4 sm:pt-6">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
           <div className="lg:hidden py-3">
@@ -506,7 +506,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Camping cards */}
-                      <div className="space-y-2 sm:space-y-3 max-h-[55vh] sm:max-h-[45vh] overflow-y-auto pr-1 -mx-1 px-1">
+                      <div className="space-y-2 sm:space-y-3 max-h-[40vh] sm:max-h-[45vh] overflow-y-auto pr-1 -mx-1 px-1">
                         {filteredCampings.map(c => {
                           const isSelected = campingId === c.id;
                           return (

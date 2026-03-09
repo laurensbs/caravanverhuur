@@ -72,6 +72,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
           src={camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg'}
           alt={`${camping.name} — ${camping.location}, Costa Brava`}
           fill
+          unoptimized
           className="object-cover"
           priority
           sizes="100vw"
@@ -211,6 +212,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                         src={photo}
                         alt={`${camping.name} foto ${i + 1}`}
                         fill
+                        unoptimized
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 640px) 50vw, 33vw"
                       />
@@ -340,6 +342,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                           src={c.photos?.[0] || '/og-image.jpg'}
                           alt={c.name}
                           fill
+                          unoptimized
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           sizes="48px"
                         />
