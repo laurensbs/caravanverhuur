@@ -48,16 +48,26 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
     >
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-cyan-50">
-        {camping.photos?.[0] && (
+        {camping.photos?.[0] ? (
           <Image
             src={camping.photos[0]}
             alt={`${camping.name} — ${camping.location}, Costa Brava`}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-700"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.style.display = 'none';
+              const parent = img.parentElement;
+              if (parent && !parent.querySelector('.fallback-icon')) {
+                const div = document.createElement('div');
+                div.className = 'fallback-icon absolute inset-0 flex items-center justify-center';
+                div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-primary/30"><path d="M3 7a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="m3 15 4-4a2 2 0 0 1 3 0l4 4"/><path d="m14 14 1-1a2 2 0 0 1 3 0l3 3"/></svg>';
+                parent.appendChild(div);
+              }
+            }}
           />
-        )}
-        {!camping.photos?.[0] && (
+        ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <Tent size={40} className="text-primary/30" />
           </div>
@@ -600,19 +610,7 @@ export default function BestemmingenPage() {
         </div>
       )}
 
-      {/* CTA section */}
-      <section className="max-w-7xl mx-auto px-4 pb-20 pt-4">
-        <div className="bg-gradient-to-br from-primary to-primary-dark rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-10" />
-          <div className="relative">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('destinations.ctaTitle')}</h2>
-            <p className="text-white/80 mb-6 max-w-lg mx-auto">{t('destinations.ctaSubtitle')}</p>
-            <Link href="/boeken" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary font-bold rounded-full text-sm transition-transform hover:scale-105 shadow-lg">
-              {t('nav.bookNow')} <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 }

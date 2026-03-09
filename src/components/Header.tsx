@@ -346,8 +346,8 @@ export default function Header() {
                   <div className="grid grid-cols-4 gap-8">
                     {/* Column 1: Campings */}
                     <div>
-                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <span>⛺</span> Campings
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
+                        Campings
                       </p>
                       <div className="space-y-0.5">
                         {staticCampingsData.slice(0, 6).map(c => (
@@ -369,8 +369,8 @@ export default function Header() {
 
                     {/* Column 2: Plaatsen */}
                     <div>
-                      <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <span>📍</span> {t('destinations.placesLabel')}
+                      <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-3">
+                        {t('destinations.placesLabel')}
                       </p>
                       <div className="space-y-0.5">
                         {destinations.slice(0, 7).map(d => (
@@ -392,8 +392,8 @@ export default function Header() {
 
                     {/* Column 3: Bezienswaardigheden */}
                     <div>
-                      <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                        <span>🏛️</span> Bezienswaardigheden
+                      <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">
+                        Bezienswaardigheden
                       </p>
                       <div className="space-y-0.5">
                         {attractions.slice(0, 8).map(a => (
@@ -508,7 +508,7 @@ export default function Header() {
                       </Link>
 
                       {/* Campings */}
-                      <p className="px-3 pt-2 pb-1 text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1">⛺ Campings</p>
+                      <p className="px-3 pt-2 pb-1 text-xs font-bold text-primary uppercase tracking-wider">Campings</p>
                       {staticCampingsData.slice(0, 5).map(c => (
                         <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
                           <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
@@ -525,7 +525,7 @@ export default function Header() {
                       </Link>
 
                       {/* Plaatsen */}
-                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">📍 Plaatsen</p>
+                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-amber-600 uppercase tracking-wider">Plaatsen</p>
                       {destinations.slice(0, 5).map(d => (
                         <Link key={d.slug} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
                           <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
@@ -539,7 +539,7 @@ export default function Header() {
                       ))}
 
                       {/* Bezienswaardigheden */}
-                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">🏛️ Bezienswaardigheden</p>
+                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-emerald-600 uppercase tracking-wider">Bezienswaardigheden</p>
                       {attractions.slice(0, 5).map(a => (
                         <Link key={a.slug} href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
                           <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
