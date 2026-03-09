@@ -59,6 +59,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://caravanverhuurspanje.com"),
   alternates: {
     canonical: "/",
+    languages: {
+      'nl': '/',
+      'en': '/',
+      'es': '/',
+      'x-default': '/',
+    },
   },
 };
 
@@ -83,7 +89,7 @@ const jsonLd = {
   },
   areaServed: "Costa Brava, Spanje",
   priceRange: "€50-€95 per dag",
-  telephone: "+31 6 12345678",
+  telephone: "+34650036755",
   email: "info@caravanverhuurspanje.com",
   contactPoint: {
     "@type": "ContactPoint",

@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Onze Caravans | Caravanverhuur Costa Brava',
   description:
     'Bekijk ons aanbod van luxe stacaravans aan de Costa Brava. Van gezellige 2-persoons tot ruime familiecaravans met airco. Vanaf €45/dag.',
-  alternates: { canonical: '/caravans' },
+  alternates: { canonical: '/caravans', languages: { nl: '/caravans', en: '/caravans', es: '/caravans', 'x-default': '/caravans' } },
   openGraph: {
     title: 'Onze Caravans – Caravanverhuur Costa Brava',
     description:

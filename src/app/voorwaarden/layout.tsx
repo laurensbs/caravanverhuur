@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Algemene Voorwaarden | Caravanverhuur Costa Brava',
   description: 'Lees de algemene voorwaarden van Caravanverhuur Costa Brava. Boekingsvoorwaarden, annulering en huurovereenkomst.',
-  alternates: { canonical: '/voorwaarden' },
+  alternates: { canonical: '/voorwaarden', languages: { nl: '/voorwaarden', en: '/voorwaarden', es: '/voorwaarden', 'x-default': '/voorwaarden' } },
   openGraph: {
     title: 'Algemene Voorwaarden – Caravanverhuur Costa Brava',
     description: 'Boekingsvoorwaarden, annulering en huurovereenkomst.',

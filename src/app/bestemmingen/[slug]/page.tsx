@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: dest.description.slice(0, 160),
       images: [dest.heroImage],
     },
-    alternates: { canonical: `/bestemmingen/${slug}` },
+    alternates: { canonical: `/bestemmingen/${slug}`, languages: { nl: `/bestemmingen/${slug}`, en: `/bestemmingen/${slug}`, es: `/bestemmingen/${slug}`, 'x-default': `/bestemmingen/${slug}` } },
   };
 }
 

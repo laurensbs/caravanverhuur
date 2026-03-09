@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacybeleid | Caravanverhuur Costa Brava',
   description: 'Lees ons privacybeleid. Hoe wij omgaan met je persoonsgegevens bij Caravanverhuur Costa Brava.',
-  alternates: { canonical: '/privacy' },
+  alternates: { canonical: '/privacy', languages: { nl: '/privacy', en: '/privacy', es: '/privacy', 'x-default': '/privacy' } },
   openGraph: {
     title: 'Privacybeleid – Caravanverhuur Costa Brava',
     description: 'Lees ons privacybeleid. Hoe wij omgaan met je persoonsgegevens.',

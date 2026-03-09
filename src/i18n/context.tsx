@@ -51,13 +51,22 @@ export function LanguageProvider({ children, dictionaries }: { children: ReactNo
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Priority: localStorage > cookie > browser language
     const saved = localStorage.getItem('language') as Locale;
     if (saved && ['nl', 'en', 'es'].includes(saved)) {
       setLocaleState(saved);
     } else {
-      const browserLang = navigator.language.slice(0, 2);
-      if (browserLang === 'es') setLocaleState('es');
-      else if (browserLang === 'en') setLocaleState('en');
+      // Read cookie set by middleware
+      const cookieMatch = document.cookie.match(/(?:^|; )locale=(\w+)/);
+      const cookieLocale = cookieMatch?.[1] as Locale;
+      if (cookieLocale && ['nl', 'en', 'es'].includes(cookieLocale)) {
+        setLocaleState(cookieLocale);
+        localStorage.setItem('language', cookieLocale);
+      } else {
+        const browserLang = navigator.language.slice(0, 2);
+        if (browserLang === 'es') setLocaleState('es');
+        else if (browserLang === 'en') setLocaleState('en');
+      }
     }
     setMounted(true);
   }, []);
@@ -65,6 +74,8 @@ export function LanguageProvider({ children, dictionaries }: { children: ReactNo
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     localStorage.setItem('language', l);
+    // Also update the cookie so middleware stays in sync
+    document.cookie = `locale=${l};path=/;max-age=${365 * 24 * 60 * 60};samesite=lax`;
   }, []);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
