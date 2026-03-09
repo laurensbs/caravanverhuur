@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCaravanSettings, upsertCaravanSetting, getAvailableCaravanIds } from '@/lib/db';
+import { getCaravanSettings, upsertCaravanSetting, getAvailableCaravanIds, logActivity } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,6 +34,8 @@ export async function PATCH(request: NextRequest) {
       status || (available === false ? 'NIET_BESCHIKBAAR' : 'BESCHIKBAAR'),
       adminNotes
     );
+
+    logActivity({ actor: 'admin', role: 'admin', action: 'caravan_updated', entityType: 'caravan', entityId: caravanId, entityLabel: `Caravan ${caravanId}`, details: available === false ? 'Niet beschikbaar gezet' : 'Beschikbaar gezet' }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

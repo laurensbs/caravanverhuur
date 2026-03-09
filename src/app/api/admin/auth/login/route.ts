@@ -34,6 +34,12 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
+    // Log login activity
+    try {
+      const { logActivity } = await import('@/lib/db');
+      await logActivity({ actor: user, role: result.role, action: 'login', details: `Ingelogd als ${result.role}` });
+    } catch {}
+
     return response;
   } catch (error) {
     console.error('Admin login error:', error);

@@ -368,6 +368,21 @@ export async function setupDatabase() {
     } catch { /* column already exists or table doesn't exist yet */ }
   }
 
+  // Activity log table
+  await sql`
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id TEXT PRIMARY KEY,
+      actor TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin',
+      action TEXT NOT NULL,
+      entity_type TEXT,
+      entity_id TEXT,
+      entity_label TEXT,
+      details TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1734,4 +1749,77 @@ export async function verifyEmailToken(token: string) {
   // Clean up token
   await sql`DELETE FROM email_verification_tokens WHERE customer_id = ${row.customer_id}`;
   return row;
+}
+
+// ===== BADGE COUNTS =====
+
+export async function getBadgeCounts() {
+  const [bookings, contacts, chats, payments] = await Promise.all([
+    sql`SELECT COUNT(*) as count FROM bookings WHERE status = 'NIEUW'`,
+    sql`SELECT COUNT(*) as count FROM contacts WHERE status = 'NIEUW'`,
+    sql`SELECT COUNT(*) as count FROM chat_conversations WHERE status = 'active' OR status = 'waiting'`.catch(() => ({ rows: [{ count: '0' }] })),
+    sql`SELECT COUNT(*) as count FROM payments WHERE status = 'OPENSTAAND'`,
+  ]);
+  return {
+    bookings: parseInt(bookings.rows[0].count as string) || 0,
+    contacts: parseInt(contacts.rows[0].count as string) || 0,
+    chats: parseInt(chats.rows[0].count as string) || 0,
+    payments: parseInt(payments.rows[0].count as string) || 0,
+  };
+}
+
+// ===== GLOBAL SEARCH =====
+
+export async function globalSearch(query: string, limit = 20) {
+  const q = `%${query}%`;
+  const [bookings, contacts, customers] = await Promise.all([
+    sql`SELECT id, reference, guest_name, guest_email, status, created_at, 'booking' as type
+        FROM bookings
+        WHERE guest_name ILIKE ${q} OR guest_email ILIKE ${q} OR reference ILIKE ${q}
+        ORDER BY created_at DESC LIMIT ${limit}`,
+    sql`SELECT id, name, email, subject, status, created_at, 'contact' as type
+        FROM contacts
+        WHERE name ILIKE ${q} OR email ILIKE ${q} OR subject ILIKE ${q} OR message ILIKE ${q}
+        ORDER BY created_at DESC LIMIT ${limit}`,
+    sql`SELECT id, name, email, phone, created_at, 'customer' as type
+        FROM customers
+        WHERE name ILIKE ${q} OR email ILIKE ${q} OR phone ILIKE ${q}
+        ORDER BY created_at DESC LIMIT ${limit}`.catch(() => ({ rows: [] })),
+  ]);
+  return {
+    bookings: bookings.rows,
+    contacts: contacts.rows,
+    customers: customers.rows,
+  };
+}
+
+// ===== ACTIVITY LOG =====
+
+export async function logActivity(data: {
+  actor: string;
+  role: string;
+  action: string;
+  entityType?: string;
+  entityId?: string;
+  entityLabel?: string;
+  details?: string;
+}) {
+  const id = generateId('act');
+  await sql`
+    INSERT INTO activity_log (id, actor, role, action, entity_type, entity_id, entity_label, details)
+    VALUES (${id}, ${data.actor}, ${data.role}, ${data.action}, ${data.entityType || null}, ${data.entityId || null}, ${data.entityLabel || null}, ${data.details || null})
+  `;
+  return id;
+}
+
+export async function getActivityLog(limit = 50, offset = 0) {
+  const result = await sql`
+    SELECT * FROM activity_log ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
+  `;
+  return result.rows;
+}
+
+export async function getActivityLogCount() {
+  const result = await sql`SELECT COUNT(*) as count FROM activity_log`;
+  return parseInt(result.rows[0].count as string) || 0;
 }

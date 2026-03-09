@@ -6,6 +6,7 @@ import {
   deleteCamping,
   reorderCampings,
   setupDatabase,
+  logActivity,
 } from '@/lib/db';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
       name, location, description, website, slug, region, long_description,
       photos, facilities, best_for, nearest_destinations, latitude, longitude,
     });
+    logActivity({ actor: 'admin', role: 'admin', action: 'camping_created', entityType: 'camping', entityId: result.id, entityLabel: name }).catch(() => {});
     return NextResponse.json({ success: true, id: result.id });
   } catch (error) {
     console.error('Error creating camping:', error);
@@ -114,6 +116,7 @@ export async function PUT(request: NextRequest) {
       name, location, description, website, active, slug, region, long_description,
       photos, facilities, best_for, nearest_destinations, latitude, longitude,
     });
+    logActivity({ actor: 'admin', role: 'admin', action: 'camping_updated', entityType: 'camping', entityId: id, entityLabel: name || `#${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating camping:', error);
@@ -131,6 +134,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteCamping(id);
+    logActivity({ actor: 'admin', role: 'admin', action: 'camping_deleted', entityType: 'camping', entityId: id, entityLabel: `Camping #${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting camping:', error);

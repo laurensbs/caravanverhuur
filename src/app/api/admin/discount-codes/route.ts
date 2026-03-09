@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllDiscountCodes, createDiscountCode, updateDiscountCode, deleteDiscountCode, applyBookingDiscount, validateDiscountCode, incrementDiscountCodeUsage } from '@/lib/db';
+import { getAllDiscountCodes, createDiscountCode, updateDiscountCode, deleteDiscountCode, applyBookingDiscount, validateDiscountCode, incrementDiscountCodeUsage, logActivity } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
       validUntil: validUntil || undefined,
     });
 
+    logActivity({ actor: 'admin', role: 'admin', action: 'discount_created', entityType: 'discount', entityId: result.id, entityLabel: code, details: `${type} — ${value}` }).catch(() => {});
+
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error('POST /api/admin/discount-codes error:', error);
@@ -63,6 +65,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await updateDiscountCode(id, { active, maxUses, validUntil });
+    logActivity({ actor: 'admin', role: 'admin', action: 'discount_updated', entityType: 'discount', entityId: id, entityLabel: `#${id}`, details: active !== undefined ? (active ? 'Geactiveerd' : 'Gedeactiveerd') : 'Bijgewerkt' }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('PATCH /api/admin/discount-codes error:', error);
@@ -80,6 +83,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDiscountCode(id);
+    logActivity({ actor: 'admin', role: 'admin', action: 'discount_deleted', entityType: 'discount', entityId: id, entityLabel: `#${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/admin/discount-codes error:', error);

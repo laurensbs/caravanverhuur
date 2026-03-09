@@ -113,6 +113,7 @@ export const translations: Record<AdminLocale, Dict> = {
       newsletters: 'Nieuwsbrieven',
       discountCodes: 'Kortingscodes',
       chat: 'Live Chat',
+      activity: 'Activiteitenlog',
       viewWebsite: '← Website bekijken',
       logout: 'Uitloggen',
       section: {
@@ -677,6 +678,7 @@ export const translations: Record<AdminLocale, Dict> = {
       newsletters: 'Newsletters',
       discountCodes: 'Discount Codes',
       chat: 'Live Chat',
+      activity: 'Activity Log',
       viewWebsite: '← View website',
       logout: 'Log out',
       section: {

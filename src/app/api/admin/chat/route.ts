@@ -7,6 +7,7 @@ import {
   deleteChatConversation,
   updateChatSummary,
   setupDatabase,
+  logActivity,
 } from '@/lib/db';
 
 // GET: List all conversations or get one by ?id=...
@@ -54,6 +55,8 @@ export async function POST(request: NextRequest) {
     // Mark as assigned
     await updateConversationStatus(conversationId, 'ACTIVE', staffName || 'Staff');
 
+    logActivity({ actor: staffName || 'admin', role: 'admin', action: 'chat_reply', entityType: 'chat', entityId: conversationId, entityLabel: `Chat #${conversationId}` }).catch(() => {});
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('POST /api/admin/chat error:', error);
@@ -97,6 +100,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteChatConversation(id);
+    logActivity({ actor: 'admin', role: 'admin', action: 'chat_deleted', entityType: 'chat', entityId: id, entityLabel: `Chat #${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/admin/chat error:', error);

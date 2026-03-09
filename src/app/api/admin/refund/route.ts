@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { getPaymentById, updatePaymentStatus, getBookingById } from '@/lib/db';
+import { getPaymentById, updatePaymentStatus, getBookingById, logActivity } from '@/lib/db';
 
 // POST /api/admin/refund — Process a Stripe refund for a payment
 export async function POST(request: NextRequest) {
@@ -58,6 +58,9 @@ export async function POST(request: NextRequest) {
 
     // Get booking info for response
     const booking = payment.booking_id ? await getBookingById(payment.booking_id) : null;
+
+    // Log activity
+    logActivity({ actor: 'admin', role: 'admin', action: 'payment_refund', entityType: 'payment', entityId: paymentId, entityLabel: booking?.reference || paymentId, details: `€${payment.amount} terugbetaald` }).catch(() => {});
 
     return NextResponse.json({
       success: true,

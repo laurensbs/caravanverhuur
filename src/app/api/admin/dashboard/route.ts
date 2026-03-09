@@ -45,6 +45,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     const result = await purgeAllTestData();
+
+    const { logActivity } = await import('@/lib/db');
+    logActivity({ actor: session.user || 'admin', role: 'admin', action: 'data_purge', entityType: 'system', entityLabel: 'Testdata', details: JSON.stringify(result) }).catch(() => {});
+
     return NextResponse.json({ message: 'Alle testdata is verwijderd', ...result });
   } catch (error) {
     console.error('Purge error:', error);

@@ -33,6 +33,8 @@ import {
   Tent,
   GripVertical,
   ExternalLink,
+  Search,
+  History,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -79,6 +81,7 @@ const NAV_SECTIONS: NavSection[] = [
       { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
       { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
       { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
+      { sub: '/activiteit', key: 'nav.activity', icon: History, roles: ['admin'] },
     ],
   },
 ];
@@ -497,11 +500,13 @@ function SidebarNavItem({
   isActive,
   onNavigate,
   t,
+  badge,
 }: {
   item: { href: string; key: string; icon: typeof LayoutDashboard };
   isActive: boolean;
   onNavigate: () => void;
   t: (key: string) => string;
+  badge?: number;
 }) {
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
@@ -540,12 +545,16 @@ function SidebarNavItem({
         />
         <Icon className="w-5 h-5 shrink-0" />
         <span className="flex-1">{t(item.key)}</span>
-        {isActive && (
+        {badge && badge > 0 ? (
+          <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        ) : isActive ? (
           <motion.div
             layoutId="activeIndicator"
             className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
           />
-        )}
+        ) : null}
       </Link>
     </Reorder.Item>
   );
@@ -574,10 +583,87 @@ function AdminLayoutInner({
 }) {
   /* Use the admin context for translations */
   const { t, locale, setLocale } = useAdminCtx();
+  const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
+  const [badges, setBadges] = useState<Record<string, number>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ bookings: Record<string, unknown>[]; contacts: Record<string, unknown>[]; customers: Record<string, unknown>[] } | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch badge counts periodically
+  useEffect(() => {
+    const fetchBadges = () => {
+      fetch('/api/admin/badges')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) {
+            const map: Record<string, number> = {};
+            if (data.bookings > 0) map['nav.bookings'] = data.bookings;
+            if (data.contacts > 0) map['nav.messages'] = data.contacts;
+            if (data.chats > 0) map['nav.chat'] = data.chats;
+            if (data.payments > 0) map['nav.payments'] = data.payments;
+            setBadges(map);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 30000); // every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  // Global search debounced
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (!searchQuery || searchQuery.length < 2) {
+      setSearchResults(null);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    searchTimerRef.current = setTimeout(() => {
+      fetch(`/api/admin/search?q=${encodeURIComponent(searchQuery)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setSearchResults(data);
+          setSearchLoading(false);
+        })
+        .catch(() => setSearchLoading(false));
+    }, 300);
+  }, [searchQuery]);
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Keyboard shortcut: Cmd/Ctrl+K to focus search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+        setTimeout(() => {
+          const input = searchRef.current?.querySelector('input');
+          input?.focus();
+        }, 50);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Restore nav orders from localStorage on mount
   useEffect(() => {
@@ -702,6 +788,7 @@ function AdminLayoutInner({
                       isActive={pathname === item.href}
                       onNavigate={() => setSidebarOpen(false)}
                       t={t}
+                      badge={badges[item.key]}
                     />
                   ))}
                 </Reorder.Group>
@@ -763,11 +850,140 @@ function AdminLayoutInner({
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1">
+          <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1 truncate">
             {allNavItems.find((n) => n.href === pathname)
               ? t(allNavItems.find((n) => n.href === pathname)!.key)
               : 'Admin'}
           </h1>
+
+          {/* Global search */}
+          <div ref={searchRef} className="relative hidden sm:block">
+            <div
+              className={`flex items-center gap-2 rounded-xl border transition-all duration-200 ${
+                searchOpen
+                  ? 'w-64 lg:w-80 border-primary/30 bg-white shadow-md'
+                  : 'w-40 lg:w-52 border-gray-200 bg-surface hover:border-gray-300 cursor-pointer'
+              }`}
+              onClick={() => { if (!searchOpen) setSearchOpen(true); }}
+            >
+              <Search size={15} className="ml-3 text-muted shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder={locale === 'nl' ? 'Zoeken... ⌘K' : 'Search... ⌘K'}
+                className="flex-1 py-2 pr-3 text-sm bg-transparent outline-none placeholder:text-muted/60"
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(''); setSearchResults(null); }} className="pr-3 text-muted hover:text-foreground cursor-pointer">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Search results dropdown */}
+            <AnimatePresence>
+              {searchOpen && searchQuery.length >= 2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="absolute top-full right-0 mt-1.5 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
+                >
+                  {searchLoading ? (
+                    <div className="p-4 text-center text-sm text-muted">{t('common.loading')}</div>
+                  ) : !searchResults || (searchResults.bookings.length === 0 && searchResults.contacts.length === 0 && searchResults.customers.length === 0) ? (
+                    <div className="p-4 text-center text-sm text-muted">{t('common.noResults')}</div>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {/* Bookings */}
+                      {searchResults.bookings.length > 0 && (
+                        <div>
+                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                            <CalendarCheck size={12} /> {t('nav.bookings')} ({searchResults.bookings.length})
+                          </div>
+                          {searchResults.bookings.slice(0, 5).map((b) => (
+                            <Link
+                              key={b.id as string}
+                              href={p('/boekingen')}
+                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                            >
+                              <CalendarCheck size={14} className="text-primary shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{b.guest_name as string}</p>
+                                <p className="text-xs text-muted truncate">{b.reference as string} · {b.guest_email as string}</p>
+                              </div>
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                b.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                              }`}>{b.status as string}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                      {/* Contacts */}
+                      {searchResults.contacts.length > 0 && (
+                        <div>
+                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                            <Mail size={12} /> {t('nav.messages')} ({searchResults.contacts.length})
+                          </div>
+                          {searchResults.contacts.slice(0, 5).map((c) => (
+                            <Link
+                              key={c.id as string}
+                              href={p('/berichten')}
+                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                            >
+                              <Mail size={14} className="text-amber-500 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{c.name as string}</p>
+                                <p className="text-xs text-muted truncate">{c.subject as string}</p>
+                              </div>
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                c.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                              }`}>{c.status as string}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                      {/* Customers */}
+                      {searchResults.customers.length > 0 && (
+                        <div>
+                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                            <Users size={12} /> {t('nav.customers')} ({searchResults.customers.length})
+                          </div>
+                          {searchResults.customers.slice(0, 5).map((cu) => (
+                            <Link
+                              key={cu.id as string}
+                              href={p('/klanten')}
+                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                            >
+                              <User size={14} className="text-green-600 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{cu.name as string}</p>
+                                <p className="text-xs text-muted truncate">{cu.email as string} · {cu.phone as string}</p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile search button */}
+          <button
+            onClick={() => { setSearchOpen(!searchOpen); }}
+            className="sm:hidden p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
           <button
             onClick={() => setShowHelp(true)}
             className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
@@ -776,6 +992,77 @@ function AdminLayoutInner({
             <HelpCircle className="w-5 h-5" />
           </button>
         </header>
+
+        {/* Mobile search bar */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="sm:hidden bg-white border-b border-gray-200 overflow-hidden"
+            >
+              <div className="px-3 py-2" ref={searchRef}>
+                <div className="flex items-center gap-2 bg-surface rounded-xl px-3">
+                  <Search size={15} className="text-muted shrink-0" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder={locale === 'nl' ? 'Zoek boekingen, klanten...' : 'Search bookings, customers...'}
+                    className="flex-1 py-2.5 text-sm bg-transparent outline-none"
+                    autoFocus
+                  />
+                  {searchQuery && (
+                    <button onClick={() => { setSearchQuery(''); setSearchResults(null); }} className="text-muted cursor-pointer">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                {/* Mobile search results */}
+                {searchQuery.length >= 2 && (
+                  <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden max-h-[50vh] overflow-y-auto">
+                    {searchLoading ? (
+                      <div className="p-3 text-center text-sm text-muted">{t('common.loading')}</div>
+                    ) : !searchResults || (searchResults.bookings.length === 0 && searchResults.contacts.length === 0 && searchResults.customers.length === 0) ? (
+                      <div className="p-3 text-center text-sm text-muted">{t('common.noResults')}</div>
+                    ) : (
+                      <>
+                        {searchResults.bookings.slice(0, 3).map((b) => (
+                          <Link key={b.id as string} href={p('/boekingen')} onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="flex items-center gap-2 px-3 py-2 hover:bg-primary/5">
+                            <CalendarCheck size={14} className="text-primary shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{b.guest_name as string}</p>
+                              <p className="text-xs text-muted truncate">{b.reference as string}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        {searchResults.contacts.slice(0, 3).map((c) => (
+                          <Link key={c.id as string} href={p('/berichten')} onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="flex items-center gap-2 px-3 py-2 hover:bg-primary/5">
+                            <Mail size={14} className="text-amber-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{c.name as string}</p>
+                              <p className="text-xs text-muted truncate">{c.subject as string}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        {searchResults.customers.slice(0, 3).map((cu) => (
+                          <Link key={cu.id as string} href={p('/klanten')} onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="flex items-center gap-2 px-3 py-2 hover:bg-primary/5">
+                            <User size={14} className="text-green-600 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{cu.name as string}</p>
+                              <p className="text-xs text-muted truncate">{cu.email as string}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Page content with fade-in */}
         <motion.main

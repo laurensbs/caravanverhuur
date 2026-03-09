@@ -8,6 +8,7 @@ import {
   markNewsletterSent,
   getSubscribedCustomerEmails,
   setupDatabase,
+  logActivity,
 } from '@/lib/db';
 import { sendNewsletterEmail } from '@/lib/email';
 import { generateUnsubscribeToken } from '@/app/api/newsletter/unsubscribe/route';
@@ -116,6 +117,8 @@ export async function POST(request: NextRequest) {
       // Mark as sent
       await markNewsletterSent(id, sentCount);
 
+      logActivity({ actor: 'admin', role: 'admin', action: 'newsletter_sent', entityType: 'newsletter', entityId: id, entityLabel: newsletter.title, details: `${sentCount} ontvangers` }).catch(() => {});
+
       return NextResponse.json({
         success: true,
         sentCount,
@@ -158,6 +161,8 @@ export async function POST(request: NextRequest) {
         throw createError;
       }
     }
+
+    logActivity({ actor: 'admin', role: 'admin', action: 'newsletter_created', entityType: 'newsletter', entityId: result.id, entityLabel: title }).catch(() => {});
 
     return NextResponse.json({ success: true, id: result.id });
   } catch (error) {
@@ -216,6 +221,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteNewsletter(id);
+    logActivity({ actor: 'admin', role: 'admin', action: 'newsletter_deleted', entityType: 'newsletter', entityId: id, entityLabel: `Nieuwsbrief #${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting newsletter:', error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings } from '@/lib/db';
+import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity } from '@/lib/db';
 import { getStripe } from '@/lib/stripe';
 import { sendManualBookingEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
@@ -141,6 +141,9 @@ export async function POST(request: NextRequest) {
     // 7. Auto-create borgchecklist
     createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })
       .catch(err => console.error('Auto borg checklist creation failed:', err));
+
+    // Log activity
+    logActivity({ actor: 'admin', role: 'admin', action: 'booking_created', entityType: 'booking', entityId: result.id, entityLabel: result.reference, details: `${guestName} — ${caravanName} → ${campingName}` }).catch(() => {});
 
     return NextResponse.json({
       success: true,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId } from '@/lib/db';
+import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId, logActivity } from '@/lib/db';
 import { hashPassword } from '@/lib/password';
 
 // GET - List all customers or get chats for a specific customer
@@ -48,6 +48,8 @@ export async function POST(request: NextRequest) {
       name: name.trim(),
       phone: phone?.trim(),
     });
+
+    logActivity({ actor: 'admin', role: 'admin', action: 'customer_created', entityType: 'customer', entityId: result.id, entityLabel: name.trim(), details: email }).catch(() => {});
 
     return NextResponse.json({ 
       success: true, 
@@ -99,6 +101,8 @@ export async function DELETE(request: NextRequest) {
 
     // Note: Admin auth already verified by middleware for /api/admin/* routes
     await deleteCustomer(id);
+
+    logActivity({ actor: 'admin', role: 'admin', action: 'customer_deleted', entityType: 'customer', entityId: id, details: 'Klant verwijderd' }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {
