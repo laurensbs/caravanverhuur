@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new newsletter
-    const { title, content, category, eventDate, eventLocation, photos } = body;
+    const { title, content, category, eventDate, eventLocation, photos, scheduledAt } = body;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Titel en inhoud zijn verplicht' }, { status: 400 });
@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
         eventDate: eventDate || undefined,
         eventLocation: eventLocation?.trim() || undefined,
         photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
+        scheduledAt: scheduledAt || undefined,
       });
     } catch (createError: unknown) {
       // Auto-setup if table doesn't exist
@@ -157,6 +158,7 @@ export async function POST(request: NextRequest) {
           eventDate: eventDate || undefined,
           eventLocation: eventLocation?.trim() || undefined,
           photos: photos && Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined,
+          scheduledAt: scheduledAt || undefined,
         });
       } else {
         throw createError;
@@ -176,7 +178,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, content, category, eventDate, eventLocation, photos } = body;
+    const { id, title, content, category, eventDate, eventLocation, photos, scheduledAt } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
@@ -198,6 +200,7 @@ export async function PUT(request: NextRequest) {
       eventDate: eventDate !== undefined ? eventDate : undefined,
       eventLocation: eventLocation !== undefined ? eventLocation?.trim() || null : undefined,
       photos: photos !== undefined ? (Array.isArray(photos) ? photos.filter((p: string) => p.trim()) : undefined) : undefined,
+      scheduledAt: scheduledAt !== undefined ? scheduledAt : undefined,
     });
 
     if (!result) {

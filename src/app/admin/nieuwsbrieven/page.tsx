@@ -10,6 +10,7 @@ import {
   X,
   Send,
   Calendar,
+  CalendarClock,
   MapPin,
   Newspaper,
   Clock,
@@ -21,6 +22,7 @@ import {
   Eye,
   ImageIcon,
   UserMinus,
+  Timer,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -34,6 +36,7 @@ interface Newsletter {
   event_location: string | null;
   photos: string[] | null;
   status: string;
+  scheduled_at: string | null;
   sent_at: string | null;
   sent_count: number;
   created_at: string;
@@ -41,7 +44,6 @@ interface Newsletter {
 }
 
 type ModalType = 'create' | 'edit' | 'preview' | 'send' | 'delete' | null;
-
 
 
 const CATEGORY_DRAFTS: Record<string, { title: string; content: string }> = {
@@ -100,7 +102,7 @@ export default function AdminNieuwsbrieven() {
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'concept' | 'verzonden'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'concept' | 'ingepland' | 'verzonden'>('all');
   const [filterCategory, setFilterCategory] = useState('all');
 
   // Modal state
@@ -119,6 +121,9 @@ export default function AdminNieuwsbrieven() {
   const [formEventLocation, setFormEventLocation] = useState('');
   const [formPhotos, setFormPhotos] = useState<string[]>([]);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
+  const [formScheduleEnabled, setFormScheduleEnabled] = useState(false);
+  const [formScheduleDate, setFormScheduleDate] = useState('');
+  const [formScheduleTime, setFormScheduleTime] = useState('09:00');
 
   // Send modal: exclude emails
   const [excludeInput, setExcludeInput] = useState('');
@@ -164,6 +169,9 @@ export default function AdminNieuwsbrieven() {
     setFormEventLocation('');
     setFormPhotos([]);
     setNewPhotoUrl('');
+    setFormScheduleEnabled(false);
+    setFormScheduleDate('');
+    setFormScheduleTime('09:00');
     setExcludeInput('');
     setExcludeEmails([]);
     setError('');
@@ -186,6 +194,16 @@ export default function AdminNieuwsbrieven() {
     setFormEventLocation(n.event_location || '');
     setFormPhotos(n.photos || []);
     setNewPhotoUrl('');
+    if (n.scheduled_at) {
+      setFormScheduleEnabled(true);
+      const d = new Date(n.scheduled_at);
+      setFormScheduleDate(d.toISOString().split('T')[0]);
+      setFormScheduleTime(d.toTimeString().slice(0, 5));
+    } else {
+      setFormScheduleEnabled(false);
+      setFormScheduleDate('');
+      setFormScheduleTime('09:00');
+    }
     setError('');
     setSuccess('');
     setModal('edit');
@@ -222,6 +240,10 @@ export default function AdminNieuwsbrieven() {
     setError('');
 
     try {
+      const scheduledAt = formScheduleEnabled && formScheduleDate
+        ? new Date(`${formScheduleDate}T${formScheduleTime}:00`).toISOString()
+        : null;
+
       const payload = {
         title: formTitle,
         content: formContent,
@@ -229,6 +251,7 @@ export default function AdminNieuwsbrieven() {
         eventDate: formEventDate || null,
         eventLocation: formEventLocation || null,
         photos: formPhotos.filter(p => p.trim()),
+        scheduledAt,
       };
 
       if (modal === 'edit' && selected) {
@@ -304,6 +327,7 @@ export default function AdminNieuwsbrieven() {
   // Stats
   const totalCount = newsletters.length;
   const conceptCount = newsletters.filter(n => n.status === 'concept').length;
+  const scheduledCount = newsletters.filter(n => n.status === 'ingepland').length;
   const sentCount = newsletters.filter(n => n.status === 'verzonden').length;
   const totalRecipients = newsletters.reduce((sum, n) => sum + (n.sent_count || 0), 0);
 
@@ -318,10 +342,11 @@ export default function AdminNieuwsbrieven() {
   return (
     <div className="space-y-3 sm:space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4">
         {[
           { label: t('newsletters.total'), value: totalCount, icon: Newspaper, color: 'text-[#0EA5E9]', bg: 'bg-[#0EA5E9]/10' },
           { label: t('newsletters.drafts'), value: conceptCount, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: t('newsletters.scheduledCount'), value: scheduledCount, icon: CalendarClock, color: 'text-violet-600', bg: 'bg-violet-50' },
           { label: t('newsletters.sent'), value: sentCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: t('newsletters.totalRecipients'), value: totalRecipients, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
         ].map(s => (
@@ -355,11 +380,12 @@ export default function AdminNieuwsbrieven() {
 
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'concept' | 'verzonden')}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'concept' | 'ingepland' | 'verzonden')}
             className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
             <option value="all">{t('newsletters.allStatuses')}</option>
             <option value="concept">{t('newsletters.draftsFilter')}</option>
+            <option value="ingepland">{t('newsletters.scheduledFilter')}</option>
             <option value="verzonden">{t('newsletters.sentFilter')}</option>
           </select>
 
@@ -409,11 +435,26 @@ export default function AdminNieuwsbrieven() {
         {filtered.map((n) => {
           const cat = getCategoryInfo(n.category);
           const isSent = n.status === 'verzonden';
+          const isScheduled = n.status === 'ingepland';
+
+          // Compute time until scheduled send
+          let timeUntil = '';
+          if (isScheduled && n.scheduled_at) {
+            const diff = new Date(n.scheduled_at).getTime() - Date.now();
+            if (diff > 0) {
+              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              if (days > 0) timeUntil = t('newsletters.daysLabel', { count: String(days) }) + ' ' + t('newsletters.hoursLabel', { count: String(hours) });
+              else if (hours > 0) timeUntil = t('newsletters.hoursLabel', { count: String(hours) }) + ' ' + t('newsletters.minutesLabel', { count: String(mins) });
+              else timeUntil = t('newsletters.minutesLabel', { count: String(mins) });
+            }
+          }
 
           return (
             <div
               key={n.id}
-              className="bg-white rounded-xl p-3 sm:p-5 hover:shadow-sm transition-shadow"
+              className={`bg-white rounded-xl p-3 sm:p-5 hover:shadow-sm transition-shadow ${isScheduled ? 'ring-1 ring-violet-200' : ''}`}
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -425,6 +466,11 @@ export default function AdminNieuwsbrieven() {
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
                         <CheckCircle2 className="w-3 h-3 inline -mt-0.5 mr-0.5" />
                         {t('newsletters.sent')}
+                      </span>
+                    ) : isScheduled ? (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-50 text-violet-700">
+                        <Timer className="w-3 h-3 inline -mt-0.5 mr-0.5" />
+                        {t('newsletters.scheduled')}
                       </span>
                     ) : (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
@@ -438,6 +484,17 @@ export default function AdminNieuwsbrieven() {
                   <p className="text-sm text-muted mt-0.5 line-clamp-2">{n.content}</p>
 
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted flex-wrap">
+                    {isScheduled && n.scheduled_at && (
+                      <span className="flex items-center gap-1 text-violet-600 font-medium">
+                        <CalendarClock className="w-3 h-3" />
+                        {formatDateTime(n.scheduled_at, dateLocale)}
+                        {timeUntil && (
+                          <span className="text-violet-400 font-normal ml-1">
+                            ({t('newsletters.timeUntilSend', { time: timeUntil })})
+                          </span>
+                        )}
+                      </span>
+                    )}
                     {n.event_date && (
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -480,13 +537,15 @@ export default function AdminNieuwsbrieven() {
                       >
                         <Pencil className="w-4 h-4 text-muted" />
                       </button>
-                      <button
-                        onClick={() => openSend(n)}
-                        className="p-2 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                        title={t("common.send")}
-                      >
-                        <Send className="w-4 h-4 text-emerald-600" />
-                      </button>
+                      {!isScheduled && (
+                        <button
+                          onClick={() => openSend(n)}
+                          className="p-2 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                          title={t("common.send")}
+                        >
+                          <Send className="w-4 h-4 text-emerald-600" />
+                        </button>
+                      )}
                     </>
                   )}
                   <button
@@ -684,6 +743,61 @@ export default function AdminNieuwsbrieven() {
                       <p className="text-xs text-muted mt-1">{t('newsletters.photosHint')}</p>
                     </div>
 
+                    {/* Scheduling */}
+                    <div className="rounded-xl border border-violet-100 bg-violet-50/30 p-4">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formScheduleEnabled}
+                          onChange={(e) => {
+                            setFormScheduleEnabled(e.target.checked);
+                            if (!e.target.checked) {
+                              setFormScheduleDate('');
+                              setFormScheduleTime('09:00');
+                            }
+                          }}
+                          className="accent-violet-600 w-4 h-4 cursor-pointer"
+                        />
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="w-4 h-4 text-violet-600" />
+                          <span className="text-sm font-medium text-foreground">
+                            {t('newsletters.scheduleOption')}
+                          </span>
+                        </div>
+                      </label>
+                      {formScheduleEnabled && (
+                        <div className="mt-3 grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-muted mb-1">
+                              {t('newsletters.scheduleDate')}
+                            </label>
+                            <input
+                              type="date"
+                              value={formScheduleDate}
+                              onChange={(e) => setFormScheduleDate(e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-200 cursor-pointer"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted mb-1">
+                              {t('newsletters.scheduleTime')}
+                            </label>
+                            <input
+                              type="time"
+                              value={formScheduleTime}
+                              onChange={(e) => setFormScheduleTime(e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-200 cursor-pointer"
+                            />
+                          </div>
+                          <p className="col-span-2 text-xs text-violet-600">
+                            <Timer className="w-3 h-3 inline -mt-0.5 mr-1" />
+                            {t('newsletters.scheduledAtHint')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
                     {error && (
                       <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">
                         <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -701,11 +815,15 @@ export default function AdminNieuwsbrieven() {
                       </button>
                       <button
                         onClick={handleSave}
-                        disabled={saving}
-                        className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition cursor-pointer disabled:opacity-50"
+                        disabled={saving || (formScheduleEnabled && !formScheduleDate)}
+                        className={`flex-1 px-4 py-2.5 text-white rounded-lg text-sm font-medium transition cursor-pointer disabled:opacity-50 ${
+                          formScheduleEnabled ? 'bg-violet-600 hover:bg-violet-700' : 'bg-primary hover:bg-primary-dark'
+                        }`}
                       >
                         {saving ? (
                           <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                        ) : formScheduleEnabled ? (
+                          <><CalendarClock className="w-4 h-4 inline -mt-0.5 mr-1" /> {t('newsletters.saveAsScheduled')}</>
                         ) : modal === 'create' ? (
                           t('newsletters.saveAsDraft')
                         ) : (

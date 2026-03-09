@@ -207,6 +207,7 @@ export async function setupDatabase() {
       event_location TEXT,
       photos JSONB DEFAULT '[]',
       status TEXT NOT NULL DEFAULT 'concept',
+      scheduled_at TIMESTAMP,
       sent_at TIMESTAMP,
       sent_count INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW(),
@@ -242,6 +243,13 @@ export async function setupDatabase() {
   // Migration: add photos column to newsletters
   try {
     await sql`ALTER TABLE newsletters ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'`;
+  } catch {
+    // ignore
+  }
+
+  // Migration: add scheduled_at column to newsletters
+  try {
+    await sql`ALTER TABLE newsletters ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMP`;
   } catch {
     // ignore
   }
@@ -1114,12 +1122,14 @@ export async function createNewsletter(data: {
   eventDate?: string;
   eventLocation?: string;
   photos?: string[];
+  scheduledAt?: string;
 }) {
   const id = generateId('NL');
   const photosJson = data.photos ? JSON.stringify(data.photos) : '[]';
+  const status = data.scheduledAt ? 'ingepland' : 'concept';
   await sql`
-    INSERT INTO newsletters (id, title, content, category, event_date, event_location, photos)
-    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null}, ${photosJson})
+    INSERT INTO newsletters (id, title, content, category, event_date, event_location, photos, status, scheduled_at)
+    VALUES (${id}, ${data.title}, ${data.content}, ${data.category}, ${data.eventDate || null}, ${data.eventLocation || null}, ${photosJson}, ${status}, ${data.scheduledAt || null})
   `;
   return { id };
 }
@@ -1141,6 +1151,7 @@ export async function updateNewsletter(id: string, data: {
   eventDate?: string | null;
   eventLocation?: string | null;
   photos?: string[];
+  scheduledAt?: string | null;
 }) {
   const existing = await getNewsletterById(id);
   if (!existing) return null;
@@ -1151,6 +1162,12 @@ export async function updateNewsletter(id: string, data: {
   const eventDate = data.eventDate !== undefined ? data.eventDate : existing.event_date;
   const eventLocation = data.eventLocation !== undefined ? data.eventLocation : existing.event_location;
   const photos = data.photos !== undefined ? JSON.stringify(data.photos) : (existing.photos || '[]');
+  const scheduledAt = data.scheduledAt !== undefined ? data.scheduledAt : existing.scheduled_at;
+  // If user sets a scheduled_at and status is concept, change to ingepland; if removed, back to concept
+  let status = existing.status;
+  if (existing.status !== 'verzonden') {
+    status = scheduledAt ? 'ingepland' : 'concept';
+  }
 
   await sql`
     UPDATE newsletters SET
@@ -1160,6 +1177,8 @@ export async function updateNewsletter(id: string, data: {
       event_date = ${eventDate},
       event_location = ${eventLocation},
       photos = ${typeof photos === 'string' ? photos : JSON.stringify(photos)},
+      scheduled_at = ${scheduledAt},
+      status = ${status},
       updated_at = NOW()
     WHERE id = ${id}
   `;
@@ -1179,6 +1198,15 @@ export async function markNewsletterSent(id: string, sentCount: number) {
 
 export async function deleteNewsletter(id: string) {
   await sql`DELETE FROM newsletters WHERE id = ${id}`;
+}
+
+export async function getDueScheduledNewsletters() {
+  const result = await sql`
+    SELECT * FROM newsletters
+    WHERE status = 'ingepland' AND scheduled_at IS NOT NULL AND scheduled_at <= NOW()
+    ORDER BY scheduled_at ASC
+  `;
+  return result.rows;
 }
 
 export async function getAllCustomerEmails() {
