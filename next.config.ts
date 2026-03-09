@@ -24,6 +24,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    // Old destination slugs → main bestemmingen (campings) page
+    const oldDestinationSlugs = [
+      'pals', 'estartit', 'roses', 'lloret-de-mar', 'cadaques', 'blanes',
+      'sant-pere-pescador', 'tossa-de-mar', 'begur', 'calella-de-palafrugell',
+      'platja-daro', 'empuriabrava', 'figueres', 'palamos',
+    ];
+    return oldDestinationSlugs.map(slug => ({
+      source: `/bestemmingen/${slug}`,
+      destination: '/bestemmingen',
+      permanent: true,
+    }));
+  },
 };
 
 export default nextConfig;

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { caravans } from '@/data/caravans';
-import { destinations } from '@/data/destinations';
+import { campings } from '@/data/campings';
 import { getAllCustomCaravans } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const c of dbCaravans) caravanIds.add(c.id);
   } catch { /* DB not available, use static only */ }
 
-  const destinationSlugs = destinations.map(d => d.slug);
+  const campingSlugs = campings.map(c => c.slug);
 
   return [
     ...staticPages.map(page => ({
@@ -42,12 +42,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
-    { url: `${baseUrl}/bestemmingen`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.7 },
-    ...destinationSlugs.map(slug => ({
+    { url: `${baseUrl}/bestemmingen`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
+    ...campingSlugs.map(slug => ({
       url: `${baseUrl}/bestemmingen/${slug}`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
-      priority: 0.6,
+      priority: 0.7,
     })),
   ];
 }
