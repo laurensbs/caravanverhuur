@@ -373,7 +373,7 @@ export default function Header() {
                         {t('destinations.placesLabel')}
                       </p>
                       <div className="space-y-0.5">
-                        {destinations.slice(0, 7).map(d => (
+                        {destinations.slice(0, 6).map(d => (
                           <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="28px" />
@@ -396,7 +396,7 @@ export default function Header() {
                         Bezienswaardigheden
                       </p>
                       <div className="space-y-0.5">
-                        {attractions.slice(0, 8).map(a => (
+                        {attractions.slice(0, 6).map(a => (
                           <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={a.img} alt={a.name} fill className="object-cover" sizes="28px" />
@@ -407,6 +407,9 @@ export default function Header() {
                             </div>
                           </Link>
                         ))}
+                        <Link href="/bestemmingen#bezienswaardigheden" className="block px-2 py-1.5 text-xs text-primary font-medium">
+                          Alle bezienswaardigheden →
+                        </Link>
                       </div>
                     </div>
 

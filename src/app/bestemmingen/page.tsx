@@ -205,56 +205,34 @@ export default function BestemmingenPage() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [allCampings, setAllCampings] = useState<Camping[]>(staticCampings);
 
-  // Fetch DB campings (admin-managed) and merge with static
+  // Fetch DB-only campings (admin-added, not in static data)
   useEffect(() => {
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => {
         if (data.campings?.length) {
-          // Map DB campings to Camping interface
-          const dbMapped: Camping[] = data.campings.map((c: Record<string, unknown>) => ({
-            id: String(c.id),
-            name: (c.name as string) || '',
-            slug: (c.slug as string) || '',
-            location: (c.location as string) || '',
-            region: (c.region as string) || 'Baix Empordà',
-            description: (c.description as string) || '',
-            longDescription: (c.long_description as string) || '',
-            website: (c.website as string) || '',
-            photos: (Array.isArray(c.photos) ? c.photos : []) as string[],
-            coordinates: { lat: Number(c.latitude) || 0, lng: Number(c.longitude) || 0 },
-            facilities: (Array.isArray(c.facilities) ? c.facilities : []) as string[],
-            nearestDestinations: (Array.isArray(c.nearest_destinations) ? c.nearest_destinations : []) as string[],
-            bestFor: (Array.isArray(c.best_for) ? c.best_for : []) as string[],
-          }));
-
-          // Merge: DB data enriches static, but ALWAYS keep static photos (local paths guaranteed to work)
-          const dbNameMap = new Map(dbMapped.map(c => [c.name.toLowerCase(), c]));
-          const merged: Camping[] = [];
-          const usedDbNames = new Set<string>();
-
-          // Start with static, enrich with DB data but keep static photos
-          for (const sc of staticCampings) {
-            const dbVersion = dbNameMap.get(sc.name.toLowerCase());
-            if (dbVersion) {
-              // Keep static photos (local paths), use DB for other updated fields
-              merged.push({
-                ...dbVersion,
-                photos: sc.photos.length > 0 ? sc.photos : dbVersion.photos,
-              });
-              usedDbNames.add(sc.name.toLowerCase());
-            } else {
-              merged.push(sc);
-              usedDbNames.add(sc.name.toLowerCase());
-            }
+          const staticNames = new Set(staticCampings.map(c => c.name.toLowerCase()));
+          // Only add campings from DB that are NOT already in static data
+          const dbOnly: Camping[] = data.campings
+            .filter((c: Record<string, unknown>) => !staticNames.has(((c.name as string) || '').toLowerCase()))
+            .map((c: Record<string, unknown>) => ({
+              id: String(c.id),
+              name: (c.name as string) || '',
+              slug: (c.slug as string) || '',
+              location: (c.location as string) || '',
+              region: (c.region as string) || 'Baix Empordà',
+              description: (c.description as string) || '',
+              longDescription: (c.long_description as string) || '',
+              website: (c.website as string) || '',
+              photos: (Array.isArray(c.photos) ? c.photos : []) as string[],
+              coordinates: { lat: Number(c.latitude) || 0, lng: Number(c.longitude) || 0 },
+              facilities: (Array.isArray(c.facilities) ? c.facilities : []) as string[],
+              nearestDestinations: (Array.isArray(c.nearest_destinations) ? c.nearest_destinations : []) as string[],
+              bestFor: (Array.isArray(c.best_for) ? c.best_for : []) as string[],
+            }));
+          if (dbOnly.length > 0) {
+            setAllCampings([...staticCampings, ...dbOnly]);
           }
-          // Add DB-only campings (not in static)
-          for (const dc of dbMapped) {
-            if (!usedDbNames.has(dc.name.toLowerCase())) {
-              merged.push(dc);
-            }
-          }
-          setAllCampings(merged);
         }
       })
       .catch((e) => console.error('Fetch error:', e));
