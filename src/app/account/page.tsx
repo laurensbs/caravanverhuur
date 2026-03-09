@@ -149,7 +149,7 @@ function AccountPageInner() {
         <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden">
           <div className="absolute inset-0 opacity-15">
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
+              src="/images/campings/begur_sa_tuna.jpg"
               alt="Costa Brava strand"
               fill
               className="object-cover"

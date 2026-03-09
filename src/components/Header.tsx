@@ -336,7 +336,7 @@ export default function Header() {
                           {(campingsByRegion[region] || []).slice(0, 5).map(c => (
                             <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-2 px-2 -mx-2 rounded-lg transition-colors">
                               <div className="w-8 h-8 rounded overflow-hidden shrink-0 relative bg-surface-alt">
-                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill unoptimized className="object-cover transition-transform duration-300" sizes="32px" />
+                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover transition-transform duration-300" sizes="32px" />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm text-foreground-light transition-colors truncate">{c.name}</p>
@@ -354,7 +354,7 @@ export default function Header() {
                     ))}
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
-                      <Image src={featuredCamping.photos?.[0] || '/og-image.jpg'} alt={featuredCamping.name} fill unoptimized className="object-cover" sizes="250px" />
+                      <Image src={featuredCamping.photos?.[0] || '/og-image.jpg'} alt={featuredCamping.name} fill className="object-cover" sizes="250px" />
                       <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{featuredCamping.region}</p>
@@ -454,7 +454,7 @@ export default function Header() {
                           {(campingsByRegion[region] || []).slice(0, 4).map(c => (
                             <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-foreground-light">
                               <div className="w-8 h-8 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill unoptimized className="object-cover" sizes="32px" />
+                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="32px" />
                               </div>
                               <div className="min-w-0">
                                 <span className="block truncate">{c.name}</span>

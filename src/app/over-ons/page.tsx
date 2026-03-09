@@ -58,7 +58,7 @@ export default function OverOnsPage() {
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.2 }}>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/La_banyera_de_la_russa-calella_de_palafurgell-8-2013.JPG/1280px-La_banyera_de_la_russa-calella_de_palafurgell-8-2013.JPG"
+                  src="/images/campings/la_banyera_calella.jpg"
                   alt="Costa Brava camping"
                   width={600}
                   height={400}

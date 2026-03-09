@@ -72,7 +72,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
           src={camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg'}
           alt={`${camping.name} — ${camping.location}, Costa Brava`}
           fill
-          unoptimized
           className="object-cover"
           priority
           sizes="100vw"
@@ -212,7 +211,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                         src={photo}
                         alt={`${camping.name} foto ${i + 1}`}
                         fill
-                        unoptimized
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 640px) 50vw, 33vw"
                       />
@@ -227,50 +225,38 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             {nearbyDestinations.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('destinations.nearbyPlacesTitle')}</h2>
-                <p className="text-gray-500 text-sm mb-6">{t('destinations.nearbyPlacesSubtitle')}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <p className="text-gray-500 text-sm mb-4">{t('destinations.nearbyPlacesSubtitle')}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {nearbyDestinations.map(dest => (
-                    <div
+                    <Link
                       key={dest.slug}
-                      className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all"
+                      href={`/bestemmingen/${dest.slug}`}
+                      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all"
                     >
-                      <div className="relative aspect-[16/9] overflow-hidden">
+                      <div className="relative aspect-[16/10] overflow-hidden">
                         <Image
                           src={dest.heroImage}
                           alt={`${dest.name} — ${dest.region}, Costa Brava`}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          sizes="(max-width: 640px) 100vw, 50vw"
+                          sizes="(max-width: 640px) 50vw, 33vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <h3 className="text-lg font-bold text-white">{dest.name}</h3>
-                          <div className="flex items-center gap-2 text-white/70 text-xs mt-1">
-                            <MapPin size={12} /> {dest.region}
-                            {dest.knownFor && (
-                              <>
-                                <span className="text-white/40">·</span>
-                                <span>{dest.knownFor}</span>
-                              </>
-                            )}
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <h3 className="text-sm font-bold text-white">{dest.name}</h3>
+                          <div className="flex items-center gap-1.5 text-white/70 text-[11px] mt-0.5">
+                            <MapPin size={10} /> {dest.region}
                           </div>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <p className="text-sm text-gray-600 line-clamp-2 mb-3">{dest.description}</p>
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {dest.bestFor.slice(0, 3).map(tag => (
-                            <span key={tag} className="px-2 py-0.5 bg-gray-50 rounded-full text-[11px] text-gray-500 border border-gray-100">{tag}</span>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            {dest.weather && <span className="flex items-center gap-1"><Sun size={12} className="text-amber-500" /> {dest.weather.summer}</span>}
-                            {dest.beaches?.length > 0 && <span className="flex items-center gap-1"><Umbrella size={12} className="text-cyan-500" /> {dest.beaches.length} {t('destinations.beachesShort')}</span>}
-                          </div>
+                      <div className="p-2.5">
+                        <p className="text-xs text-gray-600 line-clamp-2 mb-2">{dest.description}</p>
+                        <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                          {dest.weather && <span className="flex items-center gap-0.5"><Sun size={10} className="text-amber-500" /> {dest.weather.summer}</span>}
+                          {dest.beaches?.length > 0 && <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-cyan-500" /> {dest.beaches.length} {t('destinations.beachesShort')}</span>}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -342,7 +328,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                           src={c.photos?.[0] || '/og-image.jpg'}
                           alt={c.name}
                           fill
-                          unoptimized
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           sizes="48px"
                         />
@@ -369,7 +354,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       {/* CTA banner */}
       <section className="max-w-6xl mx-auto px-4 pb-16">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg')] bg-cover bg-center opacity-10" />
+          <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-10" />
           <div className="relative">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('destinations.ctaTitle')}</h2>
             <p className="text-white/80 mb-6 max-w-lg mx-auto">{t('destinations.ctaSubtitle')}</p>

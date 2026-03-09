@@ -66,7 +66,6 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
           src={camping.photos?.[0] || '/og-image.jpg'}
           alt={`${camping.name} — ${camping.location}, Costa Brava`}
           fill
-          unoptimized
           className="object-cover group-hover:scale-105 transition-transform duration-700"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -239,7 +238,7 @@ export default function BestemmingenPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Playa_de_Pals_%28Costa_Brava%29.jpg/1280px-Playa_de_Pals_%28Costa_Brava%29.jpg')] bg-cover bg-center opacity-20" />
+        <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-20" />
         <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-20 sm:pt-20 sm:pb-24">
           <nav className="flex items-center gap-1.5 text-white/50 text-xs mb-6">
             <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
@@ -446,7 +445,7 @@ export default function BestemmingenPage() {
       {/* CTA section */}
       <section className="max-w-7xl mx-auto px-4 pb-20">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg')] bg-cover bg-center opacity-10" />
+          <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-10" />
           <div className="relative">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('destinations.ctaTitle')}</h2>
             <p className="text-white/80 mb-6 max-w-lg mx-auto">{t('destinations.ctaSubtitle')}</p>

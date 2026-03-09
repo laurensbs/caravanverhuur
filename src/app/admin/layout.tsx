@@ -198,7 +198,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <div className="hidden lg:flex lg:w-1/2 relative bg-[#0C4A6E] overflow-hidden">
             <div className="absolute inset-0 opacity-20">
               <Image
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
+                src="/images/campings/begur_sa_tuna.jpg"
                 alt="Costa Brava"
                 fill
                 className="object-cover"
@@ -259,7 +259,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="lg:hidden bg-[#0C4A6E] px-5 pt-6 pb-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <Image
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Begur_Sa_Tuna_05_JMM.JPG/1280px-Begur_Sa_Tuna_05_JMM.JPG"
+                  src="/images/campings/begur_sa_tuna.jpg"
                   alt="Costa Brava"
                   fill
                   className="object-cover"

@@ -106,7 +106,7 @@ export default function HomePage() {
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"
+            src="/images/campings/lloret_de_mar_panorama.jpg"
             alt={t('home.heroAlt')}
             fill
             className="object-cover"
@@ -579,7 +579,7 @@ export default function HomePage() {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <Image
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Golfo_de_Rosas.jpg/1280px-Golfo_de_Rosas.jpg"
+                  src="/images/campings/golfo_de_rosas.jpg"
                   alt="Caravan interieur volledig ingericht"
                   width={600}
                   height={400}
