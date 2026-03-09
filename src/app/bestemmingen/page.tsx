@@ -48,14 +48,20 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
     >
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-cyan-50">
-        <Image
-          src={camping.photos?.[0] || '/og-image.jpg'}
-          alt={`${camping.name} — ${camping.location}, Costa Brava`}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
+        {camping.photos?.[0] && (
+          <Image
+            src={camping.photos[0]}
+            alt={`${camping.name} — ${camping.location}, Costa Brava`}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        )}
+        {!camping.photos?.[0] && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Tent size={40} className="text-primary/30" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
         {/* Region badge */}
@@ -174,6 +180,12 @@ const attractionCards = [
   { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵', desc: 'Botanische tuin met zomerconcerten', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
   { name: 'Kanalen Empuriabrava', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤', desc: 'Het Venetië van Spanje — 24 km kanalen', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
   { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', desc: 'Best bewaarde middeleeuws dorp van Catalonië', img: '/images/campings/els_masos_de_pals.jpg' },
+  { name: 'Santa Clotilde tuinen', place: 'Lloret de Mar', slug: 'lloret-de-mar', icon: '🌿', desc: 'Spectaculaire Italiaanse tuinen boven de kliffen', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
+  { name: 'Casa-Museu Dalí', place: 'Portlligat', slug: 'cadaques', icon: '🖼️', desc: 'Het excentrieke woonhuis van Salvador Dalí', img: '/images/campings/portlligat.jpg' },
+  { name: 'Ciutadella de Roses', place: 'Roses', slug: 'roses', icon: '🏛️', desc: 'Grieks-Romeinse ruïnes met 3000 jaar geschiedenis', img: '/images/campings/ciutadella_de_roses-2022.jpg' },
+  { name: 'Aiguamolls de l\'Empordà', place: 'Sant Pere Pescador', slug: 'sant-pere-pescador', icon: '🦩', desc: 'Natuurpark met flamingo\'s en 300+ vogelsoorten', img: '/images/campings/animales-aiguamolls_l_emporda-2013.jpg' },
+  { name: 'Sa Palomera', place: 'Blanes', slug: 'blanes', icon: '🪨', desc: 'Iconische rots die de Costa Brava markeert', img: '/images/campings/sa_palomera_a_blanes.jpg' },
+  { name: 'Cala Aiguablava', place: 'Begur', slug: 'begur', icon: '💎', desc: 'Turkooisblauw juweel tussen de rotsen', img: '/images/campings/cala_d_aiguablava__begur.jpg' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -437,9 +449,6 @@ export default function BestemmingenPage() {
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="260px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="text-xl">{a.icon}</span>
-                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <h3 className="text-sm font-bold text-white">{a.name}</h3>
                       <p className="text-[11px] text-white/70">{a.place}</p>
@@ -577,7 +586,6 @@ export default function BestemmingenPage() {
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute top-3 left-3"><span className="text-2xl">{a.icon}</span></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-lg font-bold text-white">{a.name}</h3>
                     <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {a.place}</p>

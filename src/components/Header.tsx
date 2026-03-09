@@ -31,14 +31,16 @@ const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'];
 
 /* Curated attractions for the mega menu */
 const attractions = [
-  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨' },
-  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰' },
-  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️' },
-  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺' },
-  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️' },
-  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏯' },
-  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵' },
-  { name: 'Kanalen', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤' },
+  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
+  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
+  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
+  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
+  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', img: '/images/campings/cap_de_creus_landscape.jpg' },
+  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', img: '/images/campings/begurcastle.jpg' },
+  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
+  { name: 'Kanalen', place: 'Empuriabrava', slug: 'empuriabrava', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
+  { name: 'Santa Clotilde tuinen', place: 'Lloret de Mar', slug: 'lloret-de-mar', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
+  { name: 'Ruïnes Empúries', place: "L'Escala", slug: 'sant-pere-pescador', img: '/images/campings/msodaiguistperefigueres1.jpg' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -349,7 +351,7 @@ export default function Header() {
                       </p>
                       <div className="space-y-0.5">
                         {staticCampingsData.slice(0, 6).map(c => (
-                          <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
+                          <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
                             </div>
@@ -372,7 +374,7 @@ export default function Header() {
                       </p>
                       <div className="space-y-0.5">
                         {destinations.slice(0, 7).map(d => (
-                          <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
+                          <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="28px" />
                             </div>
@@ -394,9 +396,11 @@ export default function Header() {
                         <span>🏛️</span> Bezienswaardigheden
                       </p>
                       <div className="space-y-0.5">
-                        {attractions.map(a => (
-                          <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
-                            <span className="text-base w-7 h-7 flex items-center justify-center shrink-0">{a.icon}</span>
+                        {attractions.slice(0, 8).map(a => (
+                          <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
+                            <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
+                              <Image src={a.img} alt={a.name} fill className="object-cover" sizes="28px" />
+                            </div>
                             <div className="min-w-0">
                               <p className="text-sm text-foreground-light truncate">{a.name}</p>
                               <p className="text-[11px] text-muted">{a.place}</p>
@@ -536,9 +540,11 @@ export default function Header() {
 
                       {/* Bezienswaardigheden */}
                       <p className="px-3 pt-3 pb-1 text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">🏛️ Bezienswaardigheden</p>
-                      {attractions.slice(0, 4).map(a => (
+                      {attractions.slice(0, 5).map(a => (
                         <Link key={a.slug} href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
-                          <span className="text-base w-7 h-7 flex items-center justify-center shrink-0">{a.icon}</span>
+                          <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
+                            <Image src={a.img} alt={a.name} fill className="object-cover" sizes="28px" />
+                          </div>
                           <div className="min-w-0">
                             <span className="block truncate text-[13px]">{a.name}</span>
                             <span className="block text-[11px] text-muted">{a.place}</span>
