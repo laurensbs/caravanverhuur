@@ -484,7 +484,7 @@ function BoekenContent() {
                         <p className="text-sm sm:text-base text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 overflow-hidden">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <div className="relative flex-1 min-w-0">
                             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
@@ -493,7 +493,8 @@ function BoekenContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 sm:-mx-5 sm:px-5">
+                        <div className="overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 sm:-mx-5 sm:px-5">
+                          <div className="flex items-center gap-2 w-max">
                           <button onClick={() => setLocationFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                             {t('booking.allLocations')}
                           </button>
@@ -502,6 +503,7 @@ function BoekenContent() {
                               {loc}
                             </button>
                           ))}
+                          </div>
                         </div>
                       </div>
 
