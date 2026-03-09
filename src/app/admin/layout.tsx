@@ -30,6 +30,7 @@ import {
   MessageCircle,
   HelpCircle,
   ChevronRight,
+  ChevronLeft,
   Tent,
   GripVertical,
   ExternalLink,
@@ -502,6 +503,7 @@ function SidebarNavItem({
   t,
   badge,
   isMobile,
+  collapsed,
 }: {
   item: { href: string; key: string; icon: typeof LayoutDashboard };
   isActive: boolean;
@@ -509,6 +511,7 @@ function SidebarNavItem({
   t: (key: string) => string;
   badge?: number;
   isMobile?: boolean;
+  collapsed?: boolean;
 }) {
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
@@ -525,13 +528,14 @@ function SidebarNavItem({
         onNavigate();
       }}
       draggable={false}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+      title={collapsed ? t(item.key) : undefined}
+      className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
         isActive
           ? 'bg-white/15 text-white shadow-sm'
           : 'text-white/70 hover:bg-white/10 hover:text-white'
       }`}
     >
-      {!isMobile && (
+      {!isMobile && !collapsed && (
         <GripVertical
           className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing"
           onPointerDown={(e) => controls.start(e)}
@@ -539,12 +543,16 @@ function SidebarNavItem({
         />
       )}
       <Icon className="w-5 h-5 shrink-0" />
-      <span className="flex-1">{t(item.key)}</span>
-      {badge && badge > 0 ? (
+      {!collapsed && <span className="flex-1">{t(item.key)}</span>}
+      {!collapsed && badge && badge > 0 ? (
         <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
           {badge > 99 ? '99+' : badge}
         </span>
-      ) : isActive ? (
+      ) : collapsed && badge && badge > 0 ? (
+        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
+          {badge > 99 ? '99+' : badge}
+        </span>
+      ) : !collapsed && isActive ? (
         <motion.div
           layoutId="activeIndicator"
           className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
@@ -555,6 +563,10 @@ function SidebarNavItem({
 
   if (isMobile) {
     return <li className="list-none">{linkContent}</li>;
+  }
+
+  if (collapsed) {
+    return <li className="list-none relative">{linkContent}</li>;
   }
 
   return (
@@ -608,6 +620,7 @@ function AdminLayoutInner({
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Detect mobile (< lg breakpoint)
   useEffect(() => {
@@ -617,6 +630,20 @@ function AdminLayoutInner({
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
+
+  // Restore collapsed state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('admin_sidebar_collapsed');
+    if (saved === 'true') setSidebarCollapsed(true);
+  }, []);
+
+  const toggleCollapsed = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('admin_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   // Fetch badge counts periodically
   useEffect(() => {
@@ -772,31 +799,57 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#0C4A6E] text-white flex flex-col transform transition-transform duration-200 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed inset-y-0 left-0 z-50 bg-[#0C4A6E] text-white flex flex-col h-screen transition-all duration-200 ${
+          isMobile
+            ? `w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : `${sidebarCollapsed ? 'w-16' : 'w-64'} translate-x-0`
         }`}
       >
-        <div className="px-4 pt-3 pb-1 lg:px-5 lg:pt-4 lg:pb-2">
+        {/* Logo + collapse toggle */}
+        <div className={`${sidebarCollapsed ? 'px-2 pt-3 pb-1' : 'px-4 pt-3 pb-1 lg:px-5 lg:pt-4 lg:pb-2'}`}>
           <div className="flex items-center justify-center">
-            <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-              alt="Caravanverhuur Costa Brava"
-              width={200}
-              height={56}
-              className="w-32 lg:w-40 h-auto drop-shadow-lg"
-             
-            />
+            {sidebarCollapsed ? (
+              <Image
+                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                alt="CV"
+                width={40}
+                height={40}
+                className="w-10 h-auto drop-shadow-lg"
+              />
+            ) : (
+              <Image
+                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                alt="Caravanverhuur Costa Brava"
+                width={200}
+                height={56}
+                className="w-32 lg:w-40 h-auto drop-shadow-lg"
+              />
+            )}
           </div>
         </div>
 
-        <nav className="flex-1 p-3 overflow-y-auto space-y-2">
+        {/* Desktop collapse toggle */}
+        {!isMobile && (
+          <button
+            onClick={toggleCollapsed}
+            className="mx-auto mb-1 flex items-center justify-center w-7 h-7 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title={sidebarCollapsed ? 'Expand' : 'Collapse'}
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        )}
+
+        <nav className={`flex-1 ${sidebarCollapsed ? 'px-1.5' : 'p-3'} overflow-y-auto space-y-2`}>
           {navSections.map((section) => {
             const orderedItems = getOrderedItems(section.sectionKey, section.items);
             return (
               <div key={section.sectionKey}>
-                <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">
-                  {t(section.sectionKey)}
-                </div>
+                {!sidebarCollapsed && (
+                  <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                    {t(section.sectionKey)}
+                  </div>
+                )}
+                {sidebarCollapsed && <div className="my-1 mx-2 border-t border-white/10" />}
                 {isMobile ? (
                   <ul className="space-y-0.5">
                     {orderedItems.map((item) => (
@@ -808,6 +861,20 @@ function AdminLayoutInner({
                         t={t}
                         badge={badges[item.key]}
                         isMobile
+                      />
+                    ))}
+                  </ul>
+                ) : sidebarCollapsed ? (
+                  <ul className="space-y-0.5">
+                    {orderedItems.map((item) => (
+                      <SidebarNavItem
+                        key={item.href}
+                        item={item}
+                        isActive={pathname === item.href}
+                        onNavigate={() => {}}
+                        t={t}
+                        badge={badges[item.key]}
+                        collapsed
                       />
                     ))}
                   </ul>
@@ -835,6 +902,26 @@ function AdminLayoutInner({
           })}
         </nav>
 
+        {sidebarCollapsed ? (
+          <div className="p-1.5 border-t border-white/10 space-y-1 flex flex-col items-center">
+            <a
+              href={mainSiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg text-white/50 hover:bg-white/10 hover:text-white/80 transition-colors"
+              title={t('nav.viewWebsite')}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+            <button
+              onClick={onLogout}
+              className="p-2 rounded-lg text-red-400/80 hover:bg-red-500/15 hover:text-red-300 transition-colors cursor-pointer"
+              title={t('nav.logout')}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
         <div className="p-2 border-t border-white/10 space-y-1">
           {/* Compact row: NL/EN + Website + Logout */}
           <div className="flex items-center gap-1 px-2">
@@ -870,17 +957,26 @@ function AdminLayoutInner({
             </button>
           </div>
         </div>
+        )}
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
+        isMobile ? '' : sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+      }`}>
         {/* Top bar */}
         <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 shadow-sm">
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
+            onClick={() => {
+              if (isMobile) {
+                setSidebarOpen(!sidebarOpen);
+              } else {
+                toggleCollapsed();
+              }
+            }}
+            className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
           >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isMobile && sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1 truncate">
             {allNavItems.find((n) => n.href === pathname)
