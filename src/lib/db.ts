@@ -1653,7 +1653,37 @@ export async function getCustomerByEmailSimple(email: string) {
 
 // ===== CAMPINGS =====
 
+let _campingsMigrated = false;
+export async function migrateCampingsColumns() {
+  if (_campingsMigrated) return;
+  try {
+    // Ensure all newer columns exist on the campings table
+    const cols = await sql`SELECT column_name FROM information_schema.columns WHERE table_name = 'campings'`;
+    const existing = new Set(cols.rows.map((r: Record<string, string>) => r.column_name));
+    const needed: [string, string][] = [
+      ['slug', 'TEXT'],
+      ['region', "TEXT DEFAULT 'Baix Empordà'"],
+      ['long_description', 'TEXT'],
+      ['photos', "JSONB DEFAULT '[]'::jsonb"],
+      ['facilities', "JSONB DEFAULT '[]'::jsonb"],
+      ['best_for', "JSONB DEFAULT '[]'::jsonb"],
+      ['nearest_destinations', "JSONB DEFAULT '[]'::jsonb"],
+      ['latitude', 'DOUBLE PRECISION'],
+      ['longitude', 'DOUBLE PRECISION'],
+    ];
+    for (const [name, def] of needed) {
+      if (!existing.has(name)) {
+        await getPool().query(`ALTER TABLE campings ADD COLUMN IF NOT EXISTS ${name} ${def}`);
+      }
+    }
+    _campingsMigrated = true;
+  } catch (e) {
+    console.error('migrateCampingsColumns error:', e);
+  }
+}
+
 export async function getAllCampings(activeOnly = false) {
+  await migrateCampingsColumns();
   if (activeOnly) {
     const result = await sql`SELECT * FROM campings WHERE active = true ORDER BY sort_order ASC, name ASC`;
     return result.rows;

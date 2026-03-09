@@ -7,6 +7,7 @@ import {
   reorderCampings,
   setupDatabase,
   logActivity,
+  migrateCampingsColumns,
 } from '@/lib/db';
 import { campings as staticCampings } from '@/data/campings';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update camping or reorder
 export async function PUT(request: NextRequest) {
   try {
+    await migrateCampingsColumns();
     const body = await request.json();
 
     // Reorder mode
