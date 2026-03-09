@@ -320,7 +320,7 @@ function BoekenContent() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       {/* ===== PROGRESS BAR ===== */}
       <div ref={contentRef} className="sticky top-[100px] sm:top-[96px] z-30 bg-white shadow-sm pt-4 sm:pt-6">
         <div className="max-w-5xl mx-auto px-4">

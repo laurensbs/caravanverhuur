@@ -438,7 +438,7 @@ function smartMatch(
   }
 
   // ===== BOOKING =====
-  if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren/.test(lower)) {
+  if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren|huren|vastleggen|inschrijv|aanmelden|vastgelegd|kan ik.*huren|ik wil.*huren|wil graag|graag boeken|graag huren|boeking maken|hoe werkt.*boek|stappen|hoe gaat.*boek|hoe kan ik|boeking|booking|how does.*book|i want.*book|i.d like|make.*reservation/.test(lower)) {
     const bookingAnswers = isNl ? [
       `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Kies een caravan\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nJe kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
       `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en betaalt slechts **30% aanbetaling**. Klaar!\n\nDe rest betaal je uiterlijk 30 dagen voor vertrek.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
@@ -457,7 +457,7 @@ function smartMatch(
   }
 
   // ===== CANCELLATION =====
-  if (/annul|terug|geld terug|restitutie|cancel|refund|money back|cancelar|reembols/.test(lower)) {
+  if (/annul|terug|geld terug|restitutie|cancel|refund|money back|cancelar|reembols|afzeggen|niet doorgaan|toch niet|omboek|wijzig|verander|change|modify|umbuch|niet kunnen komen|verhinderd|ziek/.test(lower)) {
     const cancelAnswers = isNl ? [
       `Ja${name}, annuleren is mogelijk:\n\n✅ **30+ dagen** voor aankomst → 100% terug\n⚠️ **14-30 dagen** → 50% terug\n❌ **< 14 dagen** → niet restitueerbaar\n\nZie onze [Algemene Voorwaarden](/voorwaarden) voor alle details.\n\nWe raden altijd een reis- of annuleringsverzekering aan!`,
       `Natuurlijk${name}, er is een flexibele annuleringsregeling:\n\n📋 **Meer dan 30 dagen** voor aankomst? → **Volledig terugbetaald!**\n📋 **14 tot 30 dagen** → 50% terug\n📋 **Minder dan 14 dagen** → helaas geen restitutie\n\n💡 Tip: neem een **annuleringsverzekering** voor extra zekerheid.\n\nAlle details vind je bij onze [Voorwaarden](/voorwaarden).`,
@@ -472,10 +472,11 @@ function smartMatch(
   }
 
   // ===== DEPOSIT/BORG =====
-  if (/borg|waarborg|deposit|garantia|fianza|waarborgsom/.test(lower)) {
+  if (/borg|waarborg|deposit|garantia|fianza|waarborgsom|borgsom|borggeld|borg terug|borg betalen|security deposit|garantie|cautie|schade|damage|kapot|beschadigd|iets stuk/.test(lower)) {
     const depositAnswers = isNl ? [
-      `De borg werkt zo${name}:\n\n🔒 Bij aankomst wordt **€250 – €500** gereserveerd via iDEAL/Wero (afhankelijk van de caravan)\n✅ Na inspectie bij vertrek zonder schade: terugstorting binnen **7 dagen**\n\nPer caravan:\n${caravans.map(c => `• **${c.name}** → €${c.deposit} borg`).join('\n')}\n\nDe borg is geen extra kosten, maar een waarborg die je gewoon terugkrijgt!`,
-      `Goede vraag${name}! De borg is een **tijdelijke reservering** — je krijgt het gewoon terug! 🔄\n\n${caravans.map(c => `🚐 **${c.name}** → €${c.deposit}`).join('\n')}\n\n✅ Je krijgt het binnen **7 werkdagen** terug na de inspectie.\n⚡ Betaling via **iDEAL/Wero** — snel en veilig.\n\nDenk eraan de caravan bezemschoon achter te laten, en de borg is zo terug!`,
+      `De borg werkt zo${name}:\n\n🔒 Bij aankomst wordt **€250 – €500** gereserveerd via iDEAL/Wero (afhankelijk van de caravan)\n✅ Na inspectie bij vertrek zonder schade: terugstorting binnen **7 dagen**\n\nPer caravan:\n${caravans.map(c => `• **${c.name}** → €${c.deposit} borg`).join('\n')}\n\nDe borg is geen extra kosten, maar een waarborg die je gewoon terugkrijgt!\n\n❓ **Bij schade?**\nKleine slijtage is normaal en wordt niet verrekend. Bij echte schade wordt het schadebedrag van de borg afgetrokken en de rest teruggestort.`,
+      `Goede vraag${name}! De borg is een **tijdelijke reservering** — je krijgt het gewoon terug! 🔄\n\n${caravans.map(c => `🚐 **${c.name}** → €${c.deposit}`).join('\n')}\n\n✅ Je krijgt het binnen **7 werkdagen** terug na de inspectie.\n⚡ Betaling via **iDEAL/Wero** — snel en veilig.\n\n💡 **Tips om je borg 100% terug te krijgen:**\n🧹 Caravan bezemschoon achterlaten\n🗑️ Vuilnis meenemen naar container\n🧊 Koelkast leegmaken\n🍽️ Afwas doen\n\nBij overmatige schade of vermissing van inventaris kan een deel worden ingehouden, maar dat komt zelden voor!`,
+      `De borg regeling in het kort${name}:\n\n💰 **Bedrag**: €250-€500 (afhankelijk van caravan)\n💳 **Betaling**: via iDEAL/Wero bij aankomst op de camping\n🔄 **Terugbetaling**: binnen 7 werkdagen na inspectie\n\n✅ **Geen schade** → volledige borg terug\n⚠️ **Kleine schade** → schadebedrag wordt ingehouden, rest terug\n❌ **Grote schade** → borg (deels) ingehouden + eventueel extra kosten\n\nMaak je niet te druk — normale slijtage telt niet! De meeste gasten krijgen hun borg **volledig** terug. 😊`,
     ] : ['A deposit of **€250 – €500** is reserved upon arrival. Refunded within **7 days** if no damage.'];
     return {
       answer: pick(depositAnswers, asked),
@@ -486,7 +487,7 @@ function smartMatch(
   }
 
   // ===== PAYMENT =====
-  if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen/.test(lower)) {
+  if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen|hoe betaal|wanneer betalen|hoeveel betalen|overmaken|overboeking|factuur|rekening|contant|cash|bancontact|visa|mastercard|tikkie/.test(lower)) {
     const paymentAnswers = isNl ? [
       `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Aanbetaling**: 30% bij boeking\n2️⃣ **Restbedrag**: 70% uiterlijk 1 week voor aankomst\n3️⃣ **Borg**: reservering bij aankomst op de camping\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`,
       `We werken met **iDEAL en Wero**${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: 30% aanbetaling bij je boeking\n💳 **Stap 2**: 70% restbedrag uiterlijk 1 week voor vertrek\n🔒 **Stap 3**: Borg (€250-€500) bij aankomst\n\nGeen creditcard nodig! Na elke betaling krijg je een bevestiging per e-mail.`,
@@ -500,7 +501,7 @@ function smartMatch(
   }
 
   // ===== CAMPINGS / LOCATIONS =====
-  if (/camping|locatie|waar|welke camping|plek|location|where|which camping|ubicacion|donde|bestemming/.test(lower)) {
+  if (/camping|locatie|waar|welke camping|plek|plekken|location|where|which camping|ubicacion|donde|bestemming|welke plek|waar staan|waar staat|standplaats|welke locatie|welke plaatsen|places|welke plekken|welke bestemmingen|welke dorpen|welke steden|in de buurt|dichtbij|welke regio/.test(lower)) {
     const campingAnswers = isNl ? [
       `We werken samen met **30+ campings** over de hele Costa Brava${name}! 🏖️\n\n📍 **Baix Empordà** — Pals, Begur, Calella\n📍 **Alt Empordà** — Roses, L'Estartit, Empuriabrava\n📍 **La Selva** — Lloret de Mar, Blanes, Tossa\n📍 **Costa Brava Zuid** — Platja d'Aro, Calonge, Santa Cristina d'Aro\n\nPopulaire campings:\n⛺ Cypsela Resort (Pals) — 5 sterren, direct aan strand\n⛺ La Ballena Alegre (Sant Pere) — breed zandstrand\n⛺ Cala Gogo (Calonge) — uitgebreide faciliteiten\n\n👉 Bekijk alles op onze [bestemmingen pagina](/bestemmingen)!\n\nHeb je een voorkeur voor een regio?`,
       `Wij zijn actief op **30+ campings** langs de mooiste Costa Brava kust${name}! 🌊\n\nEen paar toppers:\n\n⭐ **Cypsela Resort** (Pals) — luxe 5-sterren, direct aan strand\n⭐ **La Ballena Alegre** (Sant Pere) — groot, gezellig, mooi strand\n⭐ **Cala Gogo** (Calonge) — zwembaden, animatie, familievriendelijk\n⭐ **Tucan** (Lloret) — waterpark voor de kids!\n\nVan rustige familieplekjes tot bruisende resorts — wij hebben het.\n\n👉 Ontdek alle locaties op onze [bestemmingen pagina](/bestemmingen)\n\nIn welke regio ben je geïnteresseerd?`,
@@ -515,7 +516,7 @@ function smartMatch(
   }
 
   // ===== CARAVANS =====
-  if (/caravan|welke|type|model|which.*caravan|que caravana|overzicht|aanbod/.test(lower)) {
+  if (/caravan|welke.*caravan|type|model|which.*caravan|que caravana|overzicht|aanbod|camper|stacaravan|mobilhome|mobile home|welke wagens|hoeveel personen|hoeveel slaapplaats|slaapplaats|slaapplek|hoe groot|formaat|afmeting|lengte caravan/.test(lower)) {
     const caravanAnswers = isNl ? [
       `We hebben **${caravans.length} caravans** beschikbaar${name}:\n\n${caravans.map(c => {
         const highlights: string[] = [];
@@ -600,10 +601,11 @@ function smartMatch(
   }
 
   // ===== PETS =====
-  if (/huisdier|hond|kat|dier|pet|dog|cat|animal|mascota|perro|gato/.test(lower)) {
+  if (/huisdier|hond|kat|dier|pet|dog|cat|animal|mascota|perro|gato|viervoeter|poes|puppy|kitten|dieren mee|hond mee|kat mee|beest|huisdieren toegestaan|mag.*hond|mag.*kat|mag.*dier|honden welkom|dieren welkom|huisdierbeleid|met de hond|met mijn hond|met onze hond|viervoeters/.test(lower)) {
     const petAnswers = isNl ? [
-      `Huisdieren zijn mogelijk afhankelijk van de camping en caravan${name}. 🐕\n\nBij sommige campings is het toegestaan (soms tegen een kleine toeslag). Neem contact met ons op zodat we dit voor je kunnen uitzoeken!\n\nWil je dat ik je doorverbind met een medewerker?`,
-      `Wil je je viervoeter meenemen${name}? 🐾\n\nDat verschilt per camping:\n✅ Sommige campings staan huisdieren toe\n💰 Soms geldt een kleine dagelijkse toeslag\n⚠️ Niet alle campings accepteren huisdieren\n\nHet hangt ook af van de caravan en het campingbeleid. Laat ons het even voor je uitzoeken!\n\nZal ik je doorverbinden met een medewerker?`,
+      `Huisdieren zijn mogelijk afhankelijk van de camping en caravan${name}. 🐕\n\nBij sommige campings is het toegestaan (soms tegen een kleine toeslag). Neem contact met ons op zodat we dit voor je kunnen uitzoeken!\n\n📌 **Belangrijk om te weten:**\n• Niet alle campings staan huisdieren toe\n• Sommige campings rekenen €3-€5/dag extra\n• Honden moeten vaak aangelijnd zijn\n• Informeer altijd vooraf bij ons!\n\nWil je dat ik je doorverbind met een medewerker die het precies kan uitzoeken?`,
+      `Wil je je viervoeter meenemen${name}? 🐾\n\nDat verschilt per camping:\n✅ Sommige campings staan huisdieren toe\n💰 Soms geldt een kleine dagelijkse toeslag (€3-€5/dag)\n⚠️ Niet alle campings accepteren huisdieren\n🐕 Honden moeten meestal aangelijnd zijn op de camping\n\nHet hangt ook af van de caravan en het campingbeleid.\n\n💡 **Tip**: laat ons het even voor je uitzoeken! Wij weten precies welke campings huisdiervriendelijk zijn.\n\nZal ik je doorverbinden met een medewerker?`,
+      `Goeie vraag${name}! 🐶\n\nHuisdieren meenemen is op veel campings mogelijk, maar niet overal:\n\n🐕 **Honden** — vaak welkom, soms met toeslag\n🐱 **Katten** — minder gebruikelijk maar soms mogelijk\n📋 **Regels** — variëren per camping (aanlijnen, max. aantal)\n💰 **Kosten** — €0 tot €5 per dag\n\nWij zoeken graag een **huisdiervriendelijke camping** voor je uit! Vertel me welke regio je voorkeur heeft, dan kijk ik wat er mogelijk is.\n\nOf wil je direct met een medewerker spreken?`,
     ] : ['Pets may be allowed depending on the camping. Contact us to discuss! 🐕'];
     return {
       answer: pick(petAnswers, asked),
@@ -628,7 +630,7 @@ function smartMatch(
   }
 
   // ===== SEASON / AVAILABILITY =====
-  if (/seizoen|2026|wanneer|periode|beschikbaar|datum|zomer|season|when|available|summer|temporada|cuando|welke maanden/.test(lower)) {
+  if (/seizoen|2026|wanneer|periode|beschikbaar|datum|zomer|season|when|available|summer|temporada|cuando|welke maanden|nog beschikbaar|nog plek|nog vrij|vrij|vrije plek|plek vrij|is er nog|availability|openstaand|beschikbaarheid|kan ik nog|zijn er nog|nog iets vrij|wanneer kan|welke data|welke periode|welke weken/.test(lower)) {
     const seasonAnswers = isNl ? [
       `☀️ **Seizoen 2026** loopt van **mei t/m september**${name}!\n\nHoogseizoen (juli/augustus) is het populairst, dus boek op tijd!\n📅 Tussei-/laagseizoen (mei, juni, september) geeft vaak betere tarieven en meer rust.\n\nMomenteel is alles nog beschikbaar. Wil je voor een bepaalde maand kijken?\n\n👉 **[Direct boeken](/boeken)**`,
       `Ons seizoen is van **mei tot en met september** 2026${name}! 🌞\n\n📅 **Mei/Juni** — rustig, aangenaam weer, lagere prijzen\n📅 **Juli/Augustus** — hoogseizoen, warmst, het populairst\n📅 **September** — heerlijk nazomeren, rustig op de campings\n\n💡 Tip: juni en september zijn ideaal voor wie rust wil + mooi weer!\n\nWanneer dacht je te gaan?`,
@@ -764,7 +766,7 @@ function smartMatch(
   }
 
   // ===== CONTACT / SPEAK TO HUMAN =====
-  if (/contact|telefoon|bellen|mail|email|bereik|medewerker|persoon|iemand|spreek|menselijk|echt|live|chat met|speak|talk|human|real|staff|person|contacto|hablar/.test(lower)) {
+  if (/contact|telefoon|bellen|mail|email|bereik|medewerker|persoon|iemand|spreek|menselijk|echt|live|chat met|speak|talk|human|real|staff|person|contacto|hablar|WhatsApp|whatsapp|app|bericht sturen|nummmer|telefoonnummer|hoe bereik|hoe kan ik.*bereiken|bereikbaar|klantenservice|helpdesk|support/.test(lower)) {
     return {
       answer: isNl
         ? `${userName ? `Natuurlijk, ${userName}! ` : ''}Ik verbind je graag door met een medewerker. Even geduld...`
@@ -850,6 +852,54 @@ function smartMatch(
       followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?'] : ['How to book?', 'Cost?'],
       confidence: 0.8,
       topic: 'discount',
+    };
+  }
+
+  // ===== HOW DOES IT WORK (general) =====
+  if (/hoe werkt|hoe gaat|concept|wat doen jullie|wat bieden|wat is|uitleg|explain|how does it work|how it works|como funciona|wat houd.*in/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Ons concept is heel simpel${name}! 🚐✨\n\n**Wij regelen alles — jij geniet!**\n\n1️⃣ **Kies** je camping, caravan en periode\n2️⃣ **Boek** en betaal 30% aanbetaling via iDEAL\n3️⃣ **Wij plaatsen** de caravan op de camping\n4️⃣ **Jij rijdt** naar de camping en checkt in\n5️⃣ **Geniet** van je vakantie!\n\nDe caravan staat **al klaar** met beddengoed, kookgerei, servies en meer.\n\nBij vertrek laat je de caravan bezemschoon achter en wij doen de rest!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} caravans, volledig uitgerust\n✅ Nederlandse service\n\nWat wil je nog meer weten?`
+        : 'Our concept is simple: we place a fully equipped caravan on your chosen camping. You just enjoy! 🚐✨',
+      followUp: isNl ? ['Wat kost het?', 'Welke caravans?', 'Welke campings?', 'Hoe boek ik?'] : ['Cost?', 'Which caravans?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'how-it-works',
+    };
+  }
+
+  // ===== COSTA BRAVA / SPAIN =====
+  if (/costa brava|spanje|spain|espana|catalonië|catalonie|cataluna|girona|barcelona|emporda|mediterranean|middellandse/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De **Costa Brava** is een van de mooiste kusten van Spanje${name}! 🇪🇸🌊\n\n📍 **Waar**: Noordoost-Spanje, in de regio Catalonië\n☀️ **Weer**: 300+ zonnedagen, 25-33°C in de zomer\n🏖️ **Bekende plaatsen**: Lloret de Mar, Tossa de Mar, Cadaqués, Roses, Begur, Pals\n\n⭐ **Waarom Costa Brava?**\n• Prachtige verborgen baaien en brede stranden\n• Heerlijke Catalaanse keuken en lokale wijnen\n• Rijke cultuur (Dalí Museum!)\n• Ideaal klimaat voor een caravanvakantie\n\nWij hebben 30+ campings verspreid over de hele regio. Welke plek spreekt je aan?`
+        : 'The **Costa Brava** is one of Spain\'s most beautiful coasts! 300+ sunny days, stunning beaches, great food. 🇪🇸🌊',
+      followUp: isNl ? ['Welke campings?', 'Welke bestemmingen?', 'Hoe boek ik?'] : ['Which campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'costa-brava',
+    };
+  }
+
+  // ===== SWIMMING / POOL =====
+  if (/zwembad|zwemmen|pool|aquapark|waterpark|waterglijbaan|glijbaan|piscina/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Veel van onze campings hebben fantastische zwembaden${name}! 🏊‍♂️\n\n🏆 **Top campings met zwembad:**\n\n⛺ **Cypsela Resort** (Pals) — groot zwembadcomplex\n⛺ **Cala Gogo** (Calonge) — meerdere zwembaden + glijbanen\n⛺ **Tucan** (Lloret) — waterpark met wilde glijbanen! 🎢\n⛺ **La Ballena Alegre** (Sant Pere) — zwembad + direct aan strand\n\nDaarnaast zijn veel stranden geschikt om te zwemmen — het water is helder en warm in de zomer!\n\n👉 Bekijk alle campings op onze [bestemmingen pagina](/bestemmingen)`
+        : 'Many of our campings have great swimming pools! Cypsela Resort, Cala Gogo, and Tucan have the best water parks. 🏊‍♂️',
+      followUp: isNl ? ['Welke campings?', 'Campings met animatie', 'Hoe boek ik?'] : ['Which campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'pool',
+    };
+  }
+
+  // ===== SUPERMARKET / SHOPS =====
+  if (/supermarkt|winkel|boodschappen|shop|tienda|supermercado|restaurant|eten|dining/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De meeste campings hebben uitstekende voorzieningen${name}! 🛒\n\n🛒 **Supermarkt** — op vrijwel alle campings aanwezig\n🍕 **Restaurant/snackbar** — op de meeste campings\n🍞 **Vers brood** — dagelijks verkrijgbaar\n🏪 **Dorpswinkels** — op loop-/rijafstand\n\nLidl, Mercadona en Bonàrea zijn populaire supermarkten in de buurt. De lokale markten (elke week in bijna elk dorp) zijn een must!\n\n🍽️ **Eten uit**: Spanje is betaalbaar! Een 3-gangen menu del día kost vaak maar €10-€15.\n\nMaar met een eigen keuken in de caravan kun je ook lekker zelf koken! 🍳`
+        : 'Most campings have a supermarket, restaurant, and fresh bread daily! 🛒',
+      followUp: isNl ? ['Wat zit er in de caravan?', 'Welke campings?', 'Hoe boek ik?'] : ['What\'s included?', 'How to book?'],
+      confidence: 0.8,
+      topic: 'shops',
     };
   }
 
@@ -1866,7 +1916,7 @@ export default function ChatBot() {
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
             className="fixed bottom-[7rem] right-[4.5rem] sm:bottom-[5.5rem] sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
           >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative cursor-pointer" onClick={() => { setIsOpen(true); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}>
               <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
                 <X size={12} className="text-gray-500" />
               </button>

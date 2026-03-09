@@ -246,14 +246,19 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Mobile hamburger */}
-          <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden w-10 h-10 flex items-center justify-center" aria-label="Menu">
+          {/* Mobile Boek nu + hamburger */}
+          <div className="lg:hidden flex items-center gap-2">
+          <Link href="/boeken" className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-full shadow-sm flex items-center gap-1">
+            {t('nav.bookNow')} <ArrowRight size={12} />
+          </Link>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="w-10 h-10 flex items-center justify-center" aria-label="Menu">
             <div className="relative w-5 h-3.5">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.2 }} className="absolute top-0 left-0 w-full h-0.5 bg-foreground rounded-full origin-center" />
               <motion.span animate={menuOpen ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-0.5 bg-foreground rounded-full" />
               <motion.span animate={menuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.2 }} className="absolute top-2.5 left-0 w-full h-0.5 bg-foreground rounded-full origin-center" />
             </div>
           </button>
+          </div>
         </div>
 
         {/* ============ MEGA MENUS ============ */}
@@ -464,7 +469,6 @@ export default function Header() {
                 )}
               </AnimatePresence>
 
-              <MobLink href="/boeken" label={t('nav.bookNow')} on={active('/boeken')} close={() => setMenuOpen(false)} />
               <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
               <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
               <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
