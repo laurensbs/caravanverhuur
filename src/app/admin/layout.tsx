@@ -453,45 +453,45 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 type OnboardingStep = { title: string; desc: string; icon: string };
 
 const ONBOARDING_ADMIN_NL: OnboardingStep[] = [
-  { title: 'Welkom, Admin!', desc: 'Dit is het beheerpaneel van Caravanverhuur Spanje. Als admin heb je volledige toegang tot alle functies.', icon: '👋' },
-  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen, berichten, openstaande taken en omzet. Klik op een statistiek om direct naar die pagina te gaan.', icon: '📊' },
-  { title: 'Boekingen & Planning', desc: 'Bekijk en beheer alle boekingen. Je kunt ook telefonische boekingen aanmaken via de "Nieuwe boeking" knop. De planning toont de bezetting per caravan.', icon: '📅' },
-  { title: 'Betalingen & Borg', desc: 'Beheer betalingen, verwerk terugbetalingen via Stripe, en beheer borgchecklists. Gebruik "Mobiel Inspecteren" voor inspecties op locatie.', icon: '💳' },
-  { title: 'Klanten & Berichten', desc: 'Bekijk klantgegevens, beantwoord berichten van het contactformulier, en reageer op live chats. Campingaanvragen verschijnen ook bij berichten.', icon: '👥' },
-  { title: 'Caravans & Campings', desc: 'Voeg caravans toe, pas prijzen aan, en beheer de campinglijst. Sleep campings om de volgorde op de website aan te passen.', icon: '🏕️' },
-  { title: 'Kortingscodes & Nieuwsbrieven', desc: 'Maak kortingscodes aan voor klanten en bekijk nieuwsbrief-abonnees. Stel altijd een vervaldatum in bij codes.', icon: '🏷️' },
-  { title: 'Hulp & Taal', desc: 'Klik op het ? icoon rechtsboven voor een complete gids. Wissel tussen NL/EN via de taalknop onderaan het menu. Succes!', icon: '❓' },
+  { title: 'Welkom bij het beheerpaneel!', desc: 'We laten je in een paar stappen zien hoe alles werkt. Als admin heb je volledige toegang tot alle functies — van boekingen en betalingen tot caravanbeheer.', icon: '👋' },
+  { title: 'Dashboard — jouw startpunt', desc: 'Het dashboard geeft direct een overzicht van nieuwe boekingen, openstaande taken en de maandomzet. Klik op een kaart om naar de details te gaan.', icon: '📊' },
+  { title: 'Boekingen & Planning', desc: 'Beheer alle boekingen en bekijk de visuele bezettingskalender. Via "Nieuwe boeking" kun je ook telefonische reserveringen aanmaken — de klant ontvangt automatisch een betaallink.', icon: '📅' },
+  { title: 'Betalingen & Borg', desc: 'Volg betalingen en verwerk terugbetalingen via Stripe. Bij vertrek gebruik je "Mobiel Inspecteren" om samen met de klant de borgchecklist af te lopen.', icon: '💳' },
+  { title: 'Klanten & Communicatie', desc: 'Bekijk klantgegevens, beantwoord contactberichten en reageer op live chats. Campingaanvragen komen ook bij de berichten binnen.', icon: '👥' },
+  { title: 'Caravans & Campings', desc: 'Beheer je caravanaanbod (prijzen, foto\'s, faciliteiten) en de campinglijst. Sleep campings om de volgorde op de website aan te passen.', icon: '🏕️' },
+  { title: 'Kortingscodes & Nieuwsbrieven', desc: 'Maak kortingscodes aan (bijv. ZOMER2025) en bekijk nieuwsbriefabonnees. Tip: stel altijd een vervaldatum in bij kortingscodes.', icon: '🏷️' },
+  { title: 'Hulp altijd binnen bereik', desc: 'Klik op het vraagteken (?) rechtsboven voor contextgevoelige hulp per pagina. Onderaan het menu wissel je tussen NL en EN. Veel succes!', icon: '🚀' },
 ];
 
 const ONBOARDING_ADMIN_EN: OnboardingStep[] = [
-  { title: 'Welcome, Admin!', desc: 'This is the management panel for Caravanverhuur Spanje. As admin, you have full access to all features.', icon: '👋' },
-  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings, messages, open tasks, and revenue. Click a stat card to go directly to that page.', icon: '📊' },
-  { title: 'Bookings & Planning', desc: 'View and manage all bookings. You can also create phone bookings via the "New booking" button. The planning shows occupancy per caravan.', icon: '📅' },
-  { title: 'Payments & Deposit', desc: 'Manage payments, process refunds via Stripe, and manage deposit checklists. Use "Mobile Inspect" for on-site inspections.', icon: '💳' },
-  { title: 'Customers & Messages', desc: 'View customer data, answer contact form messages, and respond to live chats. Camping requests also appear under messages.', icon: '👥' },
-  { title: 'Caravans & Campings', desc: 'Add caravans, adjust prices, and manage the camping list. Drag campings to adjust the order on the website.', icon: '🏕️' },
-  { title: 'Discount Codes & Newsletters', desc: 'Create discount codes for customers and view newsletter subscribers. Always set an expiry date on codes.', icon: '🏷️' },
-  { title: 'Help & Language', desc: 'Click the ? icon in the top-right for a complete guide. Switch between NL/EN via the language button at the bottom of the menu. Good luck!', icon: '❓' },
+  { title: 'Welcome to the admin panel!', desc: 'We\'ll walk you through how everything works in a few quick steps. As admin, you have full access to all features — from bookings and payments to caravan management.', icon: '👋' },
+  { title: 'Dashboard — your starting point', desc: 'The dashboard gives you an instant overview of new bookings, open tasks, and monthly revenue. Click any card to go straight to the details.', icon: '📊' },
+  { title: 'Bookings & Planning', desc: 'Manage all bookings and view the visual occupancy calendar. Use "New booking" to create phone reservations — the customer automatically receives a payment link.', icon: '📅' },
+  { title: 'Payments & Deposit', desc: 'Track payments and process refunds through Stripe. At check-out, use "Mobile Inspect" to walk through the deposit checklist together with the customer.', icon: '💳' },
+  { title: 'Customers & Communication', desc: 'View customer data, answer contact form messages, and respond to live chats. Camping requests also appear in messages.', icon: '👥' },
+  { title: 'Caravans & Campings', desc: 'Manage your caravan inventory (prices, photos, facilities) and the camping list. Drag campings to reorder them on the website.', icon: '🏕️' },
+  { title: 'Discount Codes & Newsletters', desc: 'Create discount codes (e.g. SUMMER2025) and view newsletter subscribers. Tip: always set an expiry date on discount codes.', icon: '🏷️' },
+  { title: 'Help is always nearby', desc: 'Click the question mark (?) in the top-right for context-sensitive help per page. Switch between NL and EN at the bottom of the menu. Good luck!', icon: '🚀' },
 ];
 
 const ONBOARDING_STAFF_NL: OnboardingStep[] = [
-  { title: 'Welkom, Staff!', desc: 'Dit is het portaal van Caravanverhuur Spanje. Als staff kun je boekingen beheren, chats beantwoorden en inspecties uitvoeren.', icon: '👋' },
-  { title: 'Dashboard', desc: 'Het dashboard toont een overzicht van boekingen en openstaande taken. Controleer dit dagelijks voor nieuwe acties.', icon: '📊' },
-  { title: 'Boekingen', desc: 'Bekijk alle boekingen, zoek op naam of referentie, en maak telefonische boekingen aan via de "Nieuwe boeking" knop.', icon: '📅' },
-  { title: 'Planning', desc: 'De planning toont de bezetting per caravan. Gebruik dit om snel te zien welke caravans beschikbaar zijn voor een bepaalde periode.', icon: '🗓️' },
-  { title: 'Borg & Inspectie', desc: 'Bij Borg kun je checklists bekijken en de mobiele inspectie starten. Doe de inspectie samen met de klant voor transparantie.', icon: '📋' },
-  { title: 'Live Chat', desc: 'Beantwoord chats van websitebezoekers. Reageer zo snel mogelijk — bezoekers verwachten een snel antwoord.', icon: '💬' },
-  { title: 'Hulp & Taal', desc: 'Klik op het ? icoon rechtsboven voor een complete gids met uitleg over elke pagina. Wissel tussen NL/EN onderaan het menu. Succes!', icon: '❓' },
+  { title: 'Welkom bij het portaal!', desc: 'Als staff-medewerker kun je boekingen beheren, chats beantwoorden en borginspecties uitvoeren. We laten je snel zien hoe alles werkt.', icon: '👋' },
+  { title: 'Dashboard — jouw overzicht', desc: 'Het dashboard toont openstaande taken en recente boekingen. Controleer dit dagelijks zodat je niets mist.', icon: '📊' },
+  { title: 'Boekingen beheren', desc: 'Bekijk alle boekingen, zoek op naam of referentie, en maak telefonische boekingen aan. De klant ontvangt automatisch een betaallink per e-mail.', icon: '📅' },
+  { title: 'Planning bekijken', desc: 'De planning toont de bezetting per caravan in een visuele kalender. Ideaal om snel beschikbaarheid te checken wanneer een klant belt.', icon: '🗓️' },
+  { title: 'Borg & Inspectie', desc: 'Gebruik de mobiele inspectietool om samen met de klant de borgchecklist stap voor stap door te lopen. Maak foto\'s van eventuele schade als bewijs.', icon: '📋' },
+  { title: 'Live Chat', desc: 'Beantwoord vragen van websitebezoekers via de live chat. Reageer zo snel mogelijk — bezoekers verwachten een snel antwoord.', icon: '💬' },
+  { title: 'Hulp & Taalinstellingen', desc: 'Klik op het vraagteken (?) rechtsboven voor hulp per pagina. Onderaan het menu wissel je de taal tussen NL en EN. Succes!', icon: '🚀' },
 ];
 
 const ONBOARDING_STAFF_EN: OnboardingStep[] = [
-  { title: 'Welcome, Staff!', desc: 'This is the portal for Caravanverhuur Spanje. As staff, you can manage bookings, answer chats, and perform inspections.', icon: '👋' },
-  { title: 'Dashboard', desc: 'The dashboard shows an overview of bookings and open tasks. Check this daily for new actions.', icon: '📊' },
-  { title: 'Bookings', desc: 'View all bookings, search by name or reference, and create phone bookings via the "New booking" button.', icon: '📅' },
-  { title: 'Planning', desc: 'The planning shows occupancy per caravan. Use this to quickly check which caravans are available for a given period.', icon: '🗓️' },
-  { title: 'Deposit & Inspection', desc: 'Under Deposit you can view checklists and start a mobile inspection. Do the inspection together with the customer for transparency.', icon: '📋' },
-  { title: 'Live Chat', desc: 'Answer chats from website visitors. Respond as quickly as possible — visitors expect a fast reply.', icon: '💬' },
-  { title: 'Help & Language', desc: 'Click the ? icon in the top-right for a complete guide explaining every page. Switch between NL/EN at the bottom of the menu. Good luck!', icon: '❓' },
+  { title: 'Welcome to the portal!', desc: 'As a staff member, you can manage bookings, answer chats, and perform deposit inspections. Let\'s show you how everything works.', icon: '👋' },
+  { title: 'Dashboard — your overview', desc: 'The dashboard shows open tasks and recent bookings. Check this daily so you don\'t miss anything.', icon: '📊' },
+  { title: 'Manage bookings', desc: 'View all bookings, search by name or reference, and create phone bookings. The customer automatically receives a payment link by email.', icon: '📅' },
+  { title: 'View planning', desc: 'The planning shows occupancy per caravan in a visual calendar. Perfect for quickly checking availability when a customer calls.', icon: '🗓️' },
+  { title: 'Deposit & Inspection', desc: 'Use the mobile inspection tool to walk through the deposit checklist step by step with the customer. Take photos of any damage as evidence.', icon: '📋' },
+  { title: 'Live Chat', desc: 'Answer questions from website visitors via live chat. Respond as quickly as possible — visitors expect a fast reply.', icon: '💬' },
+  { title: 'Help & Language settings', desc: 'Click the question mark (?) in the top-right for page-specific help. Switch between NL and EN at the bottom of the menu. Good luck!', icon: '🚀' },
 ];
 
 
@@ -740,14 +740,14 @@ function AdminLayoutInner({
 
   // Show onboarding on first login (or after tour update)
   useEffect(() => {
-    const key = `admin_onboarded_v2_${role}`;
+    const key = `admin_onboarded_v3_${role}`;
     if (!localStorage.getItem(key)) {
       setShowOnboarding(true);
     }
   }, [role]);
 
   const finishOnboarding = () => {
-    localStorage.setItem(`admin_onboarded_v2_${role}`, 'true');
+    localStorage.setItem(`admin_onboarded_v3_${role}`, 'true');
     setShowOnboarding(false);
     setOnboardingStep(0);
   };
@@ -1145,67 +1145,94 @@ function AdminLayoutInner({
         {showOnboarding && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
             onClick={finishOnboarding}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.92, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative"
+              exit={{ opacity: 0, scale: 0.92, y: 30 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden relative"
               onClick={e => e.stopPropagation()}
             >
-              {/* Progress dots */}
-              <div className="flex justify-center gap-2 mb-6">
-                {onboardingSteps.map((_, i) => (
-                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === onboardingStep ? 'w-6 bg-sky-500' : i < onboardingStep ? 'w-1.5 bg-sky-300' : 'w-1.5 bg-gray-200'
-                  }`} />
-                ))}
-              </div>
+              {/* Top gradient accent bar */}
+              <div className="h-1.5 bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500" />
 
-              {/* Step content */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={onboardingStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-center"
-                >
-                  <div className="text-4xl mb-4">{onboardingSteps[onboardingStep].icon}</div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">{onboardingSteps[onboardingStep].title}</h2>
-                  <p className="text-gray-600 leading-relaxed">{onboardingSteps[onboardingStep].desc}</p>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between mt-8">
-                <button
-                  onClick={finishOnboarding}
-                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                >
-                  {locale === 'nl' ? 'Overslaan' : 'Skip'}
-                </button>
-                {onboardingStep < onboardingSteps.length - 1 ? (
-                  <button
-                    onClick={() => setOnboardingStep(s => s + 1)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 text-white rounded-xl font-semibold transition-colors hover:bg-sky-600 cursor-pointer active:scale-[0.98]"
-                  >
-                    {locale === 'nl' ? 'Volgende' : 'Next'}
-                    <ChevronRight size={16} />
-                  </button>
-                ) : (
+              <div className="p-6 sm:p-8">
+                {/* Step counter + progress bar */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-sky-600 tracking-wide uppercase">
+                    {locale === 'nl' ? 'Stap' : 'Step'} {onboardingStep + 1} / {onboardingSteps.length}
+                  </span>
                   <button
                     onClick={finishOnboarding}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 text-white rounded-xl font-semibold transition-colors hover:bg-sky-600 cursor-pointer active:scale-[0.98]"
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                   >
-                    {locale === 'nl' ? 'Aan de slag!' : 'Get started!'}
-                    <ArrowRight size={16} />
+                    {locale === 'nl' ? 'Overslaan' : 'Skip tour'}
                   </button>
-                )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full h-1 bg-gray-100 rounded-full mb-8 overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"
+                    initial={false}
+                    animate={{ width: `${((onboardingStep + 1) / onboardingSteps.length) * 100}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                </div>
+
+                {/* Step content */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={onboardingStep}
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-center"
+                  >
+                    {/* Icon with gradient background */}
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 mb-5 shadow-sm">
+                      <span className="text-5xl leading-none">{onboardingSteps[onboardingStep].icon}</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-3">{onboardingSteps[onboardingStep].title}</h2>
+                    <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">{onboardingSteps[onboardingStep].desc}</p>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-10">
+                  {onboardingStep > 0 ? (
+                    <button
+                      onClick={() => setOnboardingStep(s => s - 1)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl font-medium transition-all cursor-pointer"
+                    >
+                      <ChevronLeft size={16} />
+                      {locale === 'nl' ? 'Vorige' : 'Back'}
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  {onboardingStep < onboardingSteps.length - 1 ? (
+                    <button
+                      onClick={() => setOnboardingStep(s => s + 1)}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl font-semibold transition-all hover:from-sky-600 hover:to-blue-700 cursor-pointer active:scale-[0.97] shadow-md shadow-sky-500/20"
+                    >
+                      {locale === 'nl' ? 'Volgende' : 'Next'}
+                      <ChevronRight size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={finishOnboarding}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-semibold transition-all hover:from-emerald-600 hover:to-green-700 cursor-pointer active:scale-[0.97] shadow-md shadow-emerald-500/20"
+                    >
+                      {locale === 'nl' ? 'Aan de slag!' : 'Get started!'}
+                      <ArrowRight size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>

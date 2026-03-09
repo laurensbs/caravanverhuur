@@ -23,6 +23,7 @@ import {
   Shield,
   Lightbulb,
   Banknote,
+  History,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════
@@ -174,7 +175,6 @@ const GUIDE_NL: GuideSection[] = [
     title: 'Klanten',
     paths: ['/admin/klanten'],
     description: 'Bekijk en beheer alle klantaccounts.',
-    adminOnly: true,
     content: [
       'De klantenpagina toont een overzicht van alle geregistreerde klanten.',
       'Je kunt zoeken op naam of e-mailadres.',
@@ -185,7 +185,6 @@ const GUIDE_NL: GuideSection[] = [
     tips: [
       'Gebruik de zoekbalk om snel een klant te vinden.',
       'Controleer het aantal boekingen per klant voor herhaalbezoekers.',
-      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
     ],
   },
   {
@@ -194,7 +193,6 @@ const GUIDE_NL: GuideSection[] = [
     title: 'Berichten',
     paths: ['/admin/berichten'],
     description: 'Inkomende berichten van het contactformulier.',
-    adminOnly: true,
     content: [
       'Hier verschijnen alle berichten die binnenkomen via het contactformulier op de website.',
       'Elk bericht bevat: naam, e-mailadres, onderwerp en tekst.',
@@ -206,7 +204,6 @@ const GUIDE_NL: GuideSection[] = [
       'Controleer dagelijks op nieuwe berichten.',
       'Campingaanvragen: voeg de gevraagde camping toe als deze geschikt is.',
       'Bewaar je inbox schoon door gelezen berichten te markeren.',
-      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
     ],
   },
   {
@@ -235,7 +232,6 @@ const GUIDE_NL: GuideSection[] = [
     title: 'Nieuwsbrieven',
     paths: ['/admin/nieuwsbrieven'],
     description: 'Beheer nieuwsbrief-abonnees en hun voorkeuren.',
-    adminOnly: true,
     content: [
       'Op de nieuwsbrievenpagina zie je alle abonnees die zich via de website hebben aangemeld.',
       'Je kunt abonnees bekijken, zoeken en hun status controleren (actief/afgemeld).',
@@ -245,7 +241,6 @@ const GUIDE_NL: GuideSection[] = [
     tips: [
       'Stuur niet te veel nieuwsbrieven — 1-2x per maand is ideaal.',
       'Controleer de afmeldingsratio als indicator van klanttevredenheid.',
-      'Deze pagina is alleen zichtbaar voor admin-gebruikers.',
     ],
   },
   {
@@ -329,6 +324,31 @@ const GUIDE_NL: GuideSection[] = [
     ],
   },
   {
+    id: 'activiteit',
+    icon: <History className={ICON_CLASS} />,
+    title: 'Activiteitenlog',
+    paths: ['/admin/activiteit'],
+    description: 'Overzicht van alle recente acties in het systeem.',
+    content: [
+      'De activiteitenpagina toont een chronologisch overzicht van alle acties die in het beheerpaneel zijn uitgevoerd.',
+      'Hier zie je wie wat heeft gedaan en wanneer — ideaal om wijzigingen te traceren.',
+      '── Wat wordt gelogd? ──',
+      '• Nieuwe boekingen (online en telefonisch)',
+      '• Statuswijzigingen van boekingen',
+      '• Betalingen en terugbetalingen',
+      '• Borginspecties',
+      '• Wijzigingen aan caravans en campings',
+      '• Admin- en staffacties',
+      '',
+      'Gebruik de zoekbalk en filters om specifieke acties terug te vinden.',
+    ],
+    tips: [
+      'Gebruik de activiteitenlog om te controleren wat er is gebeurd bij problemen.',
+      'De log is handig om het werk van staff-medewerkers te volgen.',
+      'Oudere logs worden na verloop van tijd automatisch opgeschoond.',
+    ],
+  },
+  {
     id: 'betalingsmodel',
     icon: <Banknote className={ICON_CLASS} />,
     title: 'Betalingsmodel',
@@ -377,12 +397,11 @@ const GUIDE_NL: GuideSection[] = [
       'Staff-gebruikers hebben beperkte toegang:',
       '• Dashboard (zonder export)',
       '• Planning, Boekingen, Borg',
-      '• Chat',
+      '• Klanten, Berichten, Chat, Nieuwsbrieven',
+      '• Activiteitenlog',
       '',
       'Staff heeft GEEN toegang tot:',
       '• Betalingen (geen financieel inzicht)',
-      '• Klanten (geen klantgegevens)',
-      '• Berichten, Nieuwsbrieven',
       '• Caravans, Campings, Kortingscodes (geen beheer)',
       '• Terugbetalingen',
     ],
@@ -407,6 +426,7 @@ const GUIDE_NL: GuideSection[] = [
       'Alle paginatitels, knoppen en meldingen worden automatisch vertaald.',
       '',
       '── Sneltoetsen ──',
+      'Druk op Cmd+K (Mac) of Ctrl+K (Windows) om de globale zoekbalk te openen.',
       'Klik op het ? icoon rechtsboven voor contextgevoelige hulp per pagina.',
       'Gebruik de zoekbalken op pagina\'s om snel te vinden wat je zoekt.',
       '',
@@ -552,7 +572,6 @@ const GUIDE_EN: GuideSection[] = [
     title: 'Customers',
     paths: ['/admin/klanten'],
     description: 'View and manage all customer accounts.',
-    adminOnly: true,
     content: [
       'The customers page shows an overview of all registered customers.',
       'You can search by name or email address.',
@@ -563,7 +582,6 @@ const GUIDE_EN: GuideSection[] = [
     tips: [
       'Use the search bar to quickly find a customer.',
       'Check the number of bookings per customer for repeat visitors.',
-      'This page is only visible to admin users.',
     ],
   },
   {
@@ -572,7 +590,6 @@ const GUIDE_EN: GuideSection[] = [
     title: 'Messages',
     paths: ['/admin/berichten'],
     description: 'Incoming messages from the contact form.',
-    adminOnly: true,
     content: [
       'All messages received via the website\'s contact form appear here.',
       'Each message contains: name, email address, subject, and text.',
@@ -584,7 +601,6 @@ const GUIDE_EN: GuideSection[] = [
       'Check daily for new messages.',
       'Camping requests: add the requested camping if it\'s suitable.',
       'Keep your inbox clean by marking read messages.',
-      'This page is only visible to admin users.',
     ],
   },
   {
@@ -613,7 +629,6 @@ const GUIDE_EN: GuideSection[] = [
     title: 'Newsletters',
     paths: ['/admin/nieuwsbrieven'],
     description: 'Manage newsletter subscribers and their preferences.',
-    adminOnly: true,
     content: [
       'The newsletters page shows all subscribers who signed up via the website.',
       'You can view, search, and check the status of subscribers (active/unsubscribed).',
@@ -623,7 +638,6 @@ const GUIDE_EN: GuideSection[] = [
     tips: [
       'Don\'t send too many newsletters — 1-2x per month is ideal.',
       'Monitor the unsubscribe rate as an indicator of customer satisfaction.',
-      'This page is only visible to admin users.',
     ],
   },
   {
@@ -707,6 +721,31 @@ const GUIDE_EN: GuideSection[] = [
     ],
   },
   {
+    id: 'activiteit',
+    icon: <History className={ICON_CLASS} />,
+    title: 'Activity Log',
+    paths: ['/admin/activiteit'],
+    description: 'Overview of all recent actions in the system.',
+    content: [
+      'The activity page shows a chronological overview of all actions performed in the admin panel.',
+      'Here you can see who did what and when — ideal for tracking changes.',
+      '── What is logged? ──',
+      '• New bookings (online and by phone)',
+      '• Booking status changes',
+      '• Payments and refunds',
+      '• Deposit inspections',
+      '• Changes to caravans and campings',
+      '• Admin and staff actions',
+      '',
+      'Use the search bar and filters to find specific actions.',
+    ],
+    tips: [
+      'Use the activity log to investigate what happened when there are issues.',
+      'The log is useful for tracking staff member activity.',
+      'Older logs are automatically cleaned up over time.',
+    ],
+  },
+  {
     id: 'betalingsmodel',
     icon: <Banknote className={ICON_CLASS} />,
     title: 'Payment Model',
@@ -755,12 +794,11 @@ const GUIDE_EN: GuideSection[] = [
       'Staff users have limited access:',
       '• Dashboard (without export)',
       '• Planning, Bookings, Deposit',
-      '• Chat',
+      '• Customers, Messages, Chat, Newsletters',
+      '• Activity Log',
       '',
       'Staff does NOT have access to:',
       '• Payments (no financial insight)',
-      '• Customers (no customer data)',
-      '• Messages, Newsletters',
       '• Caravans, Campings, Discount Codes (no management)',
       '• Refunds',
     ],
@@ -785,6 +823,7 @@ const GUIDE_EN: GuideSection[] = [
       'All page titles, buttons, and messages are automatically translated.',
       '',
       '── Quick access ──',
+      'Press Cmd+K (Mac) or Ctrl+K (Windows) to open the global search bar.',
       'Click the ? icon in the top-right for context-sensitive help per page.',
       'Use the search bars on pages to quickly find what you\'re looking for.',
       '',
@@ -871,7 +910,7 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
         tips: 'Tips',
         noResults: 'Geen resultaten gevonden.',
         adminOnly: 'Alleen admin',
-        restartTour: '🎓 Rondleiding opnieuw bekijken',
+        restartTour: 'Rondleiding opnieuw bekijken',
         generalTips: 'Algemene tips',
         noPageHelp: 'Geen specifieke hulp voor deze pagina. Bekijk de complete gids voor alle informatie.',
         goToGuide: 'Open complete gids →',
@@ -886,7 +925,7 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
         tips: 'Tips',
         noResults: 'No results found.',
         adminOnly: 'Admin only',
-        restartTour: '🎓 View tour again',
+        restartTour: 'View tour again',
         generalTips: 'General tips',
         noPageHelp: 'No specific help for this page. Check the complete guide for all information.',
         goToGuide: 'Open complete guide →',
@@ -907,7 +946,7 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/30 z-[55] flex items-start justify-end"
+          className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[55] flex items-start justify-end"
           onClick={handleClose}
         >
           <motion.div
@@ -918,11 +957,16 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
             className="bg-white h-full w-full sm:w-[480px] sm:max-w-[90vw] shadow-2xl flex flex-col"
             onClick={e => e.stopPropagation()}
           >
+            {/* ── Top accent bar ── */}
+            <div className="h-1 bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 shrink-0" />
+
             {/* ── Header ── */}
             <div className="p-4 sm:p-5 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <BookOpen size={20} className="text-sky-500" />
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2.5">
+                  <div className="p-1.5 bg-sky-50 rounded-lg">
+                    <BookOpen size={18} className="text-sky-500" />
+                  </div>
                   {labels.help}
                 </h2>
                 <button onClick={handleClose} className="p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
@@ -963,8 +1007,8 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
                   {currentPageSection ? (
                     <>
                       {/* Section header */}
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-sky-50 rounded-xl text-sky-600">
+                      <div className="flex items-center gap-3 mb-5 p-3 bg-sky-50/60 rounded-xl border border-sky-100/50">
+                        <div className="p-2.5 bg-white rounded-xl text-sky-600 shadow-sm">
                           {currentPageSection.icon}
                         </div>
                         <div>
@@ -1026,12 +1070,14 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
                     </>
                   ) : (
                     /* No page-specific help */
-                    <div className="text-center py-12">
-                      <HelpCircle size={40} className="mx-auto text-gray-300 mb-4" />
-                      <p className="text-sm text-gray-500 mb-4">{labels.noPageHelp}</p>
+                    <div className="text-center py-16 px-6">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-2xl mb-5">
+                        <HelpCircle size={32} className="text-gray-300" />
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1 font-medium">{labels.noPageHelp}</p>
                       <button
                         onClick={() => setActiveTab('guide')}
-                        className="text-sm text-sky-600 font-medium hover:text-sky-700 cursor-pointer"
+                        className="mt-4 inline-flex items-center gap-1.5 text-sm text-sky-600 font-medium hover:text-sky-700 cursor-pointer bg-sky-50 px-4 py-2 rounded-xl hover:bg-sky-100 transition-colors"
                       >
                         {labels.goToGuide}
                       </button>
@@ -1178,13 +1224,17 @@ export default function AdminHelpGuide({ show, onClose, locale, pathname, onRest
             </div>
 
             {/* ── Footer ── */}
-            <div className="p-4 sm:p-5 border-t border-gray-100">
+            <div className="p-4 sm:p-5 border-t border-gray-100 space-y-2">
               <button
                 onClick={() => { handleClose(); onRestartTour(); }}
-                className="w-full py-3 text-sm text-sky-600 bg-sky-50 rounded-xl font-medium hover:bg-sky-100 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3 text-sm text-sky-600 bg-sky-50 rounded-xl font-medium hover:bg-sky-100 transition-colors cursor-pointer"
               >
+                <span>🎓</span>
                 {labels.restartTour}
               </button>
+              <p className="text-[11px] text-gray-400 text-center">
+                {locale === 'nl' ? 'Druk op Esc om te sluiten' : 'Press Esc to close'}
+              </p>
             </div>
           </motion.div>
         </motion.div>
