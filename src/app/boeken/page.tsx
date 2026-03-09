@@ -322,52 +322,65 @@ function BoekenContent() {
   return (
     <div className="min-h-screen bg-surface overflow-x-hidden">
       {/* ===== PROGRESS BAR ===== */}
-      <div ref={contentRef} className="sticky top-[100px] sm:top-[96px] z-30 bg-white shadow-sm pt-4 sm:pt-6">
+      <div ref={contentRef} className="sticky top-[100px] sm:top-[130px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4">
           {/* Mobile progress */}
-          <div className="lg:hidden py-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">{step}</span>
-                </div>
-                <span className="text-sm font-bold text-foreground">{t('booking.stepXofY', { step: String(step) })}</span>
+          <div className="lg:hidden py-2.5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-5 flex-1">
+                {stepConfig.map((s, i) => {
+                  const isDone = i + 1 < step;
+                  const isCurrent = i + 1 === step;
+                  return (
+                    <div key={i} className="flex items-center gap-1.5 flex-1">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
+                        isDone ? 'bg-primary text-white' :
+                        isCurrent ? 'bg-primary text-white shadow-sm shadow-primary/30' :
+                        'bg-gray-100 text-gray-400'
+                      }`}>
+                        {isDone ? <Check size={13} /> : i + 1}
+                      </div>
+                      {i < stepConfig.length - 1 && (
+                        <div className="flex-1 h-0.5 rounded-full bg-gray-100 overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-300 ${isDone ? 'bg-primary w-full' : 'w-0'}`} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <span className="text-xs text-muted font-medium">{stepConfig[step - 1].desc}</span>
             </div>
-            <div className="h-1.5 bg-surface-alt rounded-full overflow-hidden">
-              <motion.div animate={{ width: `${(step / 5) * 100}%` }} transition={{ duration: 0.4, ease: 'easeOut' }} className="h-full bg-primary rounded-full" />
-            </div>
+            <p className="text-xs font-medium text-muted mt-1">{stepConfig[step - 1].label} — {stepConfig[step - 1].desc}</p>
           </div>
 
           {/* Desktop progress */}
-          <div className="hidden lg:flex items-center py-4">
+          <div className="hidden lg:flex items-center py-3">
             {stepConfig.map((s, i) => {
               const StepIcon = s.icon;
               const isDone = i + 1 < step;
               const isCurrent = i + 1 === step;
               return (
                 <div key={s.label} className="flex items-center flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isDone ? 'bg-primary text-white' :
-                      isCurrent ? 'bg-primary text-white shadow-lg shadow-primary/30' :
-                      'bg-surface-alt text-muted'
+                      isCurrent ? 'bg-primary text-white shadow-md shadow-primary/30' :
+                      'bg-gray-100 text-muted'
                     }`}>
-                      {isDone ? <Check size={18} /> : <StepIcon size={18} />}
+                      {isDone ? <Check size={16} /> : <StepIcon size={16} />}
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold ${isCurrent ? 'text-foreground' : isDone ? 'text-primary' : 'text-muted'}`}>{s.label}</p>
-                      <p className={`text-xs ${isCurrent ? 'text-muted' : 'text-muted'}`}>{s.desc}</p>
+                      <p className={`text-sm font-semibold leading-tight ${isCurrent ? 'text-foreground' : isDone ? 'text-primary' : 'text-muted'}`}>{s.label}</p>
+                      <p className="text-[11px] text-muted leading-tight">{s.desc}</p>
                     </div>
                   </div>
                   {i < stepConfig.length - 1 && (
-                    <div className="flex-1 mx-4">
-                      <div className="h-0.5 bg-surface-alt rounded-full overflow-hidden">
+                    <div className="flex-1 mx-3">
+                      <div className="h-0.5 bg-gray-100 rounded-full overflow-hidden">
                         <motion.div
                           animate={{ width: isDone ? '100%' : isCurrent ? '50%' : '0%' }}
                           transition={{ duration: 0.4 }}
-                          className={`h-full rounded-full ${isDone ? 'bg-primary' : 'bg-primary'}`}
+                          className="h-full rounded-full bg-primary"
                         />
                       </div>
                     </div>
@@ -380,9 +393,9 @@ function BoekenContent() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <section className="py-5 pb-28 lg:py-12 lg:pb-12">
+      <section className="py-4 pb-24 lg:py-8 lg:pb-8">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Left: Step content (2 cols on lg) */}
             <div className="lg:col-span-2">
               <AnimatePresence mode="wait" custom={direction}>
@@ -390,40 +403,40 @@ function BoekenContent() {
 
                   {/* ===== STEP 1: DATES ===== */}
                   {step === 1 && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h1>
-                        <p className="text-sm sm:text-base text-muted">{t('booking.s1Subtitle')}</p>
+                        <h1 className="text-lg sm:text-2xl font-bold text-foreground mb-0.5">{t('booking.s1Title')}</h1>
+                        <p className="text-sm text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-                        <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+                        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={15} className="text-primary" /></div>
+                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
+                              <div className="w-6 h-6 bg-primary/10 rounded-md flex items-center justify-center"><CalendarDays size={13} className="text-primary" /></div>
                               {t('booking.arrivalLabel')}
                             </label>
                             <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm text-foreground font-medium" />
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm text-foreground font-medium" />
                           </div>
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
-                              <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={15} className="text-primary" /></div>
+                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
+                              <div className="w-6 h-6 bg-primary/10 rounded-md flex items-center justify-center"><CalendarDays size={13} className="text-primary" /></div>
                               {t('booking.departureLabel')}
                             </label>
                             <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
-                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm text-foreground font-medium" />
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm text-foreground font-medium" />
                           </div>
                         </div>
 
                         {nights > 0 && (
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-primary-50 rounded-xl p-4 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                              <Sun size={20} className="text-primary" />
+                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 bg-primary-50 rounded-xl p-3 flex items-center gap-3">
+                            <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                              <Sun size={18} className="text-primary" />
                             </div>
                             <div>
-                              <p className="font-bold text-foreground">{nights} {nights === 1 ? t('booking.night') : t('booking.nightPlural')}</p>
-                              <p className="text-sm text-muted">
+                              <p className="font-bold text-sm text-foreground">{nights} {nights === 1 ? t('booking.night') : t('booking.nightPlural')}</p>
+                              <p className="text-xs text-muted">
                                 {Math.floor(nights / 7)} {Math.floor(nights / 7) === 1 ? t('booking.week') : t('booking.weeks')}
                                 {nights % 7 > 0 ? ` ${t('booking.and')} ${nights % 7} ${nights % 7 === 1 ? t('booking.day') : t('booking.days')}` : ''}
                               </p>
@@ -432,8 +445,8 @@ function BoekenContent() {
                         )}
 
                         {nights > 0 && nights < 7 && (
-                          <div className="mt-3 flex items-start gap-2 text-primary text-xs bg-primary-50 rounded-lg p-3">
-                            <Info size={14} className="shrink-0 mt-0.5" />
+                          <div className="mt-2.5 flex items-start gap-2 text-primary text-xs bg-primary-50 rounded-lg p-2.5">
+                            <Info size={13} className="shrink-0 mt-0.5" />
                             {t('booking.minAdvice')}
                           </div>
                         )}
@@ -442,14 +455,14 @@ function BoekenContent() {
                       {/* Quick pick */}
                       <div>
                         <p className="text-sm font-semibold text-muted mb-2">{t('booking.popularPeriods')}</p>
-                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        <div className="grid grid-cols-3 gap-2">
                           {[
                             { label: t('booking.oneWeek'), days: 7, icon: '🌴' },
                             { label: t('booking.twoWeeks'), days: 14, icon: '☀️' },
                             { label: t('booking.threeWeeks'), days: 21, icon: '🏖️' },
                           ].map(q => {
                             const start = new Date();
-                            start.setMonth(start.getMonth() + 4); // Suggest summer dates
+                            start.setMonth(start.getMonth() + 4);
                             start.setDate(1);
                             const end = new Date(start);
                             end.setDate(start.getDate() + q.days);
@@ -461,13 +474,13 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className={`rounded-xl p-3 sm:p-4 text-left transition-all border-2 ${
+                                className={`rounded-xl p-3 text-left transition-all border-2 cursor-pointer ${
                                   isActive ? 'border-primary bg-primary/5' : 'border-transparent bg-white'
                                 }`}
                               >
-                                <span className="text-xl sm:text-2xl mb-1 block">{q.icon}</span>
+                                <span className="text-lg sm:text-xl mb-0.5 block">{q.icon}</span>
                                 <p className="font-semibold text-sm text-foreground">{q.label}</p>
-                                <p className="text-xs text-muted mt-0.5">{q.days} {t('booking.nightPlural')}</p>
+                                <p className="text-xs text-muted">{q.days} {t('booking.nightPlural')}</p>
                               </button>
                             );
                           })}
@@ -478,19 +491,17 @@ function BoekenContent() {
 
                   {/* ===== STEP 2: DESTINATION ===== */}
                   {step === 2 && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s2Title')}</h2>
-                        <p className="text-sm sm:text-base text-muted">{t('booking.s2Subtitle')}</p>
+                        <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-0.5">{t('booking.s2Title')}</h2>
+                        <p className="text-sm text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
-                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                          <div className="relative flex-1 min-w-0">
-                            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                            <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
-                              className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                          </div>
+                      <div className="bg-white rounded-2xl shadow-sm p-4">
+                        <div className="relative mb-3">
+                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                          <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
+                            className="w-full pl-9 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
 
                         <div className="overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 sm:-mx-5 sm:px-5">
@@ -631,10 +642,10 @@ function BoekenContent() {
 
                   {/* ===== STEP 3: TRAVELERS + CARAVAN ===== */}
                   {step === 3 && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s3Title')}</h2>
-                        <p className="text-sm sm:text-base text-muted">{t('booking.s3Subtitle')}</p>
+                        <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-0.5">{t('booking.s3Title')}</h2>
+                        <p className="text-sm text-muted">{t('booking.s3Subtitle')}</p>
                       </div>
 
                       {/* Person counters */}
@@ -816,42 +827,42 @@ function BoekenContent() {
 
                   {/* ===== STEP 4: CONTACT DETAILS ===== */}
                   {step === 4 && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s4Title')}</h2>
-                        <p className="text-sm sm:text-base text-muted">{t('booking.s4Subtitle')}</p>
+                        <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-0.5">{t('booking.s4Title')}</h2>
+                        <p className="text-sm text-muted">{t('booking.s4Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-5">
+                      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 space-y-4">
                         <div>
-                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
                           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('contact.placeholderName')}
-                            className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
+                            className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
                         </div>
-                        <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+                        <div className="grid sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
+                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
                             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('contact.placeholderEmail')}
-                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
                           </div>
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
+                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('contact.placeholderPhone')}
-                              className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-base sm:text-sm" />
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
                           </div>
                         </div>
                         <div>
-                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                             <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
                           </label>
                           <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
-                            rows={3} className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none text-base sm:text-sm" />
+                            rows={3} className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none text-sm" />
                         </div>
                       </div>
 
@@ -873,10 +884,10 @@ function BoekenContent() {
 
                   {/* ===== STEP 5: CONFIRMATION ===== */}
                   {step === 5 && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s5Title')}</h2>
-                        <p className="text-sm sm:text-base text-muted">{t('booking.s5Subtitle')}</p>
+                        <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-0.5">{t('booking.s5Title')}</h2>
+                        <p className="text-sm text-muted">{t('booking.s5Subtitle')}</p>
                       </div>
 
                       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -989,23 +1000,23 @@ function BoekenContent() {
               </AnimatePresence>
 
               {/* ===== DESKTOP NAVIGATION BUTTONS ===== */}
-              <div className="hidden lg:flex items-center justify-between mt-8 pt-6">
+              <div className="hidden lg:flex items-center justify-between mt-6 pt-5">
                 {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
-                    <ArrowLeft size={18} /> {t('booking.previous')}
+                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-foreground-light font-medium transition-all hover:bg-surface-alt cursor-pointer">
+                    <ArrowLeft size={16} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
-                    {t('booking.nextBtn')} <ArrowRight size={18} />
+                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none cursor-pointer">
+                    {t('booking.nextBtn')} <ArrowRight size={16} />
                   </button>
                 ) : step === 5 ? (
-                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg text-base">
+                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg cursor-pointer">
                     {submitting ? (
                       <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
                     ) : (
-                      <><CreditCard size={20} /> {t('booking.submitBooking')}</>
+                      <><CreditCard size={18} /> {t('booking.submitBooking')}</>
                     )}
                   </button>
                 ) : null}
@@ -1014,45 +1025,45 @@ function BoekenContent() {
 
             {/* ===== RIGHT SIDEBAR ===== */}
             <div className="hidden lg:block">
-              <div className="sticky top-[140px] space-y-5">
+              <div className="sticky top-[145px] space-y-4">
                 {/* Live summary card */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                  <div className="bg-primary p-5 text-white">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles size={18} /> {t('booking.yourBooking')}</h3>
+                  <div className="bg-primary px-4 py-3.5 text-white">
+                    <h3 className="font-bold text-sm flex items-center gap-2"><Sparkles size={15} /> {t('booking.yourBooking')}</h3>
                   </div>
-                  <div className="p-5 space-y-3 text-sm">
+                  <div className="p-4 space-y-2.5 text-sm">
                     {/* Dates */}
-                    <div className="flex items-start gap-3">
-                      <CalendarDays size={16} className="text-primary shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-2.5">
+                      <CalendarDays size={15} className="text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground">{checkIn && checkOut ? `${checkIn} – ${checkOut}` : t('booking.noDate')}</p>
+                        <p className="font-medium text-foreground text-[13px]">{checkIn && checkOut ? `${checkIn} – ${checkOut}` : t('booking.noDate')}</p>
                         {nights > 0 && <p className="text-xs text-muted">{nights} {t('booking.nightPlural')}</p>}
                       </div>
                     </div>
 
                     {/* Camping */}
-                    <div className="flex items-start gap-3">
-                      <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-2.5">
+                      <MapPin size={15} className="text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground">{chosenCamping ? chosenCamping.name : t('booking.noCamping')}</p>
+                        <p className="font-medium text-foreground text-[13px]">{chosenCamping ? chosenCamping.name : t('booking.noCamping')}</p>
                         {chosenCamping && <p className="text-xs text-muted">{chosenCamping.location}</p>}
                       </div>
                     </div>
 
                     {/* Persons */}
-                    <div className="flex items-start gap-3">
-                      <Users size={16} className="text-primary shrink-0 mt-0.5" />
-                      <p className="font-medium text-foreground">{totalPersons} {t('booking.persons')} ({adults} {t('booking.personsAdults')}{children > 0 ? `, ${children} ${t('booking.child')}` : ''})</p>
+                    <div className="flex items-start gap-2.5">
+                      <Users size={15} className="text-primary shrink-0 mt-0.5" />
+                      <p className="font-medium text-foreground text-[13px]">{totalPersons} {t('booking.persons')} ({adults} {t('booking.personsAdults')}{children > 0 ? `, ${children} ${t('booking.child')}` : ''})</p>
                     </div>
 
                     {/* Caravan */}
                     {chosenCaravan && (
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 mt-0.5">
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-9 h-6 rounded overflow-hidden relative shrink-0 mt-0.5">
                           <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{chosenCaravan.name}</p>
+                          <p className="font-medium text-foreground text-[13px]">{chosenCaravan.name}</p>
                           <p className="text-xs text-muted">{chosenCaravan.type}</p>
                         </div>
                       </div>
@@ -1060,10 +1071,10 @@ function BoekenContent() {
 
                     {/* Price */}
                     {totalPrice > 0 && (
-                      <div className="pt-3 mt-3">
+                      <div className="pt-2.5 mt-1 border-t border-gray-100">
                         <div className="flex justify-between items-baseline mb-1">
-                          <span className="text-muted">{t('booking.total')}</span>
-                          <motion.span key={discountedTotal} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-xl font-bold">&euro;{discountedTotal}</motion.span>
+                          <span className="text-muted text-xs">{t('booking.total')}</span>
+                          <motion.span key={discountedTotal} initial={{ scale: 1.2, color: '#0EA5E9' }} animate={{ scale: 1, color: '#0284C7' }} className="text-lg font-bold">&euro;{discountedTotal}</motion.span>
                         </div>
                         {discountApplied && (
                           <div className="flex justify-between text-xs mb-1">
@@ -1073,12 +1084,12 @@ function BoekenContent() {
                         )}
                         {immediatePayment ? (
                           <div className="flex justify-between text-xs">
-                            <span className="text-primary font-medium">💳 {t('booking.payNow')}</span>
+                            <span className="text-primary font-medium">{t('booking.payNow')}</span>
                             <span className="font-semibold text-primary">&euro;{discountedTotal}</span>
                           </div>
                         ) : paymentDeadline ? (
                           <div className="flex justify-between text-xs">
-                            <span className="text-muted">📅 {t('booking.payBefore')}</span>
+                            <span className="text-muted">{t('booking.payBefore')}</span>
                             <span className="font-medium text-foreground-light">{paymentDeadline}</span>
                           </div>
                         ) : null}
@@ -1088,25 +1099,25 @@ function BoekenContent() {
                 </div>
 
                 {/* Trust signals */}
-                <div className="bg-primary-50 rounded-2xl p-5 space-y-3">
+                <div className="bg-primary-50 rounded-2xl p-4 space-y-2.5">
                   {[
-                    { icon: <Shield size={16} className="text-primary" />, text: t('booking.trustCancel') },
-                    { icon: <Star size={16} className="text-primary" />, text: t('booking.trustGuests') },
-                    { icon: <Clock size={16} className="text-primary" />, text: t('booking.trustConfirm') },
+                    { icon: <Shield size={14} className="text-primary" />, text: t('booking.trustCancel') },
+                    { icon: <Star size={14} className="text-primary" />, text: t('booking.trustGuests') },
+                    { icon: <Clock size={14} className="text-primary" />, text: t('booking.trustConfirm') },
                   ].map((item, ti) => (
-                    <div key={ti} className="flex items-start gap-2.5">
+                    <div key={ti} className="flex items-start gap-2">
                       <div className="shrink-0 mt-0.5">{item.icon}</div>
-                      <p className="text-xs text-primary-dark font-medium">{item.text}</p>
+                      <p className="text-xs text-primary-dark font-medium leading-snug">{item.text}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Need help */}
-                <div className="bg-white rounded-2xl p-5 text-center">
-                  <p className="text-sm font-semibold text-foreground mb-1">{t('booking.needHelp')}</p>
-                  <p className="text-xs text-muted mb-3">{t('booking.helpText')}</p>
-                  <a href="https://wa.me/34650036755" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold transition-colors">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+                <div className="bg-white rounded-2xl p-4 text-center">
+                  <p className="text-sm font-semibold text-foreground mb-0.5">{t('booking.needHelp')}</p>
+                  <p className="text-xs text-muted mb-2.5">{t('booking.helpText')}</p>
+                  <a href="https://wa.me/34650036755" target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-xs font-semibold transition-colors">
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                     WhatsApp
                   </a>
                 </div>
