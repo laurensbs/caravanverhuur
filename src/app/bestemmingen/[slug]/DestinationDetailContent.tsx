@@ -28,7 +28,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => { if (data.campings?.length) setAllCampings(data.campings); })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   // Find activities for this destination

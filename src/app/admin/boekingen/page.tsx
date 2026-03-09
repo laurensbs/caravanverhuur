@@ -78,7 +78,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
     fetch(`/api/payments?bookingId=${booking.id}`)
       .then(res => res.json())
       .then(data => setPayments(data.payments || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingPayments(false));
   }, [booking.id]);
 
@@ -295,7 +295,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
                       if (!res.ok) { setDiscountError(t('bookings.discountFailed')); setDiscountSaving(false); return; }
                       setDiscountSuccess(true);
                       // Refresh payments
-                      fetch(`/api/payments?bookingId=${booking.id}`).then(r => r.json()).then(d => setPayments(d.payments || [])).catch(() => {});
+                      fetch(`/api/payments?bookingId=${booking.id}`).then(r => r.json()).then(d => setPayments(d.payments || [])).catch((e) => console.error('Fetch error:', e));
                     } catch {
                       setDiscountError(t('common.error'));
                     }
@@ -439,15 +439,15 @@ export default function BookingenPage() {
     fetch('/api/bookings')
       .then(res => res.json())
       .then(data => setBookings(data.bookings || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     loadCustomData(); fetchBookings();
     // Load caravans + campings for create form
-    fetch('/api/admin/caravans').then(r => r.json()).then(d => setCustomCaravans(d.caravans || [])).catch(() => {});
-    fetch('/api/campings').then(r => r.json()).then(d => { if (d.campings?.length) setAllCampings(d.campings); }).catch(() => {});
+    fetch('/api/admin/caravans').then(r => r.json()).then(d => setCustomCaravans(d.caravans || [])).catch((e) => console.error('Fetch error:', e));
+    fetch('/api/campings').then(r => r.json()).then(d => { if (d.campings?.length) setAllCampings(d.campings); }).catch((e) => console.error('Fetch error:', e));
 
     // Close camping dropdown on outside click
     const handleClick = (e: MouseEvent) => {

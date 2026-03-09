@@ -122,7 +122,7 @@ export default function BookingWidget() {
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => { if (data.campings?.length) setCampings(data.campings); })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const openCheckIn = useCallback(() => {

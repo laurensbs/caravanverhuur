@@ -4,6 +4,7 @@ import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
+import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   // Only allow admin-authenticated requests to list all bookings
@@ -23,6 +24,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rl = bookingLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Too many requests. Retry after ${rl.retryAfter} seconds.` },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber, discountCode, discountAmount } = body;
 

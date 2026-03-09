@@ -41,11 +41,11 @@ export default function BetalingenPage() {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
     fetch('/api/payments')
       .then(res => res.json())
       .then(data => setPayments(data.payments || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
   }, []);
 

@@ -41,7 +41,7 @@ export default function CaravanDetailPage({ params }: { params: Promise<{ id: st
     fetch('/api/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingCustom(false));
   }, []);
 

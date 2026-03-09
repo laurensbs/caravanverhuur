@@ -143,7 +143,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           }
         }
       })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
 
     if (window.location.hostname.startsWith('admin.')) {
       setMainSiteUrl(`https://${window.location.hostname.replace('admin.', '')}`);

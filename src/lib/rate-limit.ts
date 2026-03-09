@@ -80,6 +80,15 @@ export const chatLimiter = rateLimit({ name: 'chat', maxRequests: 10, windowSeco
 /** Password reset: 3 requests per 30 minutes per IP */
 export const passwordResetLimiter = rateLimit({ name: 'password-reset', maxRequests: 3, windowSeconds: 30 * 60 });
 
+/** Admin login: 5 attempts per 15 minutes per IP */
+export const adminLoginLimiter = rateLimit({ name: 'admin-login', maxRequests: 5, windowSeconds: 15 * 60 });
+
+/** Checkout: 10 sessions per 15 minutes per IP */
+export const checkoutLimiter = rateLimit({ name: 'checkout', maxRequests: 10, windowSeconds: 15 * 60 });
+
+/** Booking creation: 5 bookings per 30 minutes per IP */
+export const bookingLimiter = rateLimit({ name: 'booking', maxRequests: 5, windowSeconds: 30 * 60 });
+
 /**
  * Extract client IP from request headers.
  */

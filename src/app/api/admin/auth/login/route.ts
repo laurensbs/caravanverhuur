@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCredentials, createAdminToken } from '@/lib/admin-auth';
+import { adminLoginLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rl = adminLoginLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Te veel pogingen. Probeer opnieuw over ${rl.retryAfter} seconden.` },
+        { status: 429 },
+      );
+    }
+
     const { user, password } = await request.json();
     if (!user || !password) {
       return NextResponse.json({ error: 'Gebruikersnaam en wachtwoord zijn verplicht' }, { status: 400 });

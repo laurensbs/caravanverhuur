@@ -18,6 +18,11 @@ import type { Caravan } from '@/data/caravans';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import { getActivitiesForLocation, getCategoryLabel, generalTips, groupActivitiesByCategory } from '@/data/activities';
+
+/** Escape HTML entities to prevent XSS in dangerouslySetInnerHTML */
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 import type { Activity } from '@/data/activities';
 import { useLanguage } from '@/i18n/context';
 import type { Locale } from '@/i18n/context';
@@ -204,12 +209,12 @@ function MijnAccountContent() {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravansData(data.caravans || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
     // Fetch campings from DB (admin-managed)
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => { if (data.campings?.length) setCampings(data.campings); })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -1597,7 +1602,7 @@ function MijnAccountContent() {
                           <Mail size={16} className="text-primary shrink-0 mt-0.5" />
                           <div>
                             <p className="text-sm font-semibold text-foreground">{t('myAccount.confirmEmailSent')}</p>
-                            <p className="text-xs text-muted mt-0.5" dangerouslySetInnerHTML={{ __html: t('myAccount.confirmEmailDesc').replace('{email}', customer.email) }} />
+                            <p className="text-xs text-muted mt-0.5" dangerouslySetInnerHTML={{ __html: t('myAccount.confirmEmailDesc').replace('{email}', escapeHtml(customer.email)) }} />
                             <p className="text-xs text-muted mt-2">{t('myAccount.emailLinkValid')}</p>
                           </div>
                         </div>
@@ -1685,7 +1690,7 @@ function MijnAccountContent() {
                 else { refundText = t('myAccount.refundNone'); refundColor = 'text-danger'; }
                 return (
                   <div className="text-center space-y-2 mb-5">
-                    <p className="text-sm text-muted" dangerouslySetInnerHTML={{ __html: t('myAccount.cancelBookingRef').replace('{ref}', booking.reference).replace('{days}', String(daysUntil)) }} />
+                    <p className="text-sm text-muted" dangerouslySetInnerHTML={{ __html: t('myAccount.cancelBookingRef').replace('{ref}', escapeHtml(booking.reference)).replace('{days}', String(daysUntil)) }} />
                     <p className={`text-sm font-semibold ${refundColor}`}>{refundText}</p>
                     <p className="text-xs text-muted">{t('myAccount.cannotBeUndone')}</p>
                   </div>

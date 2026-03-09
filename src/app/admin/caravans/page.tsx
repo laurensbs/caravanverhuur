@@ -314,7 +314,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
   useEffect(() => {
     fetch(`/api/admin/caravan-bookings?caravanId=${caravan.id}`)
       .then(res => res.json()).then(data => setBookings(data.bookings || []))
-      .catch(() => {}).finally(() => setLoading(false));
+      .catch((e) => { console.error('Fetch error:', e); }).finally(() => setLoading(false));
   }, [caravan.id]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -512,7 +512,7 @@ export default function CaravansAdminPage() {
         (data.settings || []).forEach((s: CaravanSettingData) => { map[s.caravan_id] = s; });
         setSettings(map);
       })
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingSettings(false));
     fetchCaravans();
   }, [fetchCaravans]);

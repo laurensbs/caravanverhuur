@@ -91,7 +91,7 @@ export default function HomePage() {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
   const caravans = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);

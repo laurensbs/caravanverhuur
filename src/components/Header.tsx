@@ -53,7 +53,7 @@ export default function Header() {
     fetch('/api/caravans')
       .then(res => res.json())
       .then(data => { if (data.caravans?.length) setAllCaravans(data.caravans); })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const caravansByType = {

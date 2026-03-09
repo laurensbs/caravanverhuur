@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Caravanverhuur Spanje
 
-## Getting Started
+Volledig uitgeruste caravans huren op de mooiste campings van de Costa Brava. Een Next.js-applicatie met boekingssysteem, betalingen via Stripe (iDEAL), meertalige ondersteuning (NL/EN/ES) en admin-panel.
 
-First, run the development server:
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Taal:** TypeScript
+- **Styling:** Tailwind CSS + Framer Motion
+- **Database:** SQLite
+- **Betalingen:** Stripe (iDEAL)
+- **Hosting:** Vercel
+
+## Aan de slag
 
 ```bash
+# Installeer dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in je browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Omgevingsvariabelen
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Maak een `.env.local` bestand aan met:
 
-## Learn More
+```env
+# Stripe
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
 
-To learn more about Next.js, take a look at the following resources:
+# Admin
+ADMIN_PASSWORD=...
+STAFF_PASSWORD=...
+ADMIN_SECRET=...
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# E-mail
+SMTP_HOST=...
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASS=...
+EMAIL_FROM=...
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Newsletter
+NEWSLETTER_SECRET=...
 
-## Deploy on Vercel
+# App
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Projectstructuur
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/           # Next.js App Router pagina's + API routes
+├── components/    # Herbruikbare UI-componenten
+├── data/          # Statische data (caravans, campings, bestemmingen)
+├── i18n/          # Vertalingen (NL/EN/ES)
+└── lib/           # Utilities (db, email, auth, rate-limit, stripe)
+```
+
+## Belangrijke features
+
+- **Boekingssysteem:** Stapsgewijs boeken met datumkeuze, camping, caravan en persoonlijke gegevens
+- **Chatbot:** Interactieve chatbot met inline boekingsflow
+- **Admin panel:** Beheer van boekingen, klanten, caravans, campings, kortingscodes en nieuwsbrieven
+- **Meertalig:** Nederlands, Engels en Spaans
+- **Betalingen:** Aanbetaling + restbetaling via Stripe iDEAL
+- **Borgbeheer:** Digitale inspectie met foto-upload

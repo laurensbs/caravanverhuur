@@ -93,12 +93,12 @@ function BoekenContent() {
     fetch('/api/admin/caravan-settings?unavailable=true')
       .then(res => res.json())
       .then(data => setUnavailableIds(data.unavailableIds || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
     // Fetch custom caravans from DB
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
     // Fetch campings from DB (falls back to static)
     fetch('/api/campings')
       .then(res => res.json())
@@ -107,7 +107,7 @@ function BoekenContent() {
           setCampings(data.campings);
         }
       })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
@@ -380,7 +380,7 @@ function BoekenContent() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <section className="py-5 lg:py-12">
+      <section className="py-5 pb-28 lg:py-12 lg:pb-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left: Step content (2 cols on lg) */}
@@ -506,7 +506,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Camping cards */}
-                      <div className="space-y-2 sm:space-y-3 max-h-[45vh] overflow-y-auto pr-1">
+                      <div className="space-y-2 sm:space-y-3 max-h-[55vh] sm:max-h-[45vh] overflow-y-auto pr-1 -mx-1 px-1">
                         {filteredCampings.map(c => {
                           const isSelected = campingId === c.id;
                           return (
@@ -986,16 +986,16 @@ function BoekenContent() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* ===== NAVIGATION BUTTONS ===== */}
-              <div className="flex items-center justify-between mt-6 sm:mt-8 pt-4 sm:pt-6">
+              {/* ===== DESKTOP NAVIGATION BUTTONS ===== */}
+              <div className="hidden lg:flex items-center justify-between mt-8 pt-6">
                 {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-4 sm:px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
+                  <button onClick={goBack} className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-foreground-light font-medium transition-all">
                     <ArrowLeft size={18} /> {t('booking.previous')}
                   </button>
                 ) : <div />}
 
                 {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
+                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2 px-7 py-3 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none">
                     {t('booking.nextBtn')} <ArrowRight size={18} />
                   </button>
                 ) : step === 5 ? (
@@ -1114,25 +1114,52 @@ function BoekenContent() {
         </div>
       </section>
 
-      {/* ===== MOBILE STICKY SUMMARY ===== */}
-      {discountedTotal > 0 && (
-        <div className="lg:hidden fixed bottom-20 left-4 right-4 z-30">
-          <div className="bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted">{t('booking.totalPriceLabel')}</p>
-              <p className="text-lg font-bold text-primary">&euro;{discountedTotal}</p>
-            </div>
-            {chosenCaravan && (
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-6 rounded overflow-hidden relative">
+      {/* ===== MOBILE FIXED BOTTOM NAV ===== */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100 safe-area-bottom-nav">
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+          {/* Left: Price summary or back button */}
+          <div className="flex items-center gap-3 min-w-0 flex-shrink">
+            {step > 1 ? (
+              <button onClick={goBack} className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-full text-foreground-light font-medium text-sm transition-all active:bg-surface shrink-0">
+                <ArrowLeft size={16} /> {t('booking.previous')}
+              </button>
+            ) : discountedTotal > 0 && chosenCaravan ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-6 rounded overflow-hidden relative shrink-0">
                   <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" />
                 </div>
-                <span className="text-xs font-medium text-foreground-light max-w-[100px] truncate">{chosenCaravan.name}</span>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted leading-tight">{t('booking.totalPriceLabel')}</p>
+                  <p className="text-sm font-bold text-primary">&euro;{discountedTotal}</p>
+                </div>
               </div>
-            )}
+            ) : <div />}
+          </div>
+
+          {/* Right: Next / Submit button */}
+          <div className="shrink-0">
+            {step < 5 ? (
+              <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all shadow-md disabled:shadow-none text-sm active:scale-95">
+                {t('booking.nextBtn')} <ArrowRight size={16} />
+              </button>
+            ) : step === 5 ? (
+              <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-bold rounded-full transition-all shadow-lg text-sm active:scale-95">
+                {submitting ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
+                ) : (
+                  <><CreditCard size={16} /> {t('booking.submitBooking')}</>
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
-      )}
+      </div>
+
+      <style jsx>{`
+        .safe-area-bottom-nav {
+          padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+        }
+      `}</style>
     </div>
   );
 }

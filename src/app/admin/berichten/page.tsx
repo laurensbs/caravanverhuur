@@ -165,7 +165,7 @@ export default function BerichtenPage() {
     fetch('/api/contacts')
       .then((res) => res.json())
       .then((data) => setContacts(data.contacts || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
   }, []);
 

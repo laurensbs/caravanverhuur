@@ -26,7 +26,7 @@ export default function CaravansPage() {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);

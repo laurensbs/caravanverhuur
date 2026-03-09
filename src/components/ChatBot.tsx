@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, ChevronDown, User, Mail, Phone, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, ChevronDown, User, Mail, Phone, Sparkles, CalendarDays, MapPin, Users, Minus, Plus, ArrowRight, Check, CreditCard, Tent } from 'lucide-react';
 import { useLanguage, type Locale } from '@/i18n/context';
 import { caravans } from '@/data/caravans';
 import { campings as staticCampings, type Camping } from '@/data/campings';
@@ -20,6 +20,32 @@ interface Message {
 }
 
 type ChatMode = 'bot' | 'waiting-human' | 'live-chat' | 'leave-message';
+
+type BookingStep = 'dates' | 'camping' | 'persons' | 'caravan' | 'contact' | 'summary' | 'processing' | 'complete';
+
+interface BookingFlowState {
+  active: boolean;
+  step: BookingStep;
+  checkIn: string;
+  checkOut: string;
+  campingId: string;
+  campingName: string;
+  adults: number;
+  children: number;
+  caravanId: string;
+  caravanName: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialRequests: string;
+  termsAccepted: boolean;
+  discountCode: string;
+  totalPrice: number;
+  nights: number;
+  bookingRef: string;
+  paymentUrl: string;
+  error: string;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Conversation context for follow-up tracking                        */
@@ -209,12 +235,12 @@ function smartMatch(
   if (entities.isYes && ctx.lastTopic) {
     if (ctx.lastTopic === 'caravan-recommendation' || ctx.lastTopic === 'complex-query') {
       const yesBooking = isNl ? [
-        `Top${name}! 🎉 Je kunt direct boeken via onze boekingspagina:\n\n👉 **[Direct boeken](/boeken)**\n\nKies daar je caravan, camping en datum. Je betaalt slechts 30% aanbetaling en ontvangt direct bevestiging per e-mail!`,
-        `Super${name}! 🙌 Ga naar onze boekingspagina en kies je favoriete caravan:\n\n👉 **[Direct boeken](/boeken)**\n\nHet hele proces duurt nog geen 5 minuten. Aanbetaling is slechts 30%!`,
-      ] : [`Great${name}! 🎉 You can book directly:\n\n👉 **[Book now](/boeken)**`];
+        `Top${name}! 🎉 Ik kan je direct hier in de chat helpen met boeken!\n\nKlik op **"Ja, help me boeken!"** om te starten. Je kunt ook via onze **[boekingspagina](/boeken)** boeken.`,
+        `Super${name}! 🙌 Laten we je boeking regelen!\n\nKlik hieronder om direct te starten, of ga naar **[de boekingspagina](/boeken)**.`,
+      ] : [`Great${name}! 🎉 I can help you book right here in the chat!\n\nClick below to start.`];
       return {
         answer: pick(yesBooking, asked),
-        followUp: isNl ? ['Hoe werkt betalen?', 'Kan ik annuleren?', 'Wat zit erin?'] : ['How does payment work?', 'Can I cancel?'],
+        followUp: isNl ? ['Ja, help me boeken!', 'Hoe werkt betalen?', 'Kan ik annuleren?'] : ['Yes, help me book!', 'How does payment work?'],
         confidence: 0.95,
         topic: 'booking-redirect',
       };
@@ -414,17 +440,17 @@ function smartMatch(
   // ===== BOOKING =====
   if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren/.test(lower)) {
     const bookingAnswers = isNl ? [
-      `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies een caravan op onze [caravans pagina](/caravans)\n2️⃣ Selecteer je camping\n3️⃣ Kies je datum\n4️⃣ Vul je gegevens in\n5️⃣ Betaal 30% aanbetaling via iDEAL/Wero\n\nJe ontvangt direct een bevestiging per e-mail!\n\n👉 **[Direct boeken](/boeken)**`,
-      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest online je caravan en camping, selecteert je data en betaalt slechts **30% aanbetaling**. Klaar!\n\nDe rest betaal je uiterlijk 1 week voor vertrek.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\n👉 **[Start je boeking](/boeken)**`,
-      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n📱 Ga naar onze **[boekingspagina](/boeken)**\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 30% aanbetaling\n\nDe rest (70%) betaal je pas 1 week voor aankomst. Makkelijker kan niet!`,
+      `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Kies een caravan\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nJe kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
+      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en betaalt slechts **30% aanbetaling**. Klaar!\n\nDe rest betaal je uiterlijk 30 dagen voor vertrek.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
+      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal de aanbetaling\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
     ] : isEs ? [
-      `¡Reservar es muy fácil! 🎉\n\n1️⃣ Elige una caravana\n2️⃣ Selecciona el camping\n3️⃣ Elige tus fechas\n4️⃣ Rellena tus datos\n5️⃣ Paga el 30%\n\n👉 **[Reservar ahora](/boeken)**`,
+      `¡Reservar es muy fácil! 🎉\n\n¡Puedo ayudarte directamente aquí en el chat!\n\n👉 Haz clic en **"¡Sí, ayúdame!"** abajo.`,
     ] : [
-      `Booking is super easy${name}! 🎉\n\n1️⃣ Choose a caravan\n2️⃣ Select camping\n3️⃣ Pick dates\n4️⃣ Fill in details\n5️⃣ Pay 30% deposit\n\n👉 **[Book now](/boeken)**`,
+      `Booking is super easy${name}! 🎉\n\nI can help you book right here in the chat!\n\nClick **"Yes, help me book!"** below to get started.`,
     ];
     return {
       answer: pick(bookingAnswers, asked),
-      followUp: isNl ? ['Ja, help me kiezen!', 'Wat kost het?', 'Kan ik annuleren?'] : ['Help me choose!', 'Cost?', 'Can I cancel?'],
+      followUp: isNl ? ['Ja, help me boeken!', 'Wat kost het?', 'Kan ik annuleren?'] : isEs ? ['¡Sí, ayúdame!', '¿Cuánto cuesta?'] : ['Yes, help me book!', 'Cost?', 'Can I cancel?'],
       confidence: 0.9,
       topic: 'booking',
     };
@@ -894,13 +920,22 @@ export default function ChatBot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
+  const defaultBookingFlow: BookingFlowState = {
+    active: false, step: 'dates', checkIn: '', checkOut: '', campingId: '', campingName: '',
+    adults: 2, children: 0, caravanId: '', caravanName: '', name: '', email: '', phone: '',
+    specialRequests: '', termsAccepted: false, discountCode: '', totalPrice: 0, nights: 0,
+    bookingRef: '', paymentUrl: '', error: '',
+  };
+  const [bookingFlow, setBookingFlow] = useState<BookingFlowState>(defaultBookingFlow);
+  const [bookingCampingSearch, setBookingCampingSearch] = useState('');
+
   // Fetch campings from DB (admin-managed)
   const [campings, setCampings] = useState<Camping[]>(staticCampings);
   useEffect(() => {
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => { if (data.campings?.length) setCampings(data.campings); })
-      .catch(() => {});
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
   const { locale } = useLanguage();
   const isNl = locale === 'nl';
@@ -1067,7 +1102,7 @@ export default function ChatBot() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'updateVisitor', conversationId, name }),
-      }).catch(() => {});
+      }).catch((e) => console.error('Fetch error:', e));
     }
 
     // Show user's name as a message
@@ -1097,6 +1132,164 @@ export default function ChatBot() {
       }]);
     }, 300);
   }, [nameInput, conversationId, isNl, isEs]);
+
+  /* ------------------------------------------------------------------ */
+  /*  Booking Flow Functions                                             */
+  /* ------------------------------------------------------------------ */
+  const startBookingFlow = useCallback(() => {
+    setBookingFlow({ ...defaultBookingFlow, active: true, step: 'dates', name: userName || contactForm.name, email: contactForm.email, phone: contactForm.phone });
+    setBookingCampingSearch('');
+    const msg = isNl
+      ? `Laten we je boeking regelen! 🎉\n\nKies hieronder je aankomst- en vertrekdatum.`
+      : isEs
+      ? `¡Vamos a organizar tu reserva! 🎉\n\nElige tus fechas abajo.`
+      : `Let's set up your booking! 🎉\n\nChoose your check-in and check-out dates below.`;
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date(),
+    }]);
+    saveMessage('bot', msg);
+  }, [userName, contactForm, isNl, isEs, saveMessage]);
+
+  const advanceBookingStep = useCallback((nextStep: BookingStep, message: string) => {
+    setBookingFlow(prev => ({ ...prev, step: nextStep }));
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(), role: 'bot', text: message, timestamp: new Date(),
+    }]);
+    saveMessage('bot', message);
+  }, [saveMessage]);
+
+  const handleBookingDatesConfirm = useCallback(() => {
+    if (!bookingFlow.checkIn || !bookingFlow.checkOut) return;
+    const nights = Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000);
+    if (nights <= 0) return;
+    setBookingFlow(prev => ({ ...prev, nights }));
+    const userText = isNl
+      ? `📅 ${bookingFlow.checkIn} – ${bookingFlow.checkOut} (${nights} ${nights === 1 ? 'nacht' : 'nachten'})`
+      : `📅 ${bookingFlow.checkIn} – ${bookingFlow.checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`;
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
+    saveMessage('user', userText);
+    setTimeout(() => {
+      const msg = isNl
+        ? `Top! ${nights} ${nights === 1 ? 'nacht' : 'nachten'} ☀️\n\nOp welke camping wil je staan?`
+        : isEs
+        ? `¡Perfecto! ${nights} noches ☀️\n\n¿En qué camping quieres estar?`
+        : `Great! ${nights} ${nights === 1 ? 'night' : 'nights'} ☀️\n\nWhich camping do you prefer?`;
+      advanceBookingStep('camping', msg);
+    }, 400);
+  }, [bookingFlow.checkIn, bookingFlow.checkOut, isNl, isEs, saveMessage, advanceBookingStep]);
+
+  const handleBookingCampingSelect = useCallback((camping: Camping) => {
+    setBookingFlow(prev => ({ ...prev, campingId: camping.id, campingName: camping.name }));
+    const userText = `⛺ ${camping.name} — ${camping.location}`;
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
+    saveMessage('user', userText);
+    setTimeout(() => {
+      const msg = isNl
+        ? `Mooie keuze! 🏕️\n\nMet hoeveel personen gaan jullie? Kies hieronder het aantal en selecteer een caravan.`
+        : isEs
+        ? `¡Buena elección! 🏕️\n\n¿Cuántas personas? Elige abajo.`
+        : `Great choice! 🏕️\n\nHow many people? Choose below and select a caravan.`;
+      advanceBookingStep('persons', msg);
+    }, 400);
+  }, [isNl, isEs, saveMessage, advanceBookingStep]);
+
+  const handleBookingCaravanSelect = useCallback((caravan: typeof caravans[0]) => {
+    const nights = bookingFlow.nights;
+    const price = Math.floor(nights / 7) * caravan.pricePerWeek + (nights % 7) * caravan.pricePerDay;
+    setBookingFlow(prev => ({ ...prev, caravanId: caravan.id, caravanName: caravan.name, totalPrice: price }));
+    const userText = `🚐 ${caravan.name} — €${price} (${nights} ${isNl ? 'nachten' : 'nights'})`;
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
+    saveMessage('user', userText);
+    setTimeout(() => {
+      const msg = isNl
+        ? `Uitstekende keuze! 🎉\n\nVul nu je gegevens in om de boeking af te ronden.`
+        : isEs
+        ? `¡Excelente elección! 🎉\n\nRellena tus datos para completar la reserva.`
+        : `Excellent choice! 🎉\n\nFill in your details to complete the booking.`;
+      advanceBookingStep('contact', msg);
+    }, 400);
+  }, [bookingFlow.nights, isNl, isEs, saveMessage, advanceBookingStep]);
+
+  const handleBookingContactConfirm = useCallback(() => {
+    if (!bookingFlow.name || !bookingFlow.email || !bookingFlow.phone) return;
+    const userText = isNl
+      ? `👤 ${bookingFlow.name}\n📧 ${bookingFlow.email}\n📞 ${bookingFlow.phone}`
+      : `👤 ${bookingFlow.name}\n📧 ${bookingFlow.email}\n📞 ${bookingFlow.phone}`;
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
+    saveMessage('user', userText);
+    setTimeout(() => {
+      const caravan = caravans.find(c => c.id === bookingFlow.caravanId);
+      const msg = isNl
+        ? `Hier is je boekingsoverzicht:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nachten)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} volwassenen${bookingFlow.children > 0 ? `, ${bookingFlow.children} kinderen` : ''}\n\n💰 **Totaal: €${bookingFlow.totalPrice}**\n🔒 Borg: €${caravan?.deposit || 0} (retour na inspectie)\n\nKlopt alles? Bevestig je boeking hieronder!`
+        : isEs
+        ? `Tu resumen:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} noches)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} adultos${bookingFlow.children > 0 ? `, ${bookingFlow.children} niños` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\n¡Confirma tu reserva abajo!`
+        : `Your summary:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nights)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} adults${bookingFlow.children > 0 ? `, ${bookingFlow.children} children` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\nConfirm your booking below!`;
+      advanceBookingStep('summary', msg);
+    }, 400);
+  }, [bookingFlow, isNl, isEs, saveMessage, advanceBookingStep]);
+
+  const handleBookingSubmit = useCallback(async () => {
+    if (!bookingFlow.termsAccepted) return;
+    setBookingFlow(prev => ({ ...prev, step: 'processing', error: '' }));
+    const caravan = caravans.find(c => c.id === bookingFlow.caravanId);
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: bookingFlow.name, guestEmail: bookingFlow.email, guestPhone: bookingFlow.phone,
+          adults: bookingFlow.adults, children: bookingFlow.children,
+          specialRequests: bookingFlow.specialRequests || undefined,
+          caravanId: bookingFlow.caravanId, campingId: bookingFlow.campingId,
+          checkIn: bookingFlow.checkIn, checkOut: bookingFlow.checkOut,
+          nights: bookingFlow.nights, totalPrice: bookingFlow.totalPrice,
+          borgAmount: caravan?.deposit || 0,
+        }),
+      });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+      setBookingFlow(prev => ({ ...prev, bookingRef: data.reference }));
+
+      // Check if immediate payment is needed
+      if (data.immediatePayment && data.paymentId) {
+        const checkoutRes = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId: data.paymentId }),
+        });
+        const checkoutData = await checkoutRes.json();
+        if (checkoutData.url) {
+          setBookingFlow(prev => ({ ...prev, step: 'complete', paymentUrl: checkoutData.url }));
+          const msg = isNl
+            ? `Je boeking is geplaatst! 🎉\n\n📋 Referentie: **${data.reference}**\n\nJe aankomst is binnen 30 dagen, dus directe betaling is vereist.\n\n💳 Klik op de knop hieronder om veilig te betalen via iDEAL/Wero.`
+            : isEs
+            ? `¡Tu reserva está hecha! 🎉\n\nReferencia: **${data.reference}**\n\nPago inmediato requerido. Haz clic abajo.`
+            : `Your booking is placed! 🎉\n\nReference: **${data.reference}**\n\nImmediate payment required. Click below to pay securely.`;
+          setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date() }]);
+          saveMessage('bot', msg);
+          return;
+        }
+      }
+
+      // Deferred payment
+      const deadline = new Date(new Date(bookingFlow.checkIn).getTime() - 30 * 24 * 60 * 60 * 1000);
+      const deadlineStr = deadline.toLocaleDateString(isNl ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      setBookingFlow(prev => ({ ...prev, step: 'complete' }));
+      const msg = isNl
+        ? `Je boeking is bevestigd! 🎉🥳\n\n📋 Referentie: **${data.reference}**\n\n📧 Je ontvangt een bevestiging per e-mail op ${bookingFlow.email}.\n\n💰 Betaling van **€${bookingFlow.totalPrice}** is verschuldigd voor **${deadlineStr}**.\nJe ontvangt tijdig een betaallink per e-mail.\n\n🔒 Borg: €${caravan?.deposit || 0} bij aankomst op de camping.\n\nBedankt en tot ziens aan de Costa Brava! ☀️🏖️`
+        : isEs
+        ? `¡Tu reserva está confirmada! 🎉\n\nReferencia: **${data.reference}**\nPago de €${bookingFlow.totalPrice} antes del ${deadlineStr}.\n\n¡Gracias y nos vemos en la Costa Brava! ☀️`
+        : `Your booking is confirmed! 🎉\n\nReference: **${data.reference}**\nPayment of €${bookingFlow.totalPrice} due before ${deadlineStr}.\n\nSee you at the Costa Brava! ☀️`;
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date() }]);
+      saveMessage('bot', msg);
+    } catch {
+      setBookingFlow(prev => ({ ...prev, step: 'summary', error: isNl ? 'Er ging iets mis. Probeer het opnieuw.' : 'Something went wrong. Please try again.' }));
+      const errMsg = isNl
+        ? 'Oeps, er ging iets mis bij het plaatsen van je boeking. 😔 Probeer het opnieuw!'
+        : 'Oops, something went wrong. Please try again!';
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: errMsg, timestamp: new Date() }]);
+    }
+  }, [bookingFlow, isNl, isEs, saveMessage]);
 
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;
@@ -1130,7 +1323,7 @@ export default function ChatBot() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'needsHuman', conversationId }),
-          }).catch(() => {});
+          }).catch((e) => console.error('Fetch error:', e));
         }
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
@@ -1143,6 +1336,16 @@ export default function ChatBot() {
         }]);
         setIsTyping(false);
         saveMessage('bot', 'Connecting to staff...');
+        return;
+      }
+
+      // Check for direct booking intent — start inline booking flow
+      const bookingTrigger = /^(ja.*help.*boeken|ja.*boeken|direct.*boek|boek\s*nu|wil.*boeken|start.*boeking|ik.*wil.*huren|wil.*reserv|book\s*now|i.*want.*book|want.*book|reservar\s*ahora|quiero\s*reservar|ja.*naar\s*boeken|help.*me.*boeken|laten.*boeken)$/i.test(trimmed.toLowerCase()) ||
+        /^(boek nu|book now|reservar ahora|ja, help me boeken!|ja, help me kiezen!|ja,? naar boeken!|yes,? help me book!|yes,? book!|¡sí,? ayúdame!)$/i.test(trimmed);
+
+      if (bookingTrigger && !bookingFlow.active) {
+        setIsTyping(false);
+        startBookingFlow();
         return;
       }
 
@@ -1189,7 +1392,7 @@ export default function ChatBot() {
       saveMessage('bot', result.answer);
       if (!isOpen) setHasNewMessage(true);
     }, 500 + Math.random() * 500);
-  }, [locale, isOpen, userName, chatMode, conversationId, saveMessage, isNl, isEs, convContext, messages]);
+  }, [locale, isOpen, userName, chatMode, conversationId, saveMessage, isNl, isEs, convContext, messages, bookingFlow.active, startBookingFlow, campings]);
 
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(input); };
 
@@ -1200,7 +1403,7 @@ export default function ChatBot() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'updateVisitor', conversationId, name: contactForm.name, email: contactForm.email, phone: contactForm.phone }),
-      }).catch(() => {});
+      }).catch((e) => console.error('Fetch error:', e));
     }
     setShowContactForm(false);
     setMessages(prev => [...prev, {
@@ -1288,13 +1491,281 @@ export default function ChatBot() {
               ))}
 
               {/* Quick replies */}
-              {messages.length > 0 && messages[messages.length - 1].role === 'bot' && messages[messages.length - 1].quickReplies && !isTyping && chatMode === 'bot' && (
+              {messages.length > 0 && messages[messages.length - 1].role === 'bot' && messages[messages.length - 1].quickReplies && !isTyping && chatMode === 'bot' && !bookingFlow.active && (
                 <div className="flex sm:flex-wrap gap-1.5 pt-1 pl-8 overflow-x-auto no-scrollbar pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 sm:overflow-x-visible">
                   {messages[messages.length - 1].quickReplies!.map((qr, i) => (
                     <button key={i} onClick={() => sendMessage(qr)} className="px-3 py-2 sm:py-1.5 bg-white border border-primary/30 text-primary text-xs font-medium rounded-full hover:bg-primary/5 transition-colors active:scale-95 cursor-pointer whitespace-nowrap shrink-0 sm:shrink">
                       {qr}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* ===== INLINE BOOKING FLOW UI ===== */}
+              {bookingFlow.active && bookingFlow.step !== 'complete' && bookingFlow.step !== 'processing' && (
+                <div className="bg-white rounded-xl border border-primary/20 overflow-hidden shadow-sm mx-1">
+                  {/* Step indicator */}
+                  <div className="bg-primary/5 px-3 py-2 flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {['dates','camping','persons','caravan','contact','summary'].map((s, i) => (
+                        <div key={s} className={`w-2 h-2 rounded-full transition-colors ${
+                          s === bookingFlow.step ? 'bg-primary scale-125' :
+                          ['dates','camping','persons','caravan','contact','summary'].indexOf(bookingFlow.step) > i ? 'bg-primary/50' : 'bg-gray-200'
+                        }`} />
+                      ))}
+                    </div>
+                    <span className="text-[11px] font-medium text-primary ml-1">
+                      {isNl ? 'Boeking' : isEs ? 'Reserva' : 'Booking'} — {
+                        bookingFlow.step === 'dates' ? (isNl ? 'Datum' : isEs ? 'Fechas' : 'Dates') :
+                        bookingFlow.step === 'camping' ? 'Camping' :
+                        bookingFlow.step === 'persons' ? (isNl ? 'Reizigers' : isEs ? 'Viajeros' : 'Travelers') :
+                        bookingFlow.step === 'caravan' ? 'Caravan' :
+                        bookingFlow.step === 'contact' ? (isNl ? 'Gegevens' : isEs ? 'Datos' : 'Details') :
+                        (isNl ? 'Overzicht' : isEs ? 'Resumen' : 'Summary')
+                      }
+                    </span>
+                    <button onClick={() => setBookingFlow(defaultBookingFlow)} className="ml-auto text-gray-400 hover:text-gray-600 transition-colors" title={isNl ? 'Annuleren' : 'Cancel'}>
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="p-3 space-y-3">
+                    {/* STEP: DATES */}
+                    {bookingFlow.step === 'dates' && (
+                      <>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1"><CalendarDays size={11} /> {isNl ? 'Aankomst' : isEs ? 'Llegada' : 'Check-in'}</label>
+                            <input type="date" value={bookingFlow.checkIn} onChange={e => setBookingFlow(p => ({ ...p, checkIn: e.target.value }))}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="w-full px-2.5 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1"><CalendarDays size={11} /> {isNl ? 'Vertrek' : isEs ? 'Salida' : 'Check-out'}</label>
+                            <input type="date" value={bookingFlow.checkOut} onChange={e => setBookingFlow(p => ({ ...p, checkOut: e.target.value }))}
+                              min={bookingFlow.checkIn || new Date().toISOString().split('T')[0]}
+                              className="w-full px-2.5 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+                          </div>
+                        </div>
+                        {bookingFlow.checkIn && bookingFlow.checkOut && (() => {
+                          const n = Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000);
+                          return n > 0 ? (
+                            <p className="text-xs text-primary font-medium flex items-center gap-1"><Check size={12} /> {n} {n === 1 ? (isNl ? 'nacht' : 'night') : (isNl ? 'nachten' : 'nights')}</p>
+                          ) : null;
+                        })()}
+                        <button onClick={handleBookingDatesConfirm}
+                          disabled={!bookingFlow.checkIn || !bookingFlow.checkOut || Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000) <= 0}
+                          className="w-full py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+                          {isNl ? 'Bevestig datums' : isEs ? 'Confirmar fechas' : 'Confirm dates'} <ArrowRight size={14} />
+                        </button>
+                      </>
+                    )}
+
+                    {/* STEP: CAMPING */}
+                    {bookingFlow.step === 'camping' && (
+                      <>
+                        <div className="relative">
+                          <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input type="text" value={bookingCampingSearch} onChange={e => setBookingCampingSearch(e.target.value)}
+                            placeholder={isNl ? 'Zoek camping...' : isEs ? 'Buscar camping...' : 'Search camping...'}
+                            className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+                        </div>
+                        <div className="max-h-[200px] overflow-y-auto space-y-1 -mx-1 px-1">
+                          {campings.filter(c => {
+                            if ((c as Camping & { active?: boolean }).active === false) return false;
+                            if (!bookingCampingSearch.trim()) return true;
+                            const q = bookingCampingSearch.toLowerCase();
+                            return c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q);
+                          }).map(c => (
+                            <button key={c.id} onClick={() => handleBookingCampingSelect(c)}
+                              className={`w-full text-left px-2.5 py-2 rounded-lg text-[13px] transition-all active:scale-[0.98] ${
+                                bookingFlow.campingId === c.id ? 'bg-primary/10 border border-primary/30' : 'hover:bg-gray-50 border border-transparent'
+                              }`}>
+                              <p className="font-semibold text-gray-800 flex items-center gap-1.5">
+                                <Tent size={12} className="text-primary shrink-0" /> {c.name}
+                              </p>
+                              <p className="text-[11px] text-gray-500 ml-[18px]">{c.location}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* STEP: PERSONS + CARAVAN SELECTION */}
+                    {(bookingFlow.step === 'persons' || bookingFlow.step === 'caravan') && (() => {
+                      const totalPersons = bookingFlow.adults + bookingFlow.children;
+                      const availableCaravans = caravans.filter(c => c.maxPersons >= totalPersons);
+                      return (
+                        <>
+                          {/* Person counters */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-[13px] font-semibold text-gray-800">{isNl ? 'Volwassenen' : isEs ? 'Adultos' : 'Adults'}</p>
+                                <p className="text-[11px] text-gray-500">18+</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => setBookingFlow(p => ({ ...p, adults: Math.max(1, p.adults - 1) }))} className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 active:bg-gray-100">
+                                  <Minus size={12} />
+                                </button>
+                                <span className="text-sm font-bold w-5 text-center">{bookingFlow.adults}</span>
+                                <button onClick={() => setBookingFlow(p => ({ ...p, adults: Math.min(6, p.adults + 1) }))} className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 active:bg-gray-100">
+                                  <Plus size={12} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-[13px] font-semibold text-gray-800">{isNl ? 'Kinderen' : isEs ? 'Niños' : 'Children'}</p>
+                                <p className="text-[11px] text-gray-500">0-17</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => setBookingFlow(p => ({ ...p, children: Math.max(0, p.children - 1) }))} className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 active:bg-gray-100">
+                                  <Minus size={12} />
+                                </button>
+                                <span className="text-sm font-bold w-5 text-center">{bookingFlow.children}</span>
+                                <button onClick={() => setBookingFlow(p => ({ ...p, children: Math.min(4, p.children + 1) }))} className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 active:bg-gray-100">
+                                  <Plus size={12} />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-primary font-medium flex items-center gap-1"><Users size={11} /> {totalPersons} {isNl ? 'personen' : isEs ? 'personas' : 'people'}</p>
+                          </div>
+
+                          {/* Caravan selection */}
+                          <div>
+                            <p className="text-[11px] font-semibold text-gray-500 mb-1.5">{isNl ? 'Kies een caravan' : isEs ? 'Elige una caravana' : 'Choose a caravan'} ({availableCaravans.length})</p>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                              {availableCaravans.map(c => {
+                                const price = Math.floor(bookingFlow.nights / 7) * c.pricePerWeek + (bookingFlow.nights % 7) * c.pricePerDay;
+                                return (
+                                  <button key={c.id} onClick={() => handleBookingCaravanSelect(c)}
+                                    className={`w-full text-left rounded-lg overflow-hidden border transition-all active:scale-[0.98] ${
+                                      bookingFlow.caravanId === c.id ? 'border-primary ring-1 ring-primary/30' : 'border-gray-200 hover:border-gray-300'
+                                    }`}>
+                                    <div className="flex gap-2.5">
+                                      <div className="relative w-20 h-16 shrink-0">
+                                        <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
+                                      </div>
+                                      <div className="py-1.5 pr-2 flex-1 min-w-0">
+                                        <p className="text-[13px] font-bold text-gray-800 truncate">{c.name}</p>
+                                        <p className="text-[11px] text-gray-500">{c.maxPersons} pers · {c.type}</p>
+                                        <div className="flex items-baseline gap-1 mt-0.5">
+                                          <span className="text-[13px] font-bold text-primary">€{price}</span>
+                                          <span className="text-[10px] text-gray-400">{bookingFlow.nights} {isNl ? 'nachten' : 'nights'}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+
+                    {/* STEP: CONTACT */}
+                    {bookingFlow.step === 'contact' && (
+                      <>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input type="text" value={bookingFlow.name} onChange={e => setBookingFlow(p => ({ ...p, name: e.target.value }))}
+                              placeholder={isNl ? 'Volledige naam *' : isEs ? 'Nombre completo *' : 'Full name *'}
+                              className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+                          </div>
+                          <div className="relative">
+                            <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input type="email" value={bookingFlow.email} onChange={e => setBookingFlow(p => ({ ...p, email: e.target.value }))}
+                              placeholder={isNl ? 'E-mailadres *' : isEs ? 'Correo electrónico *' : 'Email address *'}
+                              className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+                          </div>
+                          <div className="relative">
+                            <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input type="tel" value={bookingFlow.phone} onChange={e => setBookingFlow(p => ({ ...p, phone: e.target.value }))}
+                              placeholder={isNl ? 'Telefoonnummer *' : isEs ? 'Teléfono *' : 'Phone number *'}
+                              className="w-full pl-8 pr-3 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+                          </div>
+                        </div>
+                        <button onClick={handleBookingContactConfirm}
+                          disabled={!bookingFlow.name || !bookingFlow.email || !bookingFlow.phone}
+                          className="w-full py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+                          {isNl ? 'Verder naar overzicht' : isEs ? 'Continuar' : 'Continue to summary'} <ArrowRight size={14} />
+                        </button>
+                      </>
+                    )}
+
+                    {/* STEP: SUMMARY */}
+                    {bookingFlow.step === 'summary' && (() => {
+                      const caravan = caravans.find(c => c.id === bookingFlow.caravanId);
+                      return (
+                        <>
+                          <div className="space-y-1.5 text-[13px]">
+                            <div className="flex items-center gap-2"><CalendarDays size={12} className="text-primary" /> <span>{bookingFlow.checkIn} – {bookingFlow.checkOut}</span></div>
+                            <div className="flex items-center gap-2"><Tent size={12} className="text-primary" /> <span>{bookingFlow.campingName}</span></div>
+                            <div className="flex items-center gap-2"><Users size={12} className="text-primary" /> <span>{bookingFlow.adults + bookingFlow.children} {isNl ? 'personen' : 'people'}</span></div>
+                            {caravan && (
+                              <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-sm overflow-hidden relative shrink-0">
+                                  <Image src={caravan.photos[0]} alt="" fill className="object-cover" />
+                                </div>
+                                <span>{caravan.name}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between pt-1.5 border-t border-gray-100 mt-1.5">
+                              <span className="font-semibold">{isNl ? 'Totaal' : 'Total'}</span>
+                              <span className="font-bold text-primary text-base">€{bookingFlow.totalPrice}</span>
+                            </div>
+                          </div>
+
+                          {/* Terms */}
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all ${bookingFlow.termsAccepted ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                              {bookingFlow.termsAccepted && <Check size={10} className="text-white" />}
+                            </div>
+                            <input type="checkbox" checked={bookingFlow.termsAccepted} onChange={e => setBookingFlow(p => ({ ...p, termsAccepted: e.target.checked }))} className="sr-only" />
+                            <span className="text-[11px] text-gray-600">
+                              {isNl ? 'Ik ga akkoord met de ' : isEs ? 'Acepto los ' : 'I agree to the '}
+                              <a href="/voorwaarden" target="_blank" className="text-primary underline">{isNl ? 'voorwaarden' : isEs ? 'términos' : 'terms'}</a>
+                              {isNl ? ' en het ' : isEs ? ' y la ' : ' and '}
+                              <a href="/privacy" target="_blank" className="text-primary underline">{isNl ? 'privacybeleid' : isEs ? 'política de privacidad' : 'privacy policy'}</a>
+                            </span>
+                          </label>
+
+                          {bookingFlow.error && (
+                            <p className="text-[11px] text-red-500 font-medium">{bookingFlow.error}</p>
+                          )}
+
+                          <button onClick={handleBookingSubmit}
+                            disabled={!bookingFlow.termsAccepted}
+                            className="w-full py-2.5 bg-primary text-white text-[13px] font-bold rounded-lg disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+                            <CreditCard size={14} /> {isNl ? 'Boek & Betaal' : isEs ? 'Reservar y Pagar' : 'Book & Pay'}
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Booking processing spinner */}
+              {bookingFlow.active && bookingFlow.step === 'processing' && (
+                <div className="flex justify-center py-4">
+                  <div className="bg-primary/5 rounded-xl px-4 py-3 flex items-center gap-2.5">
+                    <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    <span className="text-[13px] font-medium text-primary">{isNl ? 'Boeking verwerken...' : isEs ? 'Procesando reserva...' : 'Processing booking...'}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Booking complete payment button */}
+              {bookingFlow.active && bookingFlow.step === 'complete' && bookingFlow.paymentUrl && (
+                <div className="mx-1">
+                  <a href={bookingFlow.paymentUrl}
+                    className="w-full py-3 bg-primary text-white text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all">
+                    <CreditCard size={16} /> {isNl ? 'Betaal nu via iDEAL/Wero' : isEs ? 'Pagar ahora' : 'Pay now'}
+                  </a>
                 </div>
               )}
 

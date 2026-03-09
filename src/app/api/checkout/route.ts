@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { getPaymentById, updatePaymentStripeId, getBookingById } from '@/lib/db';
+import { checkoutLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rl = checkoutLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: `Too many requests. Retry after ${rl.retryAfter} seconds.` },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const { paymentId } = body;
 

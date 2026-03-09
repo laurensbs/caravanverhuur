@@ -3,10 +3,11 @@ import { setNewsletterSubscription, getNewsletterSubscriptionStatus } from '@/li
 import crypto from 'crypto';
 
 const SECRET = process.env.NEWSLETTER_SECRET;
-if (!SECRET) console.warn('[newsletter] NEWSLETTER_SECRET env var not set');
+if (!SECRET) console.warn('[newsletter] NEWSLETTER_SECRET env var not set — unsubscribe verification disabled');
 
 export function generateUnsubscribeToken(email: string): string {
-  return crypto.createHmac('sha256', SECRET || '').update(email.toLowerCase()).digest('hex').slice(0, 32);
+  if (!SECRET) throw new Error('NEWSLETTER_SECRET not configured');
+  return crypto.createHmac('sha256', SECRET).update(email.toLowerCase()).digest('hex').slice(0, 32);
 }
 
 function verifyToken(email: string, token: string): boolean {

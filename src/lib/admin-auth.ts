@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { type AdminRole } from '@/i18n/admin-translations';
 
-/* ── Credentials (hardcoded) ─────────────────────── */
-const ADMIN_PASSWORD = 'CostaAdmin2026!';
-const STAFF_PASSWORD = 'CostaStaff2026!';
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cvs-admin-secret-2026-hmac-key';
+/* ── Credentials (from environment) ──────────────── */
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const STAFF_PASSWORD = process.env.STAFF_PASSWORD;
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
+
+if (!ADMIN_PASSWORD || !STAFF_PASSWORD || !ADMIN_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('ADMIN_PASSWORD, STAFF_PASSWORD, and ADMIN_SECRET environment variables must be set');
+  }
+  console.warn('[admin-auth] Missing env vars: ADMIN_PASSWORD / STAFF_PASSWORD / ADMIN_SECRET');
+}
 
 const CREDENTIALS: Record<string, { password: string; role: AdminRole }> = {
-  admin: { password: ADMIN_PASSWORD, role: 'admin' },
-  staff: { password: STAFF_PASSWORD, role: 'staff' },
+  admin: { password: ADMIN_PASSWORD || '', role: 'admin' },
+  staff: { password: STAFF_PASSWORD || '', role: 'staff' },
 };
 
 /* ── Token helpers (HMAC-signed JSON) ────────────── */

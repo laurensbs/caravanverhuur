@@ -58,7 +58,7 @@ export default function KortingscodesPage() {
     fetch('/api/admin/discount-codes')
       .then(res => res.json())
       .then(data => setCodes(data.codes || []))
-      .catch(() => {})
+      .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
   }, []);
 
