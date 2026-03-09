@@ -98,7 +98,7 @@ export default function Footer() {
             width={240}
             height={70}
             className="w-40 sm:w-52 h-auto mb-2"
-           
+            sizes="(max-width: 640px) 160px, 208px"
           />
           <GoogleStars size={13} />
           <p className="text-muted text-sm leading-relaxed max-w-xs mt-2">
@@ -173,7 +173,7 @@ export default function Footer() {
               width={240}
               height={70}
               className="w-48 h-auto"
-             
+              sizes="192px"
             />
             <GoogleStars size={13} />
             <p className="text-muted text-sm leading-relaxed">

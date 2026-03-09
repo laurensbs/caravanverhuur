@@ -138,7 +138,7 @@ export default function Header() {
               alt="Caravanverhuur Costa Brava"
               width={320} height={80}
               className="w-56 sm:w-64 lg:w-72 h-auto object-contain"
-             
+              sizes="(max-width: 640px) 224px, (max-width: 1024px) 256px, 288px"
             />
           </Link>
 

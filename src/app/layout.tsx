@@ -43,9 +43,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg",
-        width: 1200,
-        height: 630,
+        url: "/og-image.jpg",
+        width: 1280,
+        height: 640,
         alt: "Caravanvakantie op de Costa Brava",
       },
     ],
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Caravanverhuur Spanje — Zorgeloze Caravanvakantie",
     description: "Volledig uitgeruste caravan op de Costa Brava. Vanaf €50/dag. Boek seizoen 2026!",
-    images: ["https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Lloret_de_Mar_-_Panorama_of_main_beach.jpg/1280px-Lloret_de_Mar_-_Panorama_of_main_beach.jpg"],
+    images: ["/og-image.jpg"],
   },
   metadataBase: new URL("https://caravanverhuurspanje.com"),
   alternates: {
@@ -83,6 +83,13 @@ const jsonLd = {
   },
   areaServed: "Costa Brava, Spanje",
   priceRange: "€50-€95 per dag",
+  telephone: "+31 6 12345678",
+  email: "info@caravanverhuurspanje.com",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    availableLanguage: ["Dutch", "English", "Spanish"],
+  },
   openingHoursSpecification: {
     "@type": "OpeningHoursSpecification",
     dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],

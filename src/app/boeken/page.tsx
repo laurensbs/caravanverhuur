@@ -1047,7 +1047,7 @@ function BoekenContent() {
                     {chosenCaravan && (
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 mt-0.5">
-                          <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" />
+                          <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{chosenCaravan.name}</p>
@@ -1126,7 +1126,7 @@ function BoekenContent() {
             ) : discountedTotal > 0 && chosenCaravan ? (
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-8 h-6 rounded overflow-hidden relative shrink-0">
-                  <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" />
+                  <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] text-muted leading-tight">{t('booking.totalPriceLabel')}</p>
