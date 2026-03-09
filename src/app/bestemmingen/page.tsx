@@ -49,13 +49,24 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-cyan-50">
         {camping.photos?.[0] ? (
-          <Image
-            src={camping.photos[0]}
-            alt={`${camping.name} — ${camping.location}, Costa Brava`}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          camping.photos[0].startsWith('http') ? (
+            /* External URLs: use unoptimized to bypass Next.js image proxy */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={camping.photos[0]}
+              alt={`${camping.name} — ${camping.location}, Costa Brava`}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              loading="lazy"
+            />
+          ) : (
+            <Image
+              src={camping.photos[0]}
+              alt={`${camping.name} — ${camping.location}, Costa Brava`}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          )
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <Tent size={40} className="text-primary/30" />

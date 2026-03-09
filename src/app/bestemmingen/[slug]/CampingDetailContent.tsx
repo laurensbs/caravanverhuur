@@ -56,14 +56,26 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
       <section className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
-        <Image
-          src={camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg'}
-          alt={`${camping.name} — ${camping.location}, Costa Brava`}
-          fill
-          className="object-cover"
-          priority
-          sizes="100vw"
-        />
+        {(() => {
+          const src = camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg';
+          return src.startsWith('http') ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={`${camping.name} — ${camping.location}, Costa Brava`}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <Image
+              src={src}
+              alt={`${camping.name} — ${camping.location}, Costa Brava`}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          );
+        })()}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
         {/* Photo gallery dots */}
@@ -182,13 +194,23 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                       onClick={() => { setActivePhoto(i); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                       className="relative aspect-[16/10] rounded-2xl overflow-hidden group"
                     >
-                      <Image
-                        src={photo}
-                        alt={`${camping.name} foto ${i + 1}`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 640px) 50vw, 33vw"
-                      />
+                      {photo.startsWith('http') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={photo}
+                          alt={`${camping.name} foto ${i + 1}`}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <Image
+                          src={photo}
+                          alt={`${camping.name} foto ${i + 1}`}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 50vw, 33vw"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                     </button>
                   ))}
@@ -293,13 +315,23 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                       className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors group"
                     >
                       <div className="w-12 h-9 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
-                        <Image
-                          src={c.photos?.[0] || '/og-image.jpg'}
-                          alt={c.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="48px"
-                        />
+                        {(c.photos?.[0] || '').startsWith('http') ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={c.photos[0]}
+                            alt={c.name}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <Image
+                            src={c.photos?.[0] || '/og-image.jpg'}
+                            alt={c.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="48px"
+                          />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>

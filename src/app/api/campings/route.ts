@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { getAllCampings } from '@/lib/db';
 import { campings as staticCampings } from '@/data/campings';
 
+// Always fetch fresh data from DB — never cache this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 function mapStaticCamping(c: typeof staticCampings[0]) {
   return {
     id: c.id,
