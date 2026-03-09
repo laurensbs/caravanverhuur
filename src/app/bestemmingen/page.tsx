@@ -55,17 +55,6 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-700"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement;
-              img.style.display = 'none';
-              const parent = img.parentElement;
-              if (parent && !parent.querySelector('.fallback-icon')) {
-                const div = document.createElement('div');
-                div.className = 'fallback-icon absolute inset-0 flex items-center justify-center';
-                div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-primary/30"><path d="M3 7a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="m3 15 4-4a2 2 0 0 1 3 0l4 4"/><path d="m14 14 1-1a2 2 0 0 1 3 0l3 3"/></svg>';
-                parent.appendChild(div);
-              }
-            }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -239,16 +228,20 @@ export default function BestemmingenPage() {
             bestFor: (Array.isArray(c.best_for) ? c.best_for : []) as string[],
           }));
 
-          // Merge: DB campings override static by name match, plus add new ones
+          // Merge: DB data enriches static, but ALWAYS keep static photos (local paths guaranteed to work)
           const dbNameMap = new Map(dbMapped.map(c => [c.name.toLowerCase(), c]));
           const merged: Camping[] = [];
           const usedDbNames = new Set<string>();
 
-          // Start with static, override with DB version if exists
+          // Start with static, enrich with DB data but keep static photos
           for (const sc of staticCampings) {
             const dbVersion = dbNameMap.get(sc.name.toLowerCase());
-            if (dbVersion && dbVersion.photos?.length > 0) {
-              merged.push(dbVersion);
+            if (dbVersion) {
+              // Keep static photos (local paths), use DB for other updated fields
+              merged.push({
+                ...dbVersion,
+                photos: sc.photos.length > 0 ? sc.photos : dbVersion.photos,
+              });
               usedDbNames.add(sc.name.toLowerCase());
             } else {
               merged.push(sc);
