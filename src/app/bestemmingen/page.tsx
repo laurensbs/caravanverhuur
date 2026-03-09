@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import {
-  MapPin, ArrowRight, Star, Search, X, Tent, Filter, Globe, ChevronDown,
-  Waves, Users, Heart, TreePine, Sparkles, Award, Umbrella, Wifi, ShoppingCart,
-  Dumbbell,
+  MapPin, ArrowRight, Star, Search, X, Tent, Globe, ChevronLeft, ChevronRight as ChevronRightIcon,
+  Waves, Users, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
+  Dumbbell, Landmark, UtensilsCrossed,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
-import { motion, AnimatePresence } from 'framer-motion';
 
 /* ------------------------------------------------------------------ */
 /*  Facility icons                                                     */
@@ -171,14 +170,78 @@ function DbCampingCard({ camping, t }: { camping: Record<string, unknown>; t: (k
 }
 
 /* ------------------------------------------------------------------ */
+/*  Horizontal scroll row helper                                       */
+/* ------------------------------------------------------------------ */
+function ScrollRow({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [canL, setCanL] = useState(false);
+  const [canR, setCanR] = useState(false);
+  const check = () => {
+    const el = ref.current; if (!el) return;
+    setCanL(el.scrollLeft > 4);
+    setCanR(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  };
+  useEffect(() => { check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check); }, []);
+  const scroll = (dir: number) => { ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' }); setTimeout(check, 350); };
+
+  return (
+    <div className={`relative group/row ${className}`}>
+      {canL && <button onClick={() => scroll(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity -ml-3"><ChevronLeft size={18} /></button>}
+      <div ref={ref} onScroll={check} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 scroll-smooth -mx-1 px-1">
+        {children}
+      </div>
+      {canR && <button onClick={() => scroll(1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity -mr-3"><ChevronRightIcon size={18} /></button>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Section header helper                                              */
+/* ------------------------------------------------------------------ */
+function SectionHeader({ icon, title, subtitle, href, linkText }: { icon: React.ReactNode; title: string; subtitle: string; href?: string; linkText?: string }) {
+  return (
+    <div className="flex items-end justify-between mb-5">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">{icon} {title}</h2>
+        <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
+      </div>
+      {href && <Link href={href} className="text-sm text-primary font-medium flex items-center gap-1 shrink-0">{linkText} <ArrowRight size={14} /></Link>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Curated attractions                                                */
+/* ------------------------------------------------------------------ */
+const attractionCards = [
+  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨', desc: 'Het meest bezochte museum van Spanje na het Prado', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
+  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰', desc: 'Ommuurde middeleeuwse stad boven de zee', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
+  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️', desc: 'Top duik- en snorkelparadijs', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
+  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺', desc: 'Een van de mooiste tuinen van Europa', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
+  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️', desc: 'Meest oostelijke punt van Spanje', img: '/images/campings/cap_de_creus_landscape.jpg' },
+  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏯', desc: '360° panorama over de Costa Brava', img: '/images/campings/begurcastle.jpg' },
+  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵', desc: 'Botanische tuin met zomerconcerten', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
+  { name: 'Kanalen Empuriabrava', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤', desc: 'Het Venetië van Spanje — 24 km kanalen', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
+  { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', desc: 'Best bewaarde middeleeuws dorp van Catalonië', img: '/images/campings/els_masos_de_pals.jpg' },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Collect all beaches from destinations                              */
+/* ------------------------------------------------------------------ */
+const allBeaches = destinations.flatMap(d =>
+  d.beaches.map(b => ({ ...b, destination: d.name, destSlug: d.slug, destImage: d.heroImage }))
+);
+const featuredBeaches = allBeaches.filter(b => b.facilities && b.vibe !== 'wild').slice(0, 10);
+
+/* ------------------------------------------------------------------ */
 /*  Main page                                                          */
 /* ------------------------------------------------------------------ */
 export default function BestemmingenPage() {
   const { t } = useLanguage();
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'campings' | 'plaatsen' | 'bezienswaardigheden'>('all');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [dbCampings, setDbCampings] = useState<Record<string, unknown>[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch DB campings (admin-managed)
   useEffect(() => {
@@ -186,7 +249,6 @@ export default function BestemmingenPage() {
       .then(res => res.json())
       .then(data => {
         if (data.source === 'db' && data.campings?.length) {
-          // Filter out campings that are already in the static list by name
           const staticNames = new Set(staticCampings.map(c => c.name.toLowerCase()));
           const extra = data.campings.filter((c: Record<string, unknown>) => !staticNames.has((c.name as string).toLowerCase()));
           setDbCampings(extra);
@@ -195,264 +257,368 @@ export default function BestemmingenPage() {
       .catch((e) => console.error('Fetch error:', e));
   }, []);
 
+  // Handle hash for direct linking
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'campings') setActiveTab('campings');
+    else if (hash === 'plaatsen') setActiveTab('plaatsen');
+    else if (hash === 'bezienswaardigheden') setActiveTab('bezienswaardigheden');
+  }, []);
+
   // Filter campings
   const filteredCampings = useMemo(() => {
     let result = staticCampings;
-    if (selectedRegion) {
-      result = result.filter(c => c.region === selectedRegion);
-    }
+    if (selectedRegion) result = result.filter(c => c.region === selectedRegion);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(c =>
-        c.name.toLowerCase().includes(q) ||
-        c.location.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q) ||
-        c.facilities?.some(f => f.toLowerCase().includes(q)) ||
-        c.bestFor?.some(b => b.toLowerCase().includes(q))
+        c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) || c.facilities?.some(f => f.toLowerCase().includes(q))
       );
     }
     return result;
   }, [search, selectedRegion]);
 
-  // Filter DB campings
-  const filteredDbCampings = useMemo(() => {
-    if (!search.trim()) return dbCampings;
+  // Filter destinations
+  const filteredDests = useMemo(() => {
+    if (!search.trim()) return destinations;
     const q = search.toLowerCase();
-    return dbCampings.filter(c =>
-      (c.name as string).toLowerCase().includes(q) ||
-      (c.location as string).toLowerCase().includes(q)
+    return destinations.filter(d =>
+      d.name.toLowerCase().includes(q) || d.region.toLowerCase().includes(q) ||
+      d.description.toLowerCase().includes(q) || d.highlights.some(h => h.toLowerCase().includes(q))
     );
-  }, [search, dbCampings]);
+  }, [search]);
 
-  // Stats
   const totalCampings = staticCampings.length + dbCampings.length;
-  const regionCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const r of regionOrder) {
-      counts[r] = staticCampings.filter(c => c.region === r).length;
-    }
-    return counts;
-  }, []);
+  const tabs = [
+    { key: 'all' as const, label: 'Alles', icon: <Globe size={16} /> },
+    { key: 'campings' as const, label: `Campings (${totalCampings})`, icon: <Tent size={16} /> },
+    { key: 'plaatsen' as const, label: `Plaatsen (${destinations.length})`, icon: <MapPin size={16} /> },
+    { key: 'bezienswaardigheden' as const, label: 'Bezienswaardigheden', icon: <Landmark size={16} /> },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-20 sm:pt-20 sm:pb-24">
+        <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-8 sm:pt-20 sm:pb-10">
           <nav className="flex items-center gap-1.5 text-white/50 text-xs mb-6">
             <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
             <span>/</span>
             <span className="text-white/80">{t('nav.destinations')}</span>
           </nav>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3">
             {t('destinations.heroTitle')}
           </h1>
-          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mb-8">
+          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mb-6">
             {t('destinations.heroSubtitle')}
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-6">
+          <div className="flex flex-wrap gap-5 mb-8">
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-                <Tent size={20} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{totalCampings}</p>
-                <p className="text-xs text-white/60">{t('destinations.campingsLabel')}</p>
-              </div>
+              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Tent size={18} /></div>
+              <div><p className="text-xl font-bold">{totalCampings}</p><p className="text-[11px] text-white/60">Campings</p></div>
             </div>
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-                <Globe size={20} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">3</p>
-                <p className="text-xs text-white/60">{t('destinations.regionsLabel')}</p>
-              </div>
+              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><MapPin size={18} /></div>
+              <div><p className="text-xl font-bold">{destinations.length}</p><p className="text-[11px] text-white/60">Plaatsen</p></div>
             </div>
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-                <MapPin size={20} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{destinations.length}</p>
-                <p className="text-xs text-white/60">{t('destinations.placesLabel')}</p>
-              </div>
+              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Umbrella size={18} /></div>
+              <div><p className="text-xl font-bold">{allBeaches.length}</p><p className="text-[11px] text-white/60">Stranden</p></div>
+            </div>
+            <div className="flex items-center gap-2 text-white/90">
+              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Landmark size={18} /></div>
+              <div><p className="text-xl font-bold">{attractionCards.length}</p><p className="text-[11px] text-white/60">Bezienswaardigheden</p></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Search & filters */}
-      <section className="relative z-10 -mt-7 max-w-7xl mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-5">
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder={t('destinations.searchPlaceholder')}
-                className="w-full pl-10 pr-10 py-3 bg-gray-50 rounded-xl text-sm border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-colors"
-              />
-              {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-
-            {/* Region filter (mobile toggle) */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="sm:hidden flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl text-sm font-medium text-gray-600 border border-gray-200"
-            >
-              <Filter size={16} /> {t('destinations.filters')} {selectedRegion && <span className="w-2 h-2 bg-primary rounded-full" />}
-            </button>
-
-            {/* Region filter (desktop) */}
-            <div className="hidden sm:flex items-center gap-2">
+      {/* Tab bar + search (sticky) */}
+      <section className="sticky top-[88px] sm:top-[136px] z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
+            {tabs.map(tab => (
               <button
-                onClick={() => setSelectedRegion(null)}
-                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${!selectedRegion ? 'bg-primary text-white shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); if (tab.key !== 'campings') setSelectedRegion(null); }}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
               >
-                {t('destinations.allRegions')} ({totalCampings})
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px] ml-auto">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder={t('destinations.searchPlaceholder')}
+                className="w-full pl-9 pr-8 py-2 bg-gray-50 rounded-full text-sm border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none"
+              />
+              {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><X size={14} /></button>}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TAB: ALL — Booking.com style mixed rows ===== */}
+      {activeTab === 'all' && !search && (
+        <div className="max-w-7xl mx-auto px-4 py-10 space-y-14">
+          {/* Row 1: Popular Destinations */}
+          <section>
+            <SectionHeader
+              icon={<MapPin size={22} className="text-amber-500" />}
+              title="Populaire plaatsen"
+              subtitle="Ontdek de mooiste dorpen en steden aan de Costa Brava"
+              href="#plaatsen" linkText="Alle plaatsen"
+            />
+            <ScrollRow>
+              {destinations.map(d => (
+                <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-base font-bold text-white">{d.name}</h3>
+                      <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {d.region}</p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">{d.description}</p>
+                    <div className="flex items-center gap-3 text-[11px] text-gray-400">
+                      <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-cyan-500" /> {d.beaches.length} stranden</span>
+                      <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-orange-400" /> {d.restaurants.length} restaurants</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </ScrollRow>
+          </section>
+
+          {/* Row 2: Top Campings */}
+          <section id="campings">
+            <SectionHeader
+              icon={<Tent size={22} className="text-primary" />}
+              title="Populaire campings"
+              subtitle={`${totalCampings} campings van luxe resorts tot gezellige familiecampings`}
+              href="#campings" linkText="Alle campings"
+            />
+            <ScrollRow>
+              {staticCampings.slice(0, 12).map(c => (
+                <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-cyan-50">
+                    <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    {c.stars && (
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[11px] font-semibold">
+                          <Stars count={c.stars} />
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-base font-bold text-white">{c.name}</h3>
+                      <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {c.location}</p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">{c.description}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {c.facilities?.slice(0, 3).map(f => (
+                        <span key={f} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-500 border border-gray-100">
+                          {facilityIcons[f] || <Tent size={10} />} {f}
+                        </span>
+                      ))}
+                      {(c.facilities?.length || 0) > 3 && <span className="px-1.5 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-400 border border-gray-100">+{(c.facilities?.length || 0) - 3}</span>}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </ScrollRow>
+          </section>
+
+          {/* Row 3: Bezienswaardigheden */}
+          <section>
+            <SectionHeader
+              icon={<Landmark size={22} className="text-emerald-500" />}
+              title="Bezienswaardigheden"
+              subtitle="Cultuur, natuur en historie — de mooiste plekken om te bezoeken"
+            />
+            <ScrollRow>
+              {attractionCards.map(a => (
+                <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group shrink-0 w-[240px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="260px" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="text-xl">{a.icon}</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm font-bold text-white">{a.name}</h3>
+                      <p className="text-[11px] text-white/70">{a.place}</p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs text-gray-600">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </ScrollRow>
+          </section>
+
+          {/* Row 4: Stranden */}
+          <section>
+            <SectionHeader
+              icon={<Umbrella size={22} className="text-cyan-500" />}
+              title="Mooiste stranden"
+              subtitle={`${allBeaches.length} stranden en baaien langs 200 km kust`}
+            />
+            <ScrollRow>
+              {featuredBeaches.map((b, i) => (
+                <Link key={`${b.destSlug}-${i}`} href={`/bestemmingen/${b.destSlug}`} className="group shrink-0 w-[220px] sm:w-[240px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image src={b.destImage} alt={b.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="240px" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm font-bold text-white">{b.name}</h3>
+                      <p className="text-[11px] text-white/70">{b.destination}</p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-amber-50 text-amber-700' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {b.type === 'zand' ? '🏖️ Zand' : b.type === 'kiezel' ? '🪨 Kiezel' : b.type === 'rotsen' ? '🪨 Rotsen' : '🏖️ Mix'}
+                      </span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-green-50 text-green-700' : b.vibe === 'levendig' ? 'bg-pink-50 text-pink-600' : 'bg-cyan-50 text-cyan-700'}`}>
+                        {b.vibe === 'familiaal' ? '👨‍👩‍👧 Familiaal' : b.vibe === 'levendig' ? '🎉 Levendig' : b.vibe === 'rustig' ? '🧘 Rustig' : '🌊 Wild'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 line-clamp-2">{b.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </ScrollRow>
+          </section>
+        </div>
+      )}
+
+      {/* ===== TAB: CAMPINGS ===== */}
+      {(activeTab === 'campings' || (activeTab === 'all' && search)) && (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {activeTab === 'campings' && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button onClick={() => setSelectedRegion(null)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${!selectedRegion ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                Alle regio&apos;s ({totalCampings})
               </button>
               {regionOrder.map(r => (
-                <button
-                  key={r}
-                  onClick={() => setSelectedRegion(selectedRegion === r ? null : r)}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${selectedRegion === r ? 'bg-primary text-white shadow-sm' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                <button key={r} onClick={() => setSelectedRegion(selectedRegion === r ? null : r)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${selectedRegion === r ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 >
-                  {r} ({regionCounts[r]})
+                  {r} ({staticCampings.filter(c => c.region === r).length})
                 </button>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Mobile region filter (expandable) */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden sm:hidden"
-              >
-                <div className="flex flex-wrap gap-2 pt-3">
-                  <button
-                    onClick={() => { setSelectedRegion(null); setShowFilters(false); }}
-                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${!selectedRegion ? 'bg-primary text-white' : 'bg-gray-50 text-gray-600 border border-gray-200'}`}
-                  >
-                    {t('destinations.allRegions')}
-                  </button>
-                  {regionOrder.map(r => (
-                    <button
-                      key={r}
-                      onClick={() => { setSelectedRegion(selectedRegion === r ? null : r); setShowFilters(false); }}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${selectedRegion === r ? 'bg-primary text-white' : 'bg-gray-50 text-gray-600 border border-gray-200'}`}
-                    >
-                      {r} ({regionCounts[r]})
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </section>
+          <p className="text-sm text-gray-500 mb-4">{filteredCampings.length} campings gevonden</p>
 
-      {/* Results count */}
-      <section className="max-w-7xl mx-auto px-4 mt-6 mb-2">
-        <p className="text-sm text-gray-500">
-          {filteredCampings.length + filteredDbCampings.length} {t('destinations.campingsFound')}
-          {selectedRegion && <span className="text-primary font-medium"> — {selectedRegion}</span>}
-          {search && <span className="text-primary font-medium"> — &quot;{search}&quot;</span>}
-        </p>
-      </section>
-
-      {/* Camping grid */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
-        {filteredCampings.length === 0 && filteredDbCampings.length === 0 ? (
-          <div className="text-center py-20">
-            <Tent size={48} className="text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg font-medium">{t('destinations.noCampingsFound')}</p>
-            <p className="text-gray-400 text-sm mt-1">{t('destinations.tryDifferentSearch')}</p>
-            <button
-              onClick={() => { setSearch(''); setSelectedRegion(null); }}
-              className="mt-4 px-6 py-2 bg-primary text-white rounded-xl text-sm font-medium"
-            >
-              {t('destinations.clearFilters')}
-            </button>
-          </div>
-        ) : (
-          <>
-            {/* Group by region when no search/filter active */}
-            {!search && !selectedRegion ? (
-              <>
-                {regionOrder.map(region => {
-                  const regionCampings = staticCampings.filter(c => c.region === region);
-                  return (
-                    <div key={region} className="mb-12">
-                      <div className="flex items-center gap-3 mb-6">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{region}</h2>
-                        <span className="text-sm text-gray-400 font-medium">{regionCampings.length} campings</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {regionCampings.map(c => (
-                          <CampingCard key={c.id} camping={c} t={t} />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* DB campings */}
-                {filteredDbCampings.length > 0 && (
-                  <div className="mb-12">
-                    <div className="flex items-center gap-3 mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{t('destinations.moreCampings')}</h2>
-                      <span className="text-sm text-gray-400 font-medium">{filteredDbCampings.length} campings</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredDbCampings.map((c, i) => (
-                        <DbCampingCard key={`db-${i}`} camping={c} t={t} />
-                      ))}
-                    </div>
+          {filteredCampings.length === 0 ? (
+            <div className="text-center py-16">
+              <Tent size={40} className="text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">Geen campings gevonden</p>
+              <button onClick={() => { setSearch(''); setSelectedRegion(null); }} className="mt-3 px-5 py-2 bg-primary text-white rounded-xl text-sm font-medium">Filters wissen</button>
+            </div>
+          ) : !search && !selectedRegion && activeTab === 'campings' ? (
+            regionOrder.map(region => {
+              const rc = staticCampings.filter(c => c.region === region);
+              return (
+                <div key={region} className="mb-10">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">{region} <span className="text-sm font-normal text-gray-400">— {rc.length} campings</span></h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {rc.map(c => <CampingCard key={c.id} camping={c} t={t} />)}
                   </div>
-                )}
-              </>
-            ) : (
-              /* Flat grid when searching/filtering */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                {filteredCampings.map(c => (
-                  <CampingCard key={c.id} camping={c} t={t} />
-                ))}
-                {filteredDbCampings.map((c, i) => (
-                  <DbCampingCard key={`db-${i}`} camping={c} t={t} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+                </div>
+              );
+            })
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredCampings.map(c => <CampingCard key={c.id} camping={c} t={t} />)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== TAB: PLAATSEN ===== */}
+      {activeTab === 'plaatsen' && (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <p className="text-sm text-gray-500 mb-6">{filteredDests.length} plaatsen aan de Costa Brava</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDests.map(d => (
+              <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className="px-2 py-0.5 bg-amber-500/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">{d.region}</span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-lg font-bold text-white mb-0.5">{d.name}</h3>
+                    {d.knownFor && <p className="text-xs text-white/70">{d.knownFor}</p>}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{d.description}</p>
+                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <span className="flex items-center gap-1"><Umbrella size={12} className="text-cyan-500" /> {d.beaches.length} stranden</span>
+                    <span className="flex items-center gap-1"><UtensilsCrossed size={12} className="text-orange-400" /> {d.restaurants.length} restaurants</span>
+                    {d.population && <span className="flex items-center gap-1"><Users size={12} className="text-gray-400" /> {d.population}</span>}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== TAB: BEZIENSWAARDIGHEDEN ===== */}
+      {activeTab === 'bezienswaardigheden' && (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <p className="text-sm text-gray-500 mb-6">De mooiste bezienswaardigheden aan de Costa Brava</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {attractionCards.map(a => (
+              <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-3 left-3"><span className="text-2xl">{a.icon}</span></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-lg font-bold text-white">{a.name}</h3>
+                    <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {a.place}</p>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm text-gray-600">{a.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CTA section */}
-      <section className="max-w-7xl mx-auto px-4 pb-20">
+      <section className="max-w-7xl mx-auto px-4 pb-20 pt-4">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-10" />
           <div className="relative">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">{t('destinations.ctaTitle')}</h2>
             <p className="text-white/80 mb-6 max-w-lg mx-auto">{t('destinations.ctaSubtitle')}</p>
-            <Link
-              href="/boeken"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary font-bold rounded-full text-sm transition-transform hover:scale-105 shadow-lg"
-            >
+            <Link href="/boeken" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary font-bold rounded-full text-sm transition-transform hover:scale-105 shadow-lg">
               {t('nav.bookNow')} <ArrowRight size={16} />
             </Link>
           </div>

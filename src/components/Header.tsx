@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings as staticCampingsData, type Camping } from '@/data/campings';
+import { destinations } from '@/data/destinations';
 import WeatherBar from './WeatherBar';
 import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
 
@@ -27,6 +28,18 @@ staticCampingsData.forEach(c => {
   campingsByRegion[c.region].push(c);
 });
 const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'];
+
+/* Curated attractions for the mega menu */
+const attractions = [
+  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨' },
+  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰' },
+  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️' },
+  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺' },
+  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️' },
+  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏯' },
+  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵' },
+  { name: 'Kanalen', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤' },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -329,33 +342,74 @@ export default function Header() {
                     </Link>
                   </div>
                   <div className="grid grid-cols-4 gap-8">
-                    {regionOrder.map(region => (
-                      <div key={region}>
-                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{region}</p>
-                        <div className="space-y-0.5">
-                          {(campingsByRegion[region] || []).slice(0, 5).map(c => (
-                            <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-2 px-2 -mx-2 rounded-lg transition-colors">
-                              <div className="w-8 h-8 rounded overflow-hidden shrink-0 relative bg-surface-alt">
-                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover transition-transform duration-300" sizes="32px" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm text-foreground-light transition-colors truncate">{c.name}</p>
-                                <p className="text-xs text-muted">{c.location}</p>
-                              </div>
-                            </Link>
-                          ))}
-                          {(campingsByRegion[region] || []).length > 5 && (
-                            <Link href="/bestemmingen" className="block px-2 py-1.5 text-xs text-primary font-medium">
-                              +{(campingsByRegion[region] || []).length - 5} meer →
-                            </Link>
-                          )}
-                        </div>
+                    {/* Column 1: Campings */}
+                    <div>
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <span>⛺</span> Campings
+                      </p>
+                      <div className="space-y-0.5">
+                        {staticCampingsData.slice(0, 6).map(c => (
+                          <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
+                            <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
+                              <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm text-foreground-light truncate">{c.name}</p>
+                              <p className="text-[11px] text-muted">{c.location}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        <Link href="/bestemmingen#campings" className="block px-2 py-1.5 text-xs text-primary font-medium">
+                          {t('destinations.allCampings')} ({staticCampingsData.length}) →
+                        </Link>
                       </div>
-                    ))}
-                    {/* Featured */}
+                    </div>
+
+                    {/* Column 2: Plaatsen */}
+                    <div>
+                      <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <span>📍</span> {t('destinations.placesLabel')}
+                      </p>
+                      <div className="space-y-0.5">
+                        {destinations.slice(0, 7).map(d => (
+                          <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
+                            <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
+                              <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="28px" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm text-foreground-light truncate">{d.name}</p>
+                              <p className="text-[11px] text-muted">{d.region}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        <Link href="/bestemmingen#plaatsen" className="block px-2 py-1.5 text-xs text-primary font-medium">
+                          Alle plaatsen ({destinations.length}) →
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Column 3: Bezienswaardigheden */}
+                    <div>
+                      <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <span>🏛️</span> Bezienswaardigheden
+                      </p>
+                      <div className="space-y-0.5">
+                        {attractions.map(a => (
+                          <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg transition-colors">
+                            <span className="text-base w-7 h-7 flex items-center justify-center shrink-0">{a.icon}</span>
+                            <div className="min-w-0">
+                              <p className="text-sm text-foreground-light truncate">{a.name}</p>
+                              <p className="text-[11px] text-muted">{a.place}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Column 4: Featured image */}
                     <div className="relative rounded-xl overflow-hidden">
                       <Image src={featuredCamping.photos?.[0] || '/og-image.jpg'} alt={featuredCamping.name} fill className="object-cover" sizes="250px" />
-                      <div className="absolute inset-0 bg-black/30" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{featuredCamping.region}</p>
                         <p className="text-white font-bold text-sm mb-3">{featuredCamping.name}</p>
@@ -446,23 +500,50 @@ export default function Header() {
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                     <div className="pl-4 pr-1 pb-2">
                       <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm font-semibold text-primary mb-1">
-                        Alle campings →
+                        Alle bestemmingen →
                       </Link>
-                      {regionOrder.map(region => (
-                        <div key={region}>
-                          <p className="px-3 pt-3 pb-1 text-xs font-bold text-muted uppercase tracking-wider">{region}</p>
-                          {(campingsByRegion[region] || []).slice(0, 4).map(c => (
-                            <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-foreground-light">
-                              <div className="w-8 h-8 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                                <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="32px" />
-                              </div>
-                              <div className="min-w-0">
-                                <span className="block truncate">{c.name}</span>
-                                <span className="block text-xs text-muted">{c.location}</span>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
+
+                      {/* Campings */}
+                      <p className="px-3 pt-2 pb-1 text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1">⛺ Campings</p>
+                      {staticCampingsData.slice(0, 5).map(c => (
+                        <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
+                          <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
+                            <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="block truncate text-[13px]">{c.name}</span>
+                            <span className="block text-[11px] text-muted">{c.location}</span>
+                          </div>
+                        </Link>
+                      ))}
+                      <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1 text-xs text-primary font-medium">
+                        Alle campings ({staticCampingsData.length}) →
+                      </Link>
+
+                      {/* Plaatsen */}
+                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">📍 Plaatsen</p>
+                      {destinations.slice(0, 5).map(d => (
+                        <Link key={d.slug} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
+                          <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
+                            <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="28px" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="block truncate text-[13px]">{d.name}</span>
+                            <span className="block text-[11px] text-muted">{d.region}</span>
+                          </div>
+                        </Link>
+                      ))}
+
+                      {/* Bezienswaardigheden */}
+                      <p className="px-3 pt-3 pb-1 text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">🏛️ Bezienswaardigheden</p>
+                      {attractions.slice(0, 4).map(a => (
+                        <Link key={a.slug} href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
+                          <span className="text-base w-7 h-7 flex items-center justify-center shrink-0">{a.icon}</span>
+                          <div className="min-w-0">
+                            <span className="block truncate text-[13px]">{a.name}</span>
+                            <span className="block text-[11px] text-muted">{a.place}</span>
+                          </div>
+                        </Link>
                       ))}
                     </div>
                   </motion.div>
