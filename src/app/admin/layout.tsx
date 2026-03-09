@@ -501,16 +501,61 @@ function SidebarNavItem({
   onNavigate,
   t,
   badge,
+  isMobile,
 }: {
   item: { href: string; key: string; icon: typeof LayoutDashboard };
   isActive: boolean;
   onNavigate: () => void;
   t: (key: string) => string;
   badge?: number;
+  isMobile?: boolean;
 }) {
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
   const Icon = item.icon;
+
+  const linkContent = (
+    <Link
+      href={item.href}
+      onClick={(e) => {
+        if (isDraggingRef.current) {
+          e.preventDefault();
+          return;
+        }
+        onNavigate();
+      }}
+      draggable={false}
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+        isActive
+          ? 'bg-white/15 text-white shadow-sm'
+          : 'text-white/70 hover:bg-white/10 hover:text-white'
+      }`}
+    >
+      {!isMobile && (
+        <GripVertical
+          className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => controls.start(e)}
+          style={{ touchAction: 'none' }}
+        />
+      )}
+      <Icon className="w-5 h-5 shrink-0" />
+      <span className="flex-1">{t(item.key)}</span>
+      {badge && badge > 0 ? (
+        <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
+          {badge > 99 ? '99+' : badge}
+        </span>
+      ) : isActive ? (
+        <motion.div
+          layoutId="activeIndicator"
+          className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
+        />
+      ) : null}
+    </Link>
+  );
+
+  if (isMobile) {
+    return <li className="list-none">{linkContent}</li>;
+  }
 
   return (
     <Reorder.Item
@@ -522,40 +567,7 @@ function SidebarNavItem({
       whileDrag={{ scale: 1.04, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', zIndex: 50 }}
       className="list-none"
     >
-      <Link
-        href={item.href}
-        onClick={(e) => {
-          if (isDraggingRef.current) {
-            e.preventDefault();
-            return;
-          }
-          onNavigate();
-        }}
-        draggable={false}
-        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-          isActive
-            ? 'bg-white/15 text-white shadow-sm'
-            : 'text-white/70 hover:bg-white/10 hover:text-white'
-        }`}
-      >
-        <GripVertical
-          className="w-3.5 h-3.5 text-white/30 shrink-0 cursor-grab active:cursor-grabbing"
-          onPointerDown={(e) => controls.start(e)}
-          style={{ touchAction: 'none' }}
-        />
-        <Icon className="w-5 h-5 shrink-0" />
-        <span className="flex-1">{t(item.key)}</span>
-        {badge && badge > 0 ? (
-          <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        ) : isActive ? (
-          <motion.div
-            layoutId="activeIndicator"
-            className="w-1.5 h-1.5 bg-primary-light rounded-full shrink-0"
-          />
-        ) : null}
-      </Link>
+      {linkContent}
     </Reorder.Item>
   );
 }
@@ -595,6 +607,16 @@ function AdminLayoutInner({
   const [searchLoading, setSearchLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile (< lg breakpoint)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   // Fetch badge counts periodically
   useEffect(() => {
@@ -775,6 +797,21 @@ function AdminLayoutInner({
                 <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/40">
                   {t(section.sectionKey)}
                 </div>
+                {isMobile ? (
+                  <ul className="space-y-0.5">
+                    {orderedItems.map((item) => (
+                      <SidebarNavItem
+                        key={item.href}
+                        item={item}
+                        isActive={pathname === item.href}
+                        onNavigate={() => setSidebarOpen(false)}
+                        t={t}
+                        badge={badges[item.key]}
+                        isMobile
+                      />
+                    ))}
+                  </ul>
+                ) : (
                 <Reorder.Group
                   axis="y"
                   values={orderedItems.map(i => i.href)}
@@ -792,6 +829,7 @@ function AdminLayoutInner({
                     />
                   ))}
                 </Reorder.Group>
+                )}
               </div>
             );
           })}
