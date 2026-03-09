@@ -227,6 +227,7 @@ export default function CaravansPage() {
     <>
       <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">{t('caravans.heroTitle')}</h1>
           {/* Mobile: filter toggle + sort bar */}
           <div className="lg:hidden flex items-center gap-3 mb-4">
             <button
@@ -308,7 +309,7 @@ export default function CaravansPage() {
                           alt={caravan.name}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          unoptimized
+                         
                         />
                         <div className="absolute top-3 left-3">
                           <span className="px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-primary">

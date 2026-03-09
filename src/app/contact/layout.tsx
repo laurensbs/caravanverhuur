@@ -4,10 +4,16 @@ export const metadata: Metadata = {
   title: 'Contact | Caravanverhuur Costa Brava',
   description:
     'Neem contact op met Caravanverhuur Costa Brava. Stel je vraag via e-mail, telefoon of WhatsApp. We reageren binnen 24 uur.',
+  alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact – Caravanverhuur Costa Brava',
     description:
       'Neem contact op met Caravanverhuur Costa Brava. We reageren binnen 24 uur.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact – Caravanverhuur Costa Brava',
+    description: 'Neem contact op met Caravanverhuur Costa Brava. We reageren binnen 24 uur.',
   },
 };
 

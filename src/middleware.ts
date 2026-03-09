@@ -26,6 +26,14 @@ export async function middleware(request: NextRequest) {
 
   /* ── Admin subdomain ──────────────────────────────────── */
   if (isAdminSubdomain) {
+    // Serve noindex robots.txt for admin subdomain
+    if (pathname === '/robots.txt') {
+      return new NextResponse(
+        'User-agent: *\nDisallow: /\n',
+        { status: 200, headers: { 'Content-Type': 'text/plain' } },
+      );
+    }
+
     if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
       return NextResponse.next();
     }
@@ -37,7 +45,10 @@ export async function middleware(request: NextRequest) {
 
     const url = request.nextUrl.clone();
     url.pathname = `/admin${pathname}`;
-    return NextResponse.rewrite(url);
+    // Add X-Robots-Tag header to prevent indexing
+    const response = NextResponse.rewrite(url);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
   }
 
   /* ── Main domain: redirect /admin/* to admin subdomain ─ */

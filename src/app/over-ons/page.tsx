@@ -39,9 +39,9 @@ export default function OverOnsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
               <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.whoWeAre')}</span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-2 mb-6">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2 mb-6">
                 {t('about.whoWeAreTitle')}
-              </h2>
+              </h1>
               <p className="text-muted text-lg mb-6 leading-relaxed">
                 {t('about.whoWeAreText1')}
               </p>
@@ -63,7 +63,7 @@ export default function OverOnsPage() {
                   width={600}
                   height={400}
                   className="w-full object-cover"
-                  unoptimized
+                 
                 />
               </div>
             </motion.div>

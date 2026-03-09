@@ -202,7 +202,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 alt="Costa Brava"
                 fill
                 className="object-cover"
-                unoptimized
+               
               />
             </div>
             <div className="absolute inset-0 bg-gradient-to-br from-[#0C4A6E]/80 via-[#0C4A6E]/60 to-[#0C4A6E]/90" />
@@ -214,7 +214,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   width={240}
                   height={70}
                   className="w-44 xl:w-52 h-auto"
-                  unoptimized
+                 
                 />
               </div>
 
@@ -263,7 +263,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   alt="Costa Brava"
                   fill
                   className="object-cover"
-                  unoptimized
+                 
                 />
               </div>
               <div className="relative z-10">
@@ -273,7 +273,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   width={200}
                   height={60}
                   className="w-40 h-auto mb-3"
-                  unoptimized
+                 
                 />
                 <h1 className="text-xl font-bold text-white">{lt('auth.welcomeBack')}</h1>
                 <p className="text-white/60 text-sm mt-1">{lt('auth.loginSubtitle')}</p>
@@ -676,7 +676,7 @@ function AdminLayoutInner({
               width={200}
               height={56}
               className="w-36 lg:w-44 h-auto drop-shadow-lg"
-              unoptimized
+             
             />
           </div>
         </div>

@@ -4,7 +4,9 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from '@/i18n/context';
 import { dictionaries } from '@/i18n/translations';
-import ChatBot from '@/components/ChatBot';
+import dynamic from 'next/dynamic';
+
+const ChatBot = dynamic(() => import('@/components/ChatBot'), { ssr: false });
 
 function HtmlLangSync() {
   const { locale } = useLanguage();

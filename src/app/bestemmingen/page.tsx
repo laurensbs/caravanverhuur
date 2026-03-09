@@ -6,10 +6,11 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { destinations, type Destination, type Restaurant, type Beach } from '@/data/destinations';
 import { locationActivities, getCategoryLabel, type Activity } from '@/data/activities';
+import { campings, type Camping } from '@/data/campings';
 import {
   MapPin, ArrowRight, Sun, Users, ChevronRight, Compass, Star, Waves, Camera, TreePine,
   Heart, Anchor, Palette, Search, X, UtensilsCrossed, Umbrella,
-  Map, Grid3X3, ChevronDown, Sparkles, Award, Bike, Castle, Filter,
+  Map, Grid3X3, ChevronDown, Sparkles, Award, Bike, Castle, Filter, Tent, Globe, ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -27,7 +28,7 @@ const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
 /* ------------------------------------------------------------------ */
 /*  Types & constants                                                  */
 /* ------------------------------------------------------------------ */
-type TabKey = 'overzicht' | 'steden' | 'stranden' | 'restaurants' | 'activiteiten';
+type TabKey = 'overzicht' | 'steden' | 'stranden' | 'restaurants' | 'activiteiten' | 'campings';
 
 const regionOrder = ['Baix Empord\u00e0', 'Alt Empord\u00e0', 'La Selva'];
 const regionIcons: Record<string, React.ReactNode> = {
@@ -162,10 +163,11 @@ function StatsBar({ t }: { t: (k: string) => string }) {
     { label: t('destinations.destinationsCount'), value: destinations.length, icon: <MapPin size={18} className="text-primary" />, bg: 'bg-primary/5' },
     { label: t('destinations.beaches'), value: allBeaches.length, icon: <Umbrella size={18} className="text-cyan-500" />, bg: 'bg-cyan-50' },
     { label: t('destinations.tabRestaurants'), value: allRestaurants.length, icon: <UtensilsCrossed size={18} className="text-amber-500" />, bg: 'bg-amber-50' },
+    { label: t('destinations.campingsCount'), value: campings.length, icon: <Tent size={18} className="text-green-500" />, bg: 'bg-green-50' },
     { label: t('destinations.tabActivities'), value: allActivities.length, icon: <Bike size={18} className="text-emerald-500" />, bg: 'bg-emerald-50' },
   ];
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
       {stats.map(s => (
         <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm hover:shadow-md transition-shadow border border-gray-100/50">
           <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>{s.icon}</div>
@@ -184,7 +186,7 @@ function DestinationCard({ dest, t }: { dest: Destination; t: (k: string) => str
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50"
     >
       <div className="relative aspect-[16/10] overflow-hidden">
-        <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+        <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-800 shadow-sm">
@@ -258,7 +260,7 @@ function BeachCard({ beach, t }: { beach: Beach & { destination: string; destSlu
     <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50">
       <div className="relative h-48 overflow-hidden">
         {photo ? (
-          <Image src={photo} alt={beach.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+          <Image src={photo} alt={beach.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-cyan-300 to-teal-400 flex items-center justify-center">
             <Waves size={48} className="text-white/30" />
@@ -346,7 +348,7 @@ function ActivityCard({ activity, location, t }: { activity: Activity; location:
     <div className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50 ${photo ? '' : `border-l-4 ${catBorder[activity.category] || 'border-l-gray-300'}`}`}>
       {photo && (
         <div className="relative h-40 overflow-hidden">
-          <Image src={photo} alt={activity.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+          <Image src={photo} alt={activity.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <div className="flex items-center gap-2">
@@ -393,6 +395,41 @@ function ActivityCard({ activity, location, t }: { activity: Activity; location:
   );
 }
 
+function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => string }) {
+  return (
+    <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50">
+      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-emerald-400 via-green-400 to-teal-500 flex items-center justify-center">
+        <Tent size={48} className="text-white/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h4 className="font-bold text-white text-sm drop-shadow-lg">{camping.name}</h4>
+          <div className="flex items-center gap-1 text-white/80 text-xs">
+            <MapPin size={10} /> {camping.location}
+          </div>
+        </div>
+      </div>
+      <div className="p-4">
+        <p className="text-xs text-gray-600 mb-3 leading-relaxed line-clamp-2">{camping.description}</p>
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-medium text-emerald-700">
+            <Tent size={11} /> Camping
+          </span>
+          {camping.website && (
+            <a
+              href={camping.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            >
+              {t('destinations.visitWebsite')} <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Desktop Sidebar                                                    */
 /* ------------------------------------------------------------------ */
@@ -427,6 +464,7 @@ function SidebarFilters({
     { key: 'stranden' as TabKey, label: t('destinations.tabBeaches'), icon: <Umbrella size={16} /> },
     { key: 'restaurants' as TabKey, label: t('destinations.tabRestaurants'), icon: <UtensilsCrossed size={16} /> },
     { key: 'activiteiten' as TabKey, label: t('destinations.tabActivities'), icon: <Bike size={16} /> },
+    { key: 'campings' as TabKey, label: t('destinations.tabCampings'), icon: <Tent size={16} /> },
   ];
 
   return (
@@ -597,6 +635,7 @@ export default function DestinationsPage() {
     { key: 'stranden' as TabKey, label: t('destinations.tabBeaches'), icon: <Umbrella size={14} /> },
     { key: 'restaurants' as TabKey, label: t('destinations.tabRestaurants'), icon: <UtensilsCrossed size={14} /> },
     { key: 'activiteiten' as TabKey, label: t('destinations.tabActivities'), icon: <Bike size={14} /> },
+    { key: 'campings' as TabKey, label: t('destinations.tabCampings'), icon: <Tent size={14} /> },
   ], [t]);
 
   const handleTabChange = (tab: TabKey) => {
@@ -665,12 +704,23 @@ export default function DestinationsPage() {
     return filtered;
   }, [searchQuery, activityCat]);
 
+  const filteredCampings = useMemo(() => {
+    let filtered = campings;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(c => c.name.toLowerCase().includes(q) || c.location.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [searchQuery]);
+
   const filteredCount = activeTab === 'overzicht' || activeTab === 'steden'
     ? filteredDestinations.length
     : activeTab === 'stranden'
     ? filteredBeaches.length
     : activeTab === 'restaurants'
     ? filteredRestaurants.length
+    : activeTab === 'campings'
+    ? filteredCampings.length
     : filteredActivities.length;
 
   return (
@@ -680,7 +730,7 @@ export default function DestinationsPage() {
         <Image
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Cala_d%27Aiguablava%2C_Begur.jpg/1280px-Cala_d%27Aiguablava%2C_Begur.jpg"
           alt="Costa Brava kust"
-          fill className="object-cover" priority unoptimized
+          fill className="object-cover" priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/70" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
@@ -990,7 +1040,7 @@ export default function DestinationsPage() {
                       className="group grid md:grid-cols-[280px_1fr] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50"
                     >
                       <div className="relative h-48 md:h-auto overflow-hidden">
-                        <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
+                        <Image src={dest.heroImage} alt={dest.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 hidden md:block" />
                       </div>
                       <div className="p-5 lg:p-6">
@@ -1108,6 +1158,31 @@ export default function DestinationsPage() {
                       <Bike size={24} className="text-gray-400" />
                     </div>
                     <p className="text-gray-400 text-lg font-medium">{t('destinations.noActivities')}</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ========== CAMPINGS ========== */}
+            {activeTab === 'campings' && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{t('destinations.campingsTitle')}</h2>
+                  <p className="text-gray-500 text-sm">{t('destinations.campingsSubtitle').replace('{count}', String(campings.length))}</p>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredCampings.map(c => (
+                    <CampingCard key={c.id} camping={c} t={t} />
+                  ))}
+                </div>
+
+                {filteredCampings.length === 0 && (
+                  <div className="text-center py-20">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Tent size={24} className="text-gray-400" />
+                    </div>
+                    <p className="text-gray-400 text-lg font-medium">{t('destinations.noCampings')}</p>
                   </div>
                 )}
               </>

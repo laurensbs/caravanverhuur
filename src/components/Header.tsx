@@ -138,7 +138,7 @@ export default function Header() {
               alt="Caravanverhuur Costa Brava"
               width={320} height={80}
               className="w-56 sm:w-64 lg:w-72 h-auto object-contain"
-              unoptimized
+             
             />
           </Link>
 
@@ -287,7 +287,7 @@ export default function Header() {
                           {caravansByType[type].map(c => (
                             <Link key={c.id} href={`/caravans/${c.id}`} className="group flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg transition-colors">
                               <div className="w-12 h-8 rounded overflow-hidden shrink-0 relative bg-surface-alt">
-                                <Image src={c.photos[0]} alt={c.name} fill className="object-cover transition-transform duration-300" unoptimized />
+                                <Image src={c.photos[0]} alt={c.name} fill className="object-cover transition-transform duration-300" />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm text-foreground-light truncate transition-colors">{c.name}</p>
@@ -300,7 +300,7 @@ export default function Header() {
                     ))}
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
-                      <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" unoptimized />
+                      <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" />
                       <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{t('nav.featured')}</p>
@@ -331,7 +331,7 @@ export default function Header() {
                           {(destinationsByRegion[region] || []).map(d => (
                             <Link key={d.id} href={`/bestemmingen/${d.slug}`} className="group flex items-center gap-2.5 py-2 px-2 -mx-2 rounded-lg transition-colors">
                               <div className="w-8 h-8 rounded overflow-hidden shrink-0 relative bg-surface-alt">
-                                <Image src={d.heroImage} alt={d.name} fill className="object-cover transition-transform duration-300" unoptimized />
+                                <Image src={d.heroImage} alt={d.name} fill className="object-cover transition-transform duration-300" />
                               </div>
                               <p className="text-sm text-foreground-light transition-colors">{d.name}</p>
                             </Link>
@@ -341,7 +341,7 @@ export default function Header() {
                     ))}
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
-                      <Image src={featuredDest.heroImage} alt={featuredDest.name} fill className="object-cover" unoptimized />
+                      <Image src={featuredDest.heroImage} alt={featuredDest.name} fill className="object-cover" />
                       <div className="absolute inset-0 bg-black/30" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{featuredDest.region}</p>
@@ -379,7 +379,7 @@ export default function Header() {
             {/* Panel header */}
             <div className="flex items-center justify-between px-4 py-3.5">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-36 h-auto" unoptimized />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-36 h-auto" />
               </Link>
               <button onClick={() => setMenuOpen(false)} className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center">
                 <X size={18} className="text-muted" />
@@ -409,7 +409,7 @@ export default function Header() {
                       {allCaravans.map(c => (
                         <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-foreground-light">
                           <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                            <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
+                            <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
                           </div>
                           <span className="truncate">{c.name}</span>
                         </Link>
@@ -438,7 +438,7 @@ export default function Header() {
                       {destinations.map(d => (
                         <Link key={d.id} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-foreground-light">
                           <div className="w-8 h-8 rounded overflow-hidden relative shrink-0 bg-surface-alt">
-                            <Image src={d.heroImage} alt={d.name} fill className="object-cover" unoptimized />
+                            <Image src={d.heroImage} alt={d.name} fill className="object-cover" />
                           </div>
                           <span>{d.name}</span>
                         </Link>

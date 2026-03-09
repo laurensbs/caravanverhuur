@@ -19,6 +19,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: dest.description.slice(0, 160),
       images: [dest.heroImage],
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${dest.name} — Caravanverhuur Costa Brava`,
+      description: dest.description.slice(0, 160),
+      images: [dest.heroImage],
+    },
+    alternates: { canonical: `/bestemmingen/${slug}` },
   };
 }
 

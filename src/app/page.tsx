@@ -112,7 +112,7 @@ export default function HomePage() {
             className="object-cover"
             sizes="100vw"
             priority
-            unoptimized
+           
           />
           {/* Layered gradient overlay for depth */}
           <div className="absolute inset-0 bg-black/50" />
@@ -450,7 +450,7 @@ export default function HomePage() {
                     fill
                     sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 ease-out"
-                    unoptimized
+                   
                   />
                   {/* Warm gradient overlay at bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/20" />
@@ -585,7 +585,7 @@ export default function HomePage() {
                   height={400}
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="w-full object-cover transition-transform duration-700"
-                  unoptimized
+                 
                 />
               </div>
               {/* Decorative accent */}

@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/'],
+      disallow: ['/api/', '/admin/', '/account/', '/mijn-account/', '/borg/', '/betaling/'],
     },
     sitemap: 'https://caravanverhuurspanje.com/sitemap.xml',
   };

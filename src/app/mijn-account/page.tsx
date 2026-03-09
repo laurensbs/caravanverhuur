@@ -543,7 +543,7 @@ function MijnAccountContent() {
                       <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
                         <div className="relative h-36 sm:h-44 bg-foreground">
                           {caravan?.photos?.[0] && (
-                            <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" unoptimized />
+                            <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" />
                           )}
                           <div className="absolute inset-0 flex items-end justify-between p-5 sm:p-6">
                             <div>
@@ -755,7 +755,7 @@ function MijnAccountContent() {
                           {/* Caravan image strip */}
                           {caravan?.photos?.[0] && !isPast && (
                             <div className="relative h-24 sm:h-28">
-                              <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover" unoptimized />
+                              <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover" />
                               <div className="absolute inset-0 bg-black/30" />
                               <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
                                 <div>

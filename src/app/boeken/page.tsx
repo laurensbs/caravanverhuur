@@ -280,7 +280,7 @@ function BoekenContent() {
               <div className="flex items-center gap-3 mb-4">
                 {chosenCaravan && (
                   <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0">
-                    <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" unoptimized />
+                    <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                   </div>
                 )}
                 <div>
@@ -392,7 +392,7 @@ function BoekenContent() {
                   {step === 1 && (
                     <div className="space-y-5">
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h2>
+                        <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h1>
                         <p className="text-sm sm:text-base text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
@@ -698,7 +698,7 @@ function BoekenContent() {
                                 >
                                   <div className="flex flex-col sm:flex-row">
                                     <div className="relative h-44 sm:h-auto sm:w-52 shrink-0 overflow-hidden">
-                                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover" unoptimized />
+                                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
                                       <div className="absolute top-3 left-3">
                                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md ${
                                           c.type === 'FAMILIE' ? 'bg-primary' :
@@ -758,7 +758,7 @@ function BoekenContent() {
                                           <div className="grid grid-cols-3 gap-2">
                                             {c.photos.map((photo, idx) => (
                                               <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
-                                                <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover transition-transform duration-300" unoptimized />
+                                                <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover transition-transform duration-300" />
                                               </div>
                                             ))}
                                           </div>
@@ -881,7 +881,7 @@ function BoekenContent() {
                         {/* Caravan strip */}
                         {chosenCaravan && (
                           <div className="relative h-40 sm:h-48">
-                            <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" unoptimized />
+                            <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                             <div className="absolute inset-0 bg-black/40" />
                             <div className="absolute bottom-4 left-5 right-5">
                               <span className={`inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 ${
@@ -1047,7 +1047,7 @@ function BoekenContent() {
                     {chosenCaravan && (
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-7 rounded overflow-hidden relative shrink-0 mt-0.5">
-                          <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" unoptimized />
+                          <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{chosenCaravan.name}</p>
@@ -1125,7 +1125,7 @@ function BoekenContent() {
             {chosenCaravan && (
               <div className="flex items-center gap-2">
                 <div className="w-8 h-6 rounded overflow-hidden relative">
-                  <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" unoptimized />
+                  <Image src={chosenCaravan.photos[0]} alt="" fill className="object-cover" />
                 </div>
                 <span className="text-xs font-medium text-foreground-light max-w-[100px] truncate">{chosenCaravan.name}</span>
               </div>

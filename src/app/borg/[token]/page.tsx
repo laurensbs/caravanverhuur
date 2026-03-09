@@ -185,7 +185,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
               width={240}
               height={70}
               className="w-40 sm:w-48 h-auto brightness-0 invert"
-              unoptimized
+             
             />
           </div>
           <motion.div

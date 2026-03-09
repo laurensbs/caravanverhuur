@@ -28,7 +28,7 @@ export default function WeatherBar() {
             className="inline-flex items-center gap-0.5 transition-opacity hover:opacity-80"
           >
             {[...Array(5)].map((_, i) => (
-              <StarIcon key={i} size={11} fill={Math.min(1, Math.max(0, 4.9 - i))} />
+              <StarIcon key={i} size={11} fill={Math.min(1, Math.max(0, 4.9 - i))} prefix={`wb-star-${i}`} />
             ))}
             <span className="text-white/90 font-semibold text-xs ml-0.5">4.9</span>
           </a>

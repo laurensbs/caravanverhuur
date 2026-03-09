@@ -23,7 +23,7 @@ export default function NotFound() {
             alt="Caravanverhuur Costa Brava"
             fill
             className="object-contain opacity-30"
-            unoptimized
+           
           />
         </div>
         <h1 className="text-6xl sm:text-8xl font-bold text-primary mb-2">404</h1>

@@ -139,7 +139,17 @@ function isInSeason(month: string | null): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Smart matching with context                                        */
+/*  Pick random variation, avoiding recently used ones                  */
+/* ------------------------------------------------------------------ */
+function pick(variations: string[], askedQuestions: string[]): string {
+  if (variations.length <= 1) return variations[0] || '';
+  // Use conversation length as seed for variety
+  const idx = (askedQuestions.length + Date.now()) % variations.length;
+  return variations[idx];
+}
+
+/* ------------------------------------------------------------------ */
+/*  Smart matching with context & response variation                   */
 /* ------------------------------------------------------------------ */
 function smartMatch(
   input: string,
@@ -154,6 +164,14 @@ function smartMatch(
   const isNl = locale === 'nl';
   const isEs = locale === 'es';
   const name = userName ? `, ${userName}` : '';
+  const asked = ctx.askedQuestions;
+
+  // Check if topic was already answered recently
+  const recentTopics = messageHistory.slice(-8).filter(m => m.role === 'bot').map(m => m.text);
+  const wasRecentlyAsked = (topic: string) => {
+    if (!ctx.lastTopic) return false;
+    return ctx.lastTopic === topic && messageHistory.length > 2;
+  };
 
   // Merge context with current entities
   const persons = entities.persons || ctx.mentionedPersons;
@@ -163,12 +181,21 @@ function smartMatch(
 
   // ===== GREETINGS =====
   if (/^(hoi|hey|hallo|hi|hello|goedemorgen|goedemiddag|goedenavond|hola|buenos|buenas|yo)\b/.test(lower)) {
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
+    const greetings = isNl ? [
+      `Hoi${name}! 😊 Leuk dat je er bent! Waar kan ik je mee helpen?\n\nJe kunt me alles vragen over onze caravans, campings aan de Costa Brava, prijzen, beschikbaarheid of het boekingsproces.`,
+      `${timeGreeting}${name}! 👋 Welkom bij Caravanverhuur Spanje!\n\nIk help je graag met alles rondom je caravanvakantie aan de Costa Brava. Stel gerust je vraag!`,
+      `Hey${name}! 🌞 Wat leuk dat je langskom! Droom je al van de Costa Brava?\n\nVraag me alles over caravans, campings, prijzen of boeken — ik weet er alles van!`,
+    ] : isEs ? [
+      `¡Hola${name}! 😊 ¿En qué puedo ayudarte?`,
+      `¡Bienvenido${name}! 🌞 ¿Qué te gustaría saber sobre nuestras caravanas?`,
+    ] : [
+      `Hi${name}! 😊 Great to have you here! What can I help you with?`,
+      `Hello${name}! 🌞 Welcome! Ask me anything about our caravans on the Costa Brava!`,
+    ];
     return {
-      answer: isNl
-        ? `Hoi${name}! 😊 Leuk dat je er bent! Waar kan ik je mee helpen?\n\nJe kunt me alles vragen over onze caravans, campings aan de Costa Brava, prijzen, beschikbaarheid of het boekingsproces.`
-        : isEs
-        ? `¡Hola${name}! 😊 ¿En qué puedo ayudarte?`
-        : `Hi${name}! 😊 Great to have you here! What can I help you with?`,
+      answer: pick(greetings, asked),
       followUp: isNl
         ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
         : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
@@ -181,11 +208,12 @@ function smartMatch(
   // ===== YES/NO FOLLOW-UPS based on last topic =====
   if (entities.isYes && ctx.lastTopic) {
     if (ctx.lastTopic === 'caravan-recommendation' || ctx.lastTopic === 'complex-query') {
+      const yesBooking = isNl ? [
+        `Top${name}! 🎉 Je kunt direct boeken via onze boekingspagina:\n\n👉 **[Direct boeken](/boeken)**\n\nKies daar je caravan, camping en datum. Je betaalt slechts 30% aanbetaling en ontvangt direct bevestiging per e-mail!`,
+        `Super${name}! 🙌 Ga naar onze boekingspagina en kies je favoriete caravan:\n\n👉 **[Direct boeken](/boeken)**\n\nHet hele proces duurt nog geen 5 minuten. Aanbetaling is slechts 30%!`,
+      ] : [`Great${name}! 🎉 You can book directly:\n\n👉 **[Book now](/boeken)**`];
       return {
-        answer: isNl
-          ? `Top${name}! 🎉 Je kunt direct boeken via onze boekingspagina:\n\n👉 **[Direct boeken](/boeken)**\n\nKies daar je caravan, camping en datum. Je betaalt slechts 30% aanbetaling en ontvangt direct bevestiging per e-mail!\n\nHeb je nog vragen over het boekingsproces?`
-          : isEs ? `¡Genial${name}! 🎉 Puedes reservar directamente:\n\n👉 **[Reservar ahora](/boeken)**`
-          : `Great${name}! 🎉 You can book directly:\n\n👉 **[Book now](/boeken)**`,
+        answer: pick(yesBooking, asked),
         followUp: isNl ? ['Hoe werkt betalen?', 'Kan ik annuleren?', 'Wat zit erin?'] : ['How does payment work?', 'Can I cancel?'],
         confidence: 0.95,
         topic: 'booking-redirect',
@@ -201,14 +229,46 @@ function smartMatch(
         topic: 'payment-details',
       };
     }
+    if (ctx.lastTopic === 'family') {
+      const biggest = caravans.reduce((a, b) => a.maxPersons > b.maxPersons ? a : b);
+      return {
+        answer: isNl
+          ? `Voor gezinnen raad ik de **${biggest.name}** aan${name}! 👨‍👩‍👧‍👦\n\n👥 Max ${biggest.maxPersons} personen\n💰 €${biggest.pricePerWeek}/week\n\nCombineer met een familiecamping zoals **Cypsela Resort** (Pals) met zwembadcomplex!\n\n👉 **[Direct boeken](/boeken)**`
+          : `For families I recommend the **${biggest.name}**! Book at [Book now](/boeken)`,
+        followUp: isNl ? ['Hoe boek ik?', 'Wat zit erin?', 'Andere campings?'] : ['How to book?', "What's included?"],
+        confidence: 0.9,
+        topic: 'booking-redirect',
+      };
+    }
+    if (ctx.lastTopic === 'couple') {
+      return {
+        answer: isNl
+          ? `Goed idee${name}! 💕 Ga naar onze boekingspagina en kies een compacte caravan:\n\n👉 **[Direct boeken](/boeken)**\n\nTip: kies een camping bij Begur of Pals voor de mooiste verborgen baaien!`
+          : `Great choice${name}! 💕 Book at [Book now](/boeken)`,
+        followUp: isNl ? ['Campings in Begur', 'Campings in Pals', 'Wat kost het?'] : ['Campings in Begur', 'Cost?'],
+        confidence: 0.9,
+        topic: 'booking-redirect',
+      };
+    }
+    // Generic yes
+    return {
+      answer: isNl
+        ? `Fijn${name}! 👍 Zal ik je doorverwijzen naar het boeken, of heb je nog andere vragen?`
+        : `Great${name}! 👍 Shall I direct you to booking?`,
+      followUp: isNl ? ['Ja, naar boeken!', 'Nog een vraag', 'Nee, bedankt'] : ['Yes, book!', 'Another question'],
+      confidence: 0.85,
+      topic: 'other',
+    };
   }
 
   if (entities.isNo && ctx.lastTopic) {
+    const noResponses = isNl ? [
+      `Geen probleem${name}! Is er iets anders waar ik je mee kan helpen? 😊`,
+      `Oké${name}, geen punt! 😊 Waar kan ik je wél mee helpen?`,
+      `Prima${name}! Mocht je later nog vragen hebben, ik ben er altijd! 😊`,
+    ] : isEs ? [`¡No hay problema${name}! ¿Algo más?`] : [`No problem${name}! Anything else? 😊`];
     return {
-      answer: isNl
-        ? `Geen probleem${name}! Is er iets anders waar ik je mee kan helpen? 😊`
-        : isEs ? `¡No hay problema${name}! ¿Algo más?`
-        : `No problem${name}! Anything else I can help with? 😊`,
+      answer: pick(noResponses, asked),
       followUp: isNl ? ['Welke caravans?', 'Wat kost het?', 'Welke campings?', 'Nee, bedankt!'] : ['Which caravans?', 'Cost?', 'No thanks!'],
       confidence: 0.85,
       topic: 'other',
@@ -229,7 +289,12 @@ function smartMatch(
 
     let answer = '';
     if (isNl) {
-      answer = `${userName ? `Goed nieuws, ${userName}` : 'Goed nieuws'}! 🎉\n\n`;
+      const intros = [
+        `${userName ? `Goed nieuws, ${userName}` : 'Goed nieuws'}! 🎉\n\n`,
+        `${userName ? `Ik heb wat opties voor je, ${userName}` : 'Hier zijn je opties'}! ✨\n\n`,
+        `${userName ? `Even kijken, ${userName}` : 'Even kijken'}... gevonden! 🔍\n\n`,
+      ];
+      answer = pick(intros, asked);
 
       if (month) {
         if (isInSeason(month)) {
@@ -304,12 +369,16 @@ function smartMatch(
   // ===== SPECIFIC CARAVAN QUESTION =====
   if (caravanName) {
     const caravan = caravans.find(c => c.name === caravanName)!;
+    const caravanAnswers = isNl ? [
+      `De **${caravan.name}** is een ${caravan.type === 'FAMILIE' ? 'ruime familie' : 'compacte'}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n💰 €${caravan.pricePerDay}/dag · €${caravan.pricePerWeek}/week\n🔒 Borg: €${caravan.deposit}\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
+      `Goede keuze${name}! De **${caravan.name}** is ${caravan.type === 'FAMILIE' ? 'onze ruimste familiecaravan' : 'een heerlijk compacte caravan'}! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n💰 Vanaf **€${caravan.pricePerDay}/dag** of **€${caravan.pricePerWeek}/week**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!' : ''}\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
+    ] : isEs ? [
+      `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n💰 €${caravan.pricePerDay}/día · €${caravan.pricePerWeek}/semana\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`,
+    ] : [
+      `The **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} people**\n💰 €${caravan.pricePerDay}/day · €${caravan.pricePerWeek}/week\n\n👉 **[View details](/caravans/${caravan.id})**`,
+    ];
     return {
-      answer: isNl
-        ? `De **${caravan.name}** is een ${caravan.type === 'FAMILIE' ? 'ruime familie' : 'compacte'}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n💰 €${caravan.pricePerDay}/dag · €${caravan.pricePerWeek}/week\n🔒 Borg: €${caravan.deposit}\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`
-        : isEs
-        ? `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n💰 €${caravan.pricePerDay}/día · €${caravan.pricePerWeek}/semana\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`
-        : `The **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} people**\n💰 €${caravan.pricePerDay}/day · €${caravan.pricePerWeek}/week\n\n👉 **[View details](/caravans/${caravan.id})**`,
+      answer: pick(caravanAnswers, asked),
       followUp: isNl ? ['Hoe boek ik deze?', 'Andere caravans?', 'Welke campings?'] : ['How to book?', 'Other caravans?'],
       confidence: 0.9,
       topic: 'specific-caravan',
@@ -319,15 +388,23 @@ function smartMatch(
   // ===== PRICING =====
   if (/prijs|kosten|kost|tarief|goedkoop|duur|euro|bedrag|per dag|per week|price|cost|cheap|rate|precio|cuesta|tarifa|hoeveel|budget/.test(lower)) {
     const cheapest = caravans.reduce((a, b) => a.pricePerWeek < b.pricePerWeek ? a : b);
+    const pricingAnswers = isNl ? [
+      `Onze prijzen${name}:\n\n${caravans.map(c => {
+        const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' ❄️' : '';
+        return `🚐 **${c.name}**${airco}\n   €${c.pricePerDay}/dag · €${c.pricePerWeek}/week · max ${c.maxPersons} pers`;
+      }).join('\n\n')}\n\n💡 Tip: de **${cheapest.name}** is onze voordeligste optie!\n\nBij een weekboeking profiteer je van extra korting. Wil je meer weten over de betaling?`,
+      `Dit zijn onze tarieven${name}! 💰\n\n${caravans.map(c => {
+        const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' (met airco!)' : '';
+        return `🚐 **${c.name}**${airco} — €${c.pricePerDay}/dag of €${c.pricePerWeek}/week`;
+      }).join('\n')}\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\n\nDe prijzen zijn inclusief inventaris. Enige extra kosten: campingplaats (apart bij de camping).\n\nZal ik je helpen kiezen?`,
+      `Goed dat je het vraagt${name}! Hier zijn de prijzen:\n\n${caravans.map(c => `💶 **${c.name}** → €${c.pricePerDay}/dag · €${c.pricePerWeek}/week (max ${c.maxPersons} pers)`).join('\n')}\n\n🏷️ Tip: de **${cheapest.name}** start al vanaf €${cheapest.pricePerDay}/dag — ideaal voor budget-bewuste reizigers!\n\n👉 **[Bekijk alle caravans](/caravans)**`,
+    ] : isEs ? [
+      `Nuestros precios:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/día · €${c.pricePerWeek}/semana`).join('\n')}`,
+    ] : [
+      `Our prices:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/day · €${c.pricePerWeek}/week`).join('\n')}`,
+    ];
     return {
-      answer: isNl
-        ? `Onze prijzen${name}:\n\n${caravans.map(c => {
-            const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' ❄️' : '';
-            return `🚐 **${c.name}**${airco}\n   €${c.pricePerDay}/dag · €${c.pricePerWeek}/week · max ${c.maxPersons} pers`;
-          }).join('\n\n')}\n\n💡 Tip: de **${cheapest.name}** is onze voordeligste optie!\n\nBij een weekboeking profiteer je van extra korting. Wil je meer weten over de betaling?`
-        : isEs
-        ? `Nuestros precios:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/día · €${c.pricePerWeek}/semana`).join('\n')}`
-        : `Our prices:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/day · €${c.pricePerWeek}/week`).join('\n')}`,
+      answer: pick(pricingAnswers, asked),
       followUp: isNl ? ['Ja, hoe werkt betalen?', 'Hoe boek ik?', 'Welke caravans?'] : ['How does payment work?', 'How to book?'],
       confidence: 0.9,
       topic: 'pricing',
@@ -336,11 +413,17 @@ function smartMatch(
 
   // ===== BOOKING =====
   if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren/.test(lower)) {
+    const bookingAnswers = isNl ? [
+      `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies een caravan op onze [caravans pagina](/caravans)\n2️⃣ Selecteer je camping\n3️⃣ Kies je datum\n4️⃣ Vul je gegevens in\n5️⃣ Betaal 30% aanbetaling via iDEAL/Wero\n\nJe ontvangt direct een bevestiging per e-mail!\n\n👉 **[Direct boeken](/boeken)**`,
+      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest online je caravan en camping, selecteert je data en betaalt slechts **30% aanbetaling**. Klaar!\n\nDe rest betaal je uiterlijk 1 week voor vertrek.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\n👉 **[Start je boeking](/boeken)**`,
+      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n📱 Ga naar onze **[boekingspagina](/boeken)**\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 30% aanbetaling\n\nDe rest (70%) betaal je pas 1 week voor aankomst. Makkelijker kan niet!`,
+    ] : isEs ? [
+      `¡Reservar es muy fácil! 🎉\n\n1️⃣ Elige una caravana\n2️⃣ Selecciona el camping\n3️⃣ Elige tus fechas\n4️⃣ Rellena tus datos\n5️⃣ Paga el 30%\n\n👉 **[Reservar ahora](/boeken)**`,
+    ] : [
+      `Booking is super easy${name}! 🎉\n\n1️⃣ Choose a caravan\n2️⃣ Select camping\n3️⃣ Pick dates\n4️⃣ Fill in details\n5️⃣ Pay 30% deposit\n\n👉 **[Book now](/boeken)**`,
+    ];
     return {
-      answer: isNl
-        ? `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies een caravan op onze [caravans pagina](/caravans)\n2️⃣ Selecteer je camping\n3️⃣ Kies je datum\n4️⃣ Vul je gegevens in\n5️⃣ Betaal 30% aanbetaling via iDEAL/Wero\n\nJe ontvangt direct een bevestiging per e-mail!\n\n👉 **[Direct boeken](/boeken)**\n\nWil je dat ik je help bij het kiezen van een caravan of camping?`
-        : isEs ? `¡Reservar es muy fácil! 🎉\n\n1️⃣ Elige una caravana\n2️⃣ Selecciona el camping\n3️⃣ Elige tus fechas\n4️⃣ Rellena tus datos\n5️⃣ Paga el 30%\n\n👉 **[Reservar ahora](/boeken)**`
-        : `Booking is super easy${name}! 🎉\n\n1️⃣ Choose a caravan\n2️⃣ Select camping\n3️⃣ Pick dates\n4️⃣ Fill in details\n5️⃣ Pay 30% deposit\n\n👉 **[Book now](/boeken)**`,
+      answer: pick(bookingAnswers, asked),
       followUp: isNl ? ['Ja, help me kiezen!', 'Wat kost het?', 'Kan ik annuleren?'] : ['Help me choose!', 'Cost?', 'Can I cancel?'],
       confidence: 0.9,
       topic: 'booking',
@@ -349,11 +432,13 @@ function smartMatch(
 
   // ===== CANCELLATION =====
   if (/annul|terug|geld terug|restitutie|cancel|refund|money back|cancelar|reembols/.test(lower)) {
+    const cancelAnswers = isNl ? [
+      `Ja${name}, annuleren is mogelijk:\n\n✅ **30+ dagen** voor aankomst → 100% terug\n⚠️ **14-30 dagen** → 50% terug\n❌ **< 14 dagen** → niet restitueerbaar\n\nZie onze [Algemene Voorwaarden](/voorwaarden) voor alle details.\n\nWe raden altijd een reis- of annuleringsverzekering aan!`,
+      `Natuurlijk${name}, er is een flexibele annuleringsregeling:\n\n📋 **Meer dan 30 dagen** voor aankomst? → **Volledig terugbetaald!**\n📋 **14 tot 30 dagen** → 50% terug\n📋 **Minder dan 14 dagen** → helaas geen restitutie\n\n💡 Tip: neem een **annuleringsverzekering** voor extra zekerheid.\n\nAlle details vind je bij onze [Voorwaarden](/voorwaarden).`,
+    ] : isEs ? ['Sí, es posible cancelar:\n\n✅ **30+ días** → 100% reembolso\n⚠️ **14-30 días** → 50%\n❌ **< 14 días** → no reembolsable']
+    : ['Yes, cancellation is possible:\n\n✅ **30+ days** → 100% refund\n⚠️ **14-30 days** → 50%\n❌ **< 14 days** → non-refundable'];
     return {
-      answer: isNl
-        ? `Ja${name}, annuleren is mogelijk:\n\n✅ **30+ dagen** voor aankomst → 100% terug\n⚠️ **14-30 dagen** → 50% terug\n❌ **< 14 dagen** → niet restitueerbaar\n\nZie onze [Algemene Voorwaarden](/voorwaarden) voor alle details.\n\nWe raden altijd een reis- of annuleringsverzekering aan!`
-        : isEs ? 'Sí, es posible cancelar:\n\n✅ **30+ días** → 100% reembolso\n⚠️ **14-30 días** → 50%\n❌ **< 14 días** → no reembolsable'
-        : 'Yes, cancellation is possible:\n\n✅ **30+ days** → 100% refund\n⚠️ **14-30 days** → 50%\n❌ **< 14 days** → non-refundable',
+      answer: pick(cancelAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Welke voorwaarden?'] : ['How to book?', 'Deposit info?'],
       confidence: 0.85,
       topic: 'cancellation',
@@ -362,10 +447,12 @@ function smartMatch(
 
   // ===== DEPOSIT/BORG =====
   if (/borg|waarborg|deposit|garantia|fianza|waarborgsom/.test(lower)) {
+    const depositAnswers = isNl ? [
+      `De borg werkt zo${name}:\n\n🔒 Bij aankomst wordt **€250 – €500** gereserveerd via iDEAL/Wero (afhankelijk van de caravan)\n✅ Na inspectie bij vertrek zonder schade: terugstorting binnen **7 dagen**\n\nPer caravan:\n${caravans.map(c => `• **${c.name}** → €${c.deposit} borg`).join('\n')}\n\nDe borg is geen extra kosten, maar een waarborg die je gewoon terugkrijgt!`,
+      `Goede vraag${name}! De borg is een **tijdelijke reservering** — je krijgt het gewoon terug! 🔄\n\n${caravans.map(c => `🚐 **${c.name}** → €${c.deposit}`).join('\n')}\n\n✅ Je krijgt het binnen **7 werkdagen** terug na de inspectie.\n⚡ Betaling via **iDEAL/Wero** — snel en veilig.\n\nDenk eraan de caravan bezemschoon achter te laten, en de borg is zo terug!`,
+    ] : ['A deposit of **€250 – €500** is reserved upon arrival. Refunded within **7 days** if no damage.'];
     return {
-      answer: isNl
-        ? `De borg werkt zo${name}:\n\n🔒 Bij aankomst wordt **€250 – €500** gereserveerd via iDEAL/Wero (afhankelijk van de caravan)\n✅ Na inspectie bij vertrek zonder schade: terugstorting binnen **7 dagen**\n\nPer caravan:\n${caravans.map(c => `• **${c.name}** → €${c.deposit} borg`).join('\n')}\n\nDe borg is geen extra kosten, maar een waarborg die je gewoon terugkrijgt!`
-        : 'A deposit of **€250 – €500** is reserved upon arrival. Refunded within **7 days** if no damage.',
+      answer: pick(depositAnswers, asked),
       followUp: isNl ? ['Kan ik annuleren?', 'Wat zit erin?', 'Hoe boek ik?'] : ['Can I cancel?', "What's included?"],
       confidence: 0.85,
       topic: 'deposit',
@@ -374,10 +461,12 @@ function smartMatch(
 
   // ===== PAYMENT =====
   if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen/.test(lower)) {
+    const paymentAnswers = isNl ? [
+      `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Aanbetaling**: 30% bij boeking\n2️⃣ **Restbedrag**: 70% uiterlijk 1 week voor aankomst\n3️⃣ **Borg**: reservering bij aankomst op de camping\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`,
+      `We werken met **iDEAL en Wero**${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: 30% aanbetaling bij je boeking\n💳 **Stap 2**: 70% restbedrag uiterlijk 1 week voor vertrek\n🔒 **Stap 3**: Borg (€250-€500) bij aankomst\n\nGeen creditcard nodig! Na elke betaling krijg je een bevestiging per e-mail.`,
+    ] : ['Payments via **iDEAL/Wero**:\n\n1. **Deposit**: 30% at booking\n2. **Remainder**: 70% due 1 week before\n3. **Security**: reserved on arrival'];
     return {
-      answer: isNl
-        ? `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Aanbetaling**: 30% bij boeking\n2️⃣ **Restbedrag**: 70% uiterlijk 1 week voor aankomst\n3️⃣ **Borg**: reservering bij aankomst op de camping\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`
-        : 'Payments via **iDEAL/Wero**:\n\n1. **Deposit**: 30% at booking\n2. **Remainder**: 70% due 1 week before\n3. **Security**: reserved on arrival',
+      answer: pick(paymentAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Kan ik annuleren?'] : ['How to book?', 'Deposit info?'],
       confidence: 0.85,
       topic: 'payment',
@@ -386,11 +475,13 @@ function smartMatch(
 
   // ===== CAMPINGS / LOCATIONS =====
   if (/camping|locatie|waar|welke camping|plek|location|where|which camping|ubicacion|donde|bestemming/.test(lower)) {
+    const campingAnswers = isNl ? [
+      `We werken samen met **30+ campings** over de hele Costa Brava${name}! 🏖️\n\n📍 **Baix Empordà** — Pals, Begur, Calella\n📍 **Alt Empordà** — Roses, L'Estartit, Empuriabrava\n📍 **La Selva** — Lloret de Mar, Blanes, Tossa\n📍 **Costa Brava Zuid** — Platja d'Aro, Calonge, Santa Cristina d'Aro\n\nPopulaire campings:\n⛺ Cypsela Resort (Pals) — 5 sterren, direct aan strand\n⛺ La Ballena Alegre (Sant Pere) — breed zandstrand\n⛺ Cala Gogo (Calonge) — uitgebreide faciliteiten\n\n👉 Bekijk alles op onze [bestemmingen pagina](/bestemmingen)!\n\nHeb je een voorkeur voor een regio?`,
+      `Wij zijn actief op **30+ campings** langs de mooiste Costa Brava kust${name}! 🌊\n\nEen paar toppers:\n\n⭐ **Cypsela Resort** (Pals) — luxe 5-sterren, direct aan strand\n⭐ **La Ballena Alegre** (Sant Pere) — groot, gezellig, mooi strand\n⭐ **Cala Gogo** (Calonge) — zwembaden, animatie, familievriendelijk\n⭐ **Tucan** (Lloret) — waterpark voor de kids!\n\nVan rustige familieplekjes tot bruisende resorts — wij hebben het.\n\n👉 Ontdek alle locaties op onze [bestemmingen pagina](/bestemmingen)\n\nIn welke regio ben je geïnteresseerd?`,
+    ] : isEs ? ['Colaboramos con **más de 30 campings** en toda la Costa Brava! 🏖️\n\nConsulta nuestros [destinos](/bestemmingen).']
+    : ['We partner with **30+ campings** across the Costa Brava! 🏖️\n\nCheck our [destinations page](/bestemmingen)!'];
     return {
-      answer: isNl
-        ? `We werken samen met **30+ campings** over de hele Costa Brava${name}! 🏖️\n\n📍 **Baix Emporda** — Pals, Begur, Calella\n📍 **Alt Emporda** — Roses, L'Estartit, Empuriabrava\n📍 **La Selva** — Lloret de Mar, Blanes, Tossa\n📍 **Costa Brava Zuid** — Platja d'Aro, Calonge, Santa Cristina d'Aro\n\nPopulaire campings:\n⛺ Cypsela Resort (Pals) — 5 sterren, direct aan strand\n⛺ La Ballena Alegre (Sant Pere) — breed zandstrand\n⛺ Cala Gogo (Calonge) — uitgebreide faciliteiten\n\n👉 Bekijk alles op onze [bestemmingen pagina](/bestemmingen)!\n\nHeb je een voorkeur voor een regio?`
-        : isEs ? 'Colaboramos con **más de 30 campings** en toda la Costa Brava! 🏖️\n\nConsulta nuestros [destinos](/bestemmingen).'
-        : 'We partner with **30+ campings** across the Costa Brava! 🏖️\n\nCheck our [destinations page](/bestemmingen)!',
+      answer: pick(campingAnswers, asked),
       followUp: isNl ? ['Campings in Pals', 'Campings in Roses', 'Campings in Lloret', 'Welke caravans?'] : ['Campings in Pals', 'Campings in Roses'],
       confidence: 0.85,
       topic: 'campings',
@@ -398,18 +489,23 @@ function smartMatch(
   }
 
   // ===== CARAVANS =====
-  if (/caravan|welke|type|model|airco|which.*caravan|que caravana|overzicht|aanbod/.test(lower)) {
+  if (/caravan|welke|type|model|which.*caravan|que caravana|overzicht|aanbod/.test(lower)) {
+    const caravanAnswers = isNl ? [
+      `We hebben **${caravans.length} caravans** beschikbaar${name}:\n\n${caravans.map(c => {
+        const highlights: string[] = [];
+        if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
+        if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
+        if (c.amenities.some(a => a.toLowerCase().includes('voortent'))) highlights.push('⛺ Voortent');
+        return `🚐 **${c.name}** (${c.type === 'FAMILIE' ? 'Familie' : 'Compact'})\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week\n   ${highlights.join(' · ')}`;
+      }).join('\n\n')}\n\n👉 [Bekijk alle caravans](/caravans)\n\nWil je meer weten over een specifieke caravan?`,
+      `Hier is ons aanbod${name}! 🚐\n\n${caravans.map(c => {
+        const typeLabel = c.type === 'FAMILIE' ? '👨‍👩‍👧‍👦 Familie' : '💑 Compact';
+        return `**${c.name}** — ${typeLabel}\n   ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 3).join(', ')}`;
+      }).join('\n\n')}\n\nElke caravan is **compleet uitgerust** met beddengoed, servies, kookgerei en meer!\n\n👉 [Alle details & foto's](/caravans)`,
+    ] : isEs ? [`Tenemos **${caravans.length} caravanas**:\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers · €${c.pricePerDay}/día`).join('\n\n')}\n\n👉 [Ver caravanas](/caravans)`]
+    : [`We have **${caravans.length} caravans**:\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people · €${c.pricePerDay}/day`).join('\n\n')}\n\n👉 [View caravans](/caravans)`];
     return {
-      answer: isNl
-        ? `We hebben **${caravans.length} caravans** beschikbaar${name}:\n\n${caravans.map(c => {
-            const highlights: string[] = [];
-            if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
-            if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
-            if (c.amenities.some(a => a.toLowerCase().includes('voortent'))) highlights.push('⛺ Voortent');
-            return `🚐 **${c.name}** (${c.type === 'FAMILIE' ? 'Familie' : 'Compact'})\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week\n   ${highlights.join(' · ')}`;
-          }).join('\n\n')}\n\n👉 [Bekijk alle caravans](/caravans)\n\nWil je meer weten over een specifieke caravan?`
-        : isEs ? `Tenemos **${caravans.length} caravanas**:\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers · €${c.pricePerDay}/día`).join('\n\n')}\n\n👉 [Ver caravanas](/caravans)`
-        : `We have **${caravans.length} caravans**:\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people · €${c.pricePerDay}/day`).join('\n\n')}\n\n👉 [View caravans](/caravans)`,
+      answer: pick(caravanAnswers, asked),
       followUp: isNl ? ['Vertel meer over de Knaus', 'Vertel meer over de HomeCar', 'Wat kost het?', 'Hoe boek ik?'] : ['Tell me about Knaus', 'Cost?'],
       confidence: 0.85,
       topic: 'caravans',
@@ -419,12 +515,16 @@ function smartMatch(
   // ===== AIRCO =====
   if (/airco|airconditioning|koeling|warm|heet|temperatuur|koel/.test(lower)) {
     const withAirco = caravans.filter(c => c.amenities.some(a => a.toLowerCase().includes('airco')));
+    const aircoAnswers = isNl ? [
+      `Goede vraag${name}! In de zomermaanden kan het flink warm worden aan de Costa Brava. ☀️\n\n${withAirco.length > 0
+        ? `De volgende caravan${withAirco.length > 1 ? 's hebben' : ' heeft'} **airco**:\n\n${withAirco.map(c => `❄️ **${c.name}** — €${c.pricePerWeek}/week`).join('\n')}\n\nDe andere caravans hebben goede ventilatie en luifels voor schaduw.`
+        : 'Op dit moment heeft geen van onze caravans airco, maar ze hebben wel goede ventilatie.'}`,
+      `Bij 30°C+ wil je airco${name}! ☀️🥵\n\n${withAirco.length > 0
+        ? `Deze caravan${withAirco.length > 1 ? 's zijn' : ' is'} voorzien van **airconditioning**:\n\n${withAirco.map(c => `❄️ **${c.name}** — max ${c.maxPersons} pers · €${c.pricePerWeek}/week`).join('\n')}\n\n💡 Onze tip: in juli/augustus is airco echt een aanrader aan de Costa Brava!\n\nDe caravans zonder airco hebben wél goede ventilatie, luifels en rolgordijnen.`
+        : 'Helaas, momenteel hebben onze caravans geen airco. Wél goede ventilatie en luifels!'}`,
+    ] : [`The **${withAirco.map(c => c.name).join(', ')}** ${withAirco.length > 1 ? 'have' : 'has'} air conditioning.`];
     return {
-      answer: isNl
-        ? `Goede vraag${name}! In de zomermaanden kan het flink warm worden aan de Costa Brava. ☀️\n\n${withAirco.length > 0
-            ? `De volgende caravan${withAirco.length > 1 ? 's hebben' : ' heeft'} **airco**:\n\n${withAirco.map(c => `❄️ **${c.name}** — €${c.pricePerWeek}/week`).join('\n')}\n\nDe andere caravans hebben goede ventilatie en luifels voor schaduw.`
-            : 'Op dit moment heeft geen van onze caravans airco, maar ze hebben wel goede ventilatie.'}`
-        : `The **${withAirco.map(c => c.name).join(', ')}** ${withAirco.length > 1 ? 'have' : 'has'} air conditioning.`,
+      answer: pick(aircoAnswers, asked),
       followUp: isNl ? ['Vertel meer over de HomeCar', 'Welke caravans?', 'Hoe boek ik?'] : ['Tell me about HomeCar', 'How to book?'],
       confidence: 0.85,
       topic: 'airco',
@@ -433,10 +533,12 @@ function smartMatch(
 
   // ===== INVENTORY / INCLUDED =====
   if (/inventaris|inbegrepen|wat zit|uitrusting|beddengoed|servies|kookgerei|handdoek|included|equipment|inventory|meenemen|paklijst/.test(lower)) {
+    const inventoryAnswers = isNl ? [
+      `Elke caravan is **compleet uitgerust**${name}:\n\n🛏️ Dekbedden & kussens\n🍽️ Volledig servies & kookgerei\n🧹 Schoonmaakmiddelen\n🪥 Handdoeken & toiletpapier\n🪟 Rolgordijnen & horren\n⛺ Luifel & grondzeil (bij de meeste)\n\nSommige caravans hebben ook:\n❄️ Airco\n⛺ Voortent\n🚿 Douche & toilet\n\n💡 Je hoeft eigenlijk alleen je kleding en persoonlijke spullen mee te nemen!`,
+      `Alles zit erin${name}! Je hoeft bijna niks mee te nemen 🎒\n\n✅ **Slapen**: dekbedden, kussens, lakens\n✅ **Koken**: pannen, borden, bestek, kookgerei\n✅ **Badkamer**: handdoeken, toiletpapier\n✅ **Comfort**: rolgordijnen, horren, luifel\n✅ **Schoonmaak**: bezem, vaatdoekjes, afwasmiddel\n\nSommige caravans hebben zelfs een **eigen douche, toilet en airco**!\n\n🧳 Neem alleen kleding, zonnebrand en je goede humeur mee! 😄`,
+    ] : ['Every caravan comes **fully equipped** with duvets, tableware, cleaning supplies, towels, and more!'];
     return {
-      answer: isNl
-        ? `Elke caravan is **compleet uitgerust**${name}:\n\n🛏️ Dekbedden & kussens\n🍽️ Volledig servies & kookgerei\n🧹 Schoonmaakmiddelen\n🪥 Handdoeken & toiletpapier\n🪟 Rolgordijnen & horren\n⛺ Luifel & grondzeil (bij de meeste)\n\nSommige caravans hebben ook:\n❄️ Airco\n⛺ Voortent\n🚿 Douche & toilet\n\n💡 Je hoeft eigenlijk alleen je kleding en persoonlijke spullen mee te nemen!`
-        : 'Every caravan comes **fully equipped** with duvets, tableware, cleaning supplies, towels, and more!',
+      answer: pick(inventoryAnswers, asked),
       followUp: isNl ? ['Welke caravans?', 'Wat kost het?', 'Hoe boek ik?'] : ['Which caravans?', 'Cost?'],
       confidence: 0.85,
       topic: 'inventory',
@@ -445,10 +547,12 @@ function smartMatch(
 
   // ===== CHECK-IN/CHECK-OUT =====
   if (/klaar|opbouw|plaatsen|inchecken|check.?in|check.?out|uitchecken|aankomst|arrival|ready|setup|hoe laat|wat tijd|ophalen|afhalen/.test(lower)) {
+    const checkinAnswers = isNl ? [
+      `Het mooie van ons concept${name}: de caravan staat **al op de camping**! 🎉\n\nSchoongemaakt, ingericht en klaar om in te checken.\n\n⏰ **Check-in**: vanaf **15:00 uur**\n⏰ **Check-out**: voor **11:00 uur**\n\nAfwijkende check-in/out tijden zijn in overleg vaak mogelijk. Heb je een vroege of late aankomst?`,
+      `Geen gedoe met opbouwen${name}! De caravan is **startklaar** als je aankomt. 🏕️\n\n📍 Je rijdt naar de camping, meldt je aan bij de receptie, en loopt naar je caravan.\n⏰ Check-in vanaf **15:00**, check-out vóór **11:00**.\n\nAlles is schoongemaakt, opgemaakt en voorzien van inventaris. Uitstappen en genieten!\n\n💡 Vroege aankomst of laat vertrek? Overleg is vaak mogelijk!`,
+    ] : ['The caravan is **already on the camping**, cleaned and set up! 🎉\n\n⏰ **Check-in** from 15:00\n⏰ **Check-out** before 11:00'];
     return {
-      answer: isNl
-        ? `Het mooie van ons concept${name}: de caravan staat **al op de camping**! 🎉\n\nSchoongemaakt, ingericht en klaar om in te checken.\n\n⏰ **Check-in**: vanaf **15:00 uur**\n⏰ **Check-out**: voor **11:00 uur**\n\nAfwijkende check-in/out tijden zijn in overleg vaak mogelijk. Heb je een vroege of late aankomst?`
-        : 'The caravan is **already on the camping**, cleaned and set up! 🎉\n\n⏰ **Check-in** from 15:00\n⏰ **Check-out** before 11:00',
+      answer: pick(checkinAnswers, asked),
       followUp: isNl ? ['Wat zit erin?', 'Hoe werkt vertrek?', 'Welke campings?'] : ["What's included?", 'Which campings?'],
       confidence: 0.85,
       topic: 'checkin',
@@ -457,10 +561,12 @@ function smartMatch(
 
   // ===== CLEANING / DEPARTURE =====
   if (/schoonma|opruim|vertrek|achterlaten|clean|tidy|departure|bij vertrek|hoe vertrek/.test(lower)) {
+    const cleanAnswers = isNl ? [
+      `Bij vertrek vragen we je de caravan **bezemschoon** achter te laten${name}:\n\n✅ Afwas doen\n✅ Vuilnis meenemen naar container\n✅ Vloer aanvegen\n✅ Koelkast leegmaken\n\n🧹 De dieptereiniging doen wij! Daar hoef je je geen zorgen over te maken.\n\nNa onze inspectie ontvang je de borg binnen 7 dagen terug.`,
+      `Het vertrek is heel relaxed${name}! 😌\n\nWe vragen alleen het basale:\n🧹 Vloer even vegen\n🍽️ Afwas gedaan\n🗑️ Vuilnis naar de container\n🧊 Koelkast leeg\n\nDe **grondige schoonmaak** regelen wij — dat hoef jij niet te doen!\n\n✅ Na inspectie borg binnen 7 dagen terug.`,
+    ] : ['Please leave the caravan **broom clean**. Deep cleaning is on us! 🧹'];
     return {
-      answer: isNl
-        ? `Bij vertrek vragen we je de caravan **bezemschoon** achter te laten${name}:\n\n✅ Afwas doen\n✅ Vuilnis meenemen naar container\n✅ Vloer aanvegen\n✅ Koelkast leegmaken\n\n🧹 De dieptereiniging doen wij! Daar hoef je je geen zorgen over te maken.\n\nNa onze inspectie ontvang je de borg binnen 7 dagen terug.`
-        : 'Please leave the caravan **broom clean**. Deep cleaning is on us! 🧹',
+      answer: pick(cleanAnswers, asked),
       followUp: isNl ? ['Hoe werkt de borg?', 'Hoe laat check-out?'] : ['Deposit info?', 'Check-out time?'],
       confidence: 0.85,
       topic: 'cleaning',
@@ -469,10 +575,12 @@ function smartMatch(
 
   // ===== PETS =====
   if (/huisdier|hond|kat|dier|pet|dog|cat|animal|mascota|perro|gato/.test(lower)) {
+    const petAnswers = isNl ? [
+      `Huisdieren zijn mogelijk afhankelijk van de camping en caravan${name}. 🐕\n\nBij sommige campings is het toegestaan (soms tegen een kleine toeslag). Neem contact met ons op zodat we dit voor je kunnen uitzoeken!\n\nWil je dat ik je doorverbind met een medewerker?`,
+      `Wil je je viervoeter meenemen${name}? 🐾\n\nDat verschilt per camping:\n✅ Sommige campings staan huisdieren toe\n💰 Soms geldt een kleine dagelijkse toeslag\n⚠️ Niet alle campings accepteren huisdieren\n\nHet hangt ook af van de caravan en het campingbeleid. Laat ons het even voor je uitzoeken!\n\nZal ik je doorverbinden met een medewerker?`,
+    ] : ['Pets may be allowed depending on the camping. Contact us to discuss! 🐕'];
     return {
-      answer: isNl
-        ? `Huisdieren zijn mogelijk afhankelijk van de camping en caravan${name}. 🐕\n\nBij sommige campings is het toegestaan (soms tegen een kleine toeslag). Neem contact met ons op zodat we dit voor je kunnen uitzoeken!\n\nWil je dat ik je doorverbind met een medewerker?`
-        : 'Pets may be allowed depending on the camping. Contact us to discuss! 🐕',
+      answer: pick(petAnswers, asked),
       followUp: isNl ? ['Spreek een medewerker', 'Welke campings?', 'Hoe boek ik?'] : ['Talk to staff', 'Which campings?'],
       confidence: 0.85,
       topic: 'pets',
@@ -481,10 +589,12 @@ function smartMatch(
 
   // ===== WIFI / ELECTRICITY =====
   if (/wifi|internet|elektriciteit|stroom|gas|water|electricity|oplaad/.test(lower)) {
+    const wifiAnswers = isNl ? [
+      `Goede vraag${name}! Hier is de info over voorzieningen:\n\n⚡ **Elektriciteit** — inbegrepen bij de campingplaats\n⛽ **Gas** — aanwezig voor koken\n📶 **WiFi** — beschikbaar op de meeste campings (soms gratis, soms tegen toeslag)\n💧 **Water** — op alle campings aanwezig\n🔌 **Oplaadpunten** — stopcontacten in de caravan\n\nDe campings hebben ook sanitairgebouwen, winkels en vaak restaurants!`,
+      `Alle basis-voorzieningen zijn geregeld${name}! 👍\n\n⚡ Stroom: inbegrepen bij de campingplaats\n📶 WiFi: op bijna alle campings (gratis of kleine toeslag)\n⛽ Gasfles: aanwezig voor koken\n💧 Water: altijd beschikbaar\n🔌 Stopcontacten: in de caravan\n\nPlus: de meeste campings hebben een supermarkt, sanitair, zwembad en restaurant op het terrein!`,
+    ] : ['Electricity included, gas provided, WiFi on most campings, water on all sites.'];
     return {
-      answer: isNl
-        ? `Goede vraag${name}! Hier is de info over voorzieningen:\n\n⚡ **Elektriciteit** — inbegrepen bij de campingplaats\n⛽ **Gas** — aanwezig voor koken\n📶 **WiFi** — beschikbaar op de meeste campings (soms gratis, soms tegen toeslag)\n💧 **Water** — op alle campings aanwezig\n🔌 **Oplaadpunten** — stopcontacten in de caravan\n\nDe campings hebben ook sanitairgebouwen, winkels en vaak restaurants!`
-        : 'Electricity included, gas provided, WiFi on most campings, water on all sites.',
+      answer: pick(wifiAnswers, asked),
       followUp: isNl ? ['Welke campings?', 'Wat zit erin?', 'Hoe boek ik?'] : ['Which campings?', "What's included?"],
       confidence: 0.8,
       topic: 'facilities',
@@ -493,10 +603,12 @@ function smartMatch(
 
   // ===== SEASON / AVAILABILITY =====
   if (/seizoen|2026|wanneer|periode|beschikbaar|datum|zomer|season|when|available|summer|temporada|cuando|welke maanden/.test(lower)) {
+    const seasonAnswers = isNl ? [
+      `☀️ **Seizoen 2026** loopt van **mei t/m september**${name}!\n\nHoogseizoen (juli/augustus) is het populairst, dus boek op tijd!\n📅 Tussei-/laagseizoen (mei, juni, september) geeft vaak betere tarieven en meer rust.\n\nMomenteel is alles nog beschikbaar. Wil je voor een bepaalde maand kijken?\n\n👉 **[Direct boeken](/boeken)**`,
+      `Ons seizoen is van **mei tot en met september** 2026${name}! 🌞\n\n📅 **Mei/Juni** — rustig, aangenaam weer, lagere prijzen\n📅 **Juli/Augustus** — hoogseizoen, warmst, het populairst\n📅 **September** — heerlijk nazomeren, rustig op de campings\n\n💡 Tip: juni en september zijn ideaal voor wie rust wil + mooi weer!\n\nWanneer dacht je te gaan?`,
+    ] : ['☀️ **Season 2026** runs from **May to September**. Book early!'];
     return {
-      answer: isNl
-        ? `☀️ **Seizoen 2026** loopt van **mei t/m september**${name}!\n\nHoogseizoen (juli/augustus) is het populairst, dus boek op tijd!\n📅 Tussei-/laagseizoen (mei, juni, september) geeft vaak betere tarieven en meer rust.\n\nMomenteel is alles nog beschikbaar. Wil je voor een bepaalde maand kijken?\n\n👉 **[Direct boeken](/boeken)**`
-        : '☀️ **Season 2026** runs from **May to September**. Book early!',
+      answer: pick(seasonAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?', 'Welke caravans?'] : ['How to book?', 'Cost?'],
       confidence: 0.85,
       topic: 'season',
@@ -505,10 +617,12 @@ function smartMatch(
 
   // ===== VACATION / HOLIDAY =====
   if (/vakantie|holiday|vacation|op reis|reizen|travel|viaje|vacaciones|weekendje|uitje/.test(lower)) {
+    const vacationAnswers = isNl ? [
+      `Droom je van een heerlijke vakantie aan de Costa Brava${name}? ☀️🏖️\n\nWij maken het je makkelijk:\n✅ Caravan staat al klaar op de camping\n✅ Volledig ingericht met inventaris\n✅ 30+ campings om uit te kiezen\n✅ Vanaf €${Math.min(...caravans.map(c => c.pricePerWeek))}/week\n\nVertel me meer! Hoeveel personen zijn jullie, welke periode, en heb je een voorkeur voor een locatie?`,
+      `Een caravanvakantie aan de Costa Brava is onvergetelijk${name}! 🌅\n\n🏖️ Prachtige stranden en verborgen baaien\n🍽️ Heerlijk eten en lokale wijnen\n☀️ 300 dagen zon per jaar\n🚐 Caravan staat klaar — gewoon instappen!\n\nVan gezinnen tot koppels, van rustzoekers tot avonturiers — er is voor ieder wat.\n\nVertel: met hoeveel personen ga je? En heb je al een voorkeur voor een plek?`,
+    ] : ['Dreaming of a Costa Brava holiday? ☀️🏖️\n\nTell me more: how many people, when, any preference?'];
     return {
-      answer: isNl
-        ? `Droom je van een heerlijke vakantie aan de Costa Brava${name}? ☀️🏖️\n\nWij maken het je makkelijk:\n✅ Caravan staat al klaar op de camping\n✅ Volledig ingericht met inventaris\n✅ 30+ campings om uit te kiezen\n✅ Vanaf €${Math.min(...caravans.map(c => c.pricePerWeek))}/week\n\nVertel me meer! Hoeveel personen zijn jullie, welke periode, en heb je een voorkeur voor een locatie?`
-        : `Dreaming of a Costa Brava holiday? ☀️🏖️\n\nTell me more: how many people, when, any preference?`,
+      answer: pick(vacationAnswers, asked),
       followUp: isNl ? ['We zijn met 4 personen', 'In juli', 'Bij Lloret de Mar', 'Wat kost het?'] : ['4 people', 'In July', 'Near Lloret'],
       confidence: 0.85,
       topic: 'vacation',
@@ -517,10 +631,12 @@ function smartMatch(
 
   // ===== FAMILY / KIDS =====
   if (/gezin|kinderen|kind|baby|familie|peuter|family|children|kids|baby|ninos|familia/.test(lower)) {
+    const familyAnswers = isNl ? [
+      `We zijn heel geschikt voor gezinnen met kinderen${name}! 👨‍👩‍👧‍👦\n\n🏖️ Veel campings hebben **zwembaden, speeltuinen en animatie**\n🚐 Onze familiecaravans bieden tot 5 slaapplaatsen\n🛏️ Dekbedden en kussens aanwezig\n⛺ Voortent als extra leefruimte\n\nAanraders voor gezinnen:\n⛺ **Cypsela Resort** (Pals) — zwembadcomplex\n⛺ **Cala Gogo** (Calonge) — animatieprogramma\n⛺ **Tucan** (Lloret) — waterpark!\n\nWil je dat ik een geschikte caravan voor je gezin zoek?`,
+      `Perfect voor gezinnen${name}! 👨‍👩‍👧‍👦\n\nOnze caravans zijn ideaal voor kids:\n🛏️ Ruime slaapplaatsen (tot 5 personen)\n🍳 Eigen kookgelegenheid — scheelt enorm in kosten!\n⛺ Voortent als speelruimte\n\nDe campings bieden ook:\n🏊 Zwembaden & waterglijbanen\n🎪 Animatieprogramma's\n🎮 Speeltuinen & sportfaciliteiten\n🛒 Supermarkt op het terrein\n\nFavoriete kindercampings:\n⛺ **Tucan** (Lloret) — waterpark met glijbanen!\n⛺ **Cypsela** (Pals) — groot zwembad + strand\n⛺ **Cala Gogo** (Calonge) — animatie hele dag`,
+    ] : ['We are very family-friendly! Many campings have pools, playgrounds and activities for children.'];
     return {
-      answer: isNl
-        ? `We zijn heel geschikt voor gezinnen met kinderen${name}! 👨‍👩‍👧‍👦\n\n🏖️ Veel campings hebben **zwembaden, speeltuinen en animatie**\n🚐 Onze familiecaravans bieden tot 5 slaapplaatsen\n🛏️ Dekbedden en kussens aanwezig\n⛺ Voortent als extra leefruimte\n\nAanraders voor gezinnen:\n⛺ **Cypsela Resort** (Pals) — zwembadcomplex\n⛺ **Cala Gogo** (Calonge) — animatieprogramma\n⛺ **Tucan** (Lloret) — waterpark!\n\nWil je dat ik een geschikte caravan voor je gezin zoek?`
-        : 'We are very family-friendly! Many campings have pools, playgrounds and activities for children.',
+      answer: pick(familyAnswers, asked),
       followUp: isNl ? ['Ja graag!', 'Welke caravans voor gezin?', 'Hoe boek ik?'] : ['Yes please!', 'Which caravans?'],
       confidence: 0.85,
       topic: 'family',
@@ -529,10 +645,12 @@ function smartMatch(
 
   // ===== COUPLE / ROMANTIC =====
   if (/koppel|stelletje|samen|romantisch|twee personen|couple|romantic|pareja|romantico/.test(lower)) {
+    const coupleAnswers = isNl ? [
+      `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze compacte caravans zijn perfect voor koppels:\n\n🚐 **Knaus 1997** — €329/week, gezellige rondzit\n🚐 **Adria 430 Unica** — €329/week, compact en knus\n\nTips voor koppels:\n🌅 Begur & Pals — prachtige dorpjes en verborgen stranden\n🍷 L'Escala — Griekse ruines en heerlijke vis\n🏖️ Cadaques — kunstenaarsdorp met charme\n\nZal ik een optie voor jullie samenstellen?`,
+      `Costa Brava is dé plek voor een romantische vakantie${name}! 💕\n\nVoor koppels raden we aan:\n\n🚐 **Compacte caravans** — knus, betaalbaar, alles wat je nodig hebt\n📍 **Begur** — verborgen baaien, charmante straatjes\n📍 **Cadaqués** — artistiek, romantisch, prachtige zonsondergangen\n📍 **Pals** — middeleeuws dorp, heerlijke rijstgerechten\n\nVanaf slechts **€${Math.min(...caravans.map(c => c.pricePerWeek))}/week** — inclusief alles!\n\nWil je dat ik een romantisch pakketje voor jullie samenstel?`,
+    ] : ['Our compact caravans are perfect for couples! Starting from €329/week.'];
     return {
-      answer: isNl
-        ? `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze compacte caravans zijn perfect voor koppels:\n\n🚐 **Knaus 1997** — €329/week, gezellige rondzit\n🚐 **Adria 430 Unica** — €329/week, compact en knus\n\nTips voor koppels:\n🌅 Begur & Pals — prachtige dorpjes en verborgen stranden\n🍷 L'Escala — Griekse ruines en heerlijke vis\n🏖️ Cadaques — kunstenaarsdorp met charme\n\nZal ik een optie voor jullie samenstellen?`
-        : 'Our compact caravans are perfect for couples! Starting from €329/week.',
+      answer: pick(coupleAnswers, asked),
       followUp: isNl ? ['Ja, stel iets samen!', 'Wat kost het?', 'Welke campings?'] : ['Yes!', 'Cost?'],
       confidence: 0.85,
       topic: 'couple',
@@ -541,10 +659,12 @@ function smartMatch(
 
   // ===== TRANSPORT =====
   if (/transport|slepen|vervoer|eigen caravan|hoe kom|rijden|reizen naar|how to get|como llegar/.test(lower)) {
+    const transportAnswers = isNl ? [
+      `Je hoeft je caravan niet zelf te vervoeren${name}! 🚗\n\nDe caravan staat **al op de camping** als je aankomt. Je rijdt gewoon naar de camping en checkt in!\n\n🚗 **Met de auto**: ca. 12-14 uur rijden vanaf Nederland\n✈️ **Met het vliegtuig**: naar Girona (30 min) of Barcelona (1,5 uur)\n\nHeb je een eigen caravan? Via ons moederbedrijf [Caravanstalling-Spanje](https://caravanstalling-spanje.com) kun je transport boeken.`,
+      `Geen gesleep met caravans${name}! 🎉\n\nDe caravan staat al op de camping, klaar voor gebruik. Jij hoeft alleen jezelf te vervoeren:\n\n🚗 **Auto**: ~12-14 uur vanuit Nederland (via Lyon of Zwitserland)\n✈️ **Vliegtuig**: Girona airport is maar 30 min rijden!\n🚌 Huurauto beschikbaar bij elk vliegveld\n\n💡 Veel campings liggen op slechts 15-30 min van Girona Airport. Ideaal voor een fly & camp vakantie!`,
+    ] : ['The caravan is already at the camping! You just drive there or fly to Girona/Barcelona.'];
     return {
-      answer: isNl
-        ? `Je hoeft je caravan niet zelf te vervoeren${name}! 🚗\n\nDe caravan staat **al op de camping** als je aankomt. Je rijdt gewoon naar de camping en checkt in!\n\n🚗 **Met de auto**: ca. 12-14 uur rijden vanaf Nederland\n✈️ **Met het vliegtuig**: naar Girona (30 min) of Barcelona (1,5 uur)\n\nHeb je een eigen caravan? Via ons moederbedrijf [Caravanstalling-Spanje](https://caravanstalling-spanje.com) kun je transport boeken.`
-        : 'The caravan is already at the camping! You just drive there or fly to Girona/Barcelona.',
+      answer: pick(transportAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Welke campings?', 'Wat kost het?'] : ['How to book?', 'Which campings?'],
       confidence: 0.85,
       topic: 'transport',
@@ -553,10 +673,12 @@ function smartMatch(
 
   // ===== WEATHER =====
   if (/weer|temperatuur|regen|zon|klimaat|weather|temperature|rain|sun|clima|tiempo/.test(lower)) {
+    const weatherAnswers = isNl ? [
+      `Het weer aan de Costa Brava is heerlijk${name}! ☀️\n\n🌡️ **Mei**: 18-23°C, lekker warm\n🌡️ **Juni**: 22-28°C, ideaal\n🌡️ **Juli/Aug**: 25-33°C, volop zomer!\n🌡️ **September**: 22-28°C, aangenaam warm\n\nGemiddeld 300 dagen zon per jaar! Regenachtige dagen zijn zeldzaam in het seizoen.\n\n💡 Tip: de **HomeCar 450 Racer** heeft airco voor de warmste dagen!`,
+      `De Costa Brava heeft fantastisch weer${name}! ☀️\n\nWat je kunt verwachten per maand:\n\n🌞 **Mei** — 18-23°C, ideaal voor wandelen\n🌞 **Juni** — 22-28°C, lekker strandweer\n🔥 **Juli/Aug** — 25-33°C, heerlijk warm!\n🌞 **Sept** — 22-28°C, nazomeren op z'n best\n\n🌊 Zeewatertemperatuur: 20-25°C\n☁️ Gemiddeld 300 zonnedagen per jaar\n\nIn juli/augustus kan een caravan met **airco** fijn zijn — de HomeCar 450 Racer heeft dat!`,
+    ] : ['Costa Brava weather is wonderful! 25-33°C in summer with 300 sunny days a year. ☀️'];
     return {
-      answer: isNl
-        ? `Het weer aan de Costa Brava is heerlijk${name}! ☀️\n\n🌡️ **Mei**: 18-23°C, lekker warm\n🌡️ **Juni**: 22-28°C, ideaal\n🌡️ **Juli/Aug**: 25-33°C, volop zomer!\n🌡️ **September**: 22-28°C, aangenaam warm\n\nGemiddeld 300 dagen zon per jaar! Regenachtige dagen zijn zeldzaam in het seizoen.\n\n💡 Tip: de **HomeCar 450 Racer** heeft airco voor de warmste dagen!`
-        : 'Costa Brava weather is wonderful! 25-33°C in summer with 300 sunny days a year. ☀️',
+      answer: pick(weatherAnswers, asked),
       followUp: isNl ? ['Welke caravans met airco?', 'Welke maanden?', 'Hoe boek ik?'] : ['Caravans with AC?', 'How to book?'],
       confidence: 0.85,
       topic: 'weather',
@@ -565,10 +687,12 @@ function smartMatch(
 
   // ===== ACTIVITIES / THINGS TO DO =====
   if (/activiteit|uitje|bezienswaardigh|doen|strand|zwem|snorkel|wandel|fiets|activity|things to do|beach|swim|actividad|playa/.test(lower)) {
+    const activityAnswers = isNl ? [
+      `Er is zoveel te doen aan de Costa Brava${name}! 🎉\n\n🏖️ **Stranden** — verborgen baaien, brede zandstranden\n🤿 **Snorkelen/Duiken** — Medes Eilanden (Estartit)\n🚴 **Fietsen** — routes door het achterland\n🏰 **Cultuur** — Dali Museum (Figueres), Romeinse ruines (Empuries)\n🌊 **Watersport** — kajakken, SUP, zeilen\n🍷 **Wijnproeven** — Emporda wijnstreek\n🎢 **Waterpret** — Aquabrava, campingzwembaden\n👨‍👩‍👧 **Kids** — dierparken, aquariums, speeltuinen\n\nBekijk onze [bestemmingen pagina](/bestemmingen) voor meer inspiratie!`,
+      `De Costa Brava is een paradijs voor activiteiten${name}! 🌟\n\n🏊 **Water**: snorkelen bij de Medes Eilanden, kajakken langs de kust, SUP-pen\n🥾 **Natuur**: Camí de Ronda kustpad, Cap de Creus natuurpark\n🏛️ **Cultuur**: Dalí Museum in Figueres, Empúries ruïnes\n🍽️ **Food**: wijntours, lokale markten, Catalaanse keuken\n🚴 **Sport**: mountainbiken, golfen, zeilen\n🎡 **Fun**: Marineland, Aquabrava waterpark\n\nElke bestemming heeft zijn eigen charme! Bekijk onze [bestemmingen](/bestemmingen) voor tips per locatie.`,
+    ] : ['So much to do at the Costa Brava! Beaches, snorkeling, cycling, culture, water sports, and more!'];
     return {
-      answer: isNl
-        ? `Er is zoveel te doen aan de Costa Brava${name}! 🎉\n\n🏖️ **Stranden** — verborgen baaien, brede zandstranden\n🤿 **Snorkelen/Duiken** — Medes Eilanden (Estartit)\n🚴 **Fietsen** — routes door het achterland\n🏰 **Cultuur** — Dali Museum (Figueres), Romeinse ruines (Empuries)\n🌊 **Watersport** — kajakken, SUP, zeilen\n🍷 **Wijnproeven** — Emporda wijnstreek\n🎢 **Waterpret** — Aquabrava, campingzwembaden\n👨‍👩‍👧 **Kids** — dierparken, aquariums, speeltuinen\n\nBekijk onze [bestemmingen pagina](/bestemmingen) voor meer inspiratie!`
-        : 'So much to do at the Costa Brava! Beaches, snorkeling, cycling, culture, water sports, and more!',
+      answer: pick(activityAnswers, asked),
       followUp: isNl ? ['Welke campings bij het strand?', 'Hoe boek ik?', 'Welke caravans?'] : ['Beach campings?', 'How to book?'],
       confidence: 0.85,
       topic: 'activities',
@@ -579,7 +703,7 @@ function smartMatch(
   if (/veilig|verzekering|insurance|safe|diefstal|theft|segur/.test(lower)) {
     return {
       answer: isNl
-        ? `Veiligheid is belangrijk${name}! 🔒\n\n✅ Campings hebben 24/7 bewaking\n✅ Je bezittingen zijn veilig in de caravan\n✅ Onze caravans zijn goed onderhouden\n\n💡 We raden een reis- of annuleringsverzekering aan. De borgregeling beschermt ons both sides:\n\n🔒 Borg: €250-€500 via iDEAL/Wero\n✅ Retour binnen 7 dagen bij geen schade`
+        ? `Veiligheid is belangrijk${name}! 🔒\n\n✅ Campings hebben 24/7 bewaking en receptie\n✅ Je bezittingen zijn veilig in de afgesloten caravan\n✅ Onze caravans worden elk seizoen grondig gecontroleerd\n\n💡 We raden een **reis- en annuleringsverzekering** aan voor extra zekerheid.\n\nDe borgregeling:\n🔒 €250-€500 via iDEAL/Wero bij aankomst\n✅ Retour binnen 7 dagen bij geen schade`
         : 'Safety is important! Campings have 24/7 security. We recommend travel insurance.',
       followUp: isNl ? ['Hoe werkt de borg?', 'Kan ik annuleren?'] : ['Deposit info?', 'Cancel?'],
       confidence: 0.8,
@@ -601,10 +725,12 @@ function smartMatch(
 
   // ===== OVER ONS / ABOUT =====
   if (/wie zijn|over jullie|over ons|bedrijf|about|who are|sobre nosotros|quienes/.test(lower)) {
+    const aboutAnswers = isNl ? [
+      `Wij zijn **Caravanverhuur Spanje**${name}! 🇪🇸\n\nOns concept is simpel: wij zorgen ervoor dat er een volledig ingerichte caravan op de camping van jouw keuze staat. Jij hoeft alleen maar te genieten!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} goed onderhouden caravans\n✅ Alles inclusief (inventaris, beddengoed, etc.)\n✅ Nederlandse service\n\nOns moederbedrijf [Caravanstalling-Spanje](https://caravanstalling-spanje.com) regelt het transport.\n\n👉 Lees meer op onze [Over Ons pagina](/over-ons)!`,
+      `Leuk dat je meer wilt weten${name}! 😊\n\nWij zijn een Nederlands bedrijf dat **caravans verhuurt op de Costa Brava**. Ons concept:\n\n🚐 Wij plaatsen de caravan op de camping\n🛏️ Wij richten alles in (beddengoed, kookgerei, etc.)\n🧹 Wij maken schoon voor en na je verblijf\n😎 Jij hoeft alleen maar te genieten!\n\nWe werken samen met 30+ campings en hebben ${caravans.length} caravans.\n\n👉 Meer info op onze [Over Ons pagina](/over-ons)`,
+    ] : ['We are **Caravanverhuur Spanje**! We place fully equipped caravans on campings across the Costa Brava.'];
     return {
-      answer: isNl
-        ? `Wij zijn **Caravanverhuur Spanje**${name}! 🇪🇸\n\nOns concept is simpel: wij zorgen ervoor dat er een volledig ingerichte caravan op de camping van jouw keuze staat. Jij hoeft alleen maar te genieten!\n\n✅ 30+ campings aan de Costa Brava\n✅ 4 goed onderhouden caravans\n✅ Alles inclusief (inventaris, beddengoed, etc.)\n✅ Nederlandse service\n\nOns moederbedrijf [Caravanstalling-Spanje](https://caravanstalling-spanje.com) regelt het transport.\n\n👉 Lees meer op onze [Over Ons pagina](/over-ons)!`
-        : 'We are **Caravanverhuur Spanje**! We place fully equipped caravans on campings across the Costa Brava.',
+      answer: pick(aboutAnswers, asked),
       followUp: isNl ? ['Welke caravans?', 'Welke campings?', 'Hoe boek ik?'] : ['Which caravans?', 'How to book?'],
       confidence: 0.85,
       topic: 'about',
@@ -626,10 +752,12 @@ function smartMatch(
 
   // ===== RECOMMENDATIONS =====
   if (/tip|aanrader|recommend|advies|advice|welke.*beste|which.*best|favoriet|anraden|suggestie/.test(lower)) {
+    const recoAnswers = isNl ? [
+      `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n🚐 Hobby Prestige 650 (5 pers) + Cypsela Resort (Pals)\n\n**Voor koppels:**\n🚐 Knaus 1997 (4 pers, gezellig) + Camping Begur\n\n**Met airco (aanrader bij zomerhitte!):**\n🚐 HomeCar 450 Racer + La Ballena Alegre\n\n**Budget-optie:**\n🚐 Knaus 1997 of Adria 430 — vanaf €329/week!\n\nWil je dat ik iets specifieks voor je uitzoek?`,
+      `Graag${name}! Hier mijn persoonlijke aanbevelingen: ✨\n\n🏆 **Beste camping** → Cypsela Resort (Pals) — luxe, direct aan het strand\n🚐 **Beste familiecaravan** → Hobby Prestige 650 — ruimst, comfortabel\n❄️ **Beste voor de zomer** → HomeCar 450 Racer — mét airco!\n💰 **Beste budget-optie** → Knaus 1997 — vanaf €329/week\n🌅 **Mooiste bestemming** → Begur — verborgen baaien + charme\n🤿 **Meeste activiteiten** → Estartit — duiken bij Medes Eilanden\n\nVertel me wat jij belangrijk vindt, en ik geef persoonlijk advies!`,
+    ] : ['My recommendations: Hobby Prestige for families, Knaus for couples, HomeCar for AC!'];
     return {
-      answer: isNl
-        ? `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n🚐 Hobby Prestige 650 (5 pers) + Cypsela Resort (Pals)\n\n**Voor koppels:**\n🚐 Knaus 1997 (4 pers, gezellig) + Camping Begur\n\n**Met airco (aanrader bij zomerhitte!):**\n🚐 HomeCar 450 Racer + La Ballena Alegre\n\n**Budget-optie:**\n🚐 Knaus 1997 of Adria 430 — vanaf €329/week!\n\nWil je dat ik iets specifieks voor je uitzoek?`
-        : 'My recommendations: Hobby Prestige for families, Knaus for couples, HomeCar for AC!',
+      answer: pick(recoAnswers, asked),
       followUp: isNl ? ['Vertel meer over Hobby Prestige', 'Vertel meer over HomeCar', 'Hoe boek ik?'] : ['Tell me about Hobby', 'How to book?'],
       confidence: 0.85,
       topic: 'recommendations',
@@ -638,11 +766,13 @@ function smartMatch(
 
   // ===== THANKS =====
   if (/bedankt|dankje|dank|thanks|thank you|gracias|top|super|mooi|fijn|geweldig|perfect/.test(lower)) {
+    const thanksAnswers = isNl ? [
+      `Graag gedaan${name}! 😊 Kan ik je nog ergens anders mee helpen?`,
+      `Met plezier${name}! 🙌 Laat het gerust weten als je nog vragen hebt!`,
+      `Fijn dat ik kon helpen${name}! 😊 Mocht er nog iets zijn, ik ben hier!`,
+    ] : isEs ? [`¡De nada${name}! 😊 ¿Algo más?`] : [`You're welcome${name}! 😊 Anything else?`];
     return {
-      answer: isNl
-        ? `Graag gedaan${name}! 😊 Kan ik je nog ergens anders mee helpen?\n\nIk weet alles over onze caravans, campings, prijzen en boekingsproces!`
-        : isEs ? `¡De nada${name}! 😊 ¿Algo más?`
-        : `You're welcome${name}! 😊 Anything else?`,
+      answer: pick(thanksAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?', 'Nee, bedankt!'] : ['How to book?', 'No thanks!'],
       confidence: 0.9,
       topic: 'thanks',
@@ -651,14 +781,49 @@ function smartMatch(
 
   // ===== FAREWELL =====
   if (/^(nee.*bedankt|doei|dag|bye|goodbye|adios|tot ziens|nee.*dank|tot snel|ciao)/.test(lower)) {
+    const farewellAnswers = isNl ? [
+      `Tot snel${name}! 👋 Mocht je nog vragen hebben, ik ben er altijd.\n\nFijne dag en hopelijk tot ziens aan de Costa Brava! ☀️🏖️`,
+      `Doei${name}! 👋 Het was leuk je te helpen. Geniet van je dag!\n\nWe hopen je snel te verwelkomen aan de Costa Brava! 🌞`,
+    ] : isEs ? [`¡Hasta luego${name}! 👋 ☀️`] : [`Goodbye${name}! 👋 Have a great day! ☀️`];
     return {
-      answer: isNl
-        ? `Tot snel${name}! 👋 Mocht je nog vragen hebben, ik ben er altijd.\n\nFijne dag en hopelijk tot ziens aan de Costa Brava! ☀️🏖️`
-        : isEs ? `¡Hasta luego${name}! 👋 ☀️`
-        : `Goodbye${name}! 👋 Have a great day! ☀️`,
+      answer: pick(farewellAnswers, asked),
       followUp: [],
       confidence: 0.9,
       topic: 'farewell',
+    };
+  }
+
+  // ===== FUZZY MATCHING: catch broader questions =====
+  if (/wanneer|hoe lang|hoelang|how long|duration|duur|minimaal|minimum/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Er is geen minimale huurduur${name}! Je kunt vanaf 1 dag boeken. 📅\n\nPrijzen:\n• Per dag: vanaf €${Math.min(...caravans.map(c => c.pricePerDay))}\n• Per week: vanaf €${Math.min(...caravans.map(c => c.pricePerWeek))} (voordeliger!)\n\nHet seizoen loopt van mei t/m september 2026.\n\n👉 **[Bekijk beschikbaarheid](/boeken)**`
+        : 'No minimum rental! From 1 day. Season: May-September.',
+      followUp: isNl ? ['Wat kost het?', 'Hoe boek ik?', 'Welke caravans?'] : ['Cost?', 'How to book?'],
+      confidence: 0.8,
+      topic: 'duration',
+    };
+  }
+
+  if (/foto|picture|image|video|filmpje|beeld/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Bekijk foto's en details van al onze caravans${name}! 📸\n\n👉 **[Caravans met foto's](/caravans)**\n👉 **[Bestemmingen met foto's](/bestemmingen)**\n\nElke caravan en bestemming heeft een uitgebreide fotogalerij!`
+        : 'Check out photos of all our caravans and destinations on our website! 📸',
+      followUp: isNl ? ['Welke caravans?', 'Welke bestemmingen?'] : ['Which caravans?', 'Destinations?'],
+      confidence: 0.8,
+      topic: 'photos',
+    };
+  }
+
+  if (/korting|discount|actie|aanbieding|coupon|code|sale|oferta|descuento/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Goed dat je ernaar vraagt${name}! 🏷️\n\nHeb je een kortingscode? Die kun je invoeren tijdens het boekingsproces.\n\nDaarnaast geldt: hoe langer je boekt, hoe voordeliger het wordt! Weekprijzen zijn aanzienlijk lager dan dagprijzen.\n\n👉 **[Boek nu en voer je code in](/boeken)**`
+        : 'Got a discount code? Enter it during checkout! Book longer for better rates.',
+      followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?'] : ['How to book?', 'Cost?'],
+      confidence: 0.8,
+      topic: 'discount',
     };
   }
 
@@ -989,13 +1154,17 @@ export default function ChatBot() {
       }
 
       if (result.confidence === 0) {
+        const fallbacks = isNl ? [
+          `Hmm${userName ? `, ${userName}` : ''}, dat snap ik niet helemaal. 🤔\n\nIk kan je helpen met:\n• Prijzen & boeken\n• Caravans & campings\n• Beschikbaarheid & seizoen\n• Tips & aanbevelingen\n\nKun je het anders formuleren? Of wil je met een medewerker praten?`,
+          `Sorry${userName ? `, ${userName}` : ''}, ik begrijp je vraag niet helemaal. 😅\n\nProbeer eens een van deze onderwerpen:\n🚐 Caravans & prijzen\n📍 Campings & bestemmingen\n📅 Seizoen & boeken\n\nOf klik op een van de snelknoppen hieronder!`,
+          `Oeps${userName ? `, ${userName}` : ''}, die vraag kan ik helaas niet beantwoorden. 🤷\n\nMaar ik weet alles over caravanvakantie aan de Costa Brava! Stel een vraag over prijzen, caravans, campings of het boekingsproces.\n\nOf praat direct met een medewerker!`,
+        ] : isEs ? ['Hmm, no lo entiendo. 🤔 ¿Puedes reformularlo?']
+        : [`Hmm${userName ? `, ${userName}` : ''}, I don't quite understand. 🤔\n\nCould you rephrase? Or talk to staff?`];
+        const fallbackText = fallbacks[(convContext.askedQuestions.length + Date.now()) % fallbacks.length];
         const fallback: Message = {
           id: (Date.now() + 1).toString(),
           role: 'bot',
-          text: isNl
-            ? `Hmm${userName ? `, ${userName}` : ''}, dat snap ik niet helemaal. 🤔\n\nIk kan je helpen met:\n• Prijzen & boeken\n• Caravans & campings\n• Beschikbaarheid & seizoen\n• Tips & aanbevelingen\n\nKun je het anders formuleren? Of wil je met een medewerker praten?`
-            : isEs ? 'Hmm, no lo entiendo. 🤔 ¿Puedes reformularlo?'
-            : `Hmm${userName ? `, ${userName}` : ''}, I don't quite understand. 🤔\n\nCould you rephrase? Or talk to staff?`,
+          text: fallbackText,
           quickReplies: isNl
             ? ['Spreek een medewerker', 'Wat kost het?', 'Hoe boek ik?', 'Welke caravans?', 'Welke campings?']
             : isEs ? ['Hablar con empleado', '¿Cuanto cuesta?', '¿Como reservo?']
@@ -1072,7 +1241,7 @@ export default function ChatBot() {
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 rounded-t-2xl">
               <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white/20 flex items-center justify-center shrink-0">
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Luna" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" unoptimized />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Luna" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-primary" />
               </div>
               <div className="flex-1 min-w-0">

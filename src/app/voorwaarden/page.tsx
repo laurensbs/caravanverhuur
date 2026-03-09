@@ -200,6 +200,7 @@ export default function VoorwaardenPage() {
       {/* Content */}
       <section className="py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 space-y-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{t('termsPage.pageTitle')}</h1>
           {sections.map(s => {
             const Icon = s.icon;
             return (

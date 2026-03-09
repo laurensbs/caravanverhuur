@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
@@ -10,8 +11,8 @@ import { GOOGLE_REVIEW_URL } from '@/lib/constants';
 /* SVG star path (viewBox 0 0 24 24) */
 const STAR_PATH = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z';
 
-function StarIcon({ size, fill }: { size: number; fill: number }) {
-  const id = `star-grad-${size}-${Math.round(fill * 100)}`;
+function StarIcon({ size, fill, prefix }: { size: number; fill: number; prefix: string }) {
+  const id = `${prefix}-${Math.round(fill * 100)}`;
   if (fill >= 1) {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0">
@@ -39,7 +40,9 @@ function StarIcon({ size, fill }: { size: number; fill: number }) {
   );
 }
 
-const GoogleStars = ({ size = 14, rating = 4.9, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => (
+const GoogleStars = ({ size = 14, rating = 4.9, showLabel = true }: { size?: number; rating?: number; showLabel?: boolean }) => {
+  const uid = useId();
+  return (
   <a
     href={GOOGLE_REVIEW_URL}
     target="_blank"
@@ -54,12 +57,13 @@ const GoogleStars = ({ size = 14, rating = 4.9, showLabel = true }: { size?: num
     </svg>
     <span className="flex items-center gap-0.5">
       {[...Array(5)].map((_, i) => (
-        <StarIcon key={i} size={size} fill={Math.min(1, Math.max(0, rating - i))} />
+        <StarIcon key={i} size={size} fill={Math.min(1, Math.max(0, rating - i))} prefix={`${uid}-star-${i}`} />
       ))}
     </span>
     {showLabel && <span className="font-bold text-foreground text-xs ml-0.5">{rating}</span>}
   </a>
-);
+  );
+};
 
 export { GoogleStars, StarIcon, STAR_PATH };
 
@@ -94,7 +98,7 @@ export default function Footer() {
             width={240}
             height={70}
             className="w-40 sm:w-52 h-auto mb-2"
-            unoptimized
+           
           />
           <GoogleStars size={13} />
           <p className="text-muted text-sm leading-relaxed max-w-xs mt-2">
@@ -169,7 +173,7 @@ export default function Footer() {
               width={240}
               height={70}
               className="w-48 h-auto"
-              unoptimized
+             
             />
             <GoogleStars size={13} />
             <p className="text-muted text-sm leading-relaxed">

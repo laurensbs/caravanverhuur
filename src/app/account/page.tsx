@@ -153,7 +153,7 @@ function AccountPageInner() {
               alt="Costa Brava strand"
               fill
               className="object-cover"
-              unoptimized
+             
             />
           </div>
           <div className="relative z-10 flex flex-col justify-center p-10 xl:p-14 w-full">

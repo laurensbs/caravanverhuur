@@ -85,7 +85,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
         <Image
           src={dest.heroImage}
           alt={`${dest.name} – ${dest.region}, Costa Brava`}
-          fill className="object-cover" priority unoptimized
+          fill className="object-cover" priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
@@ -184,7 +184,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {dest.gallery.map((img, i) => (
                     <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
-                      <Image src={img} alt={`${dest.name} foto ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                      <Image src={img} alt={`${dest.name} foto ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   ))}
                 </div>
@@ -435,7 +435,7 @@ export default function DestinationDetailContent({ dest, otherDestinations }: { 
                     className="flex items-center gap-3 py-2.5 rounded-xl px-2.5 -mx-2.5 hover:bg-gray-50 transition-colors group"
                   >
                     <div className="relative w-11 h-11 rounded-lg overflow-hidden shrink-0 ring-1 ring-gray-100">
-                      <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover group-hover:scale-110 transition-transform duration-300" unoptimized />
+                      <Image src={d.heroImage} alt={`${d.name}, ${d.region}`} fill className="object-cover group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">{d.name}</div>

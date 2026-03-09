@@ -82,6 +82,7 @@ export default function FAQPage() {
       />
       <section className="pt-8 sm:pt-10 pb-10 sm:pb-16">
         <div className="max-w-3xl mx-auto px-4">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-8">{t('faq.heroTitle')}</h1>
           {faqCategories.map((cat, catIdx) => (
             <div
               key={cat.category}

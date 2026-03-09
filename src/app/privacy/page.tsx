@@ -205,6 +205,7 @@ export default function PrivacyPage() {
         <div className="max-w-4xl mx-auto px-4 space-y-8">
           {/* Intro */}
           <div className="bg-white rounded-2xl p-6 sm:p-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">{t('privacyPage.pageTitle')}</h1>
             <p className="text-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.intro') }} />
           </div>
 
