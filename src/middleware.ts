@@ -52,7 +52,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: 'Sessie verlopen' }, { status: 401 });
     }
 
-    return NextResponse.next();
+    // Pass session info to API routes via request headers
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-admin-user', session.user);
+    requestHeaders.set('x-admin-role', session.role);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   /* ── Admin subdomain ──────────────────────────────────── */

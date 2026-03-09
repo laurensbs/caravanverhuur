@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCaravanSettings, upsertCaravanSetting, getAvailableCaravanIds, logActivity } from '@/lib/db';
+import { getSessionFromHeaders } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function PATCH(request: NextRequest) {
       adminNotes
     );
 
-    logActivity({ actor: 'admin', role: 'admin', action: 'caravan_updated', entityType: 'caravan', entityId: caravanId, entityLabel: `Caravan ${caravanId}`, details: available === false ? 'Niet beschikbaar gezet' : 'Beschikbaar gezet' }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'caravan_updated', entityType: 'caravan', entityId: caravanId, entityLabel: `Caravan ${caravanId}`, details: available === false ? 'Niet beschikbaar gezet' : 'Beschikbaar gezet' }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

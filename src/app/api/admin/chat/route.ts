@@ -9,6 +9,7 @@ import {
   setupDatabase,
   logActivity,
 } from '@/lib/db';
+import { getSessionFromHeaders } from '@/lib/admin-auth';
 
 // GET: List all conversations or get one by ?id=...
 export async function GET(request: NextRequest) {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Mark as assigned
     await updateConversationStatus(conversationId, 'ACTIVE', staffName || 'Staff');
 
-    logActivity({ actor: staffName || 'admin', role: 'admin', action: 'chat_reply', entityType: 'chat', entityId: conversationId, entityLabel: `Chat #${conversationId}` }).catch(() => {});
+    logActivity({ actor: staffName || getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'chat_reply', entityType: 'chat', entityId: conversationId, entityLabel: `Chat #${conversationId}` }).catch(() => {});
 
     return NextResponse.json(result);
   } catch (error) {
@@ -100,7 +101,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteChatConversation(id);
-    logActivity({ actor: 'admin', role: 'admin', action: 'chat_deleted', entityType: 'chat', entityId: id, entityLabel: `Chat #${id}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'chat_deleted', entityType: 'chat', entityId: id, entityLabel: `Chat #${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/admin/chat error:', error);

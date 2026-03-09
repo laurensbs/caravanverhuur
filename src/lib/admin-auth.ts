@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { type AdminRole } from '@/i18n/admin-translations';
 
+/** Get session info set by middleware via headers */
+export function getSessionFromHeaders(request: NextRequest): { user: string; role: AdminRole } {
+  return {
+    user: request.headers.get('x-admin-user') || 'admin',
+    role: (request.headers.get('x-admin-role') as AdminRole) || 'admin',
+  };
+}
+
 /* ── Credentials (from environment) ──────────────── */
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const STAFF_PASSWORD = process.env.STAFF_PASSWORD;

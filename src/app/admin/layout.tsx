@@ -69,10 +69,10 @@ const NAV_SECTIONS: NavSection[] = [
   {
     sectionKey: 'nav.section.customers',
     items: [
-      { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin'] },
-      { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin'] },
+      { sub: '/klanten', key: 'nav.customers', icon: Users, roles: ['admin', 'staff'] },
+      { sub: '/berichten', key: 'nav.messages', icon: Mail, roles: ['admin', 'staff'] },
       { sub: '/chat', key: 'nav.chat', icon: MessageCircle, roles: ['admin', 'staff'] },
-      { sub: '/nieuwsbrieven', key: 'nav.newsletters', icon: Newspaper, roles: ['admin'] },
+      { sub: '/nieuwsbrieven', key: 'nav.newsletters', icon: Newspaper, roles: ['admin', 'staff'] },
     ],
   },
   {
@@ -81,7 +81,7 @@ const NAV_SECTIONS: NavSection[] = [
       { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
       { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
       { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
-      { sub: '/activiteit', key: 'nav.activity', icon: History, roles: ['admin'] },
+      { sub: '/activiteit', key: 'nav.activity', icon: History, roles: ['admin', 'staff'] },
     ],
   },
 ];

@@ -8,6 +8,7 @@ import {
   logActivity,
 } from '@/lib/db';
 import { caravans as staticCaravans } from '@/data/caravans';
+import { getSessionFromHeaders } from '@/lib/admin-auth';
 
 // GET - List ALL caravans (static with DB overrides + custom)
 export async function GET() {
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       deposit: parseFloat(deposit) || 0,
     });
 
-    logActivity({ actor: 'admin', role: 'admin', action: 'caravan_created', entityType: 'caravan', entityId: result.id, entityLabel: name, details: `Ref: ${result.reference}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'caravan_created', entityType: 'caravan', entityId: result.id, entityLabel: name, details: `Ref: ${result.reference}` }).catch(() => {});
 
     return NextResponse.json({ success: true, id: result.id, reference: result.reference });
   } catch (error) {
@@ -160,7 +161,7 @@ export async function PATCH(request: NextRequest) {
         isStaticOverride: true,
       });
 
-      logActivity({ actor: 'admin', role: 'admin', action: 'caravan_updated', entityType: 'caravan', entityId: id, entityLabel: data.name ?? staticCaravan.name }).catch(() => {});
+      logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'caravan_updated', entityType: 'caravan', entityId: id, entityLabel: data.name ?? staticCaravan.name }).catch(() => {});
 
       return NextResponse.json({ success: true });
     }
@@ -171,7 +172,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Caravan niet gevonden' }, { status: 404 });
     }
 
-    logActivity({ actor: 'admin', role: 'admin', action: 'caravan_updated', entityType: 'caravan', entityId: id, entityLabel: data.name || `#${id}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'caravan_updated', entityType: 'caravan', entityId: id, entityLabel: data.name || `#${id}` }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -191,7 +192,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteCustomCaravan(id);
-    logActivity({ actor: 'admin', role: 'admin', action: 'caravan_deleted', entityType: 'caravan', entityId: id, entityLabel: `Caravan #${id}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'caravan_deleted', entityType: 'caravan', entityId: id, entityLabel: `Caravan #${id}` }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting caravan:', error);

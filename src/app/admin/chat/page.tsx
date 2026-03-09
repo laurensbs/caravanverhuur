@@ -465,7 +465,18 @@ export default function AdminChatPage() {
                               <span title={isNl ? 'Gekoppelde klant' : 'Linked customer'}><Link2 className="w-3 h-3 text-green-600" /></span>
                             )}
                           </p>
-                          <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-[10px] text-gray-400 group-hover:hidden">{timeAgo(conv.last_message_at || conv.created_at)}</span>
+                            {!selectMode && deleteConfirm !== conv.id && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDeleteConfirm(conv.id); }}
+                                className="hidden group-hover:flex p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                title={isNl ? 'Verwijder gesprek' : 'Delete conversation'}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <p className="text-xs text-gray-500 truncate mt-0.5">
                           {conv.last_message || (isNl ? 'Nieuw gesprek' : 'New conversation')}
@@ -488,8 +499,8 @@ export default function AdminChatPage() {
                       )}
                     </div>
                   </button>
-                  {/* Delete button */}
-                  {deleteConfirm === conv.id ? (
+                  {/* Delete confirmation */}
+                  {deleteConfirm === conv.id && (
                     <div className="absolute top-2 right-2 flex items-center gap-1 bg-white rounded-lg shadow-md border border-gray-200 p-1.5 z-10">
                       <button
                         onClick={() => handleDelete(conv.id)}
@@ -504,14 +515,6 @@ export default function AdminChatPage() {
                         {isNl ? 'Annuleer' : 'Cancel'}
                       </button>
                     </div>
-                  ) : !selectMode && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDeleteConfirm(conv.id); }}
-                      className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                      title={isNl ? 'Verwijder gesprek' : 'Delete conversation'}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   )}
                 </div>
               );

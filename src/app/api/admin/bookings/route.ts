@@ -3,6 +3,7 @@ import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist,
 import { getStripe } from '@/lib/stripe';
 import { sendManualBookingEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
+import { getSessionFromHeaders } from '@/lib/admin-auth';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
       .catch(err => console.error('Auto borg checklist creation failed:', err));
 
     // Log activity
-    logActivity({ actor: 'admin', role: 'admin', action: 'booking_created', entityType: 'booking', entityId: result.id, entityLabel: result.reference, details: `${guestName} — ${caravanName} → ${campingName}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'booking_created', entityType: 'booking', entityId: result.id, entityLabel: result.reference, details: `${guestName} — ${caravanName} → ${campingName}` }).catch(() => {});
 
     return NextResponse.json({
       success: true,
