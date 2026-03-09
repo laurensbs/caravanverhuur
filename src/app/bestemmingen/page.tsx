@@ -205,34 +205,15 @@ export default function BestemmingenPage() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [allCampings, setAllCampings] = useState<Camping[]>(staticCampings);
 
-  // Fetch DB-only campings (admin-added, not in static data)
+  // Fetch campings from API — only active campings are returned
+  // DB campings replace static entirely so active/inactive is respected
   useEffect(() => {
     fetch('/api/campings')
       .then(res => res.json())
       .then(data => {
         if (data.campings?.length) {
-          const staticNames = new Set(staticCampings.map(c => c.name.toLowerCase()));
-          // Only add campings from DB that are NOT already in static data
-          const dbOnly: Camping[] = data.campings
-            .filter((c: Record<string, unknown>) => !staticNames.has(((c.name as string) || '').toLowerCase()))
-            .map((c: Record<string, unknown>) => ({
-              id: String(c.id),
-              name: (c.name as string) || '',
-              slug: (c.slug as string) || '',
-              location: (c.location as string) || '',
-              region: (c.region as string) || 'Baix Empordà',
-              description: (c.description as string) || '',
-              longDescription: (c.long_description as string) || '',
-              website: (c.website as string) || '',
-              photos: (Array.isArray(c.photos) ? c.photos : []) as string[],
-              coordinates: { lat: Number(c.latitude) || 0, lng: Number(c.longitude) || 0 },
-              facilities: (Array.isArray(c.facilities) ? c.facilities : []) as string[],
-              nearestDestinations: (Array.isArray(c.nearest_destinations) ? c.nearest_destinations : []) as string[],
-              bestFor: (Array.isArray(c.best_for) ? c.best_for : []) as string[],
-            }));
-          if (dbOnly.length > 0) {
-            setAllCampings([...staticCampings, ...dbOnly]);
-          }
+          // API now returns Camping interface format (camelCase) — use directly
+          setAllCampings(data.campings as Camping[]);
         }
       })
       .catch((e) => console.error('Fetch error:', e));

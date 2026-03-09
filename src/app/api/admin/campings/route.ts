@@ -38,7 +38,13 @@ export async function GET() {
       campings = await getAllCampings();
     }
 
-    return NextResponse.json({ campings });
+    // Parse JSONB fields for the admin UI
+    const parsed = campings.map((c: Record<string, unknown>) => ({
+      ...c,
+      photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
+    }));
+
+    return NextResponse.json({ campings: parsed });
   } catch (error) {
     // Auto-create tables if they don't exist yet
     if (error instanceof Error && error.message.includes('does not exist')) {
@@ -63,7 +69,11 @@ export async function GET() {
           });
         }
         const campings = await getAllCampings();
-        return NextResponse.json({ campings });
+        const parsed = campings.map((c: Record<string, unknown>) => ({
+          ...c,
+          photos: typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []),
+        }));
+        return NextResponse.json({ campings: parsed });
       } catch (setupError) {
         console.error('Error setting up database for campings:', setupError);
         return NextResponse.json({ error: 'Fout bij database setup' }, { status: 500 });

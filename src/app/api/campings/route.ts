@@ -10,40 +10,56 @@ function mapStaticCamping(c: typeof staticCampings[0]) {
     location: c.location,
     region: c.region,
     description: c.description,
-    long_description: c.longDescription || '',
+    longDescription: c.longDescription || '',
     website: c.website || '',
     photos: c.photos,
+    coordinates: c.coordinates,
     facilities: c.facilities,
-    best_for: c.bestFor,
-    nearest_destinations: c.nearestDestinations,
-    latitude: c.coordinates.lat,
-    longitude: c.coordinates.lng,
+    nearestDestinations: c.nearestDestinations,
+    bestFor: c.bestFor,
     active: true,
   };
 }
 
-// GET - Returns all active campings (DB campings take priority, falls back to static)
-// Always enriches with static photos (local paths guaranteed to work)
+function parseJsonb(val: unknown): string[] {
+  if (typeof val === 'string') { try { return JSON.parse(val); } catch { return []; } }
+  return Array.isArray(val) ? val : [];
+}
+
+// GET - Returns all active campings in Camping interface format (camelCase)
+// DB campings take priority; static photos used as fallback when DB photos are empty
 export async function GET() {
   try {
     const dbCampings = await getAllCampings(true); // active only
     if (dbCampings.length > 0) {
-      // Build a map of static campings by name for photo fallback
+      // Build a map of static campings by name for photo/data fallback
       const staticMap = new Map(staticCampings.map(c => [c.name.toLowerCase(), c]));
 
-      // Parse JSONB fields from DB
+      // Map DB campings to Camping interface (camelCase)
       const parsed = dbCampings.map((c: Record<string, unknown>) => {
-        const dbPhotos = typeof c.photos === 'string' ? JSON.parse(c.photos) : (c.photos || []);
-        // Always prefer static photos (local paths) over DB photos (may be broken external URLs)
+        const dbPhotos = parseJsonb(c.photos);
         const staticMatch = staticMap.get(((c.name as string) || '').toLowerCase());
-        const photos = staticMatch && staticMatch.photos.length > 0 ? staticMatch.photos : dbPhotos;
+        // Use DB photos if admin has set them (non-empty), otherwise fall back to static
+        const photos = dbPhotos.length > 0 ? dbPhotos : (staticMatch?.photos || []);
 
         return {
-          ...c,
+          id: String(c.id),
+          name: (c.name as string) || '',
+          slug: (c.slug as string) || '',
+          location: (c.location as string) || '',
+          region: (c.region as string) || staticMatch?.region || 'Baix Empordà',
+          description: (c.description as string) || staticMatch?.description || '',
+          longDescription: (c.long_description as string) || staticMatch?.longDescription || '',
+          website: (c.website as string) || staticMatch?.website || '',
           photos,
-          facilities: typeof c.facilities === 'string' ? JSON.parse(c.facilities) : (c.facilities || []),
-          best_for: typeof c.best_for === 'string' ? JSON.parse(c.best_for) : (c.best_for || []),
-          nearest_destinations: typeof c.nearest_destinations === 'string' ? JSON.parse(c.nearest_destinations) : (c.nearest_destinations || []),
+          coordinates: {
+            lat: Number(c.latitude) || staticMatch?.coordinates?.lat || 0,
+            lng: Number(c.longitude) || staticMatch?.coordinates?.lng || 0,
+          },
+          facilities: parseJsonb(c.facilities).length > 0 ? parseJsonb(c.facilities) : (staticMatch?.facilities || []),
+          nearestDestinations: parseJsonb(c.nearest_destinations).length > 0 ? parseJsonb(c.nearest_destinations) : (staticMatch?.nearestDestinations || []),
+          bestFor: parseJsonb(c.best_for).length > 0 ? parseJsonb(c.best_for) : (staticMatch?.bestFor || []),
+          active: true,
         };
       });
       return NextResponse.json({ campings: parsed, source: 'db' });

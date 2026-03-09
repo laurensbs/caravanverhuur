@@ -27,6 +27,7 @@ interface Camping {
   location: string;
   description: string;
   website: string;
+  photos: string[];
   active: boolean;
   sort_order: number;
   created_at: string;
@@ -70,6 +71,11 @@ function CampingReorderItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm text-foreground">{camping.name}</span>
+            {camping.photos?.length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary-50 text-primary">
+                {camping.photos.length} foto{camping.photos.length !== 1 ? '\'s' : ''}
+              </span>
+            )}
             {!camping.active && (
               <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-alt text-muted">
                 {isNl ? 'Inactief' : 'Inactive'}
@@ -146,6 +152,7 @@ export default function AdminCampingsPage() {
   const [formLocation, setFormLocation] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formWebsite, setFormWebsite] = useState('');
+  const [formPhotos, setFormPhotos] = useState('');
 
   const fetchCampings = async () => {
     try {
@@ -187,7 +194,7 @@ export default function AdminCampingsPage() {
   const activeCount = campings.filter(c => c.active).length;
 
   const resetForm = () => {
-    setFormName(''); setFormLocation(''); setFormDescription(''); setFormWebsite('');
+    setFormName(''); setFormLocation(''); setFormDescription(''); setFormWebsite(''); setFormPhotos('');
     setEditingId(null);
   };
 
@@ -199,13 +206,13 @@ export default function AdminCampingsPage() {
         await fetch('/api/admin/campings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingId, name: formName, location: formLocation, description: formDescription, website: formWebsite }),
+          body: JSON.stringify({ id: editingId, name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
       } else {
         await fetch('/api/admin/campings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: formName, location: formLocation, description: formDescription, website: formWebsite }),
+          body: JSON.stringify({ name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
       }
       resetForm();
@@ -249,6 +256,7 @@ export default function AdminCampingsPage() {
     setFormLocation(camping.location);
     setFormDescription(camping.description || '');
     setFormWebsite(camping.website || '');
+    setFormPhotos((camping.photos || []).join('\n'));
     setEditingId(camping.id);
     setShowForm(true);
   };
@@ -284,7 +292,20 @@ export default function AdminCampingsPage() {
           await fetch('/api/admin/campings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: c.name, location: c.location, description: c.description, website: c.website || '' }),
+            body: JSON.stringify({
+              name: c.name,
+              location: c.location,
+              description: c.description,
+              website: c.website || '',
+              photos: c.photos || [],
+              slug: c.slug || '',
+              region: c.region || '',
+              facilities: c.facilities || [],
+              best_for: c.bestFor || [],
+              nearest_destinations: c.nearestDestinations || [],
+              latitude: c.coordinates?.lat,
+              longitude: c.coordinates?.lng,
+            }),
           });
         }
         await fetchCampings();
@@ -432,6 +453,24 @@ export default function AdminCampingsPage() {
                   placeholder="https://..."
                   className="w-full px-3 py-2.5 rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">
+                  {isNl ? "Foto's (optioneel — één URL per regel)" : 'Photos (optional — one URL per line)'}
+                </label>
+                <textarea
+                  value={formPhotos}
+                  onChange={e => setFormPhotos(e.target.value)}
+                  placeholder={isNl ? 'https://example.com/foto1.jpg\nhttps://example.com/foto2.jpg' : 'https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg'}
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted mt-1">
+                  {isNl
+                    ? 'Gebruik directe afbeeldings-URL\'s. Laat leeg om standaard foto\'s te gebruiken.'
+                    : 'Use direct image URLs. Leave empty to use default photos.'}
+                </p>
               </div>
 
               <div className="flex justify-end gap-2">

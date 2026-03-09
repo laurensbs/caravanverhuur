@@ -55,6 +55,7 @@ export default function Header() {
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
   const [allCaravans, setAllCaravans] = useState<Caravan[]>(staticCaravansData);
+  const [allCampings, setAllCampings] = useState<Camping[]>(staticCampingsData);
   const pathname = usePathname();
   const router = useRouter();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -69,6 +70,11 @@ export default function Header() {
       .then(res => res.json())
       .then(data => { if (data.caravans?.length) setAllCaravans(data.caravans); })
       .catch((e) => console.error('Fetch error:', e));
+    // Fetch campings from API (respects admin active/inactive)
+    fetch('/api/campings')
+      .then(res => res.json())
+      .then(data => { if (data.campings?.length) setAllCampings(data.campings as Camping[]); })
+      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const caravansByType = {
@@ -76,7 +82,7 @@ export default function Header() {
     COMPACT: allCaravans.filter(c => c.type === 'COMPACT'),
   };
   const featuredCaravan = caravansByType.FAMILIE[0] || allCaravans[0];
-  const featuredCamping = staticCampingsData.find(c => c.slug === 'cypsela-resort') || staticCampingsData[0];
+  const featuredCamping = allCampings.find(c => c.slug === 'cypsela-resort') || allCampings[0];
 
   // Check login status
   useEffect(() => {
@@ -350,7 +356,7 @@ export default function Header() {
                         Campings
                       </p>
                       <div className="space-y-0.5">
-                        {staticCampingsData.slice(0, 6).map(c => (
+                        {allCampings.slice(0, 6).map(c => (
                           <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
@@ -362,7 +368,7 @@ export default function Header() {
                           </Link>
                         ))}
                         <Link href="/bestemmingen#campings" className="block px-2 py-1.5 text-xs text-primary font-medium">
-                          {t('destinations.allCampings')} ({staticCampingsData.length}) →
+                          {t('destinations.allCampings')} ({allCampings.length}) →
                         </Link>
                       </div>
                     </div>
@@ -512,7 +518,7 @@ export default function Header() {
 
                       {/* Campings */}
                       <p className="px-3 pt-2 pb-1 text-xs font-bold text-primary uppercase tracking-wider">Campings</p>
-                      {staticCampingsData.slice(0, 5).map(c => (
+                      {allCampings.slice(0, 5).map(c => (
                         <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-foreground-light">
                           <div className="w-7 h-7 rounded overflow-hidden relative shrink-0 bg-surface-alt">
                             <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
@@ -524,7 +530,7 @@ export default function Header() {
                         </Link>
                       ))}
                       <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1 text-xs text-primary font-medium">
-                        Alle campings ({staticCampingsData.length}) →
+                        Alle campings ({allCampings.length}) →
                       </Link>
 
                       {/* Plaatsen */}
