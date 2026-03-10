@@ -275,9 +275,34 @@ function CaravanFormModal({ isOpen, onClose, onSave, initialData, isEdit, saving
 
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">{t("caravans.photoUrls")}</label>
+              {/* Photo previews */}
+              {form.photos.trim() && (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
+                  {form.photos.split("\n").map(p => p.trim()).filter(Boolean).map((photoUrl, i) => (
+                    <div key={i} className="relative w-24 h-18 shrink-0 rounded-lg overflow-hidden group border border-gray-200">
+                      <Image src={photoUrl} alt={`Foto ${i + 1}`} fill className="object-cover" sizes="96px" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const photos = form.photos.split("\n").map(p => p.trim()).filter(Boolean);
+                          photos.splice(i, 1);
+                          setForm(p => ({ ...p, photos: photos.join("\n") }));
+                        }}
+                        className="absolute top-0.5 right-0.5 p-0.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <X size={10} />
+                      </button>
+                      <span className="absolute bottom-0.5 left-0.5 bg-black/60 text-white text-[9px] px-1 rounded">{i + 1}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <textarea value={form.photos} onChange={e => setForm(p => ({ ...p, photos: e.target.value }))}
                 rows={3} placeholder={"https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"}
                 className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none font-mono text-xs border border-gray-200" />
+              <p className="text-[11px] text-muted mt-1">
+                {t("caravans.photoUrlsHint")}
+              </p>
             </div>
           </div>
 
@@ -371,7 +396,13 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
         {showPhotoModal && (
           <div className="mb-3 p-3 bg-white rounded-xl space-y-2">
             <input type="url" value={newPhotoUrl} onChange={e => setNewPhotoUrl(e.target.value)} placeholder={t("caravans.photoPlaceholder")}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPhoto(); } }}
               className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 border border-gray-200" />
+            {newPhotoUrl.trim() && (
+              <div className="relative w-32 h-24 rounded-lg overflow-hidden border border-gray-200">
+                <Image src={newPhotoUrl.trim()} alt="Preview" fill className="object-cover" sizes="128px" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              </div>
+            )}
             <div className="flex gap-2">
               <button onClick={addPhoto} disabled={!newPhotoUrl.trim() || photoSaving}
                 className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-dark disabled:opacity-50 flex items-center gap-1 cursor-pointer">
@@ -387,6 +418,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
               <div key={i} className="relative w-32 h-24 shrink-0 rounded-xl overflow-hidden group">
                 <Image src={photo} alt={`${caravan.name} foto ${i + 1}`} fill className="object-cover" sizes="128px" />
                 <button onClick={() => removePhoto(i)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title={t("common.delete")}><X size={10} /></button>
+                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">{i + 1}</span>
               </div>
             ))}
           </div>

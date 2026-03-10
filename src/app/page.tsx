@@ -452,8 +452,8 @@ export default function HomePage() {
                     className="object-cover transition-transform duration-700 ease-out"
                    
                   />
-                  {/* Warm gradient overlay at bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/20" />
+                  {/* Subtle gradient overlay at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs sm:text-xs font-semibold text-white shadow-md ${
                       caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
