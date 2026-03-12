@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/caravans/${id}`, languages: { nl: `/caravans/${id}`, en: `/caravans/${id}`, es: `/caravans/${id}`, 'x-default': `/caravans/${id}` } },
+    alternates: { canonical: `/caravans/${id}` },
     openGraph: {
       title,
       description,
@@ -65,11 +65,6 @@ export default async function CaravanDetailPage({ params }: Props) {
         : 'https://schema.org/OutOfStock',
       url: `https://caravanverhuurspanje.com/caravans/${id}`,
       unitCode: 'DAY',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '5',
-      reviewCount: '2',
     },
   } : null;
 

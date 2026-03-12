@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from '@/i18n/context';
 import { dictionaries } from '@/i18n/translations';
+import { DataProvider } from '@/lib/data-context';
 import dynamic from 'next/dynamic';
 
 const ChatBot = dynamic(() => import('@/components/ChatBot'), { ssr: false });
@@ -56,13 +57,15 @@ export function LayoutWrapper({
 
   return (
     <LanguageProvider dictionaries={dictionaries}>
-      <HtmlLangSync />
-      {header}
-      <main className="min-h-screen">{children}</main>
-      {footer}
-      {scrollToTop}
-      {cookieConsent}
-      <ChatBot />
+      <DataProvider>
+        <HtmlLangSync />
+        {header}
+        <main className="min-h-screen">{children}</main>
+        {footer}
+        {scrollToTop}
+        {cookieConsent}
+        <ChatBot />
+      </DataProvider>
     </LanguageProvider>
   );
 }

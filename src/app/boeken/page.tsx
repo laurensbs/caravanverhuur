@@ -15,6 +15,7 @@ import { caravans as staticCaravans, getCaravanById as getStaticCaravanById } fr
 import type { Caravan } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { useLanguage } from '@/i18n/context';
+import { useData } from '@/lib/data-context';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -44,6 +45,7 @@ export default function BoekenPage() {
 
 function BoekenContent() {
   const { t } = useLanguage();
+  const { caravans, campings } = useData();
   const searchParams = useSearchParams();
   const preselectedCaravan = searchParams.get('caravan');
 
@@ -76,8 +78,6 @@ function BoekenContent() {
   const [bookingRef, setBookingRef] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
-  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
-  const [campings, setCampings] = useState(staticCampings.map(c => ({ ...c, active: true })));
   const [discountCode, setDiscountCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState<{ code: string; amount: number; type: string; value: number } | null>(null);
   const [discountError, setDiscountError] = useState('');
@@ -95,23 +95,8 @@ function BoekenContent() {
       .then(res => res.json())
       .then(data => setUnavailableIds(data.unavailableIds || []))
       .catch((e) => console.error('Fetch error:', e));
-    // Fetch custom caravans from DB
-    fetch('/api/admin/caravans')
-      .then(res => res.json())
-      .then(data => setCustomCaravans(data.caravans || []))
-      .catch((e) => console.error('Fetch error:', e));
-    // Fetch campings from DB (falls back to static)
-    fetch('/api/campings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.campings?.length) {
-          setCampings(data.campings);
-        }
-      })
-      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
-  const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
   const getCaravanById = (id: string) => caravans.find(c => c.id === id);
 
   const locations = useMemo(() => [...new Set(campings.map(c => c.location))].sort(), [campings]);

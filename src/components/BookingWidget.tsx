@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, MapPin, Users, Minus, Plus, Search, ChevronDown, X, Check } from 'lucide-react';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { useLanguage } from '@/i18n/context';
+import { useData } from '@/lib/data-context';
 
 /* ------------------------------------------------------------------ */
 /*  Mobile bottom-sheet overlay for dropdowns                          */
@@ -85,6 +86,7 @@ function MobileSheet({ open, onClose, title, subtitle, children }: {
 export default function BookingWidget() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { campings } = useData();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [campingId, setCampingId] = useState('');
@@ -95,7 +97,6 @@ export default function BookingWidget() {
   const [mounted, setMounted] = useState(false);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
-  const [campings, setCampings] = useState<Camping[]>(staticCampings);
   const campingRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
   const campingDropRef = useRef<HTMLDivElement>(null);
@@ -115,14 +116,6 @@ export default function BookingWidget() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
-  }, []);
-
-  // Fetch campings from DB (admin-managed)
-  useEffect(() => {
-    fetch('/api/campings')
-      .then(res => res.json())
-      .then(data => { if (data.campings?.length) setCampings(data.campings); })
-      .catch((e) => console.error('Fetch error:', e));
   }, []);
 
   const openCheckIn = useCallback(() => {

@@ -31,6 +31,7 @@ import BookingWidget from '@/components/BookingWidget';
 import WeatherChecker from '@/components/WeatherChecker';
 import { useLanguage } from '@/i18n/context';
 import { GOOGLE_REVIEW_URL } from '@/lib/constants';
+import { useData } from '@/lib/data-context';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -86,14 +87,7 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 
 export default function HomePage() {
   const { t } = useLanguage();
-  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
-  useEffect(() => {
-    fetch('/api/admin/caravans')
-      .then(res => res.json())
-      .then(data => setCustomCaravans(data.caravans || []))
-      .catch((e) => console.error('Fetch error:', e));
-  }, []);
-  const caravans = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
+  const { caravans } = useData();
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });

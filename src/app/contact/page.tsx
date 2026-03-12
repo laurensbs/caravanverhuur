@@ -14,6 +14,7 @@ export default function ContactPage() {
     phone: '',
     subject: '',
     message: '',
+    website: '',
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -147,6 +148,19 @@ export default function ContactPage() {
                       placeholder={t('contact.messagePlaceholder')}
                       rows={5}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary/30 outline-none transition-all resize-none"
+                    />
+                  </div>
+                  {/* Honeypot field — hidden from real users, bots will fill it */}
+                  <div className="absolute opacity-0 -z-10" aria-hidden="true" tabIndex={-1}>
+                    <label htmlFor="website">Website</label>
+                    <input
+                      type="text"
+                      id="website"
+                      name="website"
+                      autoComplete="off"
+                      tabIndex={-1}
+                      value={form.website}
+                      onChange={e => setForm({ ...form, website: e.target.value })}
                     />
                   </div>
                   {submitError && <p className="text-danger text-sm">{submitError}</p>}

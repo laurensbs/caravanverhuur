@@ -12,6 +12,7 @@ import { campings as staticCampingsData, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import WeatherBar from './WeatherBar';
 import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
+import { useData } from '@/lib/data-context';
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -54,8 +55,7 @@ export default function Header() {
   const [langDropdown, setLangDropdown] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
-  const [allCaravans, setAllCaravans] = useState<Caravan[]>(staticCaravansData);
-  const [allCampings, setAllCampings] = useState<Camping[]>(staticCampingsData);
+  const { caravans: allCaravans, campings: allCampings } = useData();
   const pathname = usePathname();
   const router = useRouter();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -63,19 +63,6 @@ export default function Header() {
   const accountRef = useRef<HTMLDivElement>(null);
   const accountTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, locale, setLocale } = useLanguage();
-
-  // Fetch merged caravans (with DB overrides)
-  useEffect(() => {
-    fetch('/api/caravans')
-      .then(res => res.json())
-      .then(data => { if (data.caravans?.length) setAllCaravans(data.caravans); })
-      .catch((e) => console.error('Fetch error:', e));
-    // Fetch campings from API (respects admin active/inactive)
-    fetch('/api/campings')
-      .then(res => res.json())
-      .then(data => { if (data.campings?.length) setAllCampings(data.campings as Camping[]); })
-      .catch((e) => console.error('Fetch error:', e));
-  }, []);
 
   const caravansByType = {
     FAMILIE: allCaravans.filter(c => c.type === 'FAMILIE'),

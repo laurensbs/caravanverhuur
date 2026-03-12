@@ -59,12 +59,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://caravanverhuurspanje.com"),
   alternates: {
     canonical: "/",
-    languages: {
-      'nl': '/',
-      'en': '/',
-      'es': '/',
-      'x-default': '/',
-    },
   },
 };
 
@@ -101,6 +95,13 @@ const jsonLd = {
     dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
     opens: "09:00",
     closes: "18:00",
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "350",
+    bestRating: "5",
+    worstRating: "1",
   },
 };
 

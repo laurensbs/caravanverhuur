@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Veelgestelde Vragen (FAQ) | Caravanverhuur Costa Brava',
   description:
     'Antwoorden op veelgestelde vragen over caravan huren aan de Costa Brava. Boeken, betalen, borgregeling, campings en meer.',
-  alternates: { canonical: '/faq', languages: { nl: '/faq', en: '/faq', es: '/faq', 'x-default': '/faq' } },
+  alternates: { canonical: '/faq' },
   openGraph: {
     title: 'FAQ – Caravanverhuur Costa Brava',
     description:
