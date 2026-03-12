@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCustomer, getCustomerByEmail, createCustomerSession, setupDatabase } from '@/lib/db';
-import { sendWelcomeEmail, sendVerificationEmail } from '@/lib/email';
+import { sendWelcomeEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
 import { registerLimiter, getClientIp } from '@/lib/rate-limit';
 import { createEmailVerificationToken } from '@/lib/db';
@@ -47,16 +47,11 @@ export async function POST(request: NextRequest) {
     // Auto-login: create session
     const session = await createCustomerSession(id);
 
-    // Send welcome email (non-blocking)
-    sendWelcomeEmail(email.toLowerCase().trim(), name.trim(), customerLocale).catch(err => 
-      console.error('Welcome email failed:', err)
-    );
-
-    // Send email verification (non-blocking)
+    // Send combined welcome + verification email (non-blocking)
     createEmailVerificationToken(id).then(token => {
       const verifyUrl = `https://caravanverhuurspanje.com/api/auth/verify-email?token=${token}`;
-      return sendVerificationEmail(email.toLowerCase().trim(), name.trim(), verifyUrl, customerLocale);
-    }).catch(err => console.error('Verification email failed:', err));
+      return sendWelcomeEmail(email.toLowerCase().trim(), name.trim(), customerLocale, verifyUrl);
+    }).catch(err => console.error('Welcome email failed:', err));
 
     const response = NextResponse.json({ success: true, customerId: id });
     response.cookies.set('customer_session', session.token, {

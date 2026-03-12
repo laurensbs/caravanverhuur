@@ -502,19 +502,19 @@ function BoekenContent() {
                       </div>
 
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
-                        <div className="relative mb-3">
-                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                        <div className="relative mb-3 lg:mb-4">
+                          <Search size={16} className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-muted lg:w-5 lg:h-5" />
                           <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
-                            className="w-full pl-9 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full pl-9 lg:pl-12 pr-4 py-2.5 lg:py-3.5 bg-surface rounded-xl text-sm lg:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
 
                         <div className="overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 sm:-mx-5 sm:px-5">
-                          <div className="flex items-center gap-2 w-max">
-                          <button onClick={() => setLocationFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
+                          <div className="flex items-center gap-2 lg:gap-2.5 w-max">
+                          <button onClick={() => setLocationFilter('all')} className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                             {t('booking.allLocations')}
                           </button>
                           {locations.map(loc => (
-                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
+                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                               {loc}
                             </button>
                           ))}
@@ -523,7 +523,7 @@ function BoekenContent() {
                       </div>
 
                       {/* Camping cards */}
-                      <div className="space-y-2 sm:space-y-3 max-h-[50vh] lg:max-h-[55vh] overflow-y-auto pr-1 -mx-1 px-1">
+                      <div className="space-y-2 sm:space-y-3 lg:space-y-4 max-h-[50vh] lg:max-h-[55vh] overflow-y-auto pr-1 -mx-1 px-1">
                         {filteredCampings.map(c => {
                           const isSelected = campingId === c.id;
                           return (
@@ -531,27 +531,27 @@ function BoekenContent() {
                               key={c.id}
                               layout
                               onClick={() => setCampingId(c.id)}
-                              className={`w-full text-left px-3 py-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl border-2 transition-all hover:shadow-md ${
+                              className={`w-full text-left px-3 py-2.5 sm:p-4 lg:px-6 lg:py-5 rounded-xl sm:rounded-2xl border-2 transition-all hover:shadow-md ${
                                 isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
                               }`}
                             >
-                              <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center justify-between gap-3 lg:gap-4">
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-0.5">
-                                    <h3 className="font-bold text-sm sm:text-base lg:text-lg text-foreground truncate">{c.name}</h3>
+                                  <div className="flex items-center gap-2 mb-0.5 lg:mb-1">
+                                    <h3 className="font-bold text-sm sm:text-base lg:text-xl text-foreground truncate">{c.name}</h3>
                                     {isSelected && (
-                                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
-                                        <Check size={12} className="text-white" />
+                                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 lg:w-6 lg:h-6 bg-primary rounded-full flex items-center justify-center shrink-0">
+                                        <Check size={12} className="text-white lg:w-3.5 lg:h-3.5" />
                                       </motion.div>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted">
-                                    <MapPin size={12} /> {c.location}
+                                  <div className="flex items-center gap-1.5 text-xs sm:text-sm lg:text-base text-muted">
+                                    <MapPin size={12} className="lg:w-4 lg:h-4" /> {c.location}
                                   </div>
-                                  <p className="text-xs lg:text-sm text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
+                                  <p className="text-xs lg:text-sm text-muted line-clamp-1 mt-0.5 lg:mt-1 hidden sm:block">{c.description}</p>
                                 </div>
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-primary/10' : 'bg-surface'}`}>
-                                  <Tent size={20} className={`${isSelected ? 'text-primary' : 'text-muted'}`} />
+                                <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-primary/10' : 'bg-surface'}`}>
+                                  <Tent size={20} className={`lg:w-6 lg:h-6 ${isSelected ? 'text-primary' : 'text-muted'}`} />
                                 </div>
                               </div>
                             </motion.button>

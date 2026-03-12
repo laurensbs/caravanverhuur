@@ -63,7 +63,7 @@ interface ConversationContext {
 /*  Entity extraction                                                  */
 /* ------------------------------------------------------------------ */
 function extractEntities(input: string) {
-  const lower = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const lower = normalizeTypos(input).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   // Person count
   const personPatterns = [
@@ -175,6 +175,127 @@ function pick(variations: string[], askedQuestions: string[]): string {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Typo tolerance: normalize misspellings & common errors             */
+/* ------------------------------------------------------------------ */
+function normalizeTypos(input: string): string {
+  let s = input;
+
+  // Common Dutch letter swaps & misspellings
+  const typoMap: [RegExp, string][] = [
+    // Caravan variants
+    [/\b(c|k)a+r[aeo]v[aeo]n+\b/gi, 'caravan'],
+    [/\bk[ae]r[ae]v[ae]n\b/gi, 'caravan'],
+    [/\bcarvan\b/gi, 'caravan'],
+    [/\bcaravna\b/gi, 'caravan'],
+    [/\bcaavan\b/gi, 'caravan'],
+    [/\bkaravaan\b/gi, 'caravan'],
+    // Camping variants
+    [/\bc[ae]mp[ie]ng\b/gi, 'camping'],
+    [/\bkamping\b/gi, 'camping'],
+    [/\bcampin\b/gi, 'camping'],
+    [/\bcampig\b/gi, 'camping'],
+    // Boeken/boek variants
+    [/\bb[ou]+[ei]ken?\b/gi, 'boeken'],
+    [/\bboekn\b/gi, 'boeken'],
+    [/\bboeekn?\b/gi, 'boeken'],
+    [/\bboekne\b/gi, 'boeken'],
+    // Boeking variants
+    [/\bb[ou]+[ei]king\b/gi, 'boeking'],
+    [/\bboeeking\b/gi, 'boeking'],
+    // Prijs/prijzen
+    [/\bpirjs\b/gi, 'prijs'],
+    [/\bprjis\b/gi, 'prijs'],
+    [/\bpirjzen\b/gi, 'prijzen'],
+    [/\bprjizen\b/gi, 'prijzen'],
+    // Zwembad
+    [/\bz?wem+b[ae]d\b/gi, 'zwembad'],
+    [/\bswembad\b/gi, 'zwembad'],
+    [/\bzwemba\b/gi, 'zwembad'],
+    // Betalen
+    [/\bbet[ae]len?\b/gi, 'betalen'],
+    [/\bbetaaln\b/gi, 'betalen'],
+    [/\bbetaln\b/gi, 'betalen'],
+    // Annuleren
+    [/\ban+ul[le]+r[eio]n?\b/gi, 'annuleren'],
+    [/\banulern\b/gi, 'annuleren'],
+    // Beschikbaar
+    [/\bbes[ck]h?ikb[ae]+r\b/gi, 'beschikbaar'],
+    [/\bbeshcikbaar\b/gi, 'beschikbaar'],
+    // Meenemen
+    [/\bm[ei]+n[ei]+m[ei]n\b/gi, 'meenemen'],
+    [/\bmeeneme\b/gi, 'meenemen'],
+    // Slaapplaats
+    [/\bsl[ae]+pl?[ae]+ts\b/gi, 'slaapplaats'],
+    [/\bslapplaats\b/gi, 'slaapplaats'],
+    // Personen/persoon
+    [/\bprsonen\b/gi, 'personen'],
+    [/\bpersoonen\b/gi, 'personen'],
+    [/\bpersoon\b/gi, 'persoon'],
+    // Faciliteiten
+    [/\bfacil[ie]+t[ei]+[td]en\b/gi, 'faciliteiten'],
+    [/\bfasciliteiten\b/gi, 'faciliteiten'],
+    // Huisdier
+    [/\bhu[iy]sd[ie]+r\b/gi, 'huisdier'],
+    [/\bhuisdiren\b/gi, 'huisdieren'],
+    // Airco
+    [/\ba[iy]rc[io]\b/gi, 'airco'],
+    [/\bairko\b/gi, 'airco'],
+    // Schoonmaken
+    [/\bsch[ou]+nmaken\b/gi, 'schoonmaken'],
+    [/\bschoonmaekn\b/gi, 'schoonmaken'],
+    // Borg
+    [/\bbrog\b/gi, 'borg'],
+    [/\bborgh?\b/gi, 'borg'],
+    // Inventaris
+    [/\binventa?ris\b/gi, 'inventaris'],
+    [/\binventairs\b/gi, 'inventaris'],
+    // Zonnebrand / strand
+    [/\bzon+ebr[ae]nd\b/gi, 'zonnebrand'],
+    [/\bstr[ae]dn?\b/gi, 'strand'],
+    // Stoepcontact / stopcontact / stekker
+    [/\bst[ou]+p?conact\b/gi, 'stopcontact'],
+    [/\bstopkonact\b/gi, 'stopcontact'],
+    // Wachtwoord
+    [/\bwachtw[ou]+rd\b/gi, 'wachtwoord'],
+    [/\bwacthwoord\b/gi, 'wachtwoord'],
+    // Nieuwsbrief
+    [/\bni[eu]+ws?br[ie]+f\b/gi, 'nieuwsbrief'],
+    // Kortings(code)
+    [/\bkort+ingscode\b/gi, 'kortingscode'],
+    [/\bkortigs?code\b/gi, 'kortingscode'],
+    // Annulering
+    [/\ban+ul[le]+ring\b/gi, 'annulering'],
+    // Dokter / apotheek
+    [/\bdokt[eo]r\b/gi, 'dokter'],
+    [/\bapot[eh]+[ei]+k\b/gi, 'apotheek'],
+    // Vliegveld
+    [/\bvl[ie]+gv[ei]ld\b/gi, 'vliegveld'],
+    [/\bvliegvled\b/gi, 'vliegveld'],
+    // Common double-letter errors (Dutch)
+    [/\bweer\b/gi, 'weer'],
+    // IJ / Y confusion
+    [/\bprys\b/gi, 'prijs'],
+    [/\bbly\b/gi, 'blij'],
+    [/\bvrij\b/gi, 'vrij'],
+    // Common English typos
+    [/\bbok+ing\b/gi, 'booking'],
+    [/\bswiming\b/gi, 'swimming'],
+    [/\bbeech\b/gi, 'beach'],
+    [/\bavaila?ble\b/gi, 'available'],
+    [/\bcancle\b/gi, 'cancel'],
+    [/\bcancell?\b/gi, 'cancel'],
+    [/\brestaurant?\b/gi, 'restaurant'],
+    [/\baccomo?dation\b/gi, 'accommodation'],
+  ];
+
+  for (const [pattern, replacement] of typoMap) {
+    s = s.replace(pattern, replacement);
+  }
+
+  return s;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Smart matching with context & response variation                   */
 /* ------------------------------------------------------------------ */
 function smartMatch(
@@ -185,7 +306,8 @@ function smartMatch(
   messageHistory: Message[],
   campings: Camping[],
 ): { answer: string; followUp?: string[]; confidence: number; topic?: string } {
-  const lower = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normalized = normalizeTypos(input);
+  const lower = normalized.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const entities = extractEntities(input);
   const isNl = locale === 'nl';
   const isEs = locale === 'es';
@@ -900,6 +1022,559 @@ function smartMatch(
       followUp: isNl ? ['Wat zit er in de caravan?', 'Welke campings?', 'Hoe boek ik?'] : ['What\'s included?', 'How to book?'],
       confidence: 0.8,
       topic: 'shops',
+    };
+  }
+
+  // ===== COMPARISON / DIFFERENCES =====
+  if (/verschil|vergelijk|compare|difference|beter|better|cual es mejor|groter|kleiner|ruimer|versus|vs\.?|of de|liever|kiezen tussen|welke.*het beste|welke.*beste|which.*best|best.*voor|wat raad|welke raad|welke moet|welke neem|welke kies|twijfel/.test(lower)) {
+    const sorted = [...caravans].sort((a, b) => b.maxPersons - a.maxPersons);
+    const compAnswers = isNl ? [
+      `Goed dat je vergelijkt${name}! Hier is een overzicht:\n\n${sorted.map(c => {
+        const highlights: string[] = [];
+        if (c.type === 'FAMILIE') highlights.push('👨‍👩‍👧‍👦 Familie');
+        else highlights.push('💑 Compact');
+        if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
+        if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
+        return `🚐 **${c.name}**\n   ${highlights.join(' · ')}\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week`;
+      }).join('\n\n')}\n\n💡 **Mijn advies:**\n• **Gezin met kinderen?** → ${sorted[0].name} (meeste ruimte)\n• **Koppel of klein gezelschap?** → ${sorted[sorted.length - 1].name} (compacte prijs)\n• **Warme zomermaanden?** → Kies er eentje met airco!\n\nWil je meer weten over een specifieke caravan?`,
+      `Lastige keuze hè${name}? 😄 Laat me je helpen:\n\n📊 **Snelle vergelijking:**\n\n${sorted.map(c => `• **${c.name}** — ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 2).join(', ')}`).join('\n')}\n\n🏆 **Meeste slaapplaatsen**: ${sorted[0].name}\n💰 **Voordeligst**: ${[...caravans].sort((a, b) => a.pricePerWeek - b.pricePerWeek)[0].name}\n❄️ **Met airco**: ${caravans.filter(c => c.amenities.some(a => a.toLowerCase().includes('airco'))).map(c => c.name).join(', ') || 'Geen'}\n\nVertel me wat jij belangrijk vindt (ruimte, prijs, airco?) en ik geef een persoonlijk advies!`,
+    ] : [`Here's a quick comparison:\n\n${sorted.map(c => `🚐 **${c.name}** — max ${c.maxPersons} · €${c.pricePerWeek}/week`).join('\n')}\n\nTell me what matters most to you!`];
+    return {
+      answer: pick(compAnswers, asked),
+      followUp: isNl ? ['De goedkoopste', 'De grootste', 'Met airco', 'Hoe boek ik?'] : ['Cheapest', 'Largest', 'With AC'],
+      confidence: 0.88,
+      topic: 'comparison',
+    };
+  }
+
+  // ===== SLEEPING / BED ARRANGEMENTS =====
+  if (/slaap|bed|matras|slapen|slaapconfigur|slaapruimte|eenpersoons|tweepersoons|stapelbed|bedden|sleeping|sleep|bed config|double bed|single bed|litera|cama/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Goede vraag over de slaapplaatsen${name}! 🛏️\n\n${caravans.map(c => `🚐 **${c.name}** — Max ${c.maxPersons} personen\n   ${c.amenities.filter(a => /bed|slaap|matras/i.test(a)).join(', ') || 'Comfortabele slaapplaatsen'}`).join('\n\n')}\n\nAlle caravans hebben:\n✅ Dekbedden & kussens (inbegrepen!)\n✅ Hoeslakens & kussenslopen\n✅ Genoeg slaapplaatsen voor het maximaal aantal personen\n\n💡 Tip: de familiecaravans hebben vaak een aparte kinderslaaphoek!`
+        : `All caravans sleep their max capacity with duvets, pillows, and sheets included! 🛏️`,
+      followUp: isNl ? ['Wat zit er nog meer in?', 'Welke caravans?', 'Hoe boek ik?'] : ["What's included?", 'How to book?'],
+      confidence: 0.85,
+      topic: 'sleeping',
+    };
+  }
+
+  // ===== DRIVING DIRECTIONS / HOW TO GET THERE =====
+  if (/route|navigat|rijden|snelweg|autoweg|tolweg|tol|vignette|peage|driving|directions|car route|ruta|autopista|hoe kom ik|hoe rijd|hoe reis|hoe rijden|reistijd|rijtijd|afstand|km|kilometer|tankstation|benzine|diesel|snelst/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Zo rijd je naar de Costa Brava${name}! 🚗\n\n📍 **Vanuit Nederland**: ca. 1.200-1.400 km\n⏱️ **Rijtijd**: 12-14 uur (met pauzes)\n\n🛣️ **Populaire routes:**\n• **Via Frankrijk (A7/E15)** — snelste route via Lyon, langs de kust\n• **Via Zwitserland** — mooi maar tol + vignette nodig\n\n💰 **Kosten onderweg:**\n• Tolwegen Frankrijk: ca. €60-€80 enkele reis\n• Benzine: ca. €120-€150 enkele reis\n\n💡 **Tips:**\n🅿️ Rij niet in één keer — stop halverwege (Lyon is ideaal)\n📱 Google Maps of Waze werken prima\n⛽ Tank in Spanje — benzine is goedkoper!\n✈️ **Alternatief**: vlieg naar Girona (30 min rijden!) of Barcelona (1,5 uur) en huur een auto\n\nDe caravan staat al klaar, dus je hoeft niks te slepen!`
+        : 'Drive from Netherlands: ~12-14 hours. Or fly to Girona (30 min from Costa Brava)! 🚗✈️',
+      followUp: isNl ? ['Welke campings?', 'Wat moet ik meenemen?', 'Hoe boek ik?'] : ['Which campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'directions',
+    };
+  }
+
+  // ===== AIRPORT / FLYING =====
+  if (/vliegveld|vliegtuig|vliegen|airport|vlucht|flight|fly|aeropuerto|vuelo|ryanair|easyjet|transavia|girona airport|barcelona airport|el prat|huurauto|rent.*car|auto huren/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Vliegen naar de Costa Brava is super handig${name}! ✈️\n\n🛫 **Girona Airport (GRO)** — slechts 30 min van de meeste campings!\n   Ryanair vliegt vanaf Eindhoven en Charleroi\n\n🛫 **Barcelona El Prat (BCN)** — ca. 1,5 uur rijden\n   Veel meer vluchten: Transavia, KLM, Vueling, etc.\n\n🚗 **Huurauto**: boek via bijv. Rentalcars of lokaal bij de airport\n   Vanaf ca. €20-€30/dag\n\n💡 **Pro tip**: Girona Airport = snelst op de camping!\nBarcelona = meer vluchtopties maar verder rijden.\n\nDe caravan staat al klaar — je hoeft alleen jezelf te vervoeren! 😎`
+        : 'Fly to Girona (30 min) or Barcelona (1.5 hrs). Rent a car at the airport! ✈️🚗',
+      followUp: isNl ? ['Welke campings?', 'Hoe boek ik?', 'Wat moet ik meenemen?'] : ['Which campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'airport',
+    };
+  }
+
+  // ===== WHAT TO BRING / PACKING =====
+  if (/meenemen|inpakken|pakken|paklijst|wat moet ik|wat neem|bring|pack|what to bring|llevar|que necesito|wat heb ik nodig|nodig|niet vergeten|checklist/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Je hoeft bijna niks mee te nemen${name}! De caravan is compleet ingericht. 🎒\n\n✅ **Wij regelen:**\nBeddengoed, kookgerei, servies, schoonmaakmiddelen, handdoeken\n\n📋 **Jouw paklijst:**\n👕 Kleding (vergeet je zwemkleding niet!)\n🧴 Zonnebrand (factor 30+!)\n📱 Oplader & adaptor (Spaanse stopcontacten = zelfde als NL)\n🪪 Paspoort of ID + rijbewijs\n💳 Pinpas / betaalkaart\n🧢 Zonnehoed / pet\n🩴 Slippers / sandalen\n💊 Evt. medicijnen\n📖 Boek of e-reader voor op het strand\n\n💡 **Tip**: neem een koeltas mee voor uitjes — handig voor het strand!\n\n🚫 **Niet nodig**: beddengoed, handdoeken, kookspullen — dat is er allemaal!`
+        : 'The caravan is fully equipped! Just bring clothes, sunscreen, ID, and your good mood! 🎒☀️',
+      followUp: isNl ? ['Wat zit er in de caravan?', 'Hoe is het weer?', 'Hoe boek ik?'] : ["What's included?", 'Weather?'],
+      confidence: 0.85,
+      topic: 'packing',
+    };
+  }
+
+  // ===== EARLY/LATE CHECK-IN/OUT =====
+  if (/vroeg|laat|eerder|later|vroege aankomst|late aankomst|early|late.*check|early.*check|vroeger|later inchecken|later vertrekken|eerder vertrekken|aankomst.*tijd|vertrek.*tijd|flexibel|flexible/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Standaard zijn de tijden${name}:\n\n⏰ **Check-in**: vanaf 15:00 uur\n⏰ **Check-out**: vóór 11:00 uur\n\nMaar er is flexibiliteit mogelijk! 🙌\n\n✅ **Vroege aankomst**: in overleg vaak mogelijk als de caravan vrij is\n✅ **Laat vertrek**: soms mogelijk, overleg met de camping\n\n💡 Tip: laat het ons weten bij je boeking en we proberen het te regelen!\n\nOverleg is altijd mogelijk — we denken graag met je mee. 😊`
+        : 'Standard: check-in from 15:00, check-out before 11:00. Flexible timing is often possible — just let us know!',
+      followUp: isNl ? ['Hoe boek ik?', 'Wat zit erin?', 'Welke campings?'] : ['How to book?', 'Which campings?'],
+      confidence: 0.85,
+      topic: 'flexible-checkin',
+    };
+  }
+
+  // ===== GROUPS / MULTIPLE CARAVANS =====
+  if (/groep|meerdere.*caravan|meerdere.*gezinnen|grootfamilie|grote groep|group|multiple.*caravan|familieuitje|vriendenuitje|teamuitje|several|twee.*caravan|3.*caravan|naast.*elkaar|bij.*elkaar|samen.*caravan/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Een groepsuitje naar de Costa Brava — super idee${name}! 🎉👥\n\nJa, het is mogelijk om **meerdere caravans** te boeken!\n\n✅ We proberen de caravans **naast of dichtbij elkaar** te plaatsen op dezelfde camping\n✅ Je boekt elke caravan apart, maar geef bij de boeking aan dat jullie bij elkaar willen staan\n✅ We hebben caravans voor 2 tot 5 personen\n\n💡 **Tip voor groepen:**\n• Boek vroeg — populaire campings raken snel vol\n• Vermeld bij iedere boeking de andere referentienummers\n• Kies een camping met veel faciliteiten (zwembad, restaurant)\n\nWil je meer weten of direct boeken?`
+        : 'Yes, you can book multiple caravans! We try to place them near each other on the same camping. 👥🎉',
+      followUp: isNl ? ['Hoe boek ik?', 'Welke campings voor groepen?', 'Wat kost het?'] : ['How to book?', 'Cost?'],
+      confidence: 0.85,
+      topic: 'groups',
+    };
+  }
+
+  // ===== ACCESSIBILITY =====
+  if (/rolstoel|handicap|toegankelijk|mindervalide|beperking|accessibility|wheelchair|disabled|accesib|mobiliteit|rollator|scootmobiel/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Goed dat je ernaar vraagt${name}! ♿\n\nOnze caravans staan op campingterreinen die over het algemeen goed begaanbaar zijn:\n\n✅ Veel campings hebben **aangepaste sanitairfaciliteiten**\n✅ De meeste campings zijn **vlak** en goed begaanbaar\n⚠️ Caravans zelf hebben wel een **instap** die lastig kan zijn\n\nDit verschilt per camping en situatie. We raden je aan om **contact met ons op te nemen** zodat we de beste optie voor jouw situatie kunnen vinden.\n\n📞 We zoeken graag een geschikte camping voor je uit!\n\nWil je dat ik je doorverbind met een medewerker?`
+        : 'Accessibility varies per camping. Please contact us so we can find the best option for your situation! ♿',
+      followUp: isNl ? ['Spreek een medewerker', 'Welke campings?', 'Hoe neem ik contact op?'] : ['Talk to staff', 'Contact us'],
+      confidence: 0.85,
+      topic: 'accessibility',
+    };
+  }
+
+  // ===== LAUNDRY =====
+  if (/was|wasmachine|droger|wassen|laundry|washing|lavander|wasserette|strijken|iron/.test(lower) && !/vuilnis|afwas/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De meeste campings hebben een **wasserette** met wasmachines en drogers${name}! 🧺\n\n🧺 Muntwasmachines (ca. €4-€6 per wasbeurt)\n🧺 Drogers vaak ook aanwezig\n🧹 In de caravan vind je een waslijn en wasknijpers\n\nVoor een vakantie van 1-2 weken is het handig om tussendoor een keer te wassen — dan hoef je minder mee te nemen!\n\n💡 Tip: neem een klein flesje wasmiddel mee, of koop het op de camping.`
+        : 'Most campings have coin laundry facilities with washers and dryers! 🧺',
+      followUp: isNl ? ['Wat moet ik meenemen?', 'Welke campings?', 'Hoe boek ik?'] : ['What to bring?', 'How to book?'],
+      confidence: 0.8,
+      topic: 'laundry',
+    };
+  }
+
+  // ===== BEACH QUALITY / BEST BEACHES =====
+  if (/strand|beach|playa|mooist.*strand|best.*strand|zandstrand|kiezelstrand|verborgen|baai|baaien|cala|snorkel|duik|onder.*water|helder.*water|schoon.*water|blauw.*water|turquoise/.test(lower) && lower.length > 8) {
+    return {
+      answer: isNl
+        ? `De Costa Brava heeft de mooiste stranden van Spanje${name}! 🏖️\n\n🏆 **Top-stranden:**\n\n🥇 **Cala Aiguablava** (Begur) — turquoise water, omringd door rotsen\n🥈 **Platja de Pals** — breed zandstrand, ongerept en rustig\n🥉 **Cala Montgó** (Estartit) — beschut, helder water\n\n🌟 **Verborgen baaien:**\n• **Cala Pedrosa** (Begur) — alleen te voet bereikbaar!\n• **Cala Futadera** — klein, wild, prachtig\n• **Cala del Senyor Ramon** (Santa Cristina)\n\n🤿 **Best snorkelen:** Medes Eilanden (Estartit) — kristalhelder water!\n\n🏖️ **Breed familiestrand:** La Ballena Alegre (Sant Pere Pescador)\n\nOnze campings liggen bijna allemaal op loop- of fietsafstand van het strand!\n\n👉 Bekijk alle bestemmingen op onze [bestemmingen pagina](/bestemmingen)`
+        : 'Costa Brava has stunning beaches! From hidden coves in Begur to wide sandy beaches in Pals. 🏖️',
+      followUp: isNl ? ['Campings bij het strand', 'Hoe boek ik?', 'Welke bestemmingen?'] : ['Beach campings?', 'How to book?'],
+      confidence: 0.87,
+      topic: 'beaches',
+    };
+  }
+
+  // ===== NOISE / QUIET / RUSTIG =====
+  if (/rustig|stil|rust|quiet|calm|tranquilo|lawaai|noise|druk|feest|party|nachtrust|geluidsoverlast|animatie.*niet|geen animatie|peaceful|serene|relaxen|relax/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Op zoek naar rust${name}? Dan zijn dit de ideale opties: 🌿\n\n⛺ **Rustiger campings:**\n• Campings bij **Begur** — kleinschalig, in de natuur\n• Campings bij **Pals** — rustig achterland, breed strand\n• **L'Escala** — authentiek vissersdorp, relaxte sfeer\n• **Colera** — nog echte off-the-beaten-path!\n\n📅 **Rustigste periodes:**\n• **Mei** — seizoen net begonnen, lekker rustig\n• **Juni (eerste helft)** — mooi weer zonder drukte\n• **September** — heerlijk nazomeren, leegere campings\n\n💡 Juli/augustus is het drukst — maar ook dan zijn er rustige campings!\n\nWil je dat ik een rustige camping voor je uitzoek?`
+        : 'Looking for peace? Try Begur, Pals, or L\'Escala. May & September are the quietest months. 🌿',
+      followUp: isNl ? ['Campings in Begur', 'Campings in Pals', 'In september', 'Hoe boek ik?'] : ['Begur campings', 'How to book?'],
+      confidence: 0.85,
+      topic: 'quiet',
+    };
+  }
+
+  // ===== FOOD / COOKING / BBQ =====
+  if (/koken|bbq|barbecue|grill|gas|gasfornuis|fornuis|oven|magnetron|cook|cooking|cocinar|recept|maaltijd|diner|lunch|ontbijt|breakfast|avondeten|eetgelegenheid|uit eten/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Koken in de caravan is heel goed mogelijk${name}! 🍳\n\n🔥 **In elke caravan:**\n• Gasfornuis (2-3 pitten)\n• Koelkast\n• Volledig servies & bestek\n• Pannen, snijplanken, kookgerei\n• Afwasbak & afwasmiddel\n\n🥩 **BBQ**: op de meeste campings is barbecueën toegestaan (eigen BBQ meenemen of ter plekke kopen)\n\n🍽️ **Uit eten:**\n• Veel campings hebben een **restaurant** en **snackbar**\n• Lokale restaurants: een 3-gangen **menú del día** kost maar **€10-€15!**\n• Bezoek de lokale **markten** voor vers fruit, kaas en brood\n\n💡 Tip: in Spanje eten ze laat — restaurants serveren diner vaak vanaf 20:00-21:00!`
+        : 'Every caravan has a gas stove, fridge, full tableware and cooking equipment. BBQ often possible! 🍳',
+      followUp: isNl ? ['Wat zit er in de caravan?', 'Supermarkt op camping?', 'Hoe boek ik?'] : ["What's included?", 'How to book?'],
+      confidence: 0.85,
+      topic: 'cooking',
+    };
+  }
+
+  // ===== REVIEWS / EXPERIENCES =====
+  if (/ervaring|review|beoordeling|recensie|waardering|sterren|rating|experience|tevreden|klacht|commentarios|reseñas|feedback|andere klanten|wat vinden|mening/.test(lower)) {
+    return {
+      answer: isNl
+        ? `We zijn trots op onze beoordelingen${name}! ⭐\n\n🌟 **4.9 uit 5** gemiddeld op Google Reviews\n💬 Onze gasten waarderen vooral:\n\n✅ De **volledig ingerichte** caravans\n✅ De **persoonlijke service** en snelle reactie\n✅ De prachtige **campinglocaties** aan de Costa Brava\n✅ Het gemak — caravan staat al klaar!\n\n📖 Lees ervaringen op onze Google pagina of bekijk de beoordelingen op onze website.\n\nWe doen ons best om elke vakantie onvergetelijk te maken! 😊`
+        : 'We are proud of our 4.9/5 Google rating! Guests love our fully equipped caravans and personal service. ⭐',
+      followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?', 'Welke caravans?'] : ['How to book?', 'Which caravans?'],
+      confidence: 0.85,
+      topic: 'reviews',
+    };
+  }
+
+  // ===== SPECIFIC CAMPING QUESTION =====
+  if (/welke.*faciliteit|faciliteit|zwembad.*camping|animatie|entertainment|speeltuin|playground|installacion|piscina.*camping|sport.*camping|fitness|wellness.*camping|spa.*camping/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Onze campings hebben allerlei faciliteiten${name}! 🏕️\n\n🏊 **Zwembaden** — Cypsela, Cala Gogo, Tucan, Interpals\n🎪 **Animatie** — Cala Gogo, Tucan, Cypsela (met kinderprogramma!)\n🏋️ **Sport** — Tennisbanen, sportterreinen, fietsverhuur\n🛒 **Gemak** — Supermarkt, restaurant, wasserette\n📶 **WiFi** — beschikbaar op vrijwel alle campings\n🎮 **Kids** — Speeltuinen, minigolf, game rooms\n\n⭐ **Top-campings per behoefte:**\n• **Zwembadcomplex** → Cypsela Resort (Pals)\n• **Waterpark** → Tucan (Lloret)\n• **Gezinsanimatie** → Cala Gogo (Calonge)\n• **Direct aan strand** → La Ballena Alegre (Sant Pere)\n• **Rustig & natuur** → kleine campings bij Begur\n\nWil je info over een specifieke camping?`
+        : 'Our campings offer pools, entertainment, sports, shops, WiFi and more! Ask about a specific camping! 🏕️',
+      followUp: isNl ? ['Meer over Cypsela', 'Meer over Cala Gogo', 'Hoe boek ik?'] : ['About Cypsela', 'How to book?'],
+      confidence: 0.85,
+      topic: 'facilities-detail',
+    };
+  }
+
+  // ===== LANGUAGE / COMMUNICATION =====
+  if (/taal|spreken|spreek|engels|spaans|translate|language|idioma|hablar|comunicar|praten|verstaan|begrijp|catalaans|catalan|nederland|dutch|español/.test(lower) && !/hoe boek|boeken|caravan|camping|prijs/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Geen zorgen over de taal${name}! 🗣️\n\n🇳🇱 Wij spreken **Nederlands** — je kunt altijd bij ons terecht\n🇪🇸 Op de campings spreken ze **Spaans** en **Catalaans**\n🇬🇧 **Engels** wordt breed begrepen op toeristische plekken\n\n💡 **Tips:**\n• Campingrecepties spreken vaak Engels\n• In restaurants en winkels lukt Engels prima\n• Leer een paar Spaanse woordjes — dat wordt gewaardeerd! 😊\n   Hola, gracias, por favor, la cuenta = genoeg!\n\nBij problemen kun je ons altijd bereiken — wij zijn je Nederlands aanspreekpunt!`
+        : 'We speak Dutch, English, and Spanish. Camping staff usually speaks English. No worries! 🗣️',
+      followUp: isNl ? ['Hoe bereik ik jullie?', 'Welke campings?', 'Hoe boek ik?'] : ['How to contact?', 'How to book?'],
+      confidence: 0.8,
+      topic: 'language',
+    };
+  }
+
+  // ===== ELECTRICITY / GAS SPECIFICS =====
+  if (/stekker|adapter|stopcontact|voltage|spanning|220|230|stroom.*caravan|plug|socket|electric|enchufe/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Goed om te weten${name}! ⚡\n\n🔌 Spanje gebruikt **hetzelfde type stopcontact** als Nederland (type F/C)\n⚡ **Spanning**: 230V — identiek aan Nederland\n✅ Je hoeft **geen adapter** mee te nemen!\n\n💡 In de caravan zitten stopcontacten voor het opladen van telefoons, camera's etc.\n⚡ Elektriciteit is inbegrepen bij de campingplaats.\n\nKort samengevat: alles wat je thuis gebruikt, werkt ook in Spanje! 👍`
+        : 'Spain uses the same plug type as Netherlands (type F/C), 230V. No adapter needed! ⚡',
+      followUp: isNl ? ['Wat moet ik meenemen?', 'Wat zit erin?', 'Hoe boek ik?'] : ['What to bring?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'electricity',
+    };
+  }
+
+  // ===== SPECIFIC POPULAR CAMPING QUESTIONS =====
+  if (/cypsela|interpals|ballena|aquarius|cala gogo|tucan|camping.*info|meer over.*camping/.test(lower)) {
+    const campingKeywords: Record<string, { name: string; highlights: string }> = {
+      cypsela: { name: 'Cypsela Resort', highlights: '⭐ 5-sterren luxe camping in Pals\n🏊 Groot zwembadcomplex\n🏖️ Direct aan het strand van Pals\n🎪 Animatieprogramma\n🛒 Supermarkt, restaurant, wellness' },
+      interpals: { name: 'Camping Interpals', highlights: '👨‍👩‍👧‍👦 Gezinsvriendelijke camping in Pals\n🏊 Groot zwembadcomplex\n🎪 Kindvriendelijke animatie\n📍 Rustige omgeving' },
+      ballena: { name: 'La Ballena Alegre', highlights: '🏖️ Direct aan breed zandstrand in Sant Pere Pescador\n🌊 Populair bij strandliefhebbers\n🏄 Ideaal voor watersport\n👨‍👩‍👧‍👦 Gezinsvriendelijk' },
+      aquarius: { name: 'Camping Aquarius', highlights: '🌅 Direct aan de baai van Roses in Sant Pere Pescador\n🌊 Prachtige zonsondergangen\n🏖️ Breed strand\n🏄 Watersport mogelijkheden' },
+      'cala gogo': { name: 'Cala Gogo', highlights: '🏕️ Uitgebreide camping in Calonge\n🏊 Meerdere zwembaden + glijbanen\n🎪 Animatie de hele dag\n🛒 Winkels en restaurants\n👨‍👩‍👧‍👦 Perfect voor gezinnen' },
+      tucan: { name: 'Tucan', highlights: '🎢 Spectaculair waterpark in Lloret de Mar\n🏊 Glijbanen en zwembaden\n🎪 Non-stop entertainment\n👶 Geweldig voor kinderen\n🏖️ Dichtbij Lloret centrum' },
+    };
+    let matchedCamping = null;
+    for (const [key, val] of Object.entries(campingKeywords)) {
+      if (lower.includes(key)) { matchedCamping = val; break; }
+    }
+    if (matchedCamping) {
+      return {
+        answer: isNl
+          ? `**${matchedCamping.name}** is een populaire keuze${name}! 🏕️\n\n${matchedCamping.highlights}\n\n👉 Bekijk meer op onze [bestemmingen pagina](/bestemmingen)\n\nWil je op deze camping boeken?`
+          : `**${matchedCamping.name}** is a great choice! 🏕️\n\nCheck our [destinations page](/bestemmingen) for details.`,
+        followUp: isNl ? ['Ja, help me boeken!', 'Andere campings?', 'Wat kost het?'] : ['Yes, help me book!', 'Other campings?'],
+        confidence: 0.9,
+        topic: 'specific-camping',
+      };
+    }
+  }
+
+  // ===== HEALTH / MEDICAL / EMERGENCY =====
+  if (/ziekenhuis|dokter|arts|apotheek|medisch|ehbo|noodgeval|emergency|hospital|doctor|pharmacy|ambulanc|urgencias|farmacia|medico|eerste hulp|zorgverzekering|european health|ehic|allergic|allergie/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Goed om te weten voor je reis${name}! 🏥\n\n🏥 **Ziekenhuizen**: in elke grotere stad (Figueres, Girona, Lloret)\n💊 **Apotheken (Farmacia)**: overal, herkenbaar aan groen kruis\n📞 **Noodnummer Spanje**: **112** (zoals in NL)\n📞 **Ambulance**: 061\n\n💡 **Tips:**\n• Neem je **Europese zorgverzekeringskaart (EHIC)** mee! Die geeft je recht op spoedhulp\n• Een **reisverzekering** is altijd aan te raden\n• Zonnebrand + water → voorkom hitteklachten!\n• Campingreceptie kan altijd helpen bij medische noodgevallen\n\nBij noodgevallen kun je ook altijd contact met ons opnemen — we helpen je verder!`
+        : 'Emergency number in Spain: 112. Take your European Health Insurance Card (EHIC). Pharmacies everywhere! 🏥',
+      followUp: isNl ? ['Wat moet ik meenemen?', 'Hoe bereik ik jullie?', 'Hoe boek ik?'] : ['What to bring?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'medical',
+    };
+  }
+
+  // ===== MARKET / LOCAL TIPS =====
+  if (/markt|local.*tip|plaatselijk|dorp|dorpje|lokaal|town|village|pueblo|mercado|mercadillo|wijn|wine|vino|olijfolie|tapas|catala|local|insider|geheime/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De Costa Brava heeft zoveel te ontdekken${name}! 🌟\n\n🛍️ **Lokale markten** (elke week!):\n• Pals — dinsdagochtend\n• Begur — woensdag\n• L\'Estartit — donderdag\n• Roses — zaterdag\n• Palafrugell — zondag\n\n🍷 **Culinaire tips:**\n• Probeer **suquet de peix** (Catalaanse vissoep)\n• Wijnproeverij in het **Empordà** wijngebied\n• **Anchoas de L'Escala** — beroemde ansjovis!\n• **Crema Catalana** als dessert\n\n🏘️ **Mooiste dorpjes:**\n• **Pals** — middeleeuws, fotogeniek\n• **Peratallada** — verborgen parel\n• **Cadaqués** — wit vissersdorp, Dalí's favoriete plek\n\n💡 Tip: de beste markt-deals vind je 's ochtends vroeg. En altijd contant meenemen!`
+        : 'Costa Brava has wonderful local markets, wine tasting, and charming villages to explore! 🌟',
+      followUp: isNl ? ['Welke bestemmingen?', 'Welke campings?', 'Hoe boek ik?'] : ['Destinations?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'local-tips',
+    };
+  }
+
+  // ===== NEWSLETTER =====
+  if (/nieuwsbrief|newsletter|updates|mail.*lijst|email.*lijst|op de hoogte|mailing/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Ja, we hebben een nieuwsbrief${name}! 📬\n\nBlijf op de hoogte van:\n✅ Nieuwe campings & caravans\n✅ Vroegboekkorting & aanbiedingen\n✅ Tips voor je Costa Brava vakantie\n✅ Seizoensupdates\n\nAanmelden kan onderaan elke pagina van onze website! Je kunt je altijd weer afmelden.\n\n👉 Scroll naar beneden op [onze homepage](/) om je aan te melden!`
+        : 'Yes, we have a newsletter! Sign up at the bottom of our homepage for deals, tips, and updates! 📬',
+      followUp: isNl ? ['Hoe boek ik?', 'Welke caravans?', 'Wat kost het?'] : ['How to book?', 'Cost?'],
+      confidence: 0.8,
+      topic: 'newsletter',
+    };
+  }
+
+  // ===== ACCOUNT / LOGIN =====
+  if (/account|inloggen|login|wachtwoord|password|mijn account|dashboard|registr|aanmeld|sign up|mi cuenta|contraseña|profiel|gegevens wijzigen|wachtwoord vergeten/.test(lower) && !/annul|borg|betaal/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over je account${name}:\n\n👤 **Inloggen**: ga naar **[Mijn Account](/account)**\n📝 **Registreren**: maak een gratis account aan op dezelfde pagina\n🔑 **Wachtwoord vergeten?** Klik op "Wachtwoord vergeten" op de inlogpagina\n\nIn je account kun je:\n✅ Je boekingen inzien & beheren\n✅ Betalingen doen via iDEAL/Wero\n✅ De borgchecklist bekijken & tekenen\n✅ Je gegevens wijzigen\n\n👉 **[Ga naar Mijn Account](/account)**`
+        : 'Go to [My Account](/account) to log in, register, or reset your password. Manage bookings & payments there! 👤',
+      followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt betalen?', 'Spreek een medewerker'] : ['How to book?', 'Talk to staff'],
+      confidence: 0.85,
+      topic: 'account',
+    };
+  }
+
+  // ===== SMARTER FUZZY: catch phrases that probably mean pricing =====
+  if (/hoeveel|how much|cuanto|wat.*per.*week|wat.*per.*dag|prijs.*caravan|caravan.*prijs/.test(lower)) {
+    const cheapest = caravans.reduce((a, b) => a.pricePerWeek < b.pricePerWeek ? a : b);
+    return {
+      answer: isNl
+        ? `Onze prijzen starten al vanaf **€${cheapest.pricePerDay}/dag** of **€${cheapest.pricePerWeek}/week**${name}! 💰\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/dag · €${c.pricePerWeek}/week (max ${c.maxPersons} pers)`).join('\n')}\n\nAlles is **inclusief** inventaris (beddengoed, kookgerei, servies).\nDe campingplaats betaal je apart bij de camping.\n\n👉 **[Bekijk alle caravans](/caravans)** of **[Boek direct](/boeken)**`
+        : `Prices from €${cheapest.pricePerDay}/day or €${cheapest.pricePerWeek}/week! Everything included. 💰`,
+      followUp: isNl ? ['Hoe boek ik?', 'Welke caravans?', 'Hoe werkt betalen?'] : ['How to book?', 'Payment info?'],
+      confidence: 0.85,
+      topic: 'pricing',
+    };
+  }
+
+  // ===== SMARTER FUZZY: intent looks like booking =====
+  if (/beschikbaar|vrij|free|available|disponible|wil.*(?:naar|in)|ga graag|gaan naar|plan|planning|reis.*plan|vakantie.*plan/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Leuk dat je een vakantie plant${name}! ☀️\n\nVertel me meer zodat ik je kan helpen:\n\n📅 **Wanneer** wil je gaan? (welke maand/periode)\n👥 **Met hoeveel** personen?\n📍 **Voorkeur** voor een locatie aan de Costa Brava?\n\nOf je kunt direct boeken via onze **[boekingspagina](/boeken)** — het duurt maar 5 minuten! 🚀`
+        : `Let's plan your holiday${name}! ☀️ Tell me: when, how many people, and any location preference?\n\nOr book directly at [Book now](/boeken)!`,
+      followUp: isNl ? ['In juli met 4 personen', 'Hoe boek ik?', 'Wat kost het?', 'Welke campings?'] : ['July with 4 people', 'How to book?', 'Cost?'],
+      confidence: 0.8,
+      topic: 'planning',
+    };
+  }
+
+  // ===== PARKING =====
+  if (/parkeer|parkeren|parking|auto.*stall|auto.*plek|parkeerplek|parkeerplaats|waar.*auto|estacionar|aparcamiento|garage|auto.*kwijt/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Parkeren is goed geregeld${name}! 🚗\n\n🅿️ **Op de camping**: je auto staat naast of dichtbij je caravan\n✅ Parkeren is **inbegrepen** bij je campingplaats\n✅ Alle campings hebben verharde of semi-verharde wegen\n\n💡 **Tips:**\n• Op sommige grotere campings parkeer je op een centraal terrein\n• Dat staat vermeld bij de campinginformatie\n• Waardevolle spullen niet zichtbaar in de auto laten liggen\n\nJe kunt gewoon met de auto de camping op en af rijden.`
+        : 'Parking is included at the camping! Your car stays near your caravan. 🚗',
+      followUp: isNl ? ['Welke campings?', 'Hoe boek ik?', 'Route naar Costa Brava'] : ['Which campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'parking',
+    };
+  }
+
+  // ===== BIKE RENTAL / CYCLING =====
+  if (/fiets|fietsen|fietsenverhuur|fietsverhuur|fietsenrek|bike|cycling|biciclet|mountainbike|e-bike|ebike|fietsto[cht]|fietsen.*huren|huur.*fiets/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Fietsen aan de Costa Brava is geweldig${name}! 🚲\n\n🚴 **Fietsverhuur:**\n• Veel campings bieden fietsverhuur aan\n• Lokale verhuurbedrijven in bijna elk dorp\n• Prijzen: ca. €8-€15/dag, e-bikes ca. €25-€35/dag\n\n🗺️ **Mooiste fietsroutes:**\n• **Via Verde** langs de kust — oud spoortraject, vlak!\n• **Pals → L'Estartit** — door rijstvelden langs zee\n• **Begur rondje** — heuvelachtig maar prachtig\n• Campings → strand per fiets = ideaal!\n\n💡 **Tip**: in mei en september is het perfect fietsweer — niet te heet!\n\nNeem je eigen fiets mee of huur er één ter plekke.`
+        : 'Bike rental is available at most campings and local shops. Great cycling routes along the coast! 🚲',
+      followUp: isNl ? ['Welke activiteiten?', 'Welke campings?', 'Hoe boek ik?'] : ['Activities?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'cycling',
+    };
+  }
+
+  // ===== DAY TRIPS / EXCURSIONS =====
+  if (/dagje|dagtocht|dagtrip|excursie|uitstapje|bezienswaardigh|dag.*uit|trip|excursion|sightseeing|dali|museum|mus[ea]um|girona.*stad|barcelona.*bezoek|figueres|wat.*doen|wat.*zien|toerist|bezienswaardig/.test(lower) && !/boek|caravan|prijs/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Er is zoveel te zien aan de Costa Brava${name}! 🌟\n\n🎨 **Top dagtripjes:**\n\n🖼️ **Dalí Museum** (Figueres) — surrealistisch meesterwerk, must-see!\n🏰 **Girona** — Game of Thrones locatie, prachtige oude stad\n🏙️ **Barcelona** — ca. 1,5 uur rijden; Sagrada Familia, La Rambla\n🏖️ **Tossa de Mar** — middeleeuws kasteel aan zee\n🐟 **Cadaqués** — charmant vissersdorp, Dalí's huis\n\n🌊 **Actief:**\n• Boot naar de **Medes Eilanden** (snorkelen!)\n• Kayakken langs de rotsachtige kust\n• Wandelen over het **Camí de Ronda** kustpad\n\n🏘️ **Charmante dorpjes:** Pals, Peratallada, Begur, Calella de Palafrugell\n\nVanaf de meeste campings ben je snel bij al deze plekken! 🚗`
+        : 'Day trips: Dalí Museum, Girona, Barcelona, Tossa de Mar, boat to Medes Islands, and more! 🌟',
+      followUp: isNl ? ['Welke activiteiten?', 'Welke campings?', 'Hoe boek ik?'] : ['Activities?', 'Campings?'],
+      confidence: 0.85,
+      topic: 'day-trips',
+    };
+  }
+
+  // ===== RAIN / BAD WEATHER =====
+  if (/regen|slecht weer|regenachtig|raint|rain|lluvia|bewolkt|cloudy|storm|onweer|koud|cold|frio|wat als.*regent|als het regent|wat te doen.*regen|binnenshuis|indoor/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Slecht weer? Geen probleem${name}! 🌧️\n\nGoede nieuws: regen is **zeldzaam** in de zomer (gemiddeld 2-3 regenbuien per maand).\n\n☔ **Als het tóch regent:**\n🏛️ **Dalí Museum** in Figueres — geweldig regenuitje!\n🛍️ **Winkelen** in Girona of Lloret de Mar\n🏊 **Overdekte zwembaden** op sommige campings\n🎬 **Bioscoop** in grotere steden\n🍽️ **Tapas-tour** door een leuk dorpje\n🎮 **Game rooms** op grotere campings\n📖 In de caravan: bordspellen, lezen, relaxen!\n\n💡 **Tip**: een bui duurt meestal maar kort — daarna schijnt de zon weer!\nGemiddelde temperatuur: 25-33°C in juli/augustus. Je hebt echt bijna altijd zon! ☀️`
+        : 'Rain is rare in summer! If it rains: Dalí Museum, shopping in Girona, or indoor activities. It usually clears quickly! 🌧️☀️',
+      followUp: isNl ? ['Hoe is het weer?', 'Welke activiteiten?', 'Hoe boek ik?'] : ['Weather?', 'Activities?'],
+      confidence: 0.85,
+      topic: 'bad-weather',
+    };
+  }
+
+  // ===== BOOKING MODIFICATION / CHANGE DATES =====
+  if (/wijzig|verander|aanpass|datum.*wijzig|datum.*veranderen|omboek|change.*(?:date|booking)|modify|cambiar|reschedule|andere datum|andere camping|switch|wissel|later.*dan|eerder.*dan|verschuiv/.test(lower) && !/wachtwoord|email|profiel/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over het wijzigen van je boeking${name}:\n\n✏️ **Datum wijzigen**: neem contact met ons op — we kijken naar de mogelijkheden\n🏕️ **Camping wijzigen**: vaak mogelijk als je dit ruim van tevoren aangeeft\n🚐 **Caravan wijzigen**: ook bespreekbaar\n\n⚠️ **Let op:**\n• Wijzigen is afhankelijk van beschikbaarheid\n• Hoe eerder je het aangeeft, hoe groter de kans\n• In het hoogseizoen (juli/augustus) is er minder ruimte\n\n📞 Neem contact met ons op via **[Contact](/contact)** of stuur een bericht.\nWe denken graag met je mee! 🙌`
+        : 'Want to change your booking? Contact us and we\'ll check availability for date/camping changes! ✏️',
+      followUp: isNl ? ['Hoe neem ik contact op?', 'Annuleringsbeleid?', 'Spreek een medewerker'] : ['Contact us', 'Cancellation policy?'],
+      confidence: 0.85,
+      topic: 'booking-change',
+    };
+  }
+
+  // ===== WATER PARK / AQUAPARK =====
+  if (/waterpark|aquapark|waterpret|glijbaan|glijbanen|waterslide|tobogan|splash|waterattractie|waterland|waterwereld/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Waterpret aan de Costa Brava${name}! 💦🎢\n\n🏆 **Campings met waterpark/glijbanen:**\n\n🎢 **Tucan** (Lloret de Mar) — spectaculair waterpark met wilde glijbanen!\n🏊 **Cala Gogo** (Calonge) — meerdere zwembaden + glijbanen\n💦 **Cypsela Resort** (Pals) — groot zwembadcomplex\n🌊 **Aquarius** (Sant Pere Pescador) — zwembad + direct aan zee!\n\n🎡 **Water Worlds** — groot waterpark bij Lloret de Mar (extern)\n\n💡 **Tip**: de zwembaden op de campings zijn gratis voor gasten.\nKinderen worden hier echt niet meer weg gesleept! 😄`
+        : 'Tucan has the best water park! Also Cala Gogo and Cypsela have great pools with slides. 💦🎢',
+      followUp: isNl ? ['Meer over Tucan', 'Meer over Cala Gogo', 'Hoe boek ik?'] : ['About Tucan', 'How to book?'],
+      confidence: 0.87,
+      topic: 'waterpark',
+    };
+  }
+
+  // ===== CAMPING RULES =====
+  if (/regel|rules|regels|verboden|mag.*niet|mag ik|allowed|prohib|niet toegestaan|toege?staan|stil.*uur|stilte.*uur|geluids.*regel|nachtrust|norm|regelment|reglamento|wat mag|wat kan|permiso|verbied|music|muziek.*camping/.test(lower) && !/annul|borg|betaal|prijs/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De meeste campings hanteren vergelijkbare regels${name}! 📋\n\n🔇 **Stilte**: nachtrust meestal van **23:00 - 07:00**\n🚗 **Auto's**: slagboom dicht na 23:00 op veel campings\n🐶 **Huisdieren**: per camping verschillend — vraag het ons!\n🩳 **Zwembad**: zwembroek/bikini verplicht (geen shorts)\n🔥 **BBQ**: vaak toegestaan op eigen plek, niet met houtskool overal\n🎶 **Muziek**: zachte muziek OK, geluidsoverlast niet\n🚲 **Fietsen**: vaak met fiets over de camping, niet met auto\n\n⚠️ Regels kunnen per camping verschillen.\n\n💡 Bij het inchecken krijg je de campingregels. Niet moeilijk — gewoon respect voor je buren! 😊`
+        : 'Common rules: quiet time 23:00-07:00, swimwear in pool, respect neighbors. Rules vary per camping. 📋',
+      followUp: isNl ? ['Mag ik een huisdier mee?', 'Welke campings?', 'Hoe boek ik?'] : ['Pets allowed?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'camping-rules',
+    };
+  }
+
+  // ===== TIPPING / MONEY / CURRENCY =====
+  if (/fooi|tipping|tip geven|wisselkoers|geld.*meenemen|contant|cash|pinnen|pin.*spanje|geldautomaat|atm|betaalkaart|creditcard|visa|mastercard|euro|currency|moneda|dinero|valuta/.test(lower) && !/borg|aanbetaling|prijs.*caravan/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Geld & betalen in Spanje${name}! 💶\n\n💶 **Valuta**: Euro — net als in Nederland!\n💳 **Pinnen/kaart**: werkt overal (Visa, Mastercard, Maestro)\n🏧 **Geldautomaten**: in elk dorp en stad\n💰 **Contant**: handig voor markten en kleine winkeltjes\n\n💡 **Fooien in Spanje:**\n• Niet verplicht maar gewaardeerd\n• Restaurant: 5-10% is prima\n• Bar/café: wisselgeld laten liggen\n• Campingpersoneel: niet gebruikelijk\n\n⚠️ **Let op**: sommige banken rekenen buitenlandkosten. Check je bank!\n\n📌 De meeste Nederlandse pinpassen werken prima in Spanje.`
+        : 'Spain uses Euro! Cards work everywhere. Tipping is appreciated but not mandatory (5-10% in restaurants). 💶',
+      followUp: isNl ? ['Wat moet ik meenemen?', 'Hoe werkt betalen?', 'Hoe boek ik?'] : ['What to bring?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'money',
+    };
+  }
+
+  // ===== CHILDREN AGES / TODDLER / BABY =====
+  if (/baby|peuter|kleuter|dreumes|infant|toddler|bebe|kinderbedje|kinderstoel|wieg|luier|kindveilig|kindzeker|veilig.*kind|kind.*veilig|campingbed|reiswieg|babybed|maxicosi|buggy|kinderwagen/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Met kleine kinderen op vakantie? Dat kan zeker${name}! 👶\n\n✅ **In de caravan:**\n• Voldoende slaapruimte — kleine kinderen slapen bij de ouders of op een eigen bed\n• Ruimte om een **reiswiegje** of **campingbedje** te plaatsen\n\n💡 **Zelf meenemen:**\n• Reiswieg / campingbedje\n• Kinderstoel (opvouwbaar handig)\n• Luiers en babyvoeding (ook in Spaanse supermarkten verkrijgbaar!)\n• Buggy voor wandelingen\n\n🏕️ **Op de camping:**\n• Speeltuinen voor peuters/kleuters\n• Ondiepe kinderbaden bij het zwembad\n• Schaduwrijke plekken\n\n🍼 Spaanse supermarkten (Mercadona, Lidl) hebben baby-afdelingen met alle merken!\n\nWelke camping is het beste voor jullie? Ik help je graag!`
+        : 'Traveling with babies/toddlers is possible! Bring a travel cot. Campings have playgrounds and kiddie pools. 👶',
+      followUp: isNl ? ['Gezinscampings?', 'Wat moet ik meenemen?', 'Hoe boek ik?'] : ['Family campings?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'baby-toddler',
+    };
+  }
+
+  // ===== INTERNET / DATA / SIM =====
+  if (/internet|data|4g|5g|sim|simkaart|roaming|databundel|mobile data|datos|online|wifi.*snel|wifi.*snelheid|stream|netflix|download/.test(lower) && !/wifi.*camping|wifi.*password/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Internet in Spanje${name}! 📱\n\n📶 **Mobiel internet:**\n• Met een **Nederlandse SIM** werkt je data gewoon in Spanje (EU roaming!)\n• Geen extra kosten — je bundel geldt ook in Spanje\n• 4G/5G dekking is uitstekend aan de Costa Brava\n\n📶 **WiFi op de camping:**\n• Beschikbaar op vrijwel alle campings\n• Soms gratis, soms betaald (€3-€5/dag)\n• Snelheid varieert — voor streaming niet altijd geschikt\n\n💡 **Tips:**\n• Download Netflix/films vooraf op je telefoon!\n• Gebruik je mobiele data als WiFi traag is\n• Check je bundel-limiet bij je provider\n\nIn de praktijk: met een normale Nederlandse bundel van 10+ GB heb je ruim voldoende. 👍`
+        : 'Your Dutch SIM card works in Spain (EU roaming, no extra costs). Most campings also have WiFi. 📱',
+      followUp: isNl ? ['WiFi op camping?', 'Wat meenemen?', 'Hoe boek ik?'] : ['WiFi?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'internet',
+    };
+  }
+
+  // ===== PUBLIC TRANSPORT / BUS =====
+  if (/bus|openbaar vervoer|trein|train|transport|public.*transport|transporte|tren|autobus|ov|hoe.*zonder.*auto|geen.*auto|no.*car/.test(lower) && !/caravan|camping/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Openbaar vervoer aan de Costa Brava${name}! 🚌\n\n🚌 **Bussen:**\n• Sarfa/Moventis rijdt langs de hele Costa Brava\n• Verbindingen tussen alle grote plaatsen\n• Prijzen: ca. €2-€8 per rit\n\n🚃 **Trein:**\n• Treinstations in Figueres, Girona en Blanes\n• Hogesnelheidstrein (AVE) Barcelona-Figueres\n\n🚗 **Maar eerlijk?**\nEen **huurauto** is echt aan te raden aan de Costa Brava! Dan kun je:\n• De mooiste verborgen stranden bereiken\n• Dorpjes en markten bezoeken\n• Flexibel zijn met dagtripjes\n\n💡 Huurauto vanaf het vliegveld: ca. €20-30/dag\n\n⚠️ Zonder auto is het prima te doen vanuit grotere plaatsen (Lloret, Roses), maar lastiger vanuit kleine dorpjes.`
+        : 'Buses connect major towns. Trains run to Figueres/Girona/Blanes. A rental car is highly recommended for flexibility! 🚌🚗',
+      followUp: isNl ? ['Vliegveld & huurauto', 'Route naar Costa Brava', 'Hoe boek ik?'] : ['Airport & rental?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'public-transport',
+    };
+  }
+
+  // ===== FIRST TIME / BEGINNER =====
+  if (/eerste keer|nooit eerder|never been|first time|primera vez|beginner|geen ervaring|nieuw|nog nooit|niet eerder|hoe begin|waar begin|tip voor begin|hoe start/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Eerste keer met ons op vakantie? Welkom${name}! 🎉\n\nHet is heel makkelijk — wij regelen alles:\n\n1️⃣ **Kies** je periode, camping en caravan op [onze website](/boeken)\n2️⃣ **Boek** online in 5 minuten — betaal 30% aanbetaling\n3️⃣ **Wij plaatsen** de caravan volledig ingericht op de camping\n4️⃣ **Jij rijdt/vliegt** naar de camping en checkt in\n5️⃣ **Geniet!** Alles staat klaar — je kunt meteen genieten\n\n✅ **Geen gedoe met:**\n• Caravan slepen — die staat er al!\n• Inventaris regelen — beddengoed, servies, alles erbij\n• Campingplaats zoeken — dat doen wij\n\n💡 **Tip voor beginners:**\nBegin met een camping als **Cypsela Resort** (Pals) of **Cala Gogo** (Calonge) — veel faciliteiten, perfect voor eerste keer!\n\nZet je eerste stap en je wilt nooit meer anders! 😊`
+        : 'First time? We make it easy! Choose dates, book online, and we handle everything. The caravan is ready when you arrive! 🎉',
+      followUp: isNl ? ['Hoe boek ik?', 'Welke campings?', 'Wat kost het?', 'Welke caravans?'] : ['How to book?', 'Cost?', 'Campings?'],
+      confidence: 0.88,
+      topic: 'first-time',
+    };
+  }
+
+  // ===== SENIOR / OLDER TRAVELERS =====
+  if (/senior|bejaarde|65\+|pensioen|ouder.*echtpaar|rustzoekend|oma|opa|grootouder|elderly|retired|pensionado|jubilad|met.*ouders|ouder.*stel/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Ook voor senioren is dit een heerlijke vakantie${name}! 🌿\n\n✅ **Waarom perfect voor senioren:**\n• Caravan staat **al klaar** — geen gedoe met slepen of opbouwen\n• **Vlakke terreinen** op de meeste campings\n• **Rustige periodes**: mei, juni en september — minder druk, aangenaam weer\n• **Eigen ritme** — geen vaststaande programma's\n\n🏕️ **Aanraders:**\n• Campings bij **Begur** of **Pals** — rustig, prachtige natuur\n• Kleinere campings met persoonlijke sfeer\n\n💰 **Voordeel:** buiten het hoogseizoen zijn de prijzen lager!\n\n💡 Tip: combineer met wandelingen over het Camí de Ronda kustpad — prachtig en goed begaanbaar! 🥾`
+        : 'Perfect for seniors! Caravan ready on arrival, flat terrains, quiet periods in May/June/September. 🌿',
+      followUp: isNl ? ['Rustige campings?', 'Wat kost het?', 'Hoe boek ik?'] : ['Quiet campings?', 'Cost?'],
+      confidence: 0.85,
+      topic: 'seniors',
+    };
+  }
+
+  // ===== TOILET / SHOWER / SANITAIR =====
+  if (/toilet|wc|douche|sanitair|badkamer|bathroom|shower|ducha|baño|douchen|warm water|eigen douche|eigen toilet|privé sanitair|sanitary/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over sanitair in de caravan${name}! 🚿\n\n${caravans.some(c => c.amenities.some(a => /douche/i.test(a))) ? '✅ Sommige caravans hebben een **eigen douche en toilet**!' : ''}\n\n🚿 **Campingsanitair:**\n• Alle campings hebben **schone sanitairgebouwen**\n• Warme douches (soms met muntsysteem, ca. €0,50)\n• Vaak vernieuwd en modern\n• Aparte familie-doucheruimtes op grotere campings\n\n💡 **Tip**: het sanitair wordt meerdere keren per dag schoongemaakt.\nIn het hoogseizoen kan het 's ochtends even druk zijn — ga vroeg of laat!\n\n👉 Check per caravan of er een eigen douche/WC in zit op onze [caravans pagina](/caravans)`
+        : 'Campings have clean shower/toilet facilities. Some caravans have a private bathroom! 🚿',
+      followUp: isNl ? ['Welke caravans?', 'Wat zit erin?', 'Hoe boek ik?'] : ['Which caravans?', 'How to book?'],
+      confidence: 0.85,
+      topic: 'sanitair',
+    };
+  }
+
+  // ===== SAFETY / THEFT / VALUABLES =====
+  if (/veilig|diefstal|stelen|kluis|safe|valuab|waardevolle|inbraak|theft|robo|seguridad|politie|police|policia|alarm|beveilig|lock|slot|sleutel|pas op|oppassen/.test(lower) && !/verzekering|annul/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over veiligheid aan de Costa Brava${name}! 🔒\n\n✅ **De Costa Brava is veilig** — het is een populaire toeristische regio.\n\n🏕️ **Op de camping:**\n• Campings hebben **slagbomen** en beveiliging\n• **Receptie** is overdag altijd bereikbaar\n• 's Nachts vaak **bewaking**\n\n💡 **Tips:**\n🔐 Sluit de caravan af als je weggaat\n🚗 Laat geen waardevolle spullen zichtbaar in de auto\n📱 Bewaar paspoort, geld, telefoon veilig\n🏖️ Neem niet te veel mee naar het strand\n\n📞 **Bij problemen:**\n• Noodnummer: **112**\n• Campingreceptie: altijd aanspreekpunt\n• Contact met ons: wij helpen direct!\n\nGewoon gezond verstand gebruiken en je hebt een zorgeloze vakantie! 😊`
+        : 'Costa Brava is safe! Lock the caravan when away, don\'t leave valuables visible in car. Emergency: 112. 🔒',
+      followUp: isNl ? ['Hoe bereik ik jullie?', 'Welke campings?', 'Hoe boek ik?'] : ['Contact us', 'How to book?'],
+      confidence: 0.85,
+      topic: 'safety-detail',
+    };
+  }
+
+  // ===== NATURE / HIKING / WALKING =====
+  if (/wandel|hiken|hiking|natuur|nature|cami de ronda|kustpad|trail|ruta|senderismo|bergwandel|wandelpad|walking|trek|bos|forest|bosque|vogel|bird|flora|fauna/.test(lower) && !/doen|activity/.test(lower)) {
+    return {
+      answer: isNl
+        ? `De Costa Brava is een wandelparadijs${name}! 🥾🌿\n\n🥾 **Top wandelingen:**\n\n🌊 **Camí de Ronda** — beroemd kustpad langs de hele Costa Brava!\n   Spectaculaire uitzichten, verborgen baaien, turquoise water\n🏔️ **Cap de Creus** — ruig natuurpark bij Cadaqués\n🌳 **Les Gavarres** — bosrijk achterland, rustige wandelpaden\n🏖️ **Begur → Sa Riera** — langs prachtige cala's (baaien)\n\n📏 **Afstanden:**\n• Korte wandelingen: 2-5 km (perfect met kinderen)\n• Halve dag: 8-12 km\n• Hele dag: 15-25 km\n\n💡 **Tips:**\n• Vroeg starten — het wordt warm in de middag!\n• Water en zonnebrand meenemen\n• Goede wandelschoenen op rotsachtige paden\n• Wikiloc-app heeft alle routes\n\nVanaf de camping kun je vaak direct wandelen!`
+        : 'Hiking paradise! Try the Camí de Ronda coastal path, Cap de Creus nature park, and stunning coves around Begur! 🥾',
+      followUp: isNl ? ['Welke bestemmingen?', 'Hoe is het weer?', 'Hoe boek ik?'] : ['Destinations?', 'Weather?'],
+      confidence: 0.85,
+      topic: 'hiking',
+    };
+  }
+
+  // ===== WATERSPORT =====
+  if (/watersport|kayak|kano|surfen|surf|suppen|sup|stand up paddle|windsurf|kitesurf|zeilen|sail|snorkel|duiken|dive|buceo|jet.?ski|boot.*huren|boot.*verhuur|varen|boat|barca|catamaran/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Watersport aan de Costa Brava${name}! 🌊🏄\n\n🏄 **Populaire sporten:**\n• **Kayak/kano** — langs de rotskust, geweldig!\n• **Snorkelen** — Medes Eilanden (L'Estartit) = top spot!\n• **SUP (stand-up paddle)** — op veel stranden te huren\n• **Duiken** — kristalhelder water, duikscholen aanwezig\n• **Windsurf/kitesurf** — Sant Pere Pescador = windsurf-mekka!\n• **Zeilen/boot huren** — vanuit Roses, Estartit, Palamós\n\n📍 **Beste locaties per sport:**\n🤿 Snorkelen → **Medes Eilanden**\n🏄 Surfen → **Sant Pere Pescador**\n🛶 Kayak → **Begur** (langs cala's)\n⛵ Zeilen → **Roses** of **Estartit**\n\n💡 De meeste watersportscholen bieden lessen aan — ook voor beginners!\nPrijzen: kayak ca. €15-€25, duikintro ca. €50-€70`
+        : 'Great watersports! Kayaking, snorkeling at Medes Islands, SUP, diving, windsurfing at Sant Pere Pescador! 🌊🏄',
+      followUp: isNl ? ['Stranden?', 'Welke campings?', 'Hoe boek ik?'] : ['Beaches?', 'How to book?'],
+      confidence: 0.87,
+      topic: 'watersport',
+    };
+  }
+
+  // ===== AANBETALING / DEPOSIT PAYMENT =====
+  if (/aanbetal|aanbetaling|30.*procent|30%|rest.*betalen|restbetaling|wanneer.*betalen|betalings.*termijn|payment.*schedule|when.*pay|segundo.*pago|tweede.*betaling/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Bij boeking**: 30% aanbetaling via iDEAL of Wero\n2️⃣ **8 weken voor vertrek**: restbetaling (70%)\n\n✅ Je ontvangt automatisch een herinnering voor de restbetaling\n✅ Alles via je account op onze website\n✅ Veilig betalen via iDEAL of Wero\n\n💡 **Voorbeeld:**\nCaravan van €500/week boeken:\n• Aanbetaling: €150 (bij boeking)\n• Restbetaling: €350 (8 weken voor vertrek)\n\n📌 De **campingplaats** betaal je apart, rechtstreeks aan de camping.\n\n👉 Alle details staan in je account na het boeken.`
+        : 'Pay 30% deposit at booking, remaining 70% eight weeks before arrival. Pay via iDEAL or Wero! 💳',
+      followUp: isNl ? ['Hoe boek ik?', 'Annuleringsbeleid?', 'Wat kost het?'] : ['How to book?', 'Cancellation?', 'Cost?'],
+      confidence: 0.87,
+      topic: 'payment-schedule',
+    };
+  }
+
+  // ===== LUIFEL / VOORTENT / ACCESSORIES =====
+  if (/luifel|voortent|marki[es]|tent.*bij|awning|toldo|schaduw|parasol|tafel.*buiten|stoelen.*buiten|buitenmeubilair|terras|veranda|outside.*furniture|shade/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over de luifel en buitenruimte${name}! ☀️\n\n⛱️ De caravans hebben een **luifel/markies** — heerlijk voor schaduw!\n\n✅ **Bij de caravan:**\n• Luifel/markies voor schaduw\n• Campingtafel en stoelen (meeste campings bieden dit)\n• Je eigen plekje op de camping\n\n💡 **Tips:**\n• Onder de luifel zit je beschut tegen de zon\n• Sommige campings bieden schaduwrijke plekken onder bomen\n• Extra parasol meenemen kan altijd\n\n🌡️ In de zomer kan het 30°C+ worden — schaduw is fijn!\nMet de luifel heb je meteen een heerlijk terrasje. 😎`
+        : 'Caravans have an awning for shade! Enjoy a nice terrace outside your caravan. ☀️⛱️',
+      followUp: isNl ? ['Wat zit er in de caravan?', 'Airco?', 'Hoe boek ik?'] : ["What's included?", 'AC?'],
+      confidence: 0.85,
+      topic: 'awning',
+    };
+  }
+
+  // ===== GARBAGE / RECYCLING / WASTE =====
+  if (/afval|vuilnis|recycl|scheiden|container|prullenbak|garbage|trash|waste|basura|reciclaje|kliko|gft|plastic.*afval|vuilniszak|afvalbak/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over afval op de camping${name}! ♻️\n\n♻️ **Afvalscheiding in Spanje:**\nJa, op Spaanse campings scheiden ze afval:\n• 🟢 **Glas** — groene container\n• 🟡 **Plastic/blik** — gele container\n• 🔵 **Papier** — blauwe container\n• ⚪ **Restafval** — grijze container\n\n🗑️ Containers staan verspreid over de camping\n🧹 In de caravan vind je vuilniszakken en schoonmaakmiddelen\n\n💡 Tip: houd afval gescheiden — het is in Spanje heel normaal en goed geregeld!\n\nBij vertrek laat je de caravan **bezemschoon** achter — dan zijn we al blij! 🙌`
+        : 'Campings have recycling containers: glass (green), plastic (yellow), paper (blue), general (grey). ♻️',
+      followUp: isNl ? ['Hoe vertrek ik?', 'Schoonmaakregels?', 'Hoe boek ik?'] : ['Departure rules?', 'How to book?'],
+      confidence: 0.8,
+      topic: 'waste',
+    };
+  }
+
+  // ===== GENERAL CATCH-ALL: user seems to ask something =====
+  if (/\?$/.test(input.trim()) && lower.length > 15) {
+    return {
+      answer: isNl
+        ? `Goede vraag${name}! Ik ben er niet 100% zeker van dat ik je goed begrijp. 🤔\n\nKun je je vraag iets anders formuleren? Of kies een van deze populaire onderwerpen:\n\n💰 Prijzen en kosten\n🏕️ Campings en bestemmingen\n🚐 Caravans en inventaris\n📅 Boeken en beschikbaarheid\n❌ Annuleren en wijzigen\n\nOf wil je liever met een medewerker spreken? Dan connect ik je door! 💬`
+        : `Good question${name}! I'm not sure I fully understand. Could you rephrase, or pick a topic?\n\n💰 Prices\n🏕️ Campings\n🚐 Caravans\n📅 Booking\n\nOr would you like to talk to our team? 💬`,
+      followUp: isNl ? ['Wat kost het?', 'Welke campings?', 'Hoe boek ik?', 'Spreek een medewerker'] : ['Cost?', 'Campings?', 'Book?', 'Talk to staff'],
+      confidence: 0.4,
+      topic: 'unclear',
     };
   }
 

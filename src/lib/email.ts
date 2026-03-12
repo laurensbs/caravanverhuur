@@ -201,9 +201,20 @@ function getPaymentTypeLabel(type: string, locale?: string): string {
 
 // ===== EMAIL TEMPLATES =====
 
-export async function sendWelcomeEmail(to: string, name: string, locale?: string) {
+export async function sendWelcomeEmail(to: string, name: string, locale?: string, verifyUrl?: string) {
   const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
+
+  const verifySection = verifyUrl ? `
+      ${divider()}
+      ${badge('\u2709\uFE0F', t.verifyBadge)}
+      ${heading(t.verifyHeading)}
+      ${subtext(t.verifySubtext(firstName))}
+      ${button(t.verifyButton, verifyUrl)}
+      <p style="margin:0;color:#94A3B8;font-size:13px;line-height:1.6;">
+        ${t.verifyExpiry}
+      </p>
+  ` : '';
 
   return sendEmail({
     to,
@@ -244,6 +255,8 @@ export async function sendWelcomeEmail(to: string, name: string, locale?: string
       `, true)}
 
       ${button(t.welcomeButton, `${SITE_URL}/caravans`)}
+
+      ${verifySection}
     `, t.welcomePreheader, locale),
   });
 }
