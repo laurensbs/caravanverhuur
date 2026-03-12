@@ -87,6 +87,7 @@ function BoekenContent() {
   const [campingRequestLocation, setCampingRequestLocation] = useState('');
   const [campingRequestSending, setCampingRequestSending] = useState(false);
   const [campingRequestSent, setCampingRequestSent] = useState(false);
+  const [showAllCampings, setShowAllCampings] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -523,76 +524,103 @@ function BoekenContent() {
                       </div>
 
                       {/* Camping cards */}
-                      <div className="space-y-2 sm:space-y-3 lg:space-y-3 max-h-[50vh] lg:max-h-none overflow-y-auto lg:overflow-y-visible pr-1 -mx-1 px-1 scrollbar-hide">
-                        {filteredCampings.map(c => {
-                          const isSelected = campingId === c.id;
-                          return (
-                            <motion.button
-                              key={c.id}
-                              layout
-                              onClick={() => setCampingId(c.id)}
-                              className={`w-full text-left rounded-xl sm:rounded-2xl border-2 transition-all hover:shadow-md overflow-hidden ${
-                                isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
-                              }`}
-                            >
-                              {/* Mobile layout */}
-                              <div className="lg:hidden px-3 py-2.5 sm:p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                      <h3 className="font-bold text-sm sm:text-base text-foreground truncate">{c.name}</h3>
-                                      {isSelected && (
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
-                                          <Check size={12} className="text-white" />
-                                        </motion.div>
-                                      )}
+                      {(() => {
+                        const isFiltering = campingSearch.trim() || locationFilter !== 'all';
+                        const visibleCampings = (showAllCampings || isFiltering) ? filteredCampings : filteredCampings.slice(0, 6);
+                        const hasMore = !isFiltering && !showAllCampings && filteredCampings.length > 6;
+                        return (
+                          <>
+                            <div className="space-y-2 sm:space-y-3 lg:space-y-3 max-h-[50vh] lg:max-h-none overflow-y-auto lg:overflow-y-visible pr-1 -mx-1 px-1 scrollbar-hide">
+                              {visibleCampings.map(c => {
+                                const isSelected = campingId === c.id;
+                                return (
+                                  <motion.button
+                                    key={c.id}
+                                    layout
+                                    onClick={() => setCampingId(c.id)}
+                                    className={`w-full text-left rounded-xl sm:rounded-2xl border-2 transition-all hover:shadow-md overflow-hidden ${
+                                      isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
+                                    }`}
+                                  >
+                                    {/* Mobile layout */}
+                                    <div className="lg:hidden px-3 py-2.5 sm:p-4">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 mb-0.5">
+                                            <h3 className="font-bold text-sm sm:text-base text-foreground truncate">{c.name}</h3>
+                                            {isSelected && (
+                                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
+                                                <Check size={12} className="text-white" />
+                                              </motion.div>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted">
+                                            <MapPin size={12} /> {c.location}
+                                          </div>
+                                          <p className="text-xs text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
+                                        </div>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-primary/10' : 'bg-surface'}`}>
+                                          <Tent size={20} className={isSelected ? 'text-primary' : 'text-muted'} />
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted">
-                                      <MapPin size={12} /> {c.location}
-                                    </div>
-                                    <p className="text-xs text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
-                                  </div>
-                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-primary/10' : 'bg-surface'}`}>
-                                    <Tent size={20} className={isSelected ? 'text-primary' : 'text-muted'} />
-                                  </div>
-                                </div>
-                              </div>
 
-                              {/* Desktop layout with photo */}
-                              <div className="hidden lg:flex items-center gap-4 px-4 py-3">
-                                {c.photos?.[0] && (
-                                  <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0">
-                                    <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-bold text-base text-foreground truncate">{c.name}</h3>
-                                    {isSelected && (
-                                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
-                                        <Check size={12} className="text-white" />
-                                      </motion.div>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-3 mt-0.5">
-                                    <span className="flex items-center gap-1 text-xs text-muted">
-                                      <MapPin size={12} /> {c.location}
-                                    </span>
-                                    {c.facilities && c.facilities.length > 0 && (
-                                      <span className="text-xs text-muted hidden xl:inline">
-                                        {c.facilities.slice(0, 3).join(' · ')}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.button>
-                          );
-                        })}
-                        {filteredCampings.length === 0 && (
-                          <div className="text-center py-10 text-muted">{t('booking.noCampings')}</div>
-                        )}
-                      </div>
+                                    {/* Desktop layout with photo */}
+                                    <div className="hidden lg:flex items-stretch">
+                                      {c.photos?.[0] && (
+                                        <div className="relative w-28 shrink-0">
+                                          <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
+                                          {isSelected && (
+                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 left-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-md">
+                                              <Check size={12} className="text-white" />
+                                            </motion.div>
+                                          )}
+                                        </div>
+                                      )}
+                                      <div className="flex-1 min-w-0 px-4 py-3">
+                                        <div className="flex items-center gap-2">
+                                          <h3 className="font-bold text-[15px] text-foreground truncate">{c.name}</h3>
+                                          {!c.photos?.[0] && isSelected && (
+                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
+                                              <Check size={12} className="text-white" />
+                                            </motion.div>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
+                                          <MapPin size={12} /> {c.location}
+                                        </div>
+                                        <p className="text-xs text-muted line-clamp-1 mt-1">{c.description}</p>
+                                        {c.facilities && c.facilities.length > 0 && (
+                                          <div className="flex flex-wrap gap-1 mt-1.5">
+                                            {c.facilities.slice(0, 4).map(f => (
+                                              <span key={f} className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>{f}</span>
+                                            ))}
+                                            {c.facilities.length > 4 && (
+                                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400">+{c.facilities.length - 4}</span>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </motion.button>
+                                );
+                              })}
+                              {filteredCampings.length === 0 && (
+                                <div className="text-center py-10 text-muted">{t('booking.noCampings')}</div>
+                              )}
+                            </div>
+                            {hasMore && (
+                              <button
+                                onClick={() => setShowAllCampings(true)}
+                                className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-foreground-light hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-2"
+                              >
+                                <ChevronRight size={16} className="rotate-90" />
+                                {`Toon alle ${filteredCampings.length} campings`}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
 
                       {/* Camping not listed */}
                       {!campingRequestSent ? (
