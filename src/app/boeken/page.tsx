@@ -1037,27 +1037,29 @@ function BoekenContent() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* ===== DESKTOP NAVIGATION BUTTONS ===== */}
-              <div className="hidden lg:flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
-                {step > 1 ? (
-                  <button onClick={goBack} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-foreground-light font-medium transition-all hover:bg-surface-alt border border-gray-200 cursor-pointer">
-                    <ArrowLeft size={16} /> {t('booking.previous')}
-                  </button>
-                ) : <div />}
+              {/* ===== DESKTOP NAVIGATION BUTTONS (sticky) ===== */}
+              <div className="hidden lg:block sticky bottom-0 z-20 mt-6 -mx-1 px-1">
+                <div className="bg-white/95 backdrop-blur-md border-t border-gray-100 pt-4 pb-2 flex items-center justify-between">
+                  {step > 1 ? (
+                    <button onClick={goBack} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-foreground-light font-medium transition-all hover:bg-surface-alt border border-gray-200 cursor-pointer">
+                      <ArrowLeft size={16} /> {t('booking.previous')}
+                    </button>
+                  ) : <div />}
 
-                {step < 5 ? (
-                  <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 disabled:shadow-none cursor-pointer text-base">
-                    {t('booking.nextBtn')} <ArrowRight size={18} />
-                  </button>
-                ) : step === 5 ? (
-                  <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 cursor-pointer text-base">
-                    {submitting ? (
-                      <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
-                    ) : (
-                      <><CreditCard size={18} /> {t('booking.submitBooking')}</>
-                    )}
-                  </button>
-                ) : null}
+                  {step < 5 ? (
+                    <button onClick={goNext} disabled={!canNext()} className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-primary disabled:bg-muted disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 disabled:shadow-none cursor-pointer text-base">
+                      {t('booking.nextBtn')} <ArrowRight size={18} />
+                    </button>
+                  ) : step === 5 ? (
+                    <button onClick={handleSubmit} disabled={submitting} className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-primary disabled:from-muted disabled:to-muted disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 cursor-pointer text-base">
+                      {submitting ? (
+                        <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('booking.processing')}</>
+                      ) : (
+                        <><CreditCard size={18} /> {t('booking.submitBooking')}</>
+                      )}
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </div>
 
