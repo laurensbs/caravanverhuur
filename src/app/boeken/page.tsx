@@ -530,7 +530,7 @@ function BoekenContent() {
                         const hasMore = !isFiltering && !showAllCampings && filteredCampings.length > 6;
                         return (
                           <>
-                            <div className="space-y-2 sm:space-y-3 lg:space-y-3 max-h-[50vh] lg:max-h-none overflow-y-auto lg:overflow-y-visible pr-1 -mx-1 px-1 scrollbar-hide">
+                            <div className="space-y-2 sm:space-y-3 lg:space-y-3">
                               {visibleCampings.map(c => {
                                 const isSelected = campingId === c.id;
                                 return (
