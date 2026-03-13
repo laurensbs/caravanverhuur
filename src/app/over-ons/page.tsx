@@ -5,13 +5,20 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  CheckCircle,
-  Shield,
-  Truck,
   Heart,
-  Users,
+  Shield,
   Target,
   Award,
+  Truck,
+  Search,
+  CalendarDays,
+  Wrench,
+  CreditCard,
+  Sun,
+  MapPin,
+  Users,
+  Star,
+  Sparkles,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -24,6 +31,15 @@ const fadeUp = {
   }),
 };
 
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { delay: i * 0.08, duration: 0.5, ease: 'easeOut' as const },
+  }),
+};
+
 const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
@@ -33,55 +49,249 @@ export default function OverOnsPage() {
 
   return (
     <>
-      {/* Wat we doen */}
-      <section className="pt-8 sm:pt-10 pb-12 sm:pb-20">
+      {/* ===== HERO ===== */}
+      <section className="relative min-h-[50vh] sm:min-h-[55vh] flex items-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/campings/la_banyera_calella.jpg"
+            alt="Costa Brava camping luchtfoto"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-28 w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/15 backdrop-blur-sm text-white text-sm font-medium rounded-full mb-6">
+              <Sparkles size={16} />
+              {t('about.heroSubtitle')}
+            </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-6">
+              {t('about.heroTitle')}
+            </h1>
+            <p className="text-white/85 text-lg sm:text-xl leading-relaxed max-w-xl">
+              {t('about.missionText')}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== ONS VERHAAL ===== */}
+      <section className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <h1 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <span className="text-sm font-bold text-primary uppercase tracking-wider">{t('about.story')}</span>
+              <h2 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground mt-2 mb-6">
                 {t('about.whoWeAreTitle')}
-              </h1>
-              <p className="text-muted text-lg mb-6 leading-relaxed">
+              </h2>
+              <p className="text-muted text-lg mb-5 leading-relaxed">
                 {t('about.whoWeAreText1')}
               </p>
-              <p className="text-muted text-lg mb-6 leading-relaxed">
+              <p className="text-muted text-lg mb-5 leading-relaxed">
                 {t('about.whoWeAreText2')}
               </p>
               <p className="text-muted text-lg leading-relaxed">
                 {t('about.whoWeAreText3pre')}{' '}
-                <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-foreground underline font-medium">Caravanstalling-Spanje</a>{' '}
+                <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium hover:text-primary-dark transition-colors">Caravanstalling-Spanje</a>{' '}
                 {t('about.whoWeAreText3post')}
               </p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.2 }}>
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/campings/la_banyera_calella.jpg"
-                  alt="Camping aan de Costa Brava met uitzicht op de Middellandse Zee"
-                  width={600}
-                  height={400}
-                  className="w-full object-cover"
-                 
-                />
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <Image
+                    src="/images/campings/la_banyera_calella.jpg"
+                    alt="Camping aan de Costa Brava met uitzicht op de Middellandse Zee"
+                    width={600}
+                    height={400}
+                    className="w-full object-cover"
+                  />
+                </div>
+                {/* Floating stats card */}
+                <div className="absolute -bottom-6 -left-4 sm:-left-6 bg-white rounded-2xl shadow-xl p-4 sm:p-5 border border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                      <MapPin className="text-white" size={22} />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-foreground">30+</div>
+                      <div className="text-sm text-muted">{t('about.stat1Label')}</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Voordelen vs concurrentie */}
-      <section className="py-12 sm:py-20 bg-surface">
+      {/* ===== WAARDEN ===== */}
+      <section className="py-14 sm:py-24 bg-surface">
         <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <motion.span variants={fadeUp} custom={0} className="text-sm font-bold text-primary uppercase tracking-wider">
+              {t('about.valuesTitle')}
+            </motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold tracking-tight text-foreground mt-2">
+              {t('about.advantagesTitle')}
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-30px' }}
+            variants={stagger}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
+            {[
+              { icon: <Heart size={24} />, title: t('about.adv1Title'), desc: t('about.adv1Desc'), color: 'bg-primary' },
+              { icon: <Shield size={24} />, title: t('about.adv2Title'), desc: t('about.adv2Desc'), color: 'bg-primary-dark' },
+              { icon: <Target size={24} />, title: t('about.adv3Title'), desc: t('about.adv3Desc'), color: 'bg-primary' },
+              { icon: <Award size={24} />, title: t('about.adv4Title'), desc: t('about.adv4Desc'), color: 'bg-primary-dark' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                variants={scaleIn}
+                custom={i}
+                className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm"
+              >
+                <div className="flex items-center gap-3 sm:gap-4 mb-3">
+                  <div className={`w-11 h-11 sm:w-12 sm:h-12 ${item.color} rounded-xl flex items-center justify-center shadow-md shrink-0`}>
+                    <div className="text-white">{item.icon}</div>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">{item.title}</h3>
+                </div>
+                <p className="text-sm text-muted leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== PROCES TIMELINE ===== */}
+      <section className="py-14 sm:py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-12 sm:mb-20"
+          >
+            <motion.span variants={fadeUp} custom={0} className="text-sm font-bold text-primary uppercase tracking-wider">
+              {t('about.processLabel')}
+            </motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-heading font-extrabold tracking-tight text-foreground mt-2">
+              {t('about.processTitle')}
+            </motion.h2>
+          </motion.div>
+
+          {/* Desktop: horizontal timeline */}
+          <div className="hidden md:block">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-50px' }}
+              variants={stagger}
+              className="grid grid-cols-5 gap-4 lg:gap-6"
+            >
+              {[
+                { step: '1', title: t('about.proc1Title'), desc: t('about.proc1Desc'), icon: <Search size={22} /> },
+                { step: '2', title: t('about.proc2Title'), desc: t('about.proc2Desc'), icon: <CalendarDays size={22} /> },
+                { step: '3', title: t('about.proc3Title'), desc: t('about.proc3Desc'), icon: <Wrench size={22} /> },
+                { step: '4', title: t('about.proc4Title'), desc: t('about.proc4Desc'), icon: <CreditCard size={22} /> },
+                { step: '5', title: t('about.proc5Title'), desc: t('about.proc5Desc'), icon: <Sun size={22} /> },
+              ].map((item, i) => (
+                <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center relative">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                    {item.icon}
+                  </div>
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Stap {item.step}</div>
+                  <h3 className="font-semibold text-foreground mb-1.5 text-sm lg:text-base">{item.title}</h3>
+                  <p className="text-xs lg:text-sm text-muted">{item.desc}</p>
+                  {i < 4 && (
+                    <div className="absolute top-7 left-[60%] w-[80%] h-0.5 bg-primary/20" />
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Mobile: vertical timeline */}
+          <div className="md:hidden space-y-0">
+            {[
+              { step: '1', title: t('about.proc1Title'), desc: t('about.proc1Desc'), icon: <Search size={18} /> },
+              { step: '2', title: t('about.proc2Title'), desc: t('about.proc2Desc'), icon: <CalendarDays size={18} /> },
+              { step: '3', title: t('about.proc3Title'), desc: t('about.proc3Desc'), icon: <Wrench size={18} /> },
+              { step: '4', title: t('about.proc4Title'), desc: t('about.proc4Desc'), icon: <CreditCard size={18} /> },
+              { step: '5', title: t('about.proc5Title'), desc: t('about.proc5Desc'), icon: <Sun size={18} /> },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.4 }}
+                className="flex gap-4 relative"
+              >
+                {i < 4 && (
+                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-primary/20" />
+                )}
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10">
+                  {item.icon}
+                </div>
+                <div className="pb-6">
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider">Stap {item.step}</div>
+                  <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
+                  <p className="text-xs text-muted mt-0.5">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CIJFERS ===== */}
+      <section className="py-14 sm:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary" />
+        <div className="relative max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="text-center mb-16"
+            className="text-center mb-12 sm:mb-16"
           >
-            <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">
-              {t('about.advantagesTitle')}
+            <motion.span variants={fadeUp} custom={0} className="text-sm font-bold text-white/70 uppercase tracking-wider">
+              {t('about.numbersLabel')}
+            </motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-heading font-extrabold tracking-tight text-white mt-2">
+              {t('about.numbersTitle')}
             </motion.h2>
           </motion.div>
 
@@ -90,85 +300,45 @@ export default function OverOnsPage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
           >
             {[
-              { icon: <Heart className="text-foreground" size={28} />, title: t('about.adv1Title'), desc: t('about.adv1Desc') },
-              { icon: <Shield className="text-foreground" size={28} />, title: t('about.adv2Title'), desc: t('about.adv2Desc') },
-              { icon: <Target className="text-foreground" size={28} />, title: t('about.adv3Title'), desc: t('about.adv3Desc') },
-              { icon: <Award className="text-foreground" size={28} />, title: t('about.adv4Title'), desc: t('about.adv4Desc') },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                variants={fadeUp}
-                custom={i}
-                className="bg-surface rounded-2xl p-6 border border-border text-center transition-all duration-300"
-              >
-                <div className="w-14 h-14 bg-foreground/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  {item.icon}
+              { number: '30+', label: t('about.stat1Label'), sub: t('about.stat1Sub'), icon: <MapPin size={24} /> },
+              { number: '6', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Users size={24} /> },
+              { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub'), icon: <Star size={24} /> },
+              { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub'), icon: <Award size={24} /> },
+            ].map((stat, i) => (
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-5 sm:p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/15">
+                <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <div className="text-white">{stat.icon}</div>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted leading-relaxed">{item.desc}</p>
+                <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stat.number}</div>
+                <div className="font-semibold text-white text-sm">{stat.label}</div>
+                <div className="text-xs text-white/60 mt-1">{stat.sub}</div>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Proces */}
-      <section className="py-12 sm:py-20">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">{t('about.processTitle')}</h2>
-          </div>
-
-          <div className="space-y-8">
-            {[
-              { step: '1', title: t('about.proc1Title'), desc: t('about.proc1Desc') },
-              { step: '2', title: t('about.proc2Title'), desc: t('about.proc2Desc') },
-              { step: '3', title: t('about.proc3Title'), desc: t('about.proc3Desc') },
-              { step: '4', title: t('about.proc4Title'), desc: t('about.proc4Desc') },
-              { step: '5', title: t('about.proc5Title'), desc: t('about.proc5Desc') },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex gap-6 items-start"
-              >
-                <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
-                  {item.step}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-1">{item.title}</h3>
-                  <p className="text-muted leading-relaxed">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Moederbedrijf */}
-      <section className="py-12 sm:py-20 relative overflow-hidden">
+      {/* ===== MOEDERBEDRIJF ===== */}
+      <section className="py-14 sm:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/campings/palam_s_-_view_from_beach.jpg')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-foreground/90" />
+        <div className="absolute inset-0 bg-primary-dark/90" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Truck className="text-white" size={28} />
-              <h2 className="text-2xl font-bold text-white">{t('about.parentCompany')}</h2>
             </div>
-            <p className="text-white/80 text-lg mb-6 max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white mb-4">{t('about.parentCompany')}</h2>
+            <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
               {t('about.parentCompanyText')}
             </p>
             <a
               href="https://caravanstalling-spanje.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-foreground font-semibold rounded-lg transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-foreground font-semibold rounded-full transition-all hover:scale-105 shadow-lg"
             >
               {t('about.visitParent')}
               <ArrowRight size={18} />
@@ -177,35 +347,31 @@ export default function OverOnsPage() {
         </div>
       </section>
 
-      {/* Cijfers & Sociaal bewijs */}
-      <section className="py-12 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">{t('about.numbersTitle')}</h2>
-          </div>
+      {/* ===== CTA ===== */}
+      <section className="py-14 sm:py-24 bg-surface">
+        <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            variants={stagger}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+            transition={{ duration: 0.7 }}
           >
-            {[
-              { number: '30+', label: t('about.stat1Label'), sub: t('about.stat1Sub') },
-              { number: '6', label: t('about.stat2Label'), sub: t('about.stat2Sub') },
-              { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub') },
-              { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub') },
-            ].map((stat, i) => (
-              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-surface rounded-2xl border border-border">
-                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">{stat.number}</div>
-                <div className="font-semibold text-foreground text-sm">{stat.label}</div>
-                <div className="text-xs text-muted mt-1">{stat.sub}</div>
-              </motion.div>
-            ))}
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold tracking-tight text-foreground mb-4">
+              {t('about.ctaTitle')}
+            </h2>
+            <p className="text-muted text-lg sm:text-xl mb-8 max-w-xl mx-auto leading-relaxed">
+              {t('about.ctaSubtitle')}
+            </p>
+            <Link
+              href="/caravans"
+              className="inline-flex items-center gap-2 px-8 sm:px-10 py-3.5 sm:py-4 bg-primary text-white font-semibold rounded-full transition-all hover:bg-primary-dark hover:scale-105 shadow-lg text-base sm:text-lg"
+            >
+              {t('about.ctaButton')}
+              <ArrowRight size={20} />
+            </Link>
           </motion.div>
         </div>
       </section>
-
     </>
   );
 }
