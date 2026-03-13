@@ -767,7 +767,7 @@ function BoekenContent() {
                                         if (gm) return (
                                           <>
                                             <iframe
-                                              src={`https://play.gumlet.io/embed/${gm[1]}?autoplay=true&muted=true&loop=true&preload=true`}
+                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&preload=true`}
                                               title={c.name}
                                               allow="autoplay"
                                               loading="lazy"

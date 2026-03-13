@@ -66,9 +66,9 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[82svh] flex flex-col justify-end overflow-hidden">
         {/* Video background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
-          <div className="absolute inset-[-20%] w-[140%] h-[140%]">
+          <div className="absolute inset-[-100%] sm:inset-[-20%] w-[300%] sm:w-[140%] h-[300%] sm:h-[140%]">
             <iframe
-              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?autoplay=true&muted=true&loop=true&preload=true&t=30"
+              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&preload=true&t=30"
               title="Costa Brava hero video"
               allow="autoplay"
               loading="eager"
@@ -338,29 +338,14 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   {caravan.videoUrl?.includes('gumlet.tv') ? (() => {
                     const gMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/(\w+)/);
                     return gMatch ? (
-                      <div
-                        className="absolute inset-0"
-                        ref={(el) => {
-                          if (!el) return;
-                          const iframe = el.querySelector('iframe');
-                          if (!iframe) return;
-                          const obs = new IntersectionObserver(([entry]) => {
-                            const src = iframe.getAttribute('src') || '';
-                            if (entry.isIntersecting && !src.includes('autoplay=true')) {
-                              iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
-                            } else if (!entry.isIntersecting && src.includes('autoplay=true')) {
-                              iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
-                            }
-                          }, { threshold: 0.3 });
-                          obs.observe(el);
-                        }}
-                      >
+                      <div className="absolute inset-0 overflow-hidden">
                         <iframe
-                          src={`https://play.gumlet.io/embed/${gMatch[1]}?autoplay=false&muted=true&loop=true&preload=true`}
+                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&preload=true`}
                           title={caravan.name}
                           allow="autoplay"
                           loading="lazy"
-                          className="absolute inset-0 w-full h-full border-0"
+                          className="absolute inset-0 w-full h-full border-0 scale-[1.5] origin-center"
+                          style={{ pointerEvents: 'none' }}
                         />
                         <div className="absolute inset-0 z-10" />
                       </div>
@@ -490,28 +475,15 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
-              ref={(el) => {
-                if (!el) return;
-                const iframe = el.querySelector('iframe');
-                if (!iframe) return;
-                const obs = new IntersectionObserver(([entry]) => {
-                  const src = iframe.getAttribute('src') || '';
-                  if (entry.isIntersecting && !src.includes('autoplay=true')) {
-                    iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
-                  } else if (!entry.isIntersecting && src.includes('autoplay=true')) {
-                    iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
-                  }
-                }, { threshold: 0.3 });
-                obs.observe(el);
-              }}
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
                 <iframe
-                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?autoplay=false&muted=true&loop=true&preload=true"
+                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&preload=true"
                   title="Caravan interieur volledig ingericht"
                   allow="autoplay"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full border-0"
+                  className="absolute inset-0 w-full h-full border-0 scale-[1.15] origin-center"
+                  style={{ pointerEvents: 'none' }}
                 />
                 <div className="absolute inset-0 z-10" />
               </div>
