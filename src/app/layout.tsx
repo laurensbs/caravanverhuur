@@ -127,6 +127,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${plusJakarta.variable} ${inter.variable} antialiased`}
+        suppressHydrationWarning
       >
         <LayoutWrapper
           header={<Header />}
