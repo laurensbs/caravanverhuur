@@ -181,21 +181,21 @@ function SectionHeader({ icon, title, subtitle, onAction, linkText }: { icon: Re
 /*  Curated attractions                                                */
 /* ------------------------------------------------------------------ */
 const attractionCards = [
-  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨', desc: 'Het meest bezochte museum van Spanje na het Prado', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
-  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰', desc: 'Ommuurde middeleeuwse stad boven de zee', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
-  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️', desc: 'Top duik- en snorkelparadijs', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
-  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺', desc: 'Een van de mooiste tuinen van Europa', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
-  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️', desc: 'Meest oostelijke punt van Spanje', img: '/images/campings/cap_de_creus_landscape.jpg' },
-  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏯', desc: '360° panorama over de Costa Brava', img: '/images/campings/begurcastle.jpg' },
-  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵', desc: 'Botanische tuin met zomerconcerten', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
-  { name: 'Kanalen Empuriabrava', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤', desc: 'Het Venetië van Spanje — 24 km kanalen', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
-  { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', desc: 'Best bewaarde middeleeuws dorp van Catalonië', img: '/images/campings/els_masos_de_pals.jpg' },
-  { name: 'Santa Clotilde tuinen', place: 'Lloret de Mar', slug: 'lloret-de-mar', icon: '🌿', desc: 'Spectaculaire Italiaanse tuinen boven de kliffen', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
-  { name: 'Casa-Museu Dalí', place: 'Portlligat', slug: 'cadaques', icon: '🖼️', desc: 'Het excentrieke woonhuis van Salvador Dalí', img: '/images/campings/portlligat.jpg' },
-  { name: 'Ciutadella de Roses', place: 'Roses', slug: 'roses', icon: '🏛️', desc: 'Grieks-Romeinse ruïnes met 3000 jaar geschiedenis', img: '/images/campings/ciutadella_de_roses-2022.jpg' },
-  { name: 'Aiguamolls de l\'Empordà', place: 'Sant Pere Pescador', slug: 'sant-pere-pescador', icon: '🦩', desc: 'Natuurpark met flamingo\'s en 300+ vogelsoorten', img: '/images/campings/animales-aiguamolls_l_emporda-2013.jpg' },
-  { name: 'Sa Palomera', place: 'Blanes', slug: 'blanes', icon: '🪨', desc: 'Iconische rots die de Costa Brava markeert', img: '/images/campings/sa_palomera_a_blanes.jpg' },
-  { name: 'Cala Aiguablava', place: 'Begur', slug: 'begur', icon: '💎', desc: 'Turkooisblauw juweel tussen de rotsen', img: '/images/campings/cala_d_aiguablava__begur.jpg' },
+  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨', desc: 'Het meest bezochte museum van Spanje na het Prado — een must‑see voor elke bezoeker', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
+  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰', desc: 'Sprookjesachtige ommuurde stad recht boven de azuurblauwe zee', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
+  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️', desc: 'Beschermd marien reservaat — het beste duik- en snorkelgebied van de westkust', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
+  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺', desc: 'Adembenemende botanische tuin hoog boven de kust met 4.000+ plantensoorten', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
+  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️', desc: 'Het meest oostelijke punt van Spanje — ruig, windgebeeldhouwd en betoverend mooi', img: '/images/campings/cap_de_creus_landscape.jpg' },
+  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏯', desc: 'Beklim de kasteelruïne voor een onvergetelijk 360° panorama over de hele kust', img: '/images/campings/begurcastle.jpg' },
+  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', icon: '🎵', desc: 'Prachtige botanische tuin aan zee, in de zomer het decor van het beroemde muziekfestival', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
+  { name: 'Kanalen Empuriabrava', place: 'Empuriabrava', slug: 'empuriabrava', icon: '🚤', desc: 'Europa\'s grootste residentiële jachthaven — 24 km kanalen in \'het Venetië van Spanje\'', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
+  { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', desc: 'Dwaal door het best bewaarde middeleeuwse dorp van Catalonië met uitzicht op de rijstvelden', img: '/images/campings/els_masos_de_pals.jpg' },
+  { name: 'Santa Clotilde tuinen', place: 'Lloret de Mar', slug: 'lloret-de-mar', icon: '🌿', desc: 'Prachtige Italiaanse tuinen op de kliffen met spectaculair uitzicht over de Middellandse Zee', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
+  { name: 'Casa-Museu Dalí', place: 'Portlligat', slug: 'cadaques', icon: '🖼️', desc: 'Stap binnen in het surrealistisch woonhuis en atelier van Salvador Dalí', img: '/images/campings/portlligat.jpg' },
+  { name: 'Ciutadella de Roses', place: 'Roses', slug: 'roses', icon: '🏛️', desc: 'Indrukwekkende citadel met 3.000 jaar geschiedenis — van Grieken tot middeleeuwen', img: '/images/campings/ciutadella_de_roses-2022.jpg' },
+  { name: 'Aiguamolls de l\'Empordà', place: 'Sant Pere Pescador', slug: 'sant-pere-pescador', icon: '🦩', desc: 'Beschermd natuurpark waar flamingo\'s, ooievaars en 300+ vogelsoorten thuis zijn', img: '/images/campings/animales-aiguamolls_l_emporda-2013.jpg' },
+  { name: 'Sa Palomera', place: 'Blanes', slug: 'blanes', icon: '🪨', desc: 'Iconische rotsformatie die het officiële beginpunt van de Costa Brava markeert', img: '/images/campings/sa_palomera_a_blanes.jpg' },
+  { name: 'Cala Aiguablava', place: 'Begur', slug: 'begur', icon: '💎', desc: 'Turkooisblauw water omringd door dennenbossen — een van de mooiste baaien van Spanje', img: '/images/campings/cala_d_aiguablava__begur.jpg' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -352,8 +352,8 @@ export default function BestemmingenPage() {
           <section>
             <SectionHeader
               icon={<MapPin size={22} className="text-amber-500" />}
-              title="Populaire plaatsen"
-              subtitle="Ontdek de mooiste dorpen en steden aan de Costa Brava"
+              title="Populaire kustplaatsen"
+              subtitle="Van pittoreske vissersdorpjes tot levendige badplaatsen — vind jouw favoriete plek"
               onAction={() => setActiveTab('plaatsen')} linkText="Alle plaatsen"
             />
             <ScrollRow>
@@ -383,8 +383,8 @@ export default function BestemmingenPage() {
           <section id="campings">
             <SectionHeader
               icon={<Tent size={22} className="text-primary" />}
-              title="Populaire campings"
-              subtitle={`${totalCampings} campings van luxe resorts tot gezellige familiecampings`}
+              title="Topcampings met caravan"
+              subtitle={`Kies uit ${totalCampings} campings — van familieresorts met zwembad tot rustige parken aan het strand`}
               onAction={() => setActiveTab('campings')} linkText="Alle campings"
             />
             <ScrollRow>
@@ -418,8 +418,8 @@ export default function BestemmingenPage() {
           <section>
             <SectionHeader
               icon={<Landmark size={22} className="text-emerald-500" />}
-              title="Bezienswaardigheden"
-              subtitle="Cultuur, natuur en historie — de mooiste plekken om te bezoeken"
+              title="Niet missen"
+              subtitle="De mooiste musea, natuurparken en historische plekken op loopafstand van je camping"
             />
             <ScrollRow>
               {attractionCards.map(a => (
@@ -444,8 +444,8 @@ export default function BestemmingenPage() {
           <section>
             <SectionHeader
               icon={<Umbrella size={22} className="text-cyan-500" />}
-              title="Mooiste stranden"
-              subtitle={`${allBeaches.length} stranden en baaien langs 200 km kust`}
+              title="Mooiste stranden & baaien"
+              subtitle={`${allBeaches.length} stranden langs 200 km kust — van brede zandstranden tot verborgen calas`}
             />
             <ScrollRow>
               {featuredBeaches.map((b, i) => (
@@ -494,7 +494,7 @@ export default function BestemmingenPage() {
             </div>
           )}
 
-          <p className="text-sm text-gray-500 mb-4">{filteredCampings.length} campings gevonden</p>
+          <p className="text-sm text-gray-500 mb-4">{filteredCampings.length} campings gevonden — boek een caravan op de camping van je keuze</p>
 
           {filteredCampings.length === 0 ? (
             <div className="text-center py-16">
@@ -525,7 +525,7 @@ export default function BestemmingenPage() {
       {/* ===== TAB: PLAATSEN ===== */}
       {activeTab === 'plaatsen' && (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <p className="text-sm text-gray-500 mb-6">{filteredDests.length} plaatsen aan de Costa Brava</p>
+          <p className="text-sm text-gray-500 mb-6">{filteredDests.length} prachtige kustplaatsen aan de Costa Brava om te ontdekken tijdens je caravanvakantie</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDests.map(d => (
               <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
@@ -557,7 +557,7 @@ export default function BestemmingenPage() {
       {/* ===== TAB: BEZIENSWAARDIGHEDEN ===== */}
       {activeTab === 'bezienswaardigheden' && (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <p className="text-sm text-gray-500 mb-6">De mooiste bezienswaardigheden aan de Costa Brava</p>
+          <p className="text-sm text-gray-500 mb-6">Ontdek de mooiste bezienswaardigheden tijdens je vakantie aan de Costa Brava</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {attractionCards.map(a => (
               <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">

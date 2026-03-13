@@ -127,7 +127,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           <div className="lg:col-span-2 space-y-10">
             {/* Description */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Over {destination.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Ontdek {destination.name}</h2>
               <p className="text-gray-600 leading-relaxed text-[15px]">
                 {destination.longDescription || destination.description}
               </p>
@@ -145,7 +145,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Highlights */}
             {destination.highlights.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Highlights</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Wat maakt {destination.name} bijzonder?</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.highlights.map(h => (
                     <div key={h} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -163,7 +163,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.restaurants.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><UtensilsCrossed size={22} className="text-orange-500" /> Restaurants</span>
+                  <span className="flex items-center gap-2"><UtensilsCrossed size={22} className="text-orange-500" /> Waar eten in {destination.name}?</span>
                 </h2>
                 <div className="space-y-3">
                   {destination.restaurants.map(r => (
@@ -191,7 +191,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.beaches.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><Umbrella size={22} className="text-cyan-500" /> Stranden</span>
+                  <span className="flex items-center gap-2"><Umbrella size={22} className="text-cyan-500" /> Stranden bij {destination.name}</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.beaches.map(b => (
@@ -220,7 +220,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Photo gallery */}
             {allPhotos.length > 1 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Foto&apos;s</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Foto&apos;s van {destination.name}</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {allPhotos.map((photo, i) => (
                     <button
@@ -245,8 +245,8 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Other destinations in region */}
             {otherDestinations.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Meer in {destination.region}</h2>
-                <p className="text-gray-500 text-sm mb-4">Andere plaatsen in de regio om te ontdekken</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
+                <p className="text-gray-500 text-sm mb-4">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {otherDestinations.map(dest => (
                     <Link
@@ -284,9 +284,9 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           <div className="space-y-6">
             {/* Book CTA */}
             <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white sticky top-28">
-              <h3 className="text-lg font-bold mb-2">Caravan huren bij {destination.name}?</h3>
+              <h3 className="text-lg font-bold mb-2">Caravan huren vlakbij {destination.name}?</h3>
               <p className="text-white/80 text-sm mb-4">
-                Boek een luxe caravan op een camping in de buurt van {destination.name} en ontdek de Costa Brava.
+                Slaap op een camping op loopafstand of korte rijafstand van {destination.name}. Wij regelen alles — jij geniet.
               </p>
               <Link
                 href="/boeken"
@@ -378,10 +378,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 drop-shadow-sm">
-            Op vakantie naar {destination.name}?
+            Klaar voor {destination.name}?
           </h2>
           <p className="text-white/80 mb-6 max-w-xl mx-auto">
-            Boek een luxe caravan op een camping in de buurt en geniet van alles wat {destination.name} te bieden heeft.
+            Jouw volledig ingerichte caravan staat klaar op een camping in de buurt. Inclusief beddengoed, kookgerei en inventaris.
           </p>
           <Link
             href="/boeken"
