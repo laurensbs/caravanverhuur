@@ -416,8 +416,8 @@ function smartMatch(
     if (ctx.lastTopic === 'pricing') {
       return {
         answer: isNl
-          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Aanbetaling**: 30% bij boeking\n💰 **Restbedrag**: 70% uiterlijk 1 week voor aankomst\n🔒 **Borg**: €250-€500, retour na inspectie\n\nAlles gaat via **iDEAL/Wero** — veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
-          : `More payment info:\n\n💰 **Deposit**: 30% at booking\n💰 **Remainder**: 70% due 1 week before\n🔒 **Security**: €250-€500, refunded after inspection`,
+          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Betaling**: het volledige huurbedrag betaal je uiterlijk **30 dagen** voor aankomst\n📅 **Reserveer nu, betaal later** — pas 30 dagen voor vertrek\n🔒 **Borg**: €250-€500, retour na inspectie\n\nAlles gaat via **iDEAL/Wero** — veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
+          : `More payment info:\n\n💰 **Payment**: full amount due **30 days** before arrival\n📅 **Reserve now, pay later** — only 30 days before departure\n🔒 **Security**: €250-€500, refunded after inspection`,
         followUp: isNl ? ['Hoe boek ik?', 'Kan ik annuleren?'] : ['How to book?', 'Can I cancel?'],
         confidence: 0.9,
         topic: 'payment-details',
@@ -609,8 +609,8 @@ function smartMatch(
   if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren|huren|vastleggen|inschrijv|aanmelden|vastgelegd|kan ik.*huren|ik wil.*huren|wil graag|graag boeken|graag huren|boeking maken|hoe werkt.*boek|stappen|hoe gaat.*boek|hoe kan ik|boeking|booking|how does.*book|i want.*book|i.d like|make.*reservation/.test(lower)) {
     const bookingAnswers = isNl ? [
       `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Kies een caravan\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nJe kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
-      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en betaalt slechts **30% aanbetaling**. Klaar!\n\nDe rest betaal je uiterlijk 30 dagen voor vertrek.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
-      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal de aanbetaling\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
+      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en reserveert. Het volledige bedrag betaal je pas **30 dagen voor vertrek** — dus je kunt nu reserveren zonder direct te betalen!\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
+      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 30 dagen voor vertrek\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
     ] : isEs ? [
       `¡Reservar es muy fácil! 🎉\n\n¡Puedo ayudarte directamente aquí en el chat!\n\n👉 Haz clic en **"¡Sí, ayúdame!"** abajo.`,
     ] : [
@@ -657,9 +657,9 @@ function smartMatch(
   // ===== PAYMENT =====
   if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen|hoe betaal|wanneer betalen|hoeveel betalen|overmaken|overboeking|factuur|rekening|contant|cash|bancontact|visa|mastercard|tikkie/.test(lower)) {
     const paymentAnswers = isNl ? [
-      `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Aanbetaling**: 30% bij boeking\n2️⃣ **Restbedrag**: 70% uiterlijk 1 week voor aankomst\n3️⃣ **Borg**: reservering bij aankomst op de camping\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`,
-      `We werken met **iDEAL en Wero**${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: 30% aanbetaling bij je boeking\n💳 **Stap 2**: 70% restbedrag uiterlijk 1 week voor vertrek\n🔒 **Stap 3**: Borg (€250-€500) bij aankomst\n\nGeen creditcard nodig! Na elke betaling krijg je een bevestiging per e-mail.`,
-    ] : ['Payments via **iDEAL/Wero**:\n\n1. **Deposit**: 30% at booking\n2. **Remainder**: 70% due 1 week before\n3. **Security**: reserved on arrival'];
+      `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Huurbedrag**: het volledige bedrag betaal je uiterlijk **30 dagen** voor aankomst\n2️⃣ **Borg**: €250-€500, reservering bij aankomst op de camping\n\n📅 Reserveer nu, betaal pas later!\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`,
+      `We werken met **iDEAL en Wero**${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: Reserveer je caravan en camping\n💳 **Stap 2**: Betaal het volledige huurbedrag uiterlijk **30 dagen** voor vertrek\n🔒 **Stap 3**: Borg (€250-€500) bij aankomst\n\nGeen creditcard nodig! Na betaling krijg je een bevestiging per e-mail.`,
+    ] : ['Payments via **iDEAL/Wero**:\n\n1. **Rental**: full amount due **30 days** before arrival\n2. **Security deposit**: €250-€500 reserved on arrival'];
     return {
       answer: pick(paymentAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Kan ik annuleren?'] : ['How to book?', 'Deposit info?'],
@@ -911,7 +911,7 @@ function smartMatch(
   if (/voorwaarden|terms|regels|rules|conditi|terms and conditions|terminos/.test(lower)) {
     return {
       answer: isNl
-        ? `Je kunt al onze voorwaarden vinden op onze website${name}:\n\n📋 **[Algemene Voorwaarden](/voorwaarden)**\n🔒 **[Privacybeleid](/privacy)**\n\nBelangrijkste punten:\n• 30% aanbetaling bij boeking\n• 70% restbedrag 1 week voor aankomst\n• Gratis annuleren tot 30 dagen voor aankomst\n• Borg: €250-€500 (retour na inspectie)\n\nHeb je specifieke vragen over de voorwaarden?`
+        ? `Je kunt al onze voorwaarden vinden op onze website${name}:\n\n📋 **[Algemene Voorwaarden](/voorwaarden)**\n🔒 **[Privacybeleid](/privacy)**\n\nBelangrijkste punten:\n• Volledige betaling uiterlijk 30 dagen voor aankomst\n• Reserveer nu, betaal later\n• Gratis annuleren tot 30 dagen voor aankomst\n• Borg: €250-€500 (retour na inspectie)\n\nHeb je specifieke vragen over de voorwaarden?`
         : 'Find our terms at [Terms & Conditions](/voorwaarden) and [Privacy Policy](/privacy).',
       followUp: isNl ? ['Kan ik annuleren?', 'Hoe werkt de borg?', 'Hoe boek ik?'] : ['Cancel?', 'Deposit?'],
       confidence: 0.8,
@@ -1027,7 +1027,7 @@ function smartMatch(
   if (/hoe werkt|hoe gaat|concept|wat doen jullie|wat bieden|wat is|uitleg|explain|how does it work|how it works|como funciona|wat houd.*in/.test(lower)) {
     return {
       answer: isNl
-        ? `Ons concept is heel simpel${name}! 🚐✨\n\n**Wij regelen alles — jij geniet!**\n\n1️⃣ **Kies** je camping, caravan en periode\n2️⃣ **Boek** en betaal 30% aanbetaling via iDEAL\n3️⃣ **Wij plaatsen** de caravan op de camping\n4️⃣ **Jij rijdt** naar de camping en checkt in\n5️⃣ **Geniet** van je vakantie!\n\nDe caravan staat **al klaar** met beddengoed, kookgerei, servies en meer.\n\nBij vertrek laat je de caravan bezemschoon achter en wij doen de rest!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} caravans, volledig uitgerust\n✅ Nederlandse service\n\nWat wil je nog meer weten?`
+        ? `Ons concept is heel simpel${name}! 🚐✨\n\n**Wij regelen alles — jij geniet!**\n\n1️⃣ **Kies** je camping, caravan en periode\n2️⃣ **Reserveer** online — betaal pas 30 dagen voor vertrek via iDEAL\n3️⃣ **Wij plaatsen** de caravan op de camping\n4️⃣ **Jij rijdt** naar de camping en checkt in\n5️⃣ **Geniet** van je vakantie!\n\nDe caravan staat **al klaar** met beddengoed, kookgerei, servies en meer.\n\nBij vertrek laat je de caravan bezemschoon achter en wij doen de rest!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} caravans, volledig uitgerust\n✅ Nederlandse service\n\nWat wil je nog meer weten?`
         : 'Our concept is simple: we place a fully equipped caravan on your chosen camping. You just enjoy! 🚐✨',
       followUp: isNl ? ['Wat kost het?', 'Welke caravans?', 'Welke campings?', 'Hoe boek ik?'] : ['Cost?', 'Which caravans?', 'How to book?'],
       confidence: 0.85,
@@ -1447,7 +1447,7 @@ function smartMatch(
   // ===== HELP / CAPABILITIES =====
   if (/wat kan ik.*vragen|wat kun je|wat kan je|wat kan jij|waar kan.*helpen|help me|wat weet je|wat doe je|welke vragen|welke onderwerpen|waar ken je.*van|assisteer|capabilities|what can you|help|can you help|que puedes|ayuda/.test(lower) && !/boek|prijs|camping|caravan|annul|borg/.test(lower)) {
     const helpAnswers = isNl ? [
-      `Ik weet alles over Caravanverhuur Spanje${name}! 😊 Stel me gerust een vraag over:\n\n🚐 **Caravans** — welke types, uitrusting, slaapplaatsen\n💰 **Prijzen** — tarieven, aanbetaling, betaalmethoden\n📅 **Boeken** — hoe het werkt, beschikbaarheid, seizoen\n🏕️ **Campings** — locaties, faciliteiten, zwembaden\n📍 **Bestemmingen** — Costa Brava, stranden, dorpjes\n🔒 **Borg & annulering** — voorwaarden en regels\n🛏️ **Inventaris** — wat zit er in de caravan\n✈️ **Reizen** — route, vliegveld, huurauto\n☀️ **Weer & activiteiten** — wat te doen, dagtripjes\n👨‍👩‍👧‍👦 **Gezin & huisdieren** — kindvriendelijk, huisdierbeleid\n🛒 **Praktisch** — WiFi, winkels, sanitair, parkeren\n\nOf ik kan je **direct helpen met boeken** hier in de chat! 🎉`,
+      `Ik weet alles over Caravanverhuur Spanje${name}! 😊 Stel me gerust een vraag over:\n\n🚐 **Caravans** — welke types, uitrusting, slaapplaatsen\n💰 **Prijzen** — tarieven, betaling, betaalmethoden\n📅 **Boeken** — hoe het werkt, beschikbaarheid, seizoen\n🏕️ **Campings** — locaties, faciliteiten, zwembaden\n📍 **Bestemmingen** — Costa Brava, stranden, dorpjes\n🔒 **Borg & annulering** — voorwaarden en regels\n🛏️ **Inventaris** — wat zit er in de caravan\n✈️ **Reizen** — route, vliegveld, huurauto\n☀️ **Weer & activiteiten** — wat te doen, dagtripjes\n👨‍👩‍👧‍👦 **Gezin & huisdieren** — kindvriendelijk, huisdierbeleid\n🛒 **Praktisch** — WiFi, winkels, sanitair, parkeren\n\nOf ik kan je **direct helpen met boeken** hier in de chat! 🎉`,
       `Goede vraag${name}! Ik kan je helpen met van alles 🌟\n\n📋 **Populaire onderwerpen:**\n\n• _"Welke caravans hebben jullie?"_\n• _"Wat kost een week?"_\n• _"Hoe boek ik?"_\n• _"Welke campings zijn er?"_\n• _"Hebben jullie airco?"_\n• _"Mag mijn hond mee?"_\n• _"Hoe zit het met de borg?"_\n• _"Kan ik annuleren?"_\n• _"Wat moet ik meenemen?"_\n• _"Hoe kom ik er?"_\n\nJe kunt ook gewoon in je eigen woorden een vraag stellen — ik begrijp het! 😊\n\nOf wil je direct **boeken**? Dat kan hier in de chat!`,
     ] : isEs ? [
       `¡Puedo ayudarte con todo sobre Caravanverhuur Spanje${name}! 😊\n\n🚐 Caravanas, precios, campings, reservas, actividades y más.\n\n¿Qué te gustaría saber?`,
@@ -1526,7 +1526,7 @@ function smartMatch(
   if (/eerste keer|nooit eerder|never been|first time|primera vez|beginner|geen ervaring|nieuw|nog nooit|niet eerder|hoe begin|waar begin|tip voor begin|hoe start/.test(lower)) {
     return {
       answer: isNl
-        ? `Eerste keer met ons op vakantie? Welkom${name}! 🎉\n\nHet is heel makkelijk — wij regelen alles:\n\n1️⃣ **Kies** je periode, camping en caravan op [onze website](/boeken)\n2️⃣ **Boek** online in 5 minuten — betaal 30% aanbetaling\n3️⃣ **Wij plaatsen** de caravan volledig ingericht op de camping\n4️⃣ **Jij rijdt/vliegt** naar de camping en checkt in\n5️⃣ **Geniet!** Alles staat klaar — je kunt meteen genieten\n\n✅ **Geen gedoe met:**\n• Caravan slepen — die staat er al!\n• Inventaris regelen — beddengoed, servies, alles erbij\n• Campingplaats zoeken — dat doen wij\n\n💡 **Tip voor beginners:**\nBegin met een camping als **Cypsela Resort** (Pals) of **Cala Gogo** (Calonge) — veel faciliteiten, perfect voor eerste keer!\n\nZet je eerste stap en je wilt nooit meer anders! 😊`
+        ? `Eerste keer met ons op vakantie? Welkom${name}! 🎉\n\nHet is heel makkelijk — wij regelen alles:\n\n1️⃣ **Kies** je periode, camping en caravan op [onze website](/boeken)\n2️⃣ **Reserveer** online in 5 minuten — betaal pas 30 dagen voor vertrek\n3️⃣ **Wij plaatsen** de caravan volledig ingericht op de camping\n4️⃣ **Jij rijdt/vliegt** naar de camping en checkt in\n5️⃣ **Geniet!** Alles staat klaar — je kunt meteen genieten\n\n✅ **Geen gedoe met:**\n• Caravan slepen — die staat er al!\n• Inventaris regelen — beddengoed, servies, alles erbij\n• Campingplaats zoeken — dat doen wij\n\n💡 **Tip voor beginners:**\nBegin met een camping als **Cypsela Resort** (Pals) of **Cala Gogo** (Calonge) — veel faciliteiten, perfect voor eerste keer!\n\nZet je eerste stap en je wilt nooit meer anders! 😊`
         : 'First time? We make it easy! Choose dates, book online, and we handle everything. The caravan is ready when you arrive! 🎉',
       followUp: isNl ? ['Hoe boek ik?', 'Welke campings?', 'Wat kost het?', 'Welke caravans?'] : ['How to book?', 'Cost?', 'Campings?'],
       confidence: 0.88,
@@ -1598,8 +1598,8 @@ function smartMatch(
   if (/aanbetal|aanbetaling|30.*procent|30%|rest.*betalen|restbetaling|wanneer.*betalen|betalings.*termijn|payment.*schedule|when.*pay|segundo.*pago|tweede.*betaling/.test(lower)) {
     return {
       answer: isNl
-        ? `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Bij boeking**: 30% aanbetaling via iDEAL of Wero\n2️⃣ **8 weken voor vertrek**: restbetaling (70%)\n\n✅ Je ontvangt automatisch een herinnering voor de restbetaling\n✅ Alles via je account op onze website\n✅ Veilig betalen via iDEAL of Wero\n\n💡 **Voorbeeld:**\nCaravan van €500/week boeken:\n• Aanbetaling: €150 (bij boeking)\n• Restbetaling: €350 (8 weken voor vertrek)\n\n📌 De **campingplaats** betaal je apart, rechtstreeks aan de camping.\n\n👉 Alle details staan in je account na het boeken.`
-        : 'Pay 30% deposit at booking, remaining 70% eight weeks before arrival. Pay via iDEAL or Wero! 💳',
+        ? `Zo werkt de betaling${name}! 💳\n\nJe betaalt het **volledige huurbedrag** uiterlijk **30 dagen** voor aankomst via iDEAL of Wero.\n\n✅ Reserveer nu, betaal later\n✅ Je ontvangt automatisch een betaalherinnering\n✅ Alles via je account op onze website\n✅ Veilig betalen via iDEAL of Wero\n\n💡 **Voorbeeld:**\nCaravan van €500/week boeken:\n• Reserveer nu — geen directe betaling\n• Betaal €500 uiterlijk 30 dagen voor vertrek\n\n📌 De **campingplaats** betaal je apart, rechtstreeks aan de camping.\n\n👉 Alle details staan in je account na het boeken.`
+        : 'Full payment due 30 days before arrival via iDEAL or Wero. Reserve now, pay later! 💳',
       followUp: isNl ? ['Hoe boek ik?', 'Annuleringsbeleid?', 'Wat kost het?'] : ['How to book?', 'Cancellation?', 'Cost?'],
       confidence: 0.87,
       topic: 'payment-schedule',
