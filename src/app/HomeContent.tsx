@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   Shield,
   Truck,
@@ -354,14 +354,47 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
-                  <Image
-                    src={caravan.photos[0]}
-                    alt={caravan.name}
-                    fill
-                    sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 ease-out"
-                   
-                  />
+                  {caravan.videoUrl?.includes('gumlet.tv') ? (() => {
+                    const gMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/(\w+)/);
+                    return gMatch ? (
+                      <div
+                        className="absolute inset-0"
+                        ref={(el) => {
+                          if (!el) return;
+                          const iframe = el.querySelector('iframe');
+                          if (!iframe) return;
+                          const obs = new IntersectionObserver(([entry]) => {
+                            const src = iframe.getAttribute('src') || '';
+                            if (entry.isIntersecting && !src.includes('autoplay=true')) {
+                              iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
+                            } else if (!entry.isIntersecting && src.includes('autoplay=true')) {
+                              iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
+                            }
+                          }, { threshold: 0.3 });
+                          obs.observe(el);
+                        }}
+                      >
+                        <iframe
+                          src={`https://play.gumlet.io/embed/${gMatch[1]}?autoplay=false&muted=true&loop=true&preload=true`}
+                          title={caravan.name}
+                          allow="autoplay; fullscreen"
+                          allowFullScreen
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full border-0"
+                        />
+                      </div>
+                    ) : (
+                      <Image src={caravan.photos[0]} alt={caravan.name} fill sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                    );
+                  })() : (
+                    <Image
+                      src={caravan.photos[0]}
+                      alt={caravan.name}
+                      fill
+                      sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 ease-out"
+                    />
+                  )}
                   {/* Subtle gradient overlay at bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
 
@@ -476,21 +509,19 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
-              onMouseEnter={(e) => {
-                const iframe = e.currentTarget.querySelector('iframe');
-                if (iframe) {
+              ref={(el) => {
+                if (!el) return;
+                const iframe = el.querySelector('iframe');
+                if (!iframe) return;
+                const obs = new IntersectionObserver(([entry]) => {
                   const src = iframe.getAttribute('src') || '';
-                  if (!src.includes('autoplay=true')) {
+                  if (entry.isIntersecting && !src.includes('autoplay=true')) {
                     iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
+                  } else if (!entry.isIntersecting && src.includes('autoplay=true')) {
+                    iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
                   }
-                }
-              }}
-              onMouseLeave={(e) => {
-                const iframe = e.currentTarget.querySelector('iframe');
-                if (iframe) {
-                  const src = iframe.getAttribute('src') || '';
-                  iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
-                }
+                }, { threshold: 0.3 });
+                obs.observe(el);
               }}
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
