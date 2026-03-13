@@ -12,7 +12,11 @@ export function generateUnsubscribeToken(email: string): string {
 
 function verifyToken(email: string, token: string): boolean {
   const expected = generateUnsubscribeToken(email);
-  return token === expected;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token));
+  } catch {
+    return false;
+  }
 }
 
 // GET - Unsubscribe page (renders simple HTML)

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { caravans } from '@/data/caravans';
 import { campings } from '@/data/campings';
+import { destinations } from '@/data/destinations';
 import { getAllCustomCaravans } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/bestemmingen`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
     ...campingSlugs.map(slug => ({
       url: `${baseUrl}/bestemmingen/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    ...destinations.map(d => ({
+      url: `${baseUrl}/bestemmingen/${d.slug}`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.7,

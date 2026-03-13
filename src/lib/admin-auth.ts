@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { type AdminRole } from '@/i18n/admin-translations';
 
 /** Get session info set by middleware via headers */
@@ -38,7 +39,14 @@ async function hmacSign(payload: string): Promise<string> {
 
 async function hmacVerify(payload: string, signature: string): Promise<boolean> {
   const expected = await hmacSign(payload);
-  return expected === signature;
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(expected, 'hex'),
+      Buffer.from(signature, 'hex')
+    );
+  } catch {
+    return false;
+  }
 }
 
 export async function createAdminToken(user: string, role: AdminRole): Promise<string> {
@@ -66,7 +74,15 @@ export async function verifyAdminToken(token: string): Promise<{ user: string; r
 export function validateCredentials(user: string, password: string): { role: AdminRole } | null {
   const cred = CREDENTIALS[user];
   if (!cred) return null;
-  if (cred.password !== password) return null;
+  try {
+    const match = crypto.timingSafeEqual(
+      Buffer.from(cred.password),
+      Buffer.from(password)
+    );
+    if (!match) return null;
+  } catch {
+    return false as unknown as null;
+  }
   return { role: cred.role };
 }
 

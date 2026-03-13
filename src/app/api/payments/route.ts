@@ -7,7 +7,12 @@ export async function GET(request: NextRequest) {
     const bookingId = request.nextUrl.searchParams.get('bookingId');
 
     if (bookingId) {
-      // Allow per-booking lookup (used by customer account page)
+      // Require customer session or admin auth for per-booking lookup
+      const cookie = request.cookies.get('admin_session')?.value;
+      const customerSession = request.cookies.get('customer_session')?.value;
+      if (!cookie && !customerSession) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
       const payments = await getPaymentsByBookingId(bookingId);
       return NextResponse.json({ payments });
     }

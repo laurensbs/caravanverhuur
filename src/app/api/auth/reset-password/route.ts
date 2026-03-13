@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPasswordResetToken, markPasswordResetTokenUsed, updateCustomerPassword, createCustomerSession } from '@/lib/db';
 import { hashPassword } from '@/lib/password';
+import { passwordResetLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = passwordResetLimiter.check(ip);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Te veel pogingen. Probeer het later opnieuw.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const { token, password } = await request.json();
 

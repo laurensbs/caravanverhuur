@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateDiscountCode, incrementDiscountCodeUsage } from '@/lib/db';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+const discountLimiter = rateLimit({ name: 'discount-validate', maxRequests: 10, windowSeconds: 5 * 60 });
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = discountLimiter.check(ip);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Te veel pogingen. Probeer het later opnieuw.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { code, totalAmount } = body;

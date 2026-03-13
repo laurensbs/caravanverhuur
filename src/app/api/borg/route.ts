@@ -8,12 +8,17 @@ import {
   getCustomerByEmail,
 } from '@/lib/db';
 import { sendBorgChecklistEmail } from '@/lib/email';
+import { verifyAdminRequest, unauthorizedResponse } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const bookingId = searchParams.get('booking_id');
     const id = searchParams.get('id');
+
+    // All borg lookups require admin auth
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
 
     if (id) {
       const checklist = await getBorgChecklistById(id);
@@ -37,6 +42,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const admin = await verifyAdminRequest(request);
+  if (!admin) return unauthorizedResponse();
+
   try {
     const body = await request.json();
     const { bookingId, type, staffName } = body;
@@ -54,6 +62,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const admin = await verifyAdminRequest(request);
+  if (!admin) return unauthorizedResponse();
+
   try {
     const body = await request.json();
     const { id, items, status, generalNotes, staffName, completedAt } = body;
