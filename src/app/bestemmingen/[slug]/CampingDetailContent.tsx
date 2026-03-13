@@ -261,11 +261,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
           </div>
 
           {/* Right sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Book CTA */}
-            <div className="hidden lg:block bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white sticky top-28">
-              <h3 className="text-lg font-bold mb-2">{t('destinations.bookAtCamping')}</h3>
-              <p className="text-white/80 text-sm mb-4">{t('destinations.bookAtCampingDesc').replace('{name}', camping.name)}</p>
+            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-28">
+              <h3 className="text-base sm:text-lg font-bold mb-2">{t('destinations.bookAtCamping')}</h3>
+              <p className="text-white/80 text-sm mb-4 leading-relaxed">{t('destinations.bookAtCampingDesc').replace('{name}', camping.name)}</p>
               <Link
                 href="/boeken"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-white text-primary font-bold rounded-xl text-sm transition-transform hover:scale-[1.02] shadow-lg"
@@ -285,7 +285,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             </div>
 
             {/* Location info */}
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <MapPin size={16} className="text-primary" /> {t('destinations.locationInfoTitle')}
               </h3>
@@ -303,24 +303,24 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
 
             {/* Other campings in region */}
             {otherCampings.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Tent size={16} className="text-primary" /> {t('destinations.otherCampingsInRegion')}
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {otherCampings.map(c => (
                     <Link
                       key={c.id}
                       href={`/bestemmingen/${c.slug}`}
-                      className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors group border border-transparent hover:border-gray-100"
                     >
-                      <div className="w-12 h-9 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
                         {(c.photos?.[0] || '').startsWith('http') ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={c.photos[0]}
                             alt={c.name}
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="absolute inset-0 w-full h-full object-cover"
                             loading="lazy"
                           />
                         ) : (
@@ -328,15 +328,16 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                             src={c.photos?.[0] || '/og-image.jpg'}
                             alt={c.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            sizes="48px"
+                            className="object-cover"
+                            sizes="40px"
                           />
                         )}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
-                        <p className="text-xs text-gray-500">{c.location}</p>
+                        <p className="text-xs text-gray-500 truncate">{c.location}</p>
                       </div>
+                      <ChevronRight size={14} className="text-gray-300 shrink-0" />
                     </Link>
                   ))}
                 </div>
@@ -370,10 +371,10 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       </section>
 
       {/* Mobile sticky CTA bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 safe-area-bottom">
         <Link
           href="/boeken"
-          className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-sm shadow-lg"
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-white font-bold rounded-xl text-sm shadow-lg"
         >
           {t('nav.bookNow')} <ArrowRight size={16} />
         </Link>

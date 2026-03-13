@@ -121,10 +121,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Main content */}
-      <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
+      <section className="max-w-6xl mx-auto px-4 py-6 sm:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left: main content */}
-          <div className="lg:col-span-2 space-y-10">
+          <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Description */}
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Ontdek {destination.name}</h2>
@@ -146,13 +146,13 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.highlights.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Wat maakt {destination.name} bijzonder?</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {destination.highlights.map(h => (
-                    <div key={h} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                        <Star size={14} className="text-primary" />
+                    <div key={h} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
+                      <div className="w-7 h-7 bg-primary/5 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                        <Star size={12} className="text-primary" />
                       </div>
-                      <span className="text-sm text-gray-700">{h}</span>
+                      <span className="text-[13px] sm:text-sm text-gray-700 leading-snug">{h}</span>
                     </div>
                   ))}
                 </div>
@@ -163,19 +163,19 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.restaurants.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                  <span className="flex items-center gap-2"><UtensilsCrossed size={20} className="text-primary sm:w-[22px] sm:h-[22px]" /> Waar eten in {destination.name}?</span>
+                  <span className="flex items-center gap-2"><UtensilsCrossed size={18} className="text-primary sm:w-[20px] sm:h-[20px]" /> Waar eten in {destination.name}?</span>
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {destination.restaurants.map(r => (
-                    <div key={r.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                      <div className="flex items-start justify-between mb-2">
+                    <div key={r.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4">
+                      <div className="flex items-start justify-between mb-1.5">
                         <div>
-                          <h3 className="font-bold text-gray-900">{r.name}</h3>
+                          <h3 className="font-bold text-gray-900 text-[15px]">{r.name}</h3>
                           <p className="text-xs text-gray-500">{r.cuisine}</p>
                         </div>
-                        <span className="text-sm font-semibold text-primary bg-primary/5 px-2 py-0.5 rounded-full">{r.price}</span>
+                        <span className="text-xs font-semibold text-primary bg-primary/5 px-2 py-0.5 rounded-full shrink-0 ml-2">{r.price}</span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{r.description}</p>
+                      <p className="text-[13px] sm:text-sm text-gray-600 mb-2">{r.description}</p>
                       {r.mustTry && (
                         <div className="flex items-center gap-1.5 text-xs text-primary/70 bg-primary/5 px-2.5 py-1 rounded-lg w-fit">
                           <Star size={12} /> Must try: {r.mustTry}
@@ -220,13 +220,13 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Photo gallery */}
             {allPhotos.length > 1 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Foto&apos;s van {destination.name}</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Foto&apos;s van {destination.name}</h2>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {allPhotos.map((photo, i) => (
                     <button
                       key={i}
                       onClick={() => { setActivePhoto(i); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="relative aspect-[16/10] rounded-2xl overflow-hidden group"
+                      className="relative aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden group"
                     >
                       <Image
                         src={photo}
@@ -245,9 +245,9 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Other destinations in region */}
             {otherDestinations.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
-                <p className="text-gray-500 text-sm mb-4">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
+                <p className="text-gray-500 text-sm mb-3 sm:mb-4">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {otherDestinations.map(dest => (
                     <Link
                       key={dest.slug}
@@ -281,11 +281,11 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           </div>
 
           {/* Right sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Book CTA */}
-            <div className="hidden lg:block bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white sticky top-28">
-              <h3 className="text-lg font-bold mb-2">Caravan huren vlakbij {destination.name}?</h3>
-              <p className="text-white/80 text-sm mb-4">
+            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-28">
+              <h3 className="text-base sm:text-lg font-bold mb-2">Caravan huren vlakbij {destination.name}?</h3>
+              <p className="text-white/80 text-sm mb-4 leading-relaxed">
                 Slaap op een camping op loopafstand of korte rijafstand van {destination.name}. Wij regelen alles — jij geniet.
               </p>
               <Link
@@ -297,7 +297,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             </div>
 
             {/* Weather & Travel tip */}
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Sun size={16} className="text-primary" /> Weer & reistip
               </h3>
@@ -323,24 +323,24 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
 
             {/* Nearby campings */}
             {nearbyCampings.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Tent size={16} className="text-primary" /> Campings in de buurt
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {nearbyCampings.map(c => (
                     <Link
                       key={c.id}
                       href={`/bestemmingen/${c.slug}`}
-                      className="flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors group border border-transparent hover:border-gray-100"
                     >
-                      <div className="w-12 h-9 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
                         {(c.photos?.[0] || '').startsWith('http') ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={c.photos![0]}
                             alt={c.name}
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="absolute inset-0 w-full h-full object-cover"
                             loading="lazy"
                           />
                         ) : (
@@ -348,21 +348,22 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                             src={c.photos?.[0] || '/og-image.jpg'}
                             alt={c.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            sizes="48px"
+                            className="object-cover"
+                            sizes="40px"
                           />
                         )}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
-                        <p className="text-xs text-gray-500">{c.location}</p>
+                        <p className="text-xs text-gray-500 truncate">{c.location}</p>
                       </div>
+                      <ChevronRight size={14} className="text-gray-300 shrink-0" />
                     </Link>
                   ))}
                 </div>
                 <Link
                   href="/bestemmingen#campings"
-                  className="flex items-center justify-center gap-1.5 w-full mt-3 pt-3 border-t border-gray-100 text-primary text-sm font-semibold"
+                  className="flex items-center justify-center gap-1.5 w-full mt-3 pt-3 border-t border-gray-100 text-primary text-sm font-semibold hover:text-primary-dark transition-colors"
                 >
                   Alle campings bekijken <ArrowRight size={14} />
                 </Link>
@@ -393,10 +394,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Mobile sticky CTA bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 safe-area-bottom">
         <Link
           href="/boeken"
-          className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-sm shadow-lg"
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-white font-bold rounded-xl text-sm shadow-lg"
         >
           {t('nav.bookNow')} <ArrowRight size={16} />
         </Link>
