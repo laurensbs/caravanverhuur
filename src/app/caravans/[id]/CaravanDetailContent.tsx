@@ -130,11 +130,11 @@ export default function CaravanDetailContent({ id }: { id: string }) {
       </AnimatePresence>
 
       <div className="min-h-screen bg-surface">
-        {/* Breadcrumb - mobile compact */}
+        {/* Breadcrumb */}
         <div className="bg-white border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 py-2.5">
-            <Link href="/caravans" className="inline-flex items-center gap-2 text-sm font-medium text-foreground-light hover:text-primary transition-colors bg-surface hover:bg-surface-alt px-3 py-1.5 rounded-full">
-              <ArrowLeft size={15} />
+          <div className="max-w-6xl mx-auto px-4 py-2">
+            <Link href="/caravans" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-primary transition-colors">
+              <ArrowLeft size={14} />
               <span className="sm:hidden">{t('caravans.back')}</span>
               <span className="hidden sm:inline">{t('caravans.backToCaravans')}</span>
             </Link>
@@ -147,9 +147,9 @@ export default function CaravanDetailContent({ id }: { id: string }) {
           if (!gumletMatch) return null;
           return (
             <div className="bg-white">
-              <div className="max-w-6xl mx-auto px-4 pt-4 sm:pt-6">
+              <div className="max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
                 <div
-                  className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl"
+                  className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg"
                   ref={(el) => {
                     if (!el) return;
                     const iframe = el.querySelector('iframe');
@@ -208,8 +208,8 @@ export default function CaravanDetailContent({ id }: { id: string }) {
           </div>
 
           {/* Desktop: grid layout */}
-          <div className="hidden sm:block max-w-6xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-4 gap-3 h-80 lg:h-96">
+          <div className="hidden sm:block max-w-6xl mx-auto px-4 py-4">
+            <div className="grid grid-cols-4 gap-2.5 h-72 lg:h-80">
               <button
                 onClick={() => { setActivePhoto(0); setLightboxOpen(true); }}
                 className="col-span-2 relative rounded-xl overflow-hidden group"
