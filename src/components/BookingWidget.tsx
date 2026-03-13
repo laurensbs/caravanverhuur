@@ -380,26 +380,26 @@ export default function BookingWidget() {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut'as const }} className="w-full" > <div className="bg-white/95 backdrop-blur-lg rounded-2xl lg:rounded-full shadow-2xl p-3 lg:p-2"> <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0"> {/* Check-in */} <div onClick={openCheckIn} className="flex-1 px-3 lg:px-5 py-2 lg:py-3 cursor-pointer rounded-xl" > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.arrivalLabel')}</span>
+        transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut'as const }} className="w-full" > <div className="bg-white rounded-2xl lg:rounded-full shadow-xl p-2.5 lg:p-1.5"> <div className="flex flex-col lg:flex-row lg:items-center gap-1.5 lg:gap-0"> {/* Check-in */} <div onClick={openCheckIn} className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.arrivalLabel')}</span>
               <div className="flex items-center gap-2">
-                <CalendarDays size={16} className="text-primary shrink-0" />
+                <CalendarDays size={15} className="text-primary shrink-0" />
                 <input
                   ref={checkInRef}
                   type="date"
                   value={checkIn}
                   onChange={e => setCheckIn(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Check-out */} <div onClick={openCheckOut} className="flex-1 px-3 lg:px-5 py-2 lg:py-3 cursor-pointer rounded-xl" > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.departureLabel')}</span>
+                  min={new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-[13px] font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Divider */} <div className="hidden lg:block w-px h-8 bg-gray-200" /> {/* Check-out */} <div onClick={openCheckOut} className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.departureLabel')}</span>
               <div className="flex items-center gap-2">
-                <CalendarDays size={16} className="text-primary shrink-0" />
+                <CalendarDays size={15} className="text-primary shrink-0" />
                 <input
                   ref={checkOutRef}
                   type="date"
                   value={checkOut}
                   onChange={e => setCheckOut(e.target.value)}
-                  min={checkIn || new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Camping selector */} <div className="flex-1 px-3 lg:px-5 py-2 lg:py-3 relative cursor-pointer rounded-xl" ref={campingRef} onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }} > <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetCamping')}</span>
+                  min={checkIn || new Date().toISOString().split('T')[0]} className="w-full bg-transparent text-[13px] font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Divider */} <div className="hidden lg:block w-px h-8 bg-gray-200" /> {/* Camping selector */} <div className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 relative cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" ref={campingRef} onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }} > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.widgetCamping')}</span>
               <button className="flex items-center gap-2 w-full text-left min-w-0">
-                <MapPin size={16} className="text-primary shrink-0" />
-                <span className={`text-sm font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
+                <MapPin size={15} className="text-primary shrink-0" />
+                <span className={`text-[13px] font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>
                   <span className="block truncate">{selectedCamping ? selectedCamping.name : t('booking.widgetChoose')}</span>
                 </span>
                 <ChevronDown size={14} className={`text-muted transition-transform shrink-0 ${campingOpen ? 'rotate-180' : ''}`} />
@@ -409,15 +409,17 @@ export default function BookingWidget() {
             </div>
 
             {/* Guests */}
+            {/* Divider */}
+            <div className="hidden lg:block w-px h-8 bg-gray-200" />
             <div
-              className="flex-1 px-3 lg:px-5 py-2 lg:py-3 relative cursor-pointer rounded-xl"
+              className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 relative cursor-pointer rounded-xl hover:bg-gray-50 transition-colors"
               ref={guestsRef}
               onClick={() => { setGuestsOpen(!guestsOpen); setCampingOpen(false); }}
             >
-              <span className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">{t('booking.widgetGuests')}</span>
+              <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.widgetGuests')}</span>
               <button className="flex items-center gap-2 w-full text-left">
-                <Users size={16} className="text-primary shrink-0" />
-                <span className="text-sm font-medium text-foreground">
+                <Users size={15} className="text-primary shrink-0" />
+                <span className="text-[13px] font-medium text-foreground">
                   {adults} {t('booking.widgetAdultsShort')}{children > 0 ? `, ${children} ${t('booking.widgetChildrenShort')}` : ''}
                 </span>
                 <ChevronDown size={14} className={`text-muted transition-transform ${guestsOpen ? 'rotate-180' : ''}`} />
@@ -430,9 +432,9 @@ export default function BookingWidget() {
             <div className="px-1 py-1">
               <button
                 onClick={handleSearch}
-                className="w-full lg:w-auto px-6 lg:px-8 py-3.5 lg:py-4 bg-primary text-white font-bold rounded-xl lg:rounded-full flex items-center justify-center gap-2 shadow-lg"
+                className="w-full lg:w-auto px-5 lg:px-6 py-3 lg:py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl lg:rounded-full flex items-center justify-center gap-2 transition-colors text-sm"
               >
-                <Search size={18} />
+                <Search size={16} />
                 <span>{t('booking.widgetSearch')}</span>
               </button>
             </div>

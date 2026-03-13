@@ -63,27 +63,28 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   return (
     <>
       {/* ===== HERO with Booking Widget ===== */}
-      <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[80svh] flex flex-col justify-end overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[82svh] flex flex-col justify-end overflow-hidden">
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
             src="/images/campings/lloret_de_mar_panorama.jpg"
             alt={t('home.heroAlt')}
             fill
-            className="object-cover object-center"
+            className="object-cover object-[center_30%]"
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+          {/* Bottom-heavy gradient so the photo stays vivid at the top */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         </motion.div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 pb-10 sm:pb-14 w-full">
-          <div className="max-w-xl mb-6 sm:mb-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pb-8 sm:pb-12 w-full">
+          <div className="max-w-lg mb-5 sm:mb-7">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3 sm:mb-4"
+              className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3"
             >
               <Sun size={12} className="text-primary-light" />
               <span className="hidden sm:inline">{t('nav.season')}</span>
@@ -91,22 +92,22 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-[1.15] mb-3 sm:mb-4 tracking-tight"
+              className="text-2xl sm:text-3xl lg:text-[2.75rem] font-bold text-white leading-[1.2] mb-3 tracking-tight"
             >
-              {t('home.heroTitle1')}
-              <span className="text-white/90"> {t('home.heroTitle2')}</span>
-              <br className="hidden sm:block" />
-              <span className="text-white/85"> {t('home.heroTitle3')}</span>
+              {t('home.heroTitle1')}{' '}
+              {t('home.heroTitle2')}
+              <br />
+              {t('home.heroTitle3')}
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="text-sm sm:text-base text-white/75 leading-relaxed max-w-md"
+              className="text-[13px] sm:text-sm text-white/70 leading-relaxed max-w-sm"
             >
               {t('home.heroSubtitle')} <span className="text-white font-medium">{t('home.heroHighlight')}</span> {t('home.heroSuffix')}
             </motion.p>
@@ -117,19 +118,19 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
           {/* Stats row */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
-            className="flex gap-6 sm:gap-8 mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+            className="flex items-center gap-5 sm:gap-6 mt-5"
           >
             {[
-              { value: '4', label: t('home.statCaravans'), color: 'text-white' },
-              { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
-              { value: '100%', label: t('home.statRelaxed'), color: 'text-white' },
+              { value: '4', label: t('home.statCaravans') },
+              { value: '30+', label: t('home.statCampings') },
+              { value: '100%', label: t('home.statRelaxed') },
             ].map((stat, si) => (
-              <div key={si}>
-                <div className={`text-lg sm:text-xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-white/50 text-[11px] sm:text-xs">{stat.label}</div>
+              <div key={si} className="flex items-baseline gap-1.5">
+                <span className="text-base sm:text-lg font-bold text-white">{stat.value}</span>
+                <span className="text-white/45 text-[11px] sm:text-xs">{stat.label}</span>
               </div>
             ))}
           </motion.div>
