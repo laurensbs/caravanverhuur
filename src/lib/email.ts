@@ -66,15 +66,16 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
   <title>${BRAND_NAME}</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
     * { box-sizing: border-box; }
     body, table, td { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     img { border: 0; max-width: 100%; }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#EFF6FF;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
-  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#EFF6FF;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>` : ''}
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#EFF6FF;">
+<body style="margin:0;padding:0;background:#FAFAF9;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FAFAF9;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>` : ''}
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FAFAF9;">
     <tr><td style="padding:32px 16px 48px;" align="center">
 
       <!-- Header with logo -->
@@ -89,7 +90,7 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
       <!-- Main card -->
       <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
         <!-- Top accent bar -->
-        <tr><td style="height:4px;background:linear-gradient(90deg, #0F172A, #334155);font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="height:5px;background:linear-gradient(90deg, #0F172A 0%, #1E293B 50%, #334155 100%);font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:48px 44px 44px;">
           ${content}
         </td></tr>
@@ -128,7 +129,7 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
 // ===== HELPERS =====
 
 function heading(text: string): string {
-  return `<h2 style="margin:0 0 8px;color:#0F172A;font-size:26px;font-weight:800;letter-spacing:-0.4px;line-height:1.3;">${text}</h2>`;
+  return `<h2 style="margin:0 0 8px;color:#0F172A;font-family:'Plus Jakarta Sans','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;line-height:1.25;">${text}</h2>`;
 }
 
 function subtext(text: string): string {
@@ -137,30 +138,30 @@ function subtext(text: string): string {
 
 function button(label: string, href: string, color: string = '#0F172A'): string {
   return `<div style="text-align:center;margin:36px 0 12px;">
-    <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px ${color}40;">${label}</a>
+    <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-family:'Plus Jakarta Sans','Inter',-apple-system,sans-serif;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px ${color}33;">${label}</a>
   </div>`;
 }
 
 function divider(): string {
-  return `<hr style="border:none;border-top:1px solid #E2E8F0;margin:32px 0;">`;
+  return `<hr style="border:none;border-top:1px solid #E7E5E4;margin:32px 0;">`;
 }
 
 function infoRow(label: string, value: string): string {
   return `<tr>
-    <td style="color:#94A3B8;font-size:14px;padding:12px 0;border-bottom:1px solid #F1F5F9;vertical-align:top;">${label}</td>
-    <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:12px 0;border-bottom:1px solid #F1F5F9;vertical-align:top;">${value}</td>
+    <td style="color:#94A3B8;font-size:14px;padding:12px 0;border-bottom:1px solid #F5F5F4;vertical-align:top;">${label}</td>
+    <td style="color:#0F172A;font-weight:600;font-size:14px;text-align:right;padding:12px 0;border-bottom:1px solid #F5F5F4;vertical-align:top;">${value}</td>
   </tr>`;
 }
 
 function highlight(content: string, accent = false): string {
-  const bg = accent ? '#F8FAFC' : '#F8FAFC';
-  const border = accent ? '#CBD5E1' : '#E2E8F0';
+  const bg = accent ? '#F5F5F4' : '#FAFAF9';
+  const border = accent ? '#D6D3D1' : '#E7E5E4';
   return `<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:22px 26px;margin:0 0 28px;">${content}</div>`;
 }
 
 function badge(emoji: string, label: string): string {
   return `<div style="text-align:center;margin-bottom:12px;">
-    <span style="display:inline-block;background:#F8FAFC;color:#0F172A;font-size:12px;font-weight:700;padding:6px 16px;border-radius:24px;letter-spacing:0.3px;border:1px solid #CBD5E1;">${emoji} ${label}</span>
+    <span style="display:inline-block;background:#F8FAFC;color:#0F172A;font-family:'Plus Jakarta Sans','Inter',-apple-system,sans-serif;font-size:11px;font-weight:700;padding:6px 16px;border-radius:24px;letter-spacing:0.5px;text-transform:uppercase;border:1px solid #E7E5E4;">${emoji} ${label}</span>
   </div>`;
 }
 
@@ -291,7 +292,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${subtext(t.bookingSubtext(firstName))}
 
       <!-- Reference card -->
-      <div style="background:linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);border:1px solid #CBD5E1;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
+      <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#0F172A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
         <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${t.bookingAwaitConfirm}</span>
@@ -318,7 +319,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
         </tr>
         <tr>
           <td colspan="2" style="padding:8px 0 0;">
-            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
+            <div style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:14px 18px;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
@@ -423,7 +424,7 @@ export async function sendManualBookingEmail(to: string, data: {
         </tr>
         <tr>
           <td colspan="2" style="padding:8px 0 0;">
-            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;">
+            <div style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:14px 18px;">
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
@@ -693,7 +694,7 @@ export async function sendNewsletterEmail(data: {
     : '';
 
   const unsubscribeHtml = data.unsubscribeUrl
-    ? `<div style="text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid #E2E8F0;">
+    ? `<div style="text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid #E7E5E4;">
         <p style="margin:0;color:#94A3B8;font-size:11px;">
           <a href="${data.unsubscribeUrl}" style="color:#94A3B8;text-decoration:underline;">Uitschrijven voor nieuwsbrieven</a>
         </p>
@@ -709,7 +710,7 @@ export async function sendNewsletterEmail(data: {
       ${heading(data.title)}
 
       ${hasDetails ? `
-        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px 20px;margin:0 0 28px;">
+        <div style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:12px;padding:16px 20px;margin:0 0 28px;">
           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
             ${data.eventDate ? `<tr>
               <td style="color:#64748B;font-size:13px;padding:4px 0;font-weight:500;">\uD83D\uDCC5 Datum</td>
@@ -800,7 +801,7 @@ export async function sendCountdownEmail(data: {
         <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
           <tr>
             <td style="padding:0 8px;">
-              <div style="background:linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);border:1px solid #CBD5E1;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
+              <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
                 <div style="font-size:36px;font-weight:800;color:#0F172A;line-height:1;">${weeks}</div>
                 <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">${t.countdownWeeks}</div>
               </div>
