@@ -476,19 +476,33 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
+              onMouseEnter={(e) => {
+                const iframe = e.currentTarget.querySelector('iframe');
+                if (iframe) {
+                  const src = iframe.getAttribute('src') || '';
+                  if (!src.includes('autoplay=true')) {
+                    iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
+                  }
+                }
+              }}
+              onMouseLeave={(e) => {
+                const iframe = e.currentTarget.querySelector('iframe');
+                if (iframe) {
+                  const src = iframe.getAttribute('src') || '';
+                  iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
+                }
+              }}
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
-                <Image
-                  src="https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-1.jpg"
-                  alt="Caravan interieur volledig ingericht"
-                  width={600}
-                  height={400}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="w-full object-cover transition-transform duration-700"
-                 
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
+                <iframe
+                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?autoplay=false&muted=true&loop=true&preload=true"
+                  title="Caravan interieur volledig ingericht"
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full border-0"
                 />
               </div>
-
             </motion.div>
           </div>
         </div>
