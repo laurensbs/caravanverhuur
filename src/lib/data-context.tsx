@@ -34,7 +34,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .catch(e => console.error('Fetch campings error:', e));
   }, []);
 
-  const caravans = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
+  // API already returns the full merged list (static + overrides + custom)
+  const caravans = useMemo(() => customCaravans.length > 0 ? customCaravans : staticCaravans, [customCaravans]);
 
   return (
     <DataContext.Provider value={{ caravans, campings }}>
