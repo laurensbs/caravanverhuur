@@ -16,20 +16,20 @@ import { useLanguage } from '@/i18n/context';
 /*  Facility icons                                                     */
 /* ------------------------------------------------------------------ */
 const facilityIcons: Record<string, React.ReactNode> = {
-  Zwembad: <Waves size={14} className="text-cyan-500" />,
-  Waterpark: <Waves size={14} className="text-blue-500" />,
-  Aquapark: <Waves size={14} className="text-blue-600" />,
-  Strand: <Umbrella size={14} className="text-amber-500" />,
+  Zwembad: <Waves size={14} className="text-primary/60" />,
+  Waterpark: <Waves size={14} className="text-primary/60" />,
+  Aquapark: <Waves size={14} className="text-primary/60" />,
+  Strand: <Umbrella size={14} className="text-primary/60" />,
   Restaurant: <span className="text-sm">🍽️</span>,
-  Supermarkt: <ShoppingCart size={14} className="text-green-500" />,
-  WiFi: <Wifi size={14} className="text-indigo-500" />,
-  Animatie: <Sparkles size={14} className="text-pink-500" />,
+  Supermarkt: <ShoppingCart size={14} className="text-primary/60" />,
+  WiFi: <Wifi size={14} className="text-primary/60" />,
+  Animatie: <Sparkles size={14} className="text-primary/60" />,
   Speeltuin: <span className="text-sm">🎪</span>,
-  Sportterreinen: <Dumbbell size={14} className="text-orange-500" />,
-  Wellness: <Heart size={14} className="text-rose-400" />,
-  Spa: <Heart size={14} className="text-rose-500" />,
+  Sportterreinen: <Dumbbell size={14} className="text-primary/60" />,
+  Wellness: <Heart size={14} className="text-primary/60" />,
+  Spa: <Heart size={14} className="text-primary/60" />,
   Fietsverhuur: <span className="text-sm">🚲</span>,
-  Watersport: <Waves size={14} className="text-teal-500" />,
+  Watersport: <Waves size={14} className="text-primary/60" />,
   Kajak: <span className="text-sm">🛶</span>,
 };
 
@@ -47,7 +47,7 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50 flex flex-col"
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-cyan-50">
+      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-primary-50">
         {camping.photos?.[0] ? (
           camping.photos[0].startsWith('http') ? (
             /* External URLs: use unoptimized to bypass Next.js image proxy */
@@ -351,7 +351,7 @@ export default function BestemmingenPage() {
           {/* Row 1: Popular Destinations */}
           <section>
             <SectionHeader
-              icon={<MapPin size={22} className="text-amber-500" />}
+              icon={<MapPin size={22} className="text-primary" />}
               title="Populaire kustplaatsen"
               subtitle="Van pittoreske vissersdorpjes tot levendige badplaatsen — vind jouw favoriete plek"
               onAction={() => setActiveTab('plaatsen')} linkText="Alle plaatsen"
@@ -370,8 +370,8 @@ export default function BestemmingenPage() {
                   <div className="p-3">
                     <p className="text-xs text-gray-600 line-clamp-2 mb-2">{d.description}</p>
                     <div className="flex items-center gap-3 text-[11px] text-gray-400">
-                      <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-cyan-500" /> {d.beaches.length} stranden</span>
-                      <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-orange-400" /> {d.restaurants.length} restaurants</span>
+                      <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {d.beaches.length} stranden</span>
+                      <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-primary/50" /> {d.restaurants.length} restaurants</span>
                     </div>
                   </div>
                 </Link>
@@ -390,7 +390,7 @@ export default function BestemmingenPage() {
             <ScrollRow>
               {allCampings.slice(0, 12).map(c => (
                 <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-cyan-50">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-primary-50">
                     <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -417,7 +417,7 @@ export default function BestemmingenPage() {
           {/* Row 3: Bezienswaardigheden */}
           <section>
             <SectionHeader
-              icon={<Landmark size={22} className="text-emerald-500" />}
+              icon={<Landmark size={22} className="text-primary" />}
               title="Niet missen"
               subtitle="De mooiste musea, natuurparken en historische plekken op loopafstand van je camping"
             />
@@ -443,7 +443,7 @@ export default function BestemmingenPage() {
           {/* Row 4: Stranden */}
           <section>
             <SectionHeader
-              icon={<Umbrella size={22} className="text-cyan-500" />}
+              icon={<Umbrella size={22} className="text-primary" />}
               title="Mooiste stranden & baaien"
               subtitle={`${allBeaches.length} stranden langs 200 km kust — van brede zandstranden tot verborgen calas`}
             />
@@ -460,10 +460,10 @@ export default function BestemmingenPage() {
                   </div>
                   <div className="p-3">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-amber-50 text-amber-700' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-primary/5 text-primary' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-primary/5 text-primary/70'}`}>
                         {b.type === 'zand' ? '🏖️ Zand' : b.type === 'kiezel' ? '🪨 Kiezel' : b.type === 'rotsen' ? '🪨 Rotsen' : '🏖️ Mix'}
                       </span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-green-50 text-green-700' : b.vibe === 'levendig' ? 'bg-pink-50 text-pink-600' : 'bg-cyan-50 text-cyan-700'}`}>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-accent/10 text-accent-dark' : b.vibe === 'levendig' ? 'bg-primary/5 text-primary' : 'bg-gray-100 text-gray-600'}`}>
                         {b.vibe === 'familiaal' ? '👨‍👩‍👧 Familiaal' : b.vibe === 'levendig' ? '🎉 Levendig' : b.vibe === 'rustig' ? '🧘 Rustig' : '🌊 Wild'}
                       </span>
                     </div>
@@ -533,7 +533,7 @@ export default function BestemmingenPage() {
                   <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute top-3 left-3">
-                    <span className="px-2 py-0.5 bg-amber-500/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">{d.region}</span>
+                    <span className="px-2 py-0.5 bg-primary/80 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">{d.region}</span>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-lg font-bold text-white mb-0.5">{d.name}</h3>
@@ -543,8 +543,8 @@ export default function BestemmingenPage() {
                 <div className="p-4">
                   <p className="text-sm text-gray-600 line-clamp-2 mb-3">{d.description}</p>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span className="flex items-center gap-1"><Umbrella size={12} className="text-cyan-500" /> {d.beaches.length} stranden</span>
-                    <span className="flex items-center gap-1"><UtensilsCrossed size={12} className="text-orange-400" /> {d.restaurants.length} restaurants</span>
+                    <span className="flex items-center gap-1"><Umbrella size={12} className="text-primary/50" /> {d.beaches.length} stranden</span>
+                    <span className="flex items-center gap-1"><UtensilsCrossed size={12} className="text-primary/50" /> {d.restaurants.length} restaurants</span>
                     {d.population && <span className="flex items-center gap-1"><Users size={12} className="text-gray-400" /> {d.population}</span>}
                   </div>
                 </div>

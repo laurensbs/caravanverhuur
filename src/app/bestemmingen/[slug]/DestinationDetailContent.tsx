@@ -88,29 +88,29 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Globe size={18} className="text-amber-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <Globe size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{destination.region}</p>
                 <p className="text-xs text-gray-500">Regio</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-cyan-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Umbrella size={18} className="text-cyan-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <Umbrella size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{destination.beaches.length}</p>
                 <p className="text-xs text-gray-500">Stranden</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <UtensilsCrossed size={18} className="text-orange-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <UtensilsCrossed size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{destination.restaurants.length}</p>
                 <p className="text-xs text-gray-500">Restaurants</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Sun size={18} className="text-yellow-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <Sun size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{destination.weather.summer}</p>
                 <p className="text-xs text-gray-500">Zomer</p>
@@ -163,7 +163,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.restaurants.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><UtensilsCrossed size={22} className="text-orange-500" /> Waar eten in {destination.name}?</span>
+                  <span className="flex items-center gap-2"><UtensilsCrossed size={22} className="text-primary" /> Waar eten in {destination.name}?</span>
                 </h2>
                 <div className="space-y-3">
                   {destination.restaurants.map(r => (
@@ -173,11 +173,11 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                           <h3 className="font-bold text-gray-900">{r.name}</h3>
                           <p className="text-xs text-gray-500">{r.cuisine}</p>
                         </div>
-                        <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{r.price}</span>
+                        <span className="text-sm font-semibold text-primary bg-primary/5 px-2 py-0.5 rounded-full">{r.price}</span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{r.description}</p>
                       {r.mustTry && (
-                        <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg w-fit">
+                        <div className="flex items-center gap-1.5 text-xs text-primary/70 bg-primary/5 px-2.5 py-1 rounded-lg w-fit">
                           <Star size={12} /> Must try: {r.mustTry}
                         </div>
                       )}
@@ -191,21 +191,21 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.beaches.length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><Umbrella size={22} className="text-cyan-500" /> Stranden bij {destination.name}</span>
+                  <span className="flex items-center gap-2"><Umbrella size={22} className="text-primary" /> Stranden bij {destination.name}</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.beaches.map(b => (
                     <div key={b.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                       <h3 className="font-bold text-gray-900 mb-1">{b.name}</h3>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-amber-50 text-amber-700' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-600'}`}>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-primary/5 text-primary' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-primary/5 text-primary/70'}`}>
                           {b.type === 'zand' ? '🏖️ Zand' : b.type === 'kiezel' ? '🪨 Kiezel' : b.type === 'rotsen' ? '🪨 Rotsen' : '🏖️ Mix'}
                         </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-green-50 text-green-700' : b.vibe === 'levendig' ? 'bg-pink-50 text-pink-600' : b.vibe === 'rustig' ? 'bg-cyan-50 text-cyan-700' : 'bg-teal-50 text-teal-700'}`}>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-accent/10 text-accent-dark' : b.vibe === 'levendig' ? 'bg-primary/5 text-primary' : b.vibe === 'rustig' ? 'bg-gray-100 text-gray-600' : 'bg-primary/10 text-primary'}`}>
                           {b.vibe === 'familiaal' ? '👨‍👩‍👧 Familiaal' : b.vibe === 'levendig' ? '🎉 Levendig' : b.vibe === 'rustig' ? '🧘 Rustig' : '🌊 Wild'}
                         </span>
                         {b.facilities && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/5 text-primary/70">
                             ✓ Faciliteiten
                           </span>
                         )}
@@ -299,7 +299,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Weather & Travel tip */}
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Sun size={16} className="text-yellow-500" /> Weer & reistip
+                <Sun size={16} className="text-primary" /> Weer & reistip
               </h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -311,10 +311,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                   <span className="font-medium text-gray-900">{destination.weather.water}</span>
                 </div>
                 {destination.travelTip && (
-                  <div className="mt-3 p-3 bg-amber-50 rounded-xl">
+                  <div className="mt-3 p-3 bg-primary/5 rounded-xl">
                     <div className="flex items-start gap-2">
-                      <Lightbulb size={14} className="text-amber-500 mt-0.5 shrink-0" />
-                      <p className="text-xs text-amber-800">{destination.travelTip}</p>
+                      <Lightbulb size={14} className="text-primary mt-0.5 shrink-0" />
+                      <p className="text-xs text-primary/80">{destination.travelTip}</p>
                     </div>
                   </div>
                 )}

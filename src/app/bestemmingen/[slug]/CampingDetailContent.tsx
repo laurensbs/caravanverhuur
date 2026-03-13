@@ -16,20 +16,20 @@ import { type Destination } from '@/data/destinations';
 /*  Facility icons                                                     */
 /* ------------------------------------------------------------------ */
 const facilityIcons: Record<string, React.ReactNode> = {
-  Zwembad: <Waves size={16} className="text-cyan-500" />,
-  Waterpark: <Waves size={16} className="text-blue-500" />,
-  Aquapark: <Waves size={16} className="text-blue-600" />,
-  Strand: <Umbrella size={16} className="text-amber-500" />,
+  Zwembad: <Waves size={16} className="text-primary/60" />,
+  Waterpark: <Waves size={16} className="text-primary/60" />,
+  Aquapark: <Waves size={16} className="text-primary/60" />,
+  Strand: <Umbrella size={16} className="text-primary/60" />,
   Restaurant: <span className="text-base">🍽️</span>,
-  Supermarkt: <ShoppingCart size={16} className="text-green-500" />,
-  WiFi: <Wifi size={16} className="text-indigo-500" />,
-  Animatie: <Sparkles size={16} className="text-pink-500" />,
+  Supermarkt: <ShoppingCart size={16} className="text-primary/60" />,
+  WiFi: <Wifi size={16} className="text-primary/60" />,
+  Animatie: <Sparkles size={16} className="text-primary/60" />,
   Speeltuin: <span className="text-base">🎪</span>,
-  Sportterreinen: <Dumbbell size={16} className="text-orange-500" />,
-  Wellness: <Heart size={16} className="text-rose-400" />,
-  Spa: <Heart size={16} className="text-rose-500" />,
+  Sportterreinen: <Dumbbell size={16} className="text-primary/60" />,
+  Wellness: <Heart size={16} className="text-primary/60" />,
+  Spa: <Heart size={16} className="text-primary/60" />,
   Fietsverhuur: <span className="text-base">🚲</span>,
-  Watersport: <Waves size={16} className="text-teal-500" />,
+  Watersport: <Waves size={16} className="text-primary/60" />,
   Kajak: <span className="text-base">🛶</span>,
   Uitzicht: <span className="text-base">🏔️</span>,
   Vogelobservatie: <span className="text-base">🦅</span>,
@@ -126,15 +126,15 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                 <p className="text-xs text-gray-500">{t('destinations.locationLabel')}</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-cyan-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <CheckCircle size={18} className="text-cyan-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <CheckCircle size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{camping.facilities?.length || 0}</p>
                 <p className="text-xs text-gray-500">{t('destinations.facilitiesLabel')}</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Navigation size={18} className="text-green-500" />
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
+                  <Navigation size={18} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-gray-900">{nearbyDestinations.length}</p>
                 <p className="text-xs text-gray-500">{t('destinations.nearbyPlacesCount')}</p>
@@ -249,8 +249,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                       <div className="p-2.5">
                         <p className="text-xs text-gray-600 line-clamp-2 mb-2">{dest.description}</p>
                         <div className="flex items-center gap-2 text-[11px] text-gray-400">
-                          {dest.weather && <span className="flex items-center gap-0.5"><Sun size={10} className="text-amber-500" /> {dest.weather.summer}</span>}
-                          {dest.beaches?.length > 0 && <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-cyan-500" /> {dest.beaches.length} {t('destinations.beachesShort')}</span>}
+                          {dest.weather && <span className="flex items-center gap-0.5"><Sun size={10} className="text-primary/50" /> {dest.weather.summer}</span>}
+                          {dest.beaches?.length > 0 && <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {dest.beaches.length} {t('destinations.beachesShort')}</span>}
                         </div>
                       </div>
                     </Link>
