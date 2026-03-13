@@ -63,94 +63,73 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   return (
     <>
       {/* ===== HERO with Booking Widget ===== */}
-      <section ref={heroRef} className="relative min-h-[105svh] sm:min-h-[100svh] flex flex-col justify-center overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[80svh] flex flex-col justify-end overflow-hidden">
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
             src="/images/campings/lloret_de_mar_panorama.jpg"
             alt={t('home.heroAlt')}
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="100vw"
             priority
-           
           />
-          {/* Layered gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
         </motion.div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-8 pb-16 sm:pt-10 sm:pb-20 w-full">
-          <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pb-10 sm:pb-14 w-full">
+          <div className="max-w-xl mb-6 sm:mb-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-white/80 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/10"
+              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3 sm:mb-4"
             >
-              <Sun size={14} className="text-primary-light" />
+              <Sun size={12} className="text-primary-light" />
               <span className="hidden sm:inline">{t('nav.season')}</span>
               <span className="sm:hidden">{t('nav.seasonShort')}</span>
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-4 sm:mb-6 tracking-tight"
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-[1.15] mb-3 sm:mb-4 tracking-tight"
             >
               {t('home.heroTitle1')}
-              <span className="block sm:inline text-white/95"> {t('home.heroTitle2')}</span>
+              <span className="text-white/90"> {t('home.heroTitle2')}</span>
               <br className="hidden sm:block" />
-              <span className="text-white/90"> {t('home.heroTitle3')}</span>
+              <span className="text-white/85"> {t('home.heroTitle3')}</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-sm sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0 font-light"
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="text-sm sm:text-base text-white/75 leading-relaxed max-w-md"
             >
               {t('home.heroSubtitle')} <span className="text-white font-medium">{t('home.heroHighlight')}</span> {t('home.heroSuffix')}
             </motion.p>
-
-            {/* Mobile stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.2 }}
-              className="grid grid-cols-3 gap-4 max-w-xs mx-auto lg:mx-0 mb-8 lg:hidden"
-            >
-              {[
-                { value: '4', label: t('home.statCaravans'), color: 'text-primary-light' },
-                { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
-                { value: '100%', label: t('home.statRelaxed'), color: 'text-primary-light' },
-              ].map((stat, si) => (
-                <div key={si} className="text-center">
-                  <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
-                  <div className="text-white/60 text-xs">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
           </div>
 
           {/* Booking Widget */}
           <BookingWidget />
 
-          {/* Desktop stats */}
+          {/* Stats row */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.4 }}
-            className="hidden lg:flex gap-8 mt-8 max-w-md"
+            transition={{ duration: 0.3, delay: 0.4 }}
+            className="flex gap-6 sm:gap-8 mt-6"
           >
             {[
-              { value: '4', label: t('home.statCaravansAvailable'), color: 'text-primary-light' },
-              { value: '30+', label: t('home.statCampingsCB'), color: 'text-white/80' },
-              { value: '100%', label: t('home.statFullyRelaxed'), color: 'text-primary-light' },
+              { value: '4', label: t('home.statCaravans'), color: 'text-white' },
+              { value: '30+', label: t('home.statCampings'), color: 'text-white/80' },
+              { value: '100%', label: t('home.statRelaxed'), color: 'text-white' },
             ].map((stat, si) => (
               <div key={si}>
-                <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                <div className="text-white/60 text-xs">{stat.label}</div>
+                <div className={`text-lg sm:text-xl font-bold ${stat.color}`}>{stat.value}</div>
+                <div className="text-white/50 text-[11px] sm:text-xs">{stat.label}</div>
               </div>
             ))}
           </motion.div>
