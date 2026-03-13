@@ -357,7 +357,7 @@ export default function Header() {
 
                     {/* Column 2: Plaatsen */}
                     <div>
-                      <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
                         {t('destinations.placesLabel')}
                       </p>
                       <div className="space-y-0.5">
@@ -380,7 +380,7 @@ export default function Header() {
 
                     {/* Column 3: Bezienswaardigheden */}
                     <div>
-                      <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
                         Bezienswaardigheden
                       </p>
                       <div className="space-y-0.5">
@@ -520,7 +520,7 @@ export default function Header() {
                       </div>
 
                       {/* Plaatsen */}
-                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-amber-600 uppercase tracking-widest">Plaatsen</p>
+                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-primary uppercase tracking-widest">Plaatsen</p>
                       <div className="space-y-0.5 mb-3">
                         {destinations.slice(0, 5).map(d => (
                           <Link key={d.slug} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
@@ -536,7 +536,7 @@ export default function Header() {
                       </div>
 
                       {/* Bezienswaardigheden */}
-                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Bezienswaardigheden</p>
+                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-primary uppercase tracking-widest">Bezienswaardigheden</p>
                       <div className="space-y-0.5">
                         {attractions.slice(0, 5).map(a => (
                           <Link key={a.slug} href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
