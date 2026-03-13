@@ -45,8 +45,7 @@ export default function WeatherChecker() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('weather.title')}</span>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-2">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
             {t('weather.bestWeather')}
           </h2>
           <p className="text-muted mt-3 max-w-xl mx-auto text-sm sm:text-base">
@@ -75,13 +74,13 @@ export default function WeatherChecker() {
               <div className="flex items-center justify-center">
                 <WeatherIcon type={w.icon} size={28} />
               </div>
-              <div className="flex items-center justify-center gap-1 mt-2 mb-1">
+              <div className="flex items-center justify-center gap-1 mt-2">
                 <Thermometer size={12} className="text-orange-400" />
                 <span className="text-lg sm:text-xl font-bold text-foreground">{w.temp}°</span>
               </div>
-              <div className="text-xs text-muted flex items-center justify-center gap-0.5">
-                <Droplets size={9} className="text-blue-300" />
-                {w.rain} {t('weather.rainDays')}
+              <div className="text-[10px] text-muted mt-1">
+                <Droplets size={9} className="text-blue-300 inline mr-0.5 -mt-px" />
+                {w.rain}d {t('weather.rain')}
               </div>
             </motion.div>
           ))}

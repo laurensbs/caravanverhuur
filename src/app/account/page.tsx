@@ -11,6 +11,32 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
+/* Typewriter animation for the heading */
+function TypewriterText({ text, className }: { text: string; className?: string }) {
+  return (
+    <motion.span
+      className={className}
+      initial="hidden"
+      animate="visible"
+      variants={{ visible: { transition: { staggerChildren: 0.04 } } }}
+    >
+      {text.split('').map((char, i) => (
+        <motion.span
+          key={i}
+          variants={{
+            hidden: { opacity: 0, y: 8 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.15, ease: 'easeOut' } },
+          }}
+          className="inline-block"
+          style={char === ' ' ? { width: '0.25em' } : undefined}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
+
 function AccountPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -198,7 +224,7 @@ function AccountPageInner() {
           {/* Mobile hero header */}
           <div className="lg:hidden bg-primary-dark px-5 pt-6 pb-10">
             <h1 className="text-2xl font-bold text-white">
-              {modeTitle}
+              <TypewriterText text={modeTitle} />
             </h1>
             <p className="text-white/60 text-sm mt-1">
               {modeSubtitle}
@@ -211,7 +237,7 @@ function AccountPageInner() {
               {/* Desktop heading */}
               <div className="hidden lg:block mb-8">
                 <h1 className="text-2xl xl:text-3xl font-bold text-foreground">
-                  {modeTitle}
+                  <TypewriterText text={modeTitle} />
                 </h1>
                 <p className="text-muted text-sm mt-1.5">
                   {modeSubtitleDesktop}

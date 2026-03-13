@@ -38,8 +38,7 @@ export default function OverOnsPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.whoWeAre')}</span>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2 mb-6">
+              <h1 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground mb-6">
                 {t('about.whoWeAreTitle')}
               </h1>
               <p className="text-muted text-lg mb-6 leading-relaxed">
@@ -50,7 +49,7 @@ export default function OverOnsPage() {
               </p>
               <p className="text-muted text-lg leading-relaxed">
                 {t('about.whoWeAreText3pre')}{' '}
-                <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium">Caravanstalling-Spanje</a>{' '}
+                <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-foreground underline font-medium">Caravanstalling-Spanje</a>{' '}
                 {t('about.whoWeAreText3post')}
               </p>
             </motion.div>
@@ -81,10 +80,7 @@ export default function OverOnsPage() {
             variants={stagger}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-primary font-semibold text-sm uppercase tracking-wider">
-              {t('about.advantagesLabel')}
-            </motion.span>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl font-bold text-foreground mt-2">
+            <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">
               {t('about.advantagesTitle')}
             </motion.h2>
           </motion.div>
@@ -97,18 +93,18 @@ export default function OverOnsPage() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {[
-              { icon: <Heart className="text-primary" size={28} />, title: t('about.adv1Title'), desc: t('about.adv1Desc') },
-              { icon: <Shield className="text-primary" size={28} />, title: t('about.adv2Title'), desc: t('about.adv2Desc') },
-              { icon: <Target className="text-primary" size={28} />, title: t('about.adv3Title'), desc: t('about.adv3Desc') },
-              { icon: <Award className="text-primary" size={28} />, title: t('about.adv4Title'), desc: t('about.adv4Desc') },
+              { icon: <Heart className="text-foreground" size={28} />, title: t('about.adv1Title'), desc: t('about.adv1Desc') },
+              { icon: <Shield className="text-foreground" size={28} />, title: t('about.adv2Title'), desc: t('about.adv2Desc') },
+              { icon: <Target className="text-foreground" size={28} />, title: t('about.adv3Title'), desc: t('about.adv3Desc') },
+              { icon: <Award className="text-foreground" size={28} />, title: t('about.adv4Title'), desc: t('about.adv4Desc') },
             ].map((item, i) => (
               <motion.div
                 key={i}
                 variants={fadeUp}
                 custom={i}
-                className="bg-white rounded-2xl p-6 shadow-sm text-center transition-all duration-300"
+                className="bg-surface rounded-2xl p-6 border border-border text-center transition-all duration-300"
               >
-                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-foreground/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   {item.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
@@ -123,8 +119,7 @@ export default function OverOnsPage() {
       <section className="py-12 sm:py-20">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-10 sm:mb-16">
-            <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.processLabel')}</span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-foreground mt-2">{t('about.processTitle')}</h2>
+            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">{t('about.processTitle')}</h2>
           </div>
 
           <div className="space-y-8">
@@ -143,7 +138,7 @@ export default function OverOnsPage() {
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="flex gap-6 items-start"
               >
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-lg">
+                <div className="w-12 h-12 bg-foreground rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
                   {item.step}
                 </div>
                 <div>
@@ -157,21 +152,23 @@ export default function OverOnsPage() {
       </section>
 
       {/* Moederbedrijf */}
-      <section className="py-12 sm:py-20 bg-surface">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="py-12 sm:py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/campings/palam_s_-_view_from_beach.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-foreground/90" />
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Truck className="text-primary" size={28} />
-              <h2 className="text-2xl font-bold text-foreground">{t('about.parentCompany')}</h2>
+              <Truck className="text-white" size={28} />
+              <h2 className="text-2xl font-bold text-white">{t('about.parentCompany')}</h2>
             </div>
-            <p className="text-muted text-lg mb-6 max-w-2xl mx-auto">
+            <p className="text-white/80 text-lg mb-6 max-w-2xl mx-auto">
               {t('about.parentCompanyText')}
             </p>
             <a
               href="https://caravanstalling-spanje.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-full transition-all shadow-md"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-foreground font-semibold rounded-lg transition-all hover:scale-105"
             >
               {t('about.visitParent')}
               <ArrowRight size={18} />
@@ -184,8 +181,7 @@ export default function OverOnsPage() {
       <section className="py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12">
-            <span className="text-primary font-semibold text-sm uppercase tracking-wider">{t('about.numbersLabel')}</span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-foreground mt-2">{t('about.numbersTitle')}</h2>
+            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">{t('about.numbersTitle')}</h2>
           </div>
           <motion.div
             initial="hidden"
@@ -200,8 +196,8 @@ export default function OverOnsPage() {
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub') },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub') },
             ].map((stat, i) => (
-              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-white rounded-2xl shadow-sm">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">{stat.number}</div>
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-6 bg-surface rounded-2xl border border-border">
+                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">{stat.number}</div>
                 <div className="font-semibold text-foreground text-sm">{stat.label}</div>
                 <div className="text-xs text-muted mt-1">{stat.sub}</div>
               </motion.div>

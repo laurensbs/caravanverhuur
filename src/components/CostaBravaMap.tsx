@@ -175,7 +175,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       const makeSvgIcon = (active: boolean) => {
         const isMobile = window.innerWidth < 640;
         const size = active ? (isMobile ? 36 : 42) : (isMobile ? 28 : 32);
-        const color = active ? '#c4650c' : '#1E3A5F';
+        const color = active ? '#c4650c' : '#0F172A';
         return L.default.divIcon({
           className: '',
           html: `<svg width="${size}" height="${size + 10}" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -275,7 +275,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           {/* Top-left: destination counter */}
           <div className="absolute top-3 left-3 z-[9]">
             <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-100 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-[#1E3A5F] rounded-full animate-pulse" />
+              <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse" />
               <span className="text-xs font-semibold text-gray-700">{destinations.length} bestemmingen</span>
             </div>
           </div>
@@ -437,7 +437,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
         }
         .map-popup-btn {
           display: inline-block;
-          background: linear-gradient(135deg, #1E3A5F, #1E3A5F);
+          background: linear-gradient(135deg, #0F172A, #020617);
           color: #fff !important;
           padding: 8px 18px;
           border-radius: 10px;
@@ -445,11 +445,11 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           font-weight: 600;
           text-decoration: none;
           transition: transform 0.15s, box-shadow 0.15s;
-          box-shadow: 0 2px 8px rgba(14,165,233,.25);
+          box-shadow: 0 2px 8px rgba(15,23,42,.25);
         }
         .map-popup-btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(14,165,233,.35);
+          box-shadow: 0 4px 14px rgba(15,23,42,.35);
         }
 
         /* ---- attribution ---- */

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut, Phone } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -130,23 +130,23 @@ export default function Header() {
 
   const active = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
   const navCls = (href: string) =>
-    `px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors ${active(href) ? 'text-primary' : 'text-muted'}`;
+    `px-4 py-2 text-[15px] font-semibold tracking-tight font-heading transition-colors relative ${active(href) ? 'text-foreground' : 'text-foreground-light hover:text-foreground'}`;
 
   return (
     <>
     <div className="sticky top-0 z-50">
       <WeatherBar />
 
-        <header className="bg-white/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-24">
+        <header className="bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={320} height={80}
-              className="w-40 sm:w-56 lg:w-72 h-auto object-contain"
-              sizes="(max-width: 640px) 160px, (max-width: 1024px) 224px, 288px"
+              className="w-36 sm:w-48 lg:w-60 h-auto object-contain"
+              sizes="(max-width: 640px) 144px, (max-width: 1024px) 192px, 240px"
             />
           </Link>
 
@@ -244,19 +244,14 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <a href="tel:+34650036755" className="hidden xl:flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors ml-1">
-              <Phone size={14} className="text-primary" />
-              +34 650 036 755
-            </a>
-
-            <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary text-white text-[15px] font-semibold rounded-full transition-all flex items-center gap-2 shadow-sm">
-              {t('nav.bookNow')} <ArrowRight size={16} />
+            <Link href="/boeken" className="ml-4 px-6 py-2.5 bg-primary text-white text-[15px] font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
+              {t('nav.bookNow')} <ArrowRight size={14} />
             </Link>
           </nav>
 
           {/* Mobile Boek nu + hamburger */}
           <div className="lg:hidden flex items-center gap-2">
-          <Link href="/boeken" className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-full shadow-sm flex items-center gap-1">
+          <Link href="/boeken" className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
             {t('nav.bookNow')} <ArrowRight size={12} />
           </Link>
           <button onClick={() => setMenuOpen(!menuOpen)} className="w-10 h-10 flex items-center justify-center" aria-label="Menu">
@@ -277,15 +272,15 @@ export default function Header() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.15 }}
-              className="hidden lg:block absolute left-0 right-0 top-full bg-white shadow-xl z-40"
+              className="hidden lg:block absolute left-0 right-0 top-full bg-surface/98 backdrop-blur-sm shadow-xl border-t border-gray-100 z-40"
               onMouseEnter={keepMega}
               onMouseLeave={closeMega}
             >
               {/* ---- CARAVANS ---- */}
               {megaMenu === 'caravans' && (
-                <div className="max-w-6xl mx-auto px-8 py-7">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-bold text-foreground">{t('nav.ourCaravans')}</h3>
+                <div className="max-w-6xl mx-auto px-8 py-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{t('nav.ourCaravans')}</h3>
                     <Link href="/caravans" className="text-xs text-primary flex items-center gap-1 font-medium">
                       {t('nav.viewAll')} <ArrowRight size={12} />
                     </Link>
@@ -329,9 +324,9 @@ export default function Header() {
 
               {/* ---- BESTEMMINGEN ---- */}
               {megaMenu === 'bestemmingen' && (
-                <div className="max-w-6xl mx-auto px-8 py-7">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-sm font-bold text-foreground">{t('nav.destinations')}</h3>
+                <div className="max-w-6xl mx-auto px-8 py-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{t('nav.destinations')}</h3>
                     <Link href="/bestemmingen" className="text-xs text-primary flex items-center gap-1 font-medium">
                       {t('nav.viewAll')} <ArrowRight size={12} />
                     </Link>

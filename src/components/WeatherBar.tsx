@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { X, Sun } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { StarIcon } from '@/components/Footer';
 
@@ -15,12 +15,11 @@ export default function WeatherBar() {
   if (!visible) return null;
 
   return (
-    <div className="bg-primary-dark/80 text-white text-xs sm:text-sm relative">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3">
-        <Sun size={14} className="text-primary-light shrink-0 hidden sm:block" />
-        <p className="text-center flex items-center gap-1.5 flex-wrap justify-center">
-          <span className="font-semibold">{t('weather.barSeason')}</span>
-          <span className="text-white/50 mx-0.5 hidden sm:inline">·</span>
+    <div className="bg-foreground text-white text-[11px] sm:text-xs relative">
+      <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-center gap-2.5">
+        <p className="text-center flex items-center gap-1.5 flex-wrap justify-center tracking-wide">
+          <span className="font-semibold uppercase">{t('weather.barSeason')}</span>
+          <span className="text-white/30 hidden sm:inline">|</span>
           <a
             href={GOOGLE_REVIEW_URL}
             target="_blank"
@@ -32,8 +31,8 @@ export default function WeatherBar() {
             ))}
             <span className="text-white/90 font-semibold text-xs ml-0.5">4.9</span>
           </a>
-          <span className="text-white/50 mx-0.5 hidden sm:inline">·</span>
-          <span className="text-white/85 hidden sm:inline">{t('weather.barCta')}</span>
+          <span className="text-white/30 hidden sm:inline">|</span>
+          <span className="text-white/70 hidden sm:inline">{t('weather.barCta')}</span>
           <Link
             href="/boeken"
             className="ml-1 underline underline-offset-2 font-semibold transition-colors"
@@ -46,7 +45,7 @@ export default function WeatherBar() {
           className="absolute right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors"
           aria-label={t('weather.barClose')}
         >
-          <X size={14} />
+          <X size={12} />
         </button>
       </div>
     </div>

@@ -88,22 +88,22 @@ export default function CaravansPage() {
     <div className="space-y-6">
       {/* Search */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.searchPlaceholderShort')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.searchPlaceholderShort')}</label>
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={t('caravans.searchPlaceholder')}
-            className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-gray-50 border border-gray-200"
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 outline-none bg-surface border border-border"
           />
         </div>
       </div>
 
       {/* Type */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterType')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterType')}</label>
         <div className="flex flex-wrap gap-2">
           {(['ALL', 'FAMILIE', 'COMPACT'] as const).map(type => (
             <button
@@ -111,7 +111,7 @@ export default function CaravansPage() {
               onClick={() => setTypeFilter(type)}
               aria-pressed={typeFilter === type}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                typeFilter === type ? 'bg-primary text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                typeFilter === type ? 'bg-foreground text-white' : 'bg-surface text-foreground-light hover:bg-surface-alt border border-border'
               }`}
             >
               {type === 'ALL' ? t('caravans.filterAll') : type === 'FAMILIE' ? t('caravans.filterFamily') : t('caravans.filterCompact')}
@@ -122,7 +122,7 @@ export default function CaravansPage() {
 
       {/* Persons */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterPersons')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterPersons')}</label>
         <div className="flex flex-wrap gap-2">
           {[0, 2, 4, 5].map(num => (
             <button
@@ -130,7 +130,7 @@ export default function CaravansPage() {
               onClick={() => setPersonFilter(num)}
               aria-pressed={personFilter === num}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                personFilter === num ? 'bg-primary text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                personFilter === num ? 'bg-foreground text-white' : 'bg-surface text-foreground-light hover:bg-surface-alt border border-border'
               }`}
             >
               {num === 0 ? t('caravans.filterAll') : `${num}+`}
@@ -141,11 +141,11 @@ export default function CaravansPage() {
 
       {/* Max Price */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterMaxPrice')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterMaxPrice')}</label>
         <select
           value={maxPrice}
           onChange={e => setMaxPrice(Number(e.target.value))}
-          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-gray-50 border border-gray-200"
+          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 outline-none bg-surface border border-border"
         >
           <option value={0}>{t('caravans.filterNoLimit')}</option>
           <option value={350}>{'\u2264 \u20AC350/week'}</option>
@@ -158,11 +158,11 @@ export default function CaravansPage() {
 
       {/* Manufacturer */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterManufacturer')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterManufacturer')}</label>
         <select
           value={manufacturerFilter}
           onChange={e => setManufacturerFilter(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-gray-50 border border-gray-200"
+          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 outline-none bg-surface border border-border"
         >
           <option value="ALL">{t('caravans.filterAll')}</option>
           {allManufacturers.map(m => (
@@ -173,7 +173,7 @@ export default function CaravansPage() {
 
       {/* Amenities */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterAmenities')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterAmenities')}</label>
         <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
           {allAmenities.map(amenity => (
             <button
@@ -181,12 +181,12 @@ export default function CaravansPage() {
               onClick={() => toggleAmenity(amenity)}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all text-left ${
                 amenityFilters.includes(amenity)
-                  ? 'bg-primary/10 text-primary font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-foreground/10 text-foreground font-medium'
+                  : 'text-foreground-light hover:bg-surface'
               }`}
             >
               <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all ${
-                amenityFilters.includes(amenity) ? 'bg-primary text-white' : 'border border-gray-300'
+                amenityFilters.includes(amenity) ? 'bg-foreground text-white' : 'border border-border'
               }`}>
                 {amenityFilters.includes(amenity) && <Check size={10} />}
               </span>
@@ -198,11 +198,11 @@ export default function CaravansPage() {
 
       {/* Sort */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">{t('caravans.filterSort')}</label>
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterSort')}</label>
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as SortOption)}
-          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none bg-gray-50 border border-gray-200"
+          className="w-full px-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 outline-none bg-surface border border-border"
         >
           <option value="default">{t('caravans.sortDefault')}</option>
           <option value="price-asc">{t('caravans.sortPriceAsc')}</option>
@@ -215,7 +215,7 @@ export default function CaravansPage() {
       {activeFilterCount > 0 && (
         <button
           onClick={resetFilters}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-surface hover:bg-surface-alt rounded-xl text-sm font-medium text-foreground-light transition-colors"
         >
           <X size={14} /> {t('caravans.resetAll')}
         </button>
@@ -225,34 +225,34 @@ export default function CaravansPage() {
 
   return (
     <>
-      <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-gray-50 min-h-[80vh]">
+      <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-background min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">{t('caravans.heroTitle')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight mb-6">{t('caravans.heroTitle')}</h1>
           {/* Mobile: filter toggle + sort bar */}
           <div className="lg:hidden flex items-center gap-3 mb-4">
             <button
               onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl text-sm font-medium border border-gray-200 shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl text-sm font-medium border border-border shadow-sm"
             >
               <SlidersHorizontal size={16} />
               <span>{t('caravans.filtersLabel')}</span>
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 bg-primary text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
+                <span className="w-5 h-5 bg-foreground text-white rounded-full text-xs flex items-center justify-center">{activeFilterCount}</span>
               )}
             </button>
             <div className="flex-1" />
-            <span className="text-sm text-gray-500">
-              <span className="font-semibold text-gray-900">{filtered.length}</span> {t('caravans.results')}
+            <span className="text-sm text-muted">
+              <span className="font-semibold text-foreground">{filtered.length}</span> {t('caravans.results')}
             </span>
           </div>
 
           {/* Mobile filter panel */}
           {showMobileFilters && (
-            <div className="lg:hidden mb-6 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div className="lg:hidden mb-6 bg-white rounded-2xl p-5 shadow-sm border border-border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900">{t('caravans.filtersLabel')}</h3>
-                <button onClick={() => setShowMobileFilters(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                  <X size={18} className="text-gray-400" />
+                <h3 className="font-bold text-foreground">{t('caravans.filtersLabel')}</h3>
+                <button onClick={() => setShowMobileFilters(false)} className="p-1 hover:bg-surface rounded-lg">
+                  <X size={18} className="text-muted" />
                 </button>
               </div>
               {filterContent}
@@ -262,14 +262,14 @@ export default function CaravansPage() {
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-72 flex-shrink-0">
-              <div className="sticky top-[90px] bg-white rounded-2xl p-5 shadow-sm border border-gray-100 max-h-[calc(100vh-110px)] overflow-y-auto">
+              <div className="sticky top-[90px] bg-white rounded-2xl p-5 shadow-sm border border-border max-h-[calc(100vh-110px)] overflow-y-auto">
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <SlidersHorizontal size={16} className="text-primary" />
+                  <h3 className="font-bold text-foreground flex items-center gap-2">
+                    <SlidersHorizontal size={16} className="text-foreground" />
                     {t('caravans.filtersLabel')}
                   </h3>
                   {activeFilterCount > 0 && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">{activeFilterCount}</span>
+                    <span className="text-xs bg-foreground/10 text-foreground px-2 py-0.5 rounded-full font-semibold">{activeFilterCount}</span>
                   )}
                 </div>
                 {filterContent}
@@ -280,18 +280,18 @@ export default function CaravansPage() {
             <div className="flex-1 min-w-0">
               {/* Results header */}
               <div className="hidden lg:flex items-center justify-between mb-5">
-                <p className="text-sm text-gray-500">
-                  <span className="font-semibold text-gray-900">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} {t('caravans.resultsFound')}
+                <p className="text-sm text-muted">
+                  <span className="font-semibold text-foreground">{filtered.length}</span> caravan{filtered.length !== 1 ? 's' : ''} {t('caravans.resultsFound')}
                 </p>
 
               </div>
 
               {filtered.length === 0 ? (
                 <div className="text-center py-20">
-                  <p className="text-xl text-gray-400 mb-4">{t('caravans.noResults')}</p>
+                  <p className="text-xl text-muted mb-4">{t('caravans.noResults')}</p>
                   <button
                     onClick={resetFilters}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-foreground text-white rounded-lg font-medium transition-colors"
                   >
                     <X size={16} /> {t('caravans.resetFilters')}
                   </button>
@@ -311,47 +311,43 @@ export default function CaravansPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                          
                         />
-                        <div className="absolute top-3 left-3">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-primary">
-                            {caravan.type}
-                          </span>
-                        </div>
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                          <span className="text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}/week</span>
+                        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
+                        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                          <span className="text-sm font-bold text-foreground">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
                         </div>
                       </div>
                       <div className="p-4 sm:p-5">
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">{caravan.name}</h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <h3 className="text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
+                        <div className="flex items-center gap-4 text-sm text-muted mb-3">
                           <span className="flex items-center gap-1">
                             <Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}
                           </span>
                           <span>{caravan.manufacturer} &bull; {caravan.year}</span>
                         </div>
-                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{caravan.description}</p>
+                        <p className="text-sm text-foreground-light mb-3 line-clamp-2">{caravan.description}</p>
                         <div className="flex flex-wrap gap-1 mb-4">
                           {caravan.amenities.slice(0, 4).map(a => (
-                            <span key={a} className="text-xs px-2 py-1 bg-gray-50 rounded-md text-gray-500">{a}</span>
+                            <span key={a} className="text-xs px-2 py-1 bg-surface rounded-md text-muted">{a}</span>
                           ))}
                           {caravan.amenities.length > 4 && (
-                            <span className="text-xs px-2 py-1 bg-gray-50 rounded-md text-gray-500">+{caravan.amenities.length - 4}</span>
+                            <span className="text-xs px-2 py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 4}</span>
                           )}
                         </div>
                         <div className="flex gap-3">
                           <Link
                             href={`/caravans/${caravan.id}`}
-                            className="flex-1 text-center py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors text-sm"
+                            className="flex-1 text-center py-2.5 border border-border text-foreground font-semibold rounded-xl hover:bg-surface transition-colors text-sm"
                           >
                             {t('caravans.details')}
                           </Link>
                           <Link
                             href={`/boeken?caravan=${caravan.id}`}
-                            className="flex-1 text-center py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm shadow-md"
+                            className="flex-1 text-center py-2.5 bg-foreground text-white font-semibold rounded-xl hover:bg-foreground/90 transition-all text-sm"
                           >
                             {t('caravans.bookNow')}
                           </Link>
                         </div>
-                        <p className="text-xs text-gray-400 text-center mt-2">{t('caravans.orSimilar')}</p>
+                        <p className="text-xs text-muted text-center mt-2">{t('caravans.orSimilar')}</p>
                       </div>
                     </div>
                   ))}

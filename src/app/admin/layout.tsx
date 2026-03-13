@@ -199,7 +199,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen bg-surface">
         <div className="flex min-h-screen">
           {/* ====== LEFT HERO (desktop only) ====== */}
-          <div className="hidden lg:flex lg:w-1/2 relative bg-[#0F2744] overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 relative bg-foreground overflow-hidden">
             <div className="absolute inset-0 opacity-20">
               <Image
                 src="/images/campings/begur_sa_tuna.jpg"
@@ -209,7 +209,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0F2744]/80 via-[#0F2744]/60 to-[#0F2744]/90" />
+            <div className="absolute inset-0 bg-gradient-to-br from-foreground/80 via-foreground/60 to-foreground/90" />
             <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
               <div>
                 <Image
@@ -246,7 +246,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                       transition={{ delay: 0.2 + i * 0.1 }}
                       className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl px-3.5 py-2.5 text-white/90 text-sm"
                     >
-                      <span className="text-sky-300">{f.icon}</span>
+                      <span className="text-white/60">{f.icon}</span>
                       {f.text}
                     </motion.div>
                   ))}
@@ -260,7 +260,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {/* ====== RIGHT SIDE — FORM ====== */}
           <div className="w-full lg:w-1/2 flex flex-col">
             {/* Mobile hero header */}
-            <div className="lg:hidden bg-[#0F2744] px-5 pt-6 pb-10 relative overflow-hidden">
+            <div className="lg:hidden bg-foreground px-5 pt-6 pb-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <Image
                   src="/images/campings/begur_sa_tuna.jpg"
@@ -328,7 +328,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                             onClick={() => { setUsername(u); setError(''); }}
                             className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
                               username === u
-                                ? 'bg-white text-primary shadow-sm'
+                                ? 'bg-white text-foreground shadow-sm'
                                 : 'text-muted hover:text-foreground'
                             }`}
                           >
@@ -350,7 +350,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                           type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                          className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all"
+                          className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 focus:bg-white outline-none transition-all"
                           placeholder={lt('auth.enterPassword')}
                           autoFocus
                           autoComplete="current-password"
@@ -384,7 +384,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <button
                       type="submit"
                       disabled={loginLoading}
-                      className="w-full py-3.5 bg-primary text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] cursor-pointer disabled:opacity-60"
+                      className="w-full py-3.5 bg-foreground text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-foreground/90 active:scale-[0.98] cursor-pointer disabled:opacity-60"
                     >
                       {loginLoading ? lt('auth.loggingIn') || 'Bezig...' : lt('auth.login')}
                       {!loginLoading && <ArrowRight size={16} />}
@@ -408,7 +408,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {/* Back to website */}
                 <a
                   href={mainSiteUrl}
-                  className="block text-center text-sm text-muted mt-4 hover:text-primary transition-colors"
+                  className="block text-center text-sm text-muted mt-4 hover:text-foreground transition-colors"
                 >
                   ← {lt('auth.backToWebsite')}
                 </a>
@@ -528,7 +528,7 @@ function SidebarNavItem({
       draggable={false}
       className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
         isActive
-          ? 'bg-primary/10 text-primary shadow-sm'
+          ? 'bg-foreground/10 text-foreground font-semibold'
           : 'text-foreground-light hover:bg-gray-200/60 hover:text-foreground'
       }`}
     >
@@ -548,7 +548,7 @@ function SidebarNavItem({
       ) : isActive ? (
         <motion.div
           layoutId="activeIndicator"
-          className="w-1.5 h-1.5 bg-primary rounded-full shrink-0"
+          className="w-1.5 h-1.5 bg-foreground rounded-full shrink-0"
         />
       ) : null}
     </Link>
@@ -794,7 +794,7 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out w-64 border-r border-gray-200 ${
+        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out w-64 border-r border-border ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -864,7 +864,7 @@ function AdminLayoutInner({
           })}
         </nav>
 
-        <div className="p-2 border-t border-gray-200 space-y-1">
+        <div className="p-2 border-t border-border space-y-1">
           {/* Compact row: NL/EN + Website + Logout */}
           <div className="flex items-center gap-1 px-2">
             <div className="flex bg-gray-200/60 rounded-lg p-0.5">
@@ -906,7 +906,7 @@ function AdminLayoutInner({
         !isMobile && sidebarOpen ? 'lg:ml-64' : ''
       }`}>
         {/* Top bar */}
-        <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 shadow-sm">
+        <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
           <button
             onClick={toggleSidebar}
             className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
@@ -925,8 +925,8 @@ function AdminLayoutInner({
             <div
               className={`flex items-center gap-2 rounded-xl border transition-all duration-200 ${
                 searchOpen
-                  ? 'w-64 lg:w-80 border-primary/30 bg-white shadow-md'
-                  : 'w-40 lg:w-52 border-gray-200 bg-surface hover:border-gray-300 cursor-pointer'
+                  ? 'w-64 lg:w-80 border-foreground/20 bg-white shadow-md'
+                  : 'w-40 lg:w-52 border-border bg-surface hover:border-foreground/10 cursor-pointer'
               }`}
               onClick={() => { if (!searchOpen) setSearchOpen(true); }}
             >
@@ -953,7 +953,7 @@ function AdminLayoutInner({
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="absolute top-full right-0 mt-1.5 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
+                  className="absolute top-full right-0 mt-1.5 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
                 >
                   {searchLoading ? (
                     <div className="p-4 text-center text-sm text-muted">{t('common.loading')}</div>
@@ -1064,7 +1064,7 @@ function AdminLayoutInner({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="sm:hidden bg-white border-b border-gray-200 overflow-hidden"
+              className="sm:hidden bg-white border-b border-border overflow-hidden"
             >
               <div className="px-3 py-2" ref={searchRef}>
                 <div className="flex items-center gap-2 bg-surface rounded-xl px-3">
@@ -1085,7 +1085,7 @@ function AdminLayoutInner({
                 </div>
                 {/* Mobile search results */}
                 {searchQuery.length >= 2 && (
-                  <div className="mt-2 rounded-xl border border-gray-200 overflow-hidden max-h-[50vh] overflow-y-auto">
+                  <div className="mt-2 rounded-xl border border-border overflow-hidden max-h-[50vh] overflow-y-auto">
                     {searchLoading ? (
                       <div className="p-3 text-center text-sm text-muted">{t('common.loading')}</div>
                     ) : !searchResults || (searchResults.bookings.length === 0 && searchResults.contacts.length === 0 && searchResults.customers.length === 0) ? (
@@ -1157,12 +1157,12 @@ function AdminLayoutInner({
               onClick={e => e.stopPropagation()}
             >
               {/* Top gradient accent bar */}
-              <div className="h-1.5 bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500" />
+              <div className="h-1.5 bg-foreground" />
 
               <div className="p-6 sm:p-8">
                 {/* Step counter + progress bar */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-sky-600 tracking-wide uppercase">
+                  <span className="text-xs font-semibold text-foreground tracking-wide uppercase">
                     {locale === 'nl' ? 'Stap' : 'Step'} {onboardingStep + 1} / {onboardingSteps.length}
                   </span>
                   <button
@@ -1176,7 +1176,7 @@ function AdminLayoutInner({
                 {/* Progress bar */}
                 <div className="w-full h-1 bg-gray-100 rounded-full mb-8 overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"
+                    className="h-full bg-foreground rounded-full"
                     initial={false}
                     animate={{ width: `${((onboardingStep + 1) / onboardingSteps.length) * 100}%` }}
                     transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -1194,7 +1194,7 @@ function AdminLayoutInner({
                     className="text-center"
                   >
                     {/* Icon with gradient background */}
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 mb-5 shadow-sm">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-foreground/5 mb-5">
                       <span className="text-5xl leading-none">{onboardingSteps[onboardingStep].icon}</span>
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-3">{onboardingSteps[onboardingStep].title}</h2>
@@ -1218,7 +1218,7 @@ function AdminLayoutInner({
                   {onboardingStep < onboardingSteps.length - 1 ? (
                     <button
                       onClick={() => setOnboardingStep(s => s + 1)}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl font-semibold transition-all hover:from-sky-600 hover:to-blue-700 cursor-pointer active:scale-[0.97] shadow-md shadow-sky-500/20"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-foreground text-white rounded-xl font-semibold transition-all hover:bg-foreground/90 cursor-pointer active:scale-[0.97]"
                     >
                       {locale === 'nl' ? 'Volgende' : 'Next'}
                       <ChevronRight size={16} />
@@ -1226,7 +1226,7 @@ function AdminLayoutInner({
                   ) : (
                     <button
                       onClick={finishOnboarding}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-semibold transition-all hover:from-emerald-600 hover:to-green-700 cursor-pointer active:scale-[0.97] shadow-md shadow-emerald-500/20"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-foreground text-white rounded-xl font-semibold transition-all hover:bg-foreground/90 cursor-pointer active:scale-[0.97]"
                     >
                       {locale === 'nl' ? 'Aan de slag!' : 'Get started!'}
                       <ArrowRight size={16} />

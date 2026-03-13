@@ -20,7 +20,6 @@ import {
   ThumbsUp,
   Clock,
   Wallet,
-  Quote,
   Sun,
   MapPin,
   LayoutDashboard,
@@ -53,28 +52,6 @@ const scaleIn = {
   }),
 };
 
-// Decorative floating blob component
-const FloatingBlob = ({ className = '' }: { className?: string }) => (
-  <div className={`absolute rounded-full blur-3xl opacity-20 pointer-events-none ${className}`} />
-);
-
-// Decorative wave SVG for section transitions
-const WaveDivider = ({ className = '', flip = false }: { className?: string; flip?: boolean }) => (
-  <div className={`absolute left-0 right-0 overflow-hidden leading-none ${flip ? 'top-0 rotate-180' : 'bottom-0'} ${className}`}>
-    <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[60px] lg:h-[80px]">
-      <path d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,50 1440,40 L1440,80 L0,80 Z" fill="currentColor" />
-    </svg>
-  </div>
-);
-
-// Section label component for consistent styling
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center gap-1.5 text-primary font-bold text-xs sm:text-xs uppercase tracking-[0.15em]">
-    <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
-    {children}
-    <span className="w-8 h-[2px] bg-primary/40 rounded-full" />
-  </span>
-);
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
@@ -99,39 +76,20 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
            
           />
           {/* Layered gradient overlay for depth */}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/60" />
         </motion.div>
-
-        {/* Floating decorative particles */}
-        <motion.div
-          className="absolute top-1/4 right-[15%] w-2 h-2 bg-white/30 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -20, 0], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-[25%] w-3 h-3 bg-white/15 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -15, 0], opacity: [0.15, 0.4, 0.15] }}
-          transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
-        />
-        <motion.div
-          className="absolute bottom-1/3 right-[20%] w-1.5 h-1.5 bg-white/20 rounded-full z-[5] hidden lg:block"
-          animate={{ y: [0, -25, 0], opacity: [0.15, 0.45, 0.15] }}
-          transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut', delay: 2 }}
-        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 pt-8 pb-16 sm:pt-10 sm:pb-20 w-full">
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-10">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-white/90 text-xs sm:text-sm mb-4 sm:mb-6"
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-white/80 text-xs sm:text-sm mb-4 sm:mb-6 border border-white/10"
             >
-              <Sun size={14} className="text-primary-light animate-pulse-soft" />
+              <Sun size={14} className="text-primary-light" />
               <span className="hidden sm:inline">{t('nav.season')}</span>
               <span className="sm:hidden">{t('nav.seasonShort')}</span>
-              <span className="w-1 h-1 bg-white/40 rounded-full" />
-              <span className="text-primary-light text-xs font-semibold">{t('nav.popularThisWeek')}</span>
             </motion.div>
 
             <motion.h1
@@ -198,32 +156,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 hidden sm:block"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' as const }}
-            className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center pt-2"
-          >
-            <div className="w-1 h-2 bg-white/70 rounded-full" />
-          </motion.div>
-        </motion.div>
-
-        {/* Wave transition to next section */}
-        <WaveDivider className="text-warm z-10" />
       </section>
 
       {/* ===== VOORDELEN / USP ===== */}
       <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
-        {/* Decorative background blobs */}
-        <FloatingBlob className="w-72 h-72 bg-primary/30 -top-20 -left-20" />
-        <FloatingBlob className="w-56 h-56 bg-primary/20 bottom-10 right-10" />
-
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -232,13 +168,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             variants={stagger}
             className="text-center mb-12 sm:mb-20"
           >
-            <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>{t('home.whyUs')}</SectionLabel>
-            </motion.div>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
               {t('home.whyUsTitle')}
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-2xl mx-auto text-sm sm:text-lg leading-relaxed">
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-2xl mx-auto text-sm sm:text-lg leading-relaxed">
               {t('home.whyUsSubtitle')}
             </motion.p>
           </motion.div>
@@ -294,16 +227,17 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 custom={i}
                 className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm"
               >
-                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${item.color} rounded-xl flex items-center justify-center mb-3 sm:mb-5 shadow-md transition-transform duration-300`}>
-                  <div className="text-white">{item.icon}</div>
+                <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 ${item.color} rounded-xl flex items-center justify-center shadow-md shrink-0`}>
+                    <div className="text-white">{item.icon}</div>
+                  </div>
+                  <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-foreground">{item.title}</h3>
                 </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-foreground mb-1.5 sm:mb-3">{item.title}</h3>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
-        <WaveDivider className="text-white" />
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
@@ -316,13 +250,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             variants={stagger}
             className="text-center mb-12 sm:mb-20"
           >
-            <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>{t('home.howItWorks')}</SectionLabel>
-            </motion.div>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
               {t('home.howItWorksTitle')}
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
               {t('home.howItWorksSubtitle')}
             </motion.p>
           </motion.div>
@@ -395,8 +326,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
       {/* ===== FEATURED CARAVANS ===== */}
       <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
-        <FloatingBlob className="w-80 h-80 bg-primary/15 -top-40 right-0" />
-
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -405,13 +334,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             variants={stagger}
             className="text-center mb-12 sm:mb-20"
           >
-            <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>{t('home.featuredCaravans')}</SectionLabel>
-            </motion.div>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
               {t('home.featuredCaravansTitle')}
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-xl mx-auto text-sm sm:text-lg">
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-xl mx-auto text-sm sm:text-lg">
               {t('home.featuredCaravansSubtitle')}
             </motion.p>
           </motion.div>
@@ -425,7 +351,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
               >
                 <div className="relative h-44 sm:h-56 overflow-hidden">
                   <Image
@@ -438,24 +364,18 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   />
                   {/* Subtle gradient overlay at bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
-                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs sm:text-xs font-semibold text-white shadow-md ${
-                      caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
-                    }`}>
-                      {caravan.type}
-                    </span>
-                  </div>
+
                   <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md">
                     <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">{t('home.perWeek')}</span></span>
                   </div>
                 </div>
-                <div className="p-4 sm:p-6">
+                <div className="p-4 sm:p-6 flex flex-col flex-1">
                   <h3 className="text-sm sm:text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
                   <div className="flex items-center gap-3 text-xs sm:text-sm text-muted mb-2 sm:mb-3">
                     <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
                     <span>{caravan.manufacturer}</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block">{caravan.description}</p>
+                  <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block sm:min-h-[2.5rem]">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
                       <span key={a} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
@@ -464,7 +384,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                       <span className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
                     )}
                   </div>
-                  <div className="flex gap-2 sm:gap-3">
+                  <div className="flex gap-2 sm:gap-3 mt-auto">
                     <Link
                       href={`/caravans/${caravan.id}`}
                       className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm"
@@ -493,10 +413,9 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           >
             <Link
               href="/caravans"
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-primary text-primary font-semibold rounded-full transition-all duration-300 text-sm"
+              className="inline-flex items-center px-6 sm:px-8 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm hover:bg-primary-dark"
             >
               {t('home.allCaravans')}
-              <ArrowRight size={16} />
             </Link>
           </motion.div>
         </div>
@@ -504,8 +423,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
       {/* ===== INVENTORY SECTION ===== */}
       <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
-        <FloatingBlob className="w-64 h-64 bg-primary/15 top-20 -right-20" />
-
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <motion.div
@@ -514,8 +431,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              <SectionLabel>{t('home.inventoryLabel')}</SectionLabel>
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 mb-4 sm:mb-6 tracking-tight">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-4 sm:mb-6 tracking-tight">
                 {t('home.inventoryTitle')}
               </h2>
               <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed">
@@ -563,7 +479,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                 <Image
-                  src="/images/campings/golfo_de_rosas.jpg"
+                  src="https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-1.jpg"
                   alt="Caravan interieur volledig ingericht"
                   width={600}
                   height={400}
@@ -572,8 +488,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                  
                 />
               </div>
-              {/* Decorative accent */}
-              <div className="absolute -z-10 -top-4 -right-4 w-full h-full rounded-2xl bg-primary/10" />
 
             </motion.div>
           </div>
@@ -581,9 +495,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       </section>
 
       {/* ===== ADVANTAGES HIGHLIGHT ===== */}
-      <section className="py-14 sm:py-24 bg-primary text-white overflow-hidden relative">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-10 bg-white/20" />
+      <section className="py-14 sm:py-24 text-white overflow-hidden relative">
+        {/* Background photo */}
+        <div className="absolute inset-0 bg-[url('/images/campings/platja_gran_platja_d_aro.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-primary/85" />
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
@@ -593,12 +508,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             transition={{ duration: 0.6 }}
             className="text-center mb-12 sm:mb-16"
           >
-            <span className="inline-flex items-center gap-1.5 text-white/60 font-bold text-xs sm:text-xs uppercase tracking-[0.15em]">
-              <span className="w-8 h-[2px] bg-white/30 rounded-full" />
-              {t('home.advantagesLabel')}
-              <span className="w-8 h-[2px] bg-white/30 rounded-full" />
-            </span>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">{t('home.advantagesTitle')}</h2>
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">{t('home.advantagesTitle')}</h2>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -641,22 +551,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </p>
           </motion.div>
         </div>
-        {/* Decorative floating circles */}
-        <motion.div
-          className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
-          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-10 left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.05, 0.08, 0.05] }}
-          transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut', delay: 2 }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut', delay: 4 }}
-        />
       </section>
 
       {/* ===== WEATHER CHECKER ===== */}
@@ -664,8 +558,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
       {/* ===== REVIEWS / SOCIAL PROOF ===== */}
       <section className="py-14 sm:py-24 bg-surface overflow-hidden relative">
-        <FloatingBlob className="w-64 h-64 bg-primary/10 -top-20 left-1/3" />
-
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial="hidden"
@@ -674,18 +566,15 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             variants={stagger}
             className="text-center mb-12 sm:mb-20"
           >
-            <motion.div variants={fadeUp} custom={0}>
-              <SectionLabel>{t('home.reviewsLabel')}</SectionLabel>
-            </motion.div>
-            <motion.h2 variants={fadeUp} custom={1} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mt-3 tracking-tight">
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
               {t('home.reviewsTitle2')}
             </motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
               {t('home.reviewsSubtitle2')}
             </motion.p>
           </motion.div>
 
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
             {[
               {
                 name: t('home.review1Name'),
@@ -702,32 +591,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 date: t('home.review2Date'),
               },
               {
-                name: t('home.review3Name'),
-                location: t('home.review3Location'),
-                rating: 4,
-                text: t('home.review3Text'),
-                date: t('home.review3Date'),
-              },
-              {
-                name: t('home.review4Name'),
-                location: t('home.review4Location'),
-                rating: 5,
-                text: t('home.review4Text'),
-                date: t('home.review4Date'),
-              },
-              {
                 name: t('home.review5Name'),
                 location: t('home.review5Location'),
                 rating: 5,
                 text: t('home.review5Text'),
                 date: t('home.review5Date'),
-              },
-              {
-                name: t('home.review6Name'),
-                location: t('home.review6Location'),
-                rating: 5,
-                text: t('home.review6Text'),
-                date: t('home.review6Date'),
               },
             ].map((review, i) => (
               <motion.div
@@ -736,10 +604,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 relative"
+                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm relative"
               >
-
-                <Quote size={32} className="absolute top-4 right-4 text-primary/10" />
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: review.rating }).map((_, s) => (
                     <Star key={s} size={16} className="fill-amber-400 text-amber-400" />
@@ -751,58 +617,28 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     <div className="font-semibold text-sm text-foreground">{review.name}</div>
                     <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-muted bg-surface-alt px-2 py-1 rounded-full">{review.date}</span>
-                    <span className="text-xs text-primary flex items-center gap-0.5"><CheckCircle size={10} />{t('home.reviewVerified')}</span>
-                  </div>
+                  <span className="text-xs text-muted">{review.date}</span>
                 </div>
               </motion.div>
             ))}
           </div>
-
-          {/* Trust indicators */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="mt-10 sm:mt-14 flex overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:justify-center sm:overflow-visible scrollbar-hide"
-          >
-            {[
-              { icon: <Shield size={18} className="text-primary" />, text: t('home.trustSafePayment') },
-              { icon: <CheckCircle size={18} className="text-primary" />, text: t('home.trustFullInventory') },
-              { icon: <Star size={18} className="text-amber-400 fill-amber-400" />, text: t('home.trustRating') },
-              { icon: <Users size={18} className="text-primary" />, text: t('home.trustGuests') },
-              { icon: <Clock size={18} className="text-primary" />, text: t('home.trustExperience') },
-            ].map((badge, bi) => (
-              <div key={bi} className="snap-center shrink-0 flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-2 shadow-sm text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
-                {badge.icon}
-                {badge.text}
-              </div>
-            ))}
-          </motion.div>
 
           {/* Google Review CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.5 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
             className="mt-10 sm:mt-14 text-center"
           >
-            <div className="inline-flex flex-col items-center bg-white rounded-2xl px-8 py-6 shadow-sm border border-gray-100">
-              <p className="text-foreground font-semibold text-sm sm:text-base mb-1">{t('home.reviewCta')}</p>
-              <p className="text-muted text-xs sm:text-sm mb-4">{t('home.reviewCtaSub')}</p>
-              <a
-                href={GOOGLE_REVIEW_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#EA4335] text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-[#d33426] transition-colors"
-              >
-                <svg viewBox="0 0 24 24" width={18} height={18} fill="white"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                {t('home.reviewCtaButton')}
-              </a>
-            </div>
+            <a
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
+            >
+              {t('home.reviewCtaButton')} <ArrowRight size={14} />
+            </a>
           </motion.div>
         </div>
       </section>

@@ -286,6 +286,52 @@ function normalizeTypos(input: string): string {
     [/\bcancell?\b/gi, 'cancel'],
     [/\brestaurant?\b/gi, 'restaurant'],
     [/\baccomo?dation\b/gi, 'accommodation'],
+    // Extra Dutch common errors
+    [/\bbeschikbaarheid\b/gi, 'beschikbaarheid'],
+    [/\bbeshikbaar\b/gi, 'beschikbaar'],
+    [/\bbeschikber\b/gi, 'beschikbaar'],
+    [/\bhoeveal\b/gi, 'hoeveel'],
+    [/\bhuaweel\b/gi, 'hoeveel'],
+    [/\bhoeveul\b/gi, 'hoeveel'],
+    [/\bwaneer\b/gi, 'wanneer'],
+    [/\bwannear\b/gi, 'wanneer'],
+    [/\btotaalprijs\b/gi, 'totaalprijs'],
+    [/\bgoedk[ou]+p\b/gi, 'goedkoop'],
+    [/\btarif\b/gi, 'tarief'],
+    [/\bkampeern?\b/gi, 'kamperen'],
+    [/\bvakatnie\b/gi, 'vakantie'],
+    [/\bvakantei\b/gi, 'vakantie'],
+    [/\bvaknatei\b/gi, 'vakantie'],
+    [/\bbestemign\b/gi, 'bestemming'],
+    [/\bonderoud\b/gi, 'onderhoud'],
+    [/\bonderhawd\b/gi, 'onderhoud'],
+    [/\bleinen\b/gi, 'linnen'],
+    [/\bdekbedn\b/gi, 'dekbed'],
+    [/\blokatie\b/gi, 'locatie'],
+    [/\bplaast\b/gi, 'plaats'],
+    [/\bsupermakrt\b/gi, 'supermarkt'],
+    [/\bstrandn\b/gi, 'strand'],
+    [/\bwifi+\b/gi, 'wifi'],
+    [/\binterent\b/gi, 'internet'],
+    [/\bhuisdieern\b/gi, 'huisdieren'],
+    [/\boverncahten\b/gi, 'overnachten'],
+    [/\bovernactehn\b/gi, 'overnachten'],
+    [/\bweerk\b/gi, 'weer'],
+    [/\btempratuur\b/gi, 'temperatuur'],
+    [/\btoemperatuur\b/gi, 'temperatuur'],
+    [/\bklimeat\b/gi, 'klimaat'],
+    // Spanish common errors
+    [/\breserbar\b/gi, 'reservar'],
+    [/\bresevar\b/gi, 'reservar'],
+    [/\bpresio\b/gi, 'precio'],
+    [/\bprecoi\b/gi, 'precio'],
+    [/\bdisponble\b/gi, 'disponible'],
+    [/\bcarabana\b/gi, 'caravana'],
+    // English common errors
+    [/\bavailibity\b/gi, 'availability'],
+    [/\bprise\b/gi, 'price'],
+    [/\bcampside\b/gi, 'campsite'],
+    [/\breservation\b/gi, 'reservation'],
   ];
 
   for (const [pattern, replacement] of typoMap) {
@@ -1584,14 +1630,197 @@ function smartMatch(
     };
   }
 
-  // ===== GENERAL CATCH-ALL: user seems to ask something =====
-  if (/\?$/.test(input.trim()) && lower.length > 15) {
+  // ===== HELP / WHAT CAN YOU DO =====
+  if (/^(help|hulp|wat kan je|wat kun je|wat doe je|wat weet je|waarmee.*help|hoe werkt dit|how does this work|what can you|que puedes|ayuda)\b/.test(lower)) {
     return {
       answer: isNl
-        ? `Goede vraag${name}! Ik ben er niet 100% zeker van dat ik je goed begrijp. 🤔\n\nKun je je vraag iets anders formuleren? Of kies een van deze populaire onderwerpen:\n\n💰 Prijzen en kosten\n🏕️ Campings en bestemmingen\n🚐 Caravans en inventaris\n📅 Boeken en beschikbaarheid\n❌ Annuleren en wijzigen\n\nOf wil je liever met een medewerker spreken? Dan connect ik je door! 💬`
-        : `Good question${name}! I'm not sure I fully understand. Could you rephrase, or pick a topic?\n\n💰 Prices\n🏕️ Campings\n🚐 Caravans\n📅 Booking\n\nOr would you like to talk to our team? 💬`,
-      followUp: isNl ? ['Wat kost het?', 'Welke campings?', 'Hoe boek ik?', 'Spreek een medewerker'] : ['Cost?', 'Campings?', 'Book?', 'Talk to staff'],
-      confidence: 0.4,
+        ? `Ik ben de slimme assistent van Caravanverhuur Spanje${name}! 🤖✨\n\nIk kan je helpen met:\n\n💰 **Prijzen** — wat kost een caravan?\n🚐 **Caravans** — welke types, uitrusting, airco\n🏕️ **Campings** — locaties, faciliteiten, zwembaden\n📅 **Boeken** — hoe werkt het, beschikbaarheid\n💳 **Betalen** — iDEAL, borg, annuleren\n🏖️ **Costa Brava** — weer, stranden, activiteiten\n🐕 **Huisdieren** — regels per camping\n📦 **Inventaris** — wat zit er in de caravan\n\nStel gewoon je vraag — ik begrijp ook halve zinnen en losse woorden! 😊\n\nOf wil je direct met een medewerker praten?`
+        : isEs
+        ? `¡Soy el asistente inteligente${name}! 🤖 Puedo ayudarte con precios, caravanas, campings, reservas y más.`
+        : `I'm the smart assistant${name}! 🤖 I can help with prices, caravans, campings, booking, weather and more!`,
+      followUp: isNl ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?'] : isEs ? ['¿Precios?', '¿Caravanas?', '¿Reservar?'] : ['Prices?', 'Caravans?', 'Book?'],
+      confidence: 0.9,
+      topic: 'help',
+    };
+  }
+
+  // ===== PARKING =====
+  if (/parkeren|parking|auto|garaje|coche|aparcamiento|parkeerplek|parkeerplaats|car\s*park/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Over parkeren op de camping${name}! 🚗\n\n✅ Op de meeste campings kun je je **auto bij de caravan parkeren**\n✅ Sommige campings hebben een apart parkeerterrein\n\n💡 Je hoeft geen caravan te slepen — die staat er al! Je rijdt gewoon met de auto naar de camping.\n\n🛣️ **Vanuit Nederland:**\n• Ca. 12-14 uur rijden (1.300 km)\n• Via Parijs of Luxemburg-Lyon\n• Tolwegen ca. €50-€80 enkele reis\n\n✈️ Of vlieg naar **Girona** of **Barcelona** en huur een auto!`
+        : 'Most campings allow parking next to the caravan! No need to tow — the caravan is already there. 🚗',
+      followUp: isNl ? ['Hoe rijd ik erheen?', 'Vliegveld?', 'Hoe boek ik?'] : ['Driving directions?', 'Airport?', 'Book?'],
+      confidence: 0.85,
+      topic: 'parking',
+    };
+  }
+
+  // ===== CYCLING =====
+  if (/fiets|fietsen|cycling|bike|bicycle|bicicleta|mountainbik|e-bike|ebike|fietsverhuur|bike.*rental/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Fietsen aan de Costa Brava${name}! 🚴\n\n🚴 **Mogelijkheden:**\n• Veel campings hebben **fietsverhuur** of liggen dichtbij een verhuurbedrijf\n• Prachtige **kustroutes** en **binnenlandroutes**\n• E-bikes steeds vaker beschikbaar\n\n🏆 **Populaire routes:**\n• Via Verdes (oude spoorlijnen — vlak en makkelijk)\n• Kustpaden rond Begur en Pals\n• Binnenland richting Peratallada en Púbol\n\n💡 Tip: fietsen is heerlijk in mei/juni en september — niet te warm!\n\nNeem je eigen fiets mee of huur er een ter plaatse.`
+        : 'Great cycling on the Costa Brava! Bike rental available at/near most campings. Beautiful coastal and inland routes. 🚴',
+      followUp: isNl ? ['Welke activiteiten?', 'Hoe is het weer?', 'Hoe boek ik?'] : ['Activities?', 'Weather?', 'Book?'],
+      confidence: 0.85,
+      topic: 'cycling',
+    };
+  }
+
+  // ===== GENERAL "IK WIL..." / "KAN IK..." / INTENT QUESTIONS =====
+  if (/^(ik wil|ik zoek|wij zoek|we zoek|ik heb|wij willen|we willen|i want|i need|quiero|busco|necesito)/.test(lower) && lower.length > 8) {
+    // Try to extract what they want from the rest of the sentence
+    if (/boek|huur|reserv|rent|book|alqui/.test(lower)) {
+      return smartMatch('hoe boek ik een caravan', locale, userName, ctx, messageHistory, campings);
+    }
+    if (/prijs|kost|price|cost|precio|tarief|goedkoop/.test(lower)) {
+      return smartMatch('wat kost het', locale, userName, ctx, messageHistory, campings);
+    }
+    if (/camping|locatie|bestemm|destination|lugar/.test(lower)) {
+      return smartMatch('welke campings zijn er', locale, userName, ctx, messageHistory, campings);
+    }
+    if (/caravan|stacarav|model|type/.test(lower)) {
+      return smartMatch('welke caravans hebben jullie', locale, userName, ctx, messageHistory, campings);
+    }
+    if (/info|informatie|weten|meer.*over|information/.test(lower)) {
+      return {
+        answer: isNl
+          ? `Waar wil je meer over weten${name}? 😊\n\nIk kan je alles vertellen over:\n\n🚐 Onze caravans\n🏕️ Campings & bestemmingen\n💰 Prijzen\n📅 Boeken & beschikbaarheid\n🏖️ De Costa Brava\n\nOf stel gewoon je vraag!`
+          : `What would you like to know more about${name}? 😊`,
+        followUp: isNl ? ['Caravans', 'Campings', 'Prijzen', 'Boeken'] : ['Caravans', 'Campings', 'Prices', 'Booking'],
+        confidence: 0.75,
+        topic: 'info-request',
+      };
+    }
+  }
+
+  // ===== "IS ER..." / "HEBBEN JULLIE..." / "KAN IK..." =====
+  if (/^(is er|zijn er|hebben jullie|heb je|kan ik|mag ik|is there|do you have|can i|are there|hay|tienen|puedo)/.test(lower) && lower.length > 8) {
+    if (/airco|koeling|ac/.test(lower)) return smartMatch('hebben de caravans airco', locale, userName, ctx, messageHistory, campings);
+    if (/wifi|internet/.test(lower)) return smartMatch('is er wifi op de camping', locale, userName, ctx, messageHistory, campings);
+    if (/zwem|pool|piscina/.test(lower)) return smartMatch('is er een zwembad', locale, userName, ctx, messageHistory, campings);
+    if (/hond|kat|huisdier|pet|dog|cat|mascot/.test(lower)) return smartMatch('mag ik huisdieren meenemen', locale, userName, ctx, messageHistory, campings);
+    if (/korting|discount|actie|descuento/.test(lower)) return smartMatch('zijn er kortingen', locale, userName, ctx, messageHistory, campings);
+    if (/douche|toilet|wc|sanitair|bathroom/.test(lower)) return smartMatch('hoe is het sanitair', locale, userName, ctx, messageHistory, campings);
+    if (/fiets|bike|bici/.test(lower)) return smartMatch('kan ik fietsen', locale, userName, ctx, messageHistory, campings);
+    if (/supermarkt|winkel|shop|restaurant/.test(lower)) return smartMatch('is er een supermarkt bij de camping', locale, userName, ctx, messageHistory, campings);
+    if (/stroom|elektr|electric/.test(lower)) return smartMatch('hoe zit het met elektriciteit', locale, userName, ctx, messageHistory, campings);
+  }
+
+  // ===== SINGLE WORD / SHORT QUERIES =====
+  // Handle very short inputs that are just a keyword
+  const singleWordMap: Record<string, string> = {
+    'prijs': 'pricing', 'prijzen': 'pricing', 'kosten': 'pricing', 'price': 'pricing', 'prices': 'pricing', 'precio': 'pricing', 'precios': 'pricing', 'goedkoop': 'pricing', 'duur': 'pricing', 'tarief': 'pricing', 'tarieven': 'pricing', 'geld': 'pricing',
+    'boeken': 'booking', 'boeking': 'booking', 'reserveren': 'booking', 'book': 'booking', 'booking': 'booking', 'reservar': 'booking', 'reservering': 'booking',
+    'annuleren': 'cancellation', 'annulering': 'cancellation', 'cancel': 'cancellation', 'cancelar': 'cancellation',
+    'borg': 'deposit', 'waarborgsom': 'deposit', 'deposit': 'deposit', 'fianza': 'deposit',
+    'betalen': 'payment', 'betaling': 'payment', 'ideal': 'payment', 'wero': 'payment', 'payment': 'payment', 'pago': 'payment',
+    'camping': 'campings', 'campings': 'campings', 'locatie': 'campings', 'locaties': 'campings', 'location': 'campings', 'campsite': 'campings',
+    'caravan': 'caravans', 'caravans': 'caravans', 'stacaravan': 'caravans', 'caravana': 'caravans', 'caravanas': 'caravans',
+    'airco': 'airco', 'airconditioning': 'airco', 'koeling': 'airco', 'ac': 'airco',
+    'inventaris': 'inventory', 'inbegrepen': 'inventory', 'included': 'inventory', 'inclusief': 'inventory', 'included': 'inventory',
+    'huisdier': 'pets', 'huisdieren': 'pets', 'hond': 'pets', 'honden': 'pets', 'kat': 'pets', 'pet': 'pets', 'pets': 'pets', 'mascota': 'pets',
+    'wifi': 'wifi', 'internet': 'wifi',
+    'weer': 'weather', 'weather': 'weather', 'tiempo': 'weather', 'temperatuur': 'weather', 'klimaat': 'weather',
+    'strand': 'beaches', 'stranden': 'beaches', 'beach': 'beaches', 'beaches': 'beaches', 'playa': 'beaches', 'playas': 'beaches',
+    'zwembad': 'pool', 'pool': 'pool', 'piscina': 'pool', 'zwemmen': 'pool',
+    'contact': 'contact', 'bellen': 'contact', 'telefoon': 'contact', 'email': 'contact', 'whatsapp': 'contact',
+    'checkin': 'checkin', 'checkout': 'checkin', 'inchecken': 'checkin', 'uitchecken': 'checkin',
+    'korting': 'discount', 'discount': 'discount', 'actie': 'discount', 'aanbieding': 'discount', 'coupon': 'discount', 'descuento': 'discount',
+    'schoonmaken': 'cleaning', 'opruimen': 'cleaning', 'cleaning': 'cleaning',
+    'transport': 'transport', 'vervoer': 'transport',
+    'activiteiten': 'activities', 'uitjes': 'activities', 'activities': 'activities', 'actividades': 'activities',
+    'wandelen': 'hiking', 'hiking': 'hiking', 'hiken': 'hiking', 'senderismo': 'hiking',
+    'fietsen': 'cycling', 'fiets': 'cycling', 'cycling': 'cycling', 'bike': 'cycling', 'bicicleta': 'cycling',
+    'help': 'help', 'hulp': 'help', 'ayuda': 'help',
+    'bbq': 'cooking', 'barbecue': 'cooking', 'koken': 'cooking',
+    'parkeren': 'parking', 'parking': 'parking', 'auto': 'parking',
+    'toiletten': 'sanitair', 'toilet': 'sanitair', 'douche': 'sanitair', 'sanitair': 'sanitair', 'wc': 'sanitair',
+    'taal': 'language', 'language': 'language', 'engels': 'language', 'spaans': 'language',
+    'baby': 'family', 'kinderen': 'family', 'kind': 'family', 'gezin': 'family', 'family': 'family', 'familia': 'family',
+    'senioren': 'seniors', 'senior': 'seniors', 'ouderen': 'seniors',
+    'luifel': 'awning', 'voortent': 'awning', 'markies': 'awning',
+    'veiligheid': 'safety', 'veilig': 'safety', 'safety': 'safety',
+    'nieuwsbrief': 'newsletter', 'newsletter': 'newsletter',
+    'account': 'account', 'inloggen': 'account', 'login': 'account', 'wachtwoord': 'account',
+    'supermarkt': 'shops', 'winkel': 'shops', 'restaurant': 'shops', 'winkels': 'shops', 'boodschappen': 'shops',
+    'markt': 'markets', 'tapas': 'markets', 'wijn': 'markets',
+    'ziekenhuis': 'medical', 'dokter': 'medical', 'apotheek': 'medical', 'ehbo': 'medical',
+    'vliegveld': 'airport', 'airport': 'airport', 'vliegen': 'airport',
+    'reistijd': 'driving', 'route': 'driving', 'navigatie': 'driving', 'rijden': 'driving',
+    'groep': 'groups', 'groepen': 'groups', 'group': 'groups',
+    'rolstoel': 'accessibility', 'handicap': 'accessibility', 'toegankelijk': 'accessibility',
+    'was': 'laundry', 'wasmachine': 'laundry', 'laundry': 'laundry',
+    'rustig': 'quiet', 'rust': 'quiet', 'quiet': 'quiet', 'relaxen': 'quiet',
+    'ervaring': 'reviews', 'review': 'reviews', 'reviews': 'reviews',
+    'spanje': 'costa-brava', 'spain': 'costa-brava',
+    'voorwaarden': 'terms', 'regels': 'terms', 'terms': 'terms',
+    'bedrijf': 'about', 'over': 'about',
+    'foto': 'photos', 'fotos': 'photos', 'photos': 'photos', 'photo': 'photos',
+    'seizoen': 'season', 'season': 'season', 'beschikbaar': 'season',
+    'vakantie': 'holiday', 'holiday': 'holiday', 'vacation': 'holiday',
+    'slaapplaats': 'sleeping', 'slaapplaatsen': 'sleeping', 'bed': 'sleeping', 'bedden': 'sleeping', 'slapen': 'sleeping',
+    'meenemen': 'packing', 'inpakken': 'packing', 'paklijst': 'packing',
+    'stekker': 'plugs', 'adapter': 'plugs', 'stopcontact': 'plugs',
+    'afval': 'waste', 'recyclen': 'waste', 'vuilnis': 'waste',
+    'watersport': 'watersport', 'kayak': 'watersport', 'snorkelen': 'watersport', 'duiken': 'watersport', 'surfen': 'watersport',
+  };
+
+  // Check single-word or very short input against keyword map
+  const words = lower.split(/\s+/).filter(w => w.length > 1);
+  if (words.length <= 2) {
+    for (const w of words) {
+      const topic = singleWordMap[w];
+      if (topic) {
+        // Re-run smartMatch with expanded query to get the proper answer
+        const expandedQueries: Record<string, string> = {
+          'pricing': 'wat kost een caravan huren', 'booking': 'hoe boek ik een caravan',
+          'cancellation': 'kan ik annuleren', 'deposit': 'hoe werkt de borg',
+          'payment': 'hoe werkt betalen', 'campings': 'welke campings zijn er',
+          'caravans': 'welke caravans hebben jullie', 'airco': 'hebben de caravans airco',
+          'inventory': 'wat zit er in de caravan', 'pets': 'mag ik huisdieren meenemen',
+          'wifi': 'is er wifi op de camping', 'weather': 'hoe is het weer aan de costa brava',
+          'beaches': 'welke stranden zijn er', 'pool': 'is er een zwembad',
+          'contact': 'hoe kan ik jullie bereiken', 'checkin': 'hoe laat is check-in',
+          'discount': 'zijn er kortingen beschikbaar', 'cleaning': 'moet ik schoonmaken bij vertrek',
+          'transport': 'kan ik transport boeken', 'activities': 'welke activiteiten zijn er',
+          'hiking': 'kan ik wandelen aan de costa brava', 'cycling': 'kan ik fietsen',
+          'help': 'waar kan je me mee helpen', 'cooking': 'kan ik koken in de caravan',
+          'parking': 'kan ik parkeren bij de caravan', 'sanitair': 'hoe is het sanitair',
+          'language': 'welke talen spreken jullie', 'family': 'geschikt voor gezinnen met kinderen',
+          'seniors': 'geschikt voor senioren', 'awning': 'heeft de caravan een luifel',
+          'safety': 'is het veilig aan de costa brava', 'newsletter': 'hoe schrijf ik me in voor de nieuwsbrief',
+          'account': 'hoe werkt mijn account', 'shops': 'is er een supermarkt bij de camping',
+          'markets': 'zijn er markten in de buurt', 'medical': 'is er een dokter in de buurt',
+          'airport': 'welk vliegveld is het dichtsbij', 'driving': 'hoe rijd ik naar de costa brava',
+          'groups': 'kan ik met een groep komen', 'accessibility': 'is het toegankelijk voor rolstoelen',
+          'laundry': 'is er een wasmachine', 'quiet': 'welke campings zijn rustig',
+          'reviews': 'wat zijn de ervaringen', 'costa-brava': 'vertel over de costa brava',
+          'terms': 'waar vind ik de voorwaarden', 'about': 'wie zijn jullie',
+          'photos': 'kan ik fotos van de caravans zien', 'season': 'wanneer is het seizoen',
+          'holiday': 'vertel over vakantie aan de costa brava', 'sleeping': 'hoeveel slaapplaatsen',
+          'packing': 'wat moet ik meenemen', 'plugs': 'hoe zit het met stekkers in spanje',
+          'waste': 'hoe werkt afvalscheiding', 'watersport': 'welke watersport is er mogelijk',
+        };
+        const expanded = expandedQueries[topic];
+        if (expanded) {
+          return smartMatch(expanded, locale, userName, ctx, messageHistory, campings);
+        }
+      }
+    }
+  }
+
+  // ===== GENERAL CATCH-ALL: user seems to ask something =====
+  if (lower.length > 5) {
+    return {
+      answer: isNl
+        ? `Hmm${name}, ik snap niet helemaal wat je bedoelt. 🤔\n\nProbeer het eens met andere woorden, of kies hieronder een onderwerp:\n\n💰 Prijzen en kosten\n🏕️ Campings en bestemmingen\n🚐 Caravans en inventaris\n📅 Boeken en beschikbaarheid\n❌ Annuleren en wijzigen\n\nOf wil je liever met een medewerker spreken? 💬`
+        : isEs
+        ? `Hmm${name}, no entiendo bien. 🤔 ¿Puedes reformularlo?\n\n💰 Precios\n🏕️ Campings\n🚐 Caravanas\n📅 Reservar\n\n¿O prefieres hablar con un empleado? 💬`
+        : `Hmm${name}, I don't quite understand. 🤔\n\nCould you rephrase? Or pick a topic:\n\n💰 Prices\n🏕️ Campings\n🚐 Caravans\n📅 Booking\n\nOr would you like to talk to our team? 💬`,
+      followUp: isNl ? ['Wat kost het?', 'Welke campings?', 'Hoe boek ik?', 'Spreek een medewerker'] : isEs ? ['¿Cuánto cuesta?', '¿Campings?', '¿Reservar?', 'Hablar con empleado'] : ['Cost?', 'Campings?', 'Book?', 'Talk to staff'],
+      confidence: 0.35,
       topic: 'unclear',
     };
   }
@@ -1698,6 +1927,23 @@ export default function ChatBot() {
     return () => window.removeEventListener('keydown', h);
   }, [isOpen]);
 
+  // Listen for external open-chatbot events (e.g. from FAQ search)
+  const pendingMessageRef = useRef<string | null>(null);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ message?: string }>).detail;
+      setIsOpen(true);
+      setHasNewMessage(false);
+      setBubbleDismissed(true);
+      setShowBubble(false);
+      if (detail?.message) {
+        pendingMessageRef.current = detail.message;
+      }
+    };
+    window.addEventListener('open-chatbot', handler);
+    return () => window.removeEventListener('open-chatbot', handler);
+  }, []);
+
   // Playful bubble after 5s, auto-dismiss after 8s
   useEffect(() => {
     if (bubbleDismissed || isOpen) return;
@@ -1740,28 +1986,34 @@ export default function ChatBot() {
               timestamp: new Date(),
             }]);
           } else {
-            // Ask for name first
-            setAskingName(true);
-            const askNameMsg = isNl
-              ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je persoonlijk helpen! 😊'
+            // Welcome without requiring name — just let them ask
+            const welcomeMsg = isNl
+              ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nIk ben je slimme assistent en weet alles over onze caravans aan de Costa Brava! Stel gerust je vraag. 😊'
               : isEs
-              ? '¡Hola! 👋 Bienvenido. ¿Cómo te llamas? 😊'
-              : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nWhat's your name? So I can help you personally! 😊";
+              ? '¡Hola! 👋 Bienvenido a Caravanverhuur Spanje.\n\nSoy tu asistente inteligente. ¡Pregúntame lo que quieras! 😊'
+              : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nI'm your smart assistant — ask me anything about our caravans on the Costa Brava! 😊";
             setMessages([{
-              id: '1', role: 'bot', text: askNameMsg,
+              id: '1', role: 'bot', text: welcomeMsg,
+              quickReplies: isNl
+                ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+                : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+                : ['What does it cost?', 'Which caravans?', 'How to book?'],
               timestamp: new Date(),
             }]);
           }
         })
         .catch(() => {
-          setAskingName(true);
-          const askNameMsg = isNl
-            ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nWat is je naam? Dan kan ik je persoonlijk helpen! 😊'
+          const welcomeMsg = isNl
+            ? 'Hoi! 👋 Welkom bij Caravanverhuur Spanje.\n\nIk ben je slimme assistent en weet alles over onze caravans aan de Costa Brava! Stel gerust je vraag. 😊'
             : isEs
-            ? '¡Hola! 👋 Bienvenido. ¿Cómo te llamas? 😊'
-            : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nWhat's your name? So I can help you personally! 😊";
+            ? '¡Hola! 👋 Bienvenido a Caravanverhuur Spanje.\n\nSoy tu asistente inteligente. ¡Pregúntame lo que quieras! 😊'
+            : "Hi! 👋 Welcome to Caravanverhuur Spanje.\n\nI'm your smart assistant — ask me anything about our caravans on the Costa Brava! 😊";
           setMessages([{
-            id: '1', role: 'bot', text: askNameMsg,
+            id: '1', role: 'bot', text: welcomeMsg,
+            quickReplies: isNl
+              ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
+              : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
+              : ['What does it cost?', 'Which caravans?', 'How to book?'],
             timestamp: new Date(),
           }]);
         });
@@ -1856,25 +2108,30 @@ export default function ChatBot() {
       timestamp: new Date(),
     }]);
 
-    // Show welcome message with quick replies
+    // Now connect to staff (name was asked because user requested a human)
+    setChatMode('waiting-human');
+    setHumanWaitStart(Date.now());
+    if (conversationId) {
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'needsHuman', conversationId }),
+      }).catch((e) => console.error('Fetch error:', e));
+    }
     setTimeout(() => {
-      const welcome = isNl
-        ? `Leuk je te ontmoeten, **${name}**! 😊\n\nWaar kan ik je mee helpen?`
-        : isEs
-        ? `¡Encantado, **${name}**! 😊 ¿En qué puedo ayudarte?`
-        : `Nice to meet you, **${name}**! 😊\n\nHow can I help you?`;
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'bot',
-        text: welcome,
-        quickReplies: isNl
-          ? ['Wat kost het?', 'Welke caravans?', 'Hoe boek ik?', 'Welke campings?']
-          : isEs ? ['¿Cuánto cuesta?', '¿Qué caravanas?', '¿Cómo reservo?']
-          : ['What does it cost?', 'Which caravans?', 'How to book?'],
+        text: isNl
+          ? `Bedankt, ${name}! Ik verbind je nu door met een medewerker. Even geduld... 🔄\n\nEen collega neemt het zo van mij over. Je kunt alvast je vraag typen!`
+          : isEs
+          ? `¡Gracias, ${name}! Te conecto con un empleado. Un momento... 🔄`
+          : `Thanks, ${name}! Connecting you with a staff member now... 🔄\n\nYou can already type your question!`,
         timestamp: new Date(),
       }]);
+      saveMessage('bot', `Connecting ${name} to staff...`);
     }, 300);
-  }, [nameInput, conversationId, isNl, isEs]);
+  }, [nameInput, conversationId, isNl, isEs, saveMessage]);
 
   /* ------------------------------------------------------------------ */
   /*  Booking Flow Functions                                             */
@@ -2057,8 +2314,24 @@ export default function ChatBot() {
         askedQuestions: [...prev.askedQuestions, trimmed],
       }));
 
-      // Check for human request
-      if (/medewerker|persoon|iemand|spreek|menselijk|echt|live|chat met|speak|talk|human|real|staff|person|hablar/.test(trimmed.toLowerCase())) {
+      // Check for human request — here we ask for name if not known yet
+      if (/medewerker|persoon|iemand|spreek|menselijk|echt|live|chat met|speak|talk|human|real|staff|person|hablar|echte mens|een mens|persoonlijk/.test(trimmed.toLowerCase())) {
+        // If we don't have a name yet, ask for it before connecting
+        if (!userName) {
+          setAskingName(true);
+          setMessages(prev => [...prev, {
+            id: (Date.now() + 1).toString(),
+            role: 'bot',
+            text: isNl
+              ? 'Natuurlijk, ik verbind je door met een medewerker! 🔄\n\nWat is je naam? Dan weten ze met wie ze spreken.'
+              : isEs
+              ? '¡Claro! Te conecto con un empleado. ¿Cómo te llamas?'
+              : 'Sure! I\'ll connect you with a staff member. What\'s your name?',
+            timestamp: new Date(),
+          }]);
+          setIsTyping(false);
+          return;
+        }
         setChatMode('waiting-human');
         setHumanWaitStart(Date.now());
         if (conversationId) {
@@ -2136,6 +2409,16 @@ export default function ChatBot() {
       if (!isOpen) setHasNewMessage(true);
     }, 500 + Math.random() * 500);
   }, [locale, isOpen, userName, chatMode, conversationId, saveMessage, isNl, isEs, convContext, messages, bookingFlow.active, startBookingFlow, campings]);
+
+  // Drain pending message from external open-chatbot event
+  useEffect(() => {
+    if (isOpen && pendingMessageRef.current) {
+      const msg = pendingMessageRef.current;
+      pendingMessageRef.current = null;
+      const timer = setTimeout(() => sendMessage(msg), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, sendMessage]);
 
   const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(input); };
 

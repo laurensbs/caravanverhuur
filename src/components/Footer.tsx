@@ -73,14 +73,16 @@ export default function Footer() {
   return (
     <footer className="bg-white">
       {/* CTA strip */}
-      <div className="bg-primary">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-white font-semibold text-sm sm:text-base text-center sm:text-left">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-foreground/85" />
+        <div className="relative max-w-7xl mx-auto px-4 py-10 sm:py-12 flex flex-col items-center text-center gap-5">
+          <p className="text-white font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl tracking-tight max-w-xl">
             {t('footer.ctaText')}
           </p>
           <Link
             href="/boeken"
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-primary font-bold rounded-full text-sm transition-colors shrink-0"
+            className="flex items-center gap-2 px-7 py-3.5 bg-white text-foreground font-bold rounded-lg text-sm transition-all hover:bg-white/90 shrink-0"
           >
             {t('nav.bookNow')}
             <ArrowRight size={14} />

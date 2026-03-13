@@ -373,9 +373,11 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Bottom CTA */}
-      <section className="bg-gradient-to-r from-primary to-primary-dark py-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+      <section className="relative overflow-hidden py-14 sm:py-16">
+        <div className="absolute inset-0 bg-[url('/images/campings/golfo_de_rosas.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90" />
+        <div className="relative max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 drop-shadow-sm">
             Op vakantie naar {destination.name}?
           </h2>
           <p className="text-white/80 mb-6 max-w-xl mx-auto">
@@ -383,7 +385,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           </p>
           <Link
             href="/boeken"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-primary font-bold rounded-xl text-sm transition-transform hover:scale-105 shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-primary font-bold rounded-xl text-sm transition-all hover:scale-105 hover:shadow-xl shadow-lg"
           >
             {t('nav.bookNow')} <ArrowRight size={16} />
           </Link>
