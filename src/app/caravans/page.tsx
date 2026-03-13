@@ -304,13 +304,30 @@ export default function CaravansPage() {
                       className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
                     >
                       <div className="relative h-48 sm:h-52 overflow-hidden">
-                        <Image
-                          src={caravan.photos[0]}
-                          alt={`${caravan.name} — ${caravan.type} voor ${caravan.maxPersons} personen`}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                         
-                        />
+                        {(() => {
+                          const gm = caravan.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
+                          if (gm) return (
+                            <>
+                              <iframe
+                                src={`https://play.gumlet.io/embed/${gm[1]}?autoplay=true&muted=true&loop=true&preload=true`}
+                                title={caravan.name}
+                                allow="autoplay"
+                                loading="lazy"
+                                className="absolute inset-0 w-full h-full border-0 scale-[1.5] origin-center"
+                                style={{ pointerEvents: 'none' }}
+                              />
+                              <div className="absolute inset-0 z-10" />
+                            </>
+                          );
+                          return (
+                            <Image
+                              src={caravan.photos[0]}
+                              alt={`${caravan.name} — ${caravan.type} voor ${caravan.maxPersons} personen`}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          );
+                        })()}
                         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
                         <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                           <span className="text-sm font-bold text-foreground">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
