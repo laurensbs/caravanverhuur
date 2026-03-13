@@ -175,7 +175,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
       const makeSvgIcon = (active: boolean) => {
         const isMobile = window.innerWidth < 640;
         const size = active ? (isMobile ? 36 : 42) : (isMobile ? 28 : 32);
-        const color = active ? '#c4650c' : '#0EA5E9';
+        const color = active ? '#c4650c' : '#0369A1';
         return L.default.divIcon({
           className: '',
           html: `<svg width="${size}" height="${size + 10}" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -275,7 +275,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
           {/* Top-left: destination counter */}
           <div className="absolute top-3 left-3 z-[9]">
             <div className="bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-100 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-[#0EA5E9] rounded-full animate-pulse" />
+              <div className="w-2.5 h-2.5 bg-[#0369A1] rounded-full animate-pulse" />
               <span className="text-xs font-semibold text-gray-700">{destinations.length} bestemmingen</span>
             </div>
           </div>
@@ -437,7 +437,7 @@ export default function CostaBravaMap({ destinations, activeDestination, onMarke
         }
         .map-popup-btn {
           display: inline-block;
-          background: linear-gradient(135deg, #0EA5E9, #0284C7);
+          background: linear-gradient(135deg, #0369A1, #075985);
           color: #fff !important;
           padding: 8px 18px;
           border-radius: 10px;
