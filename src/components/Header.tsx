@@ -254,11 +254,11 @@ export default function Header() {
           <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
             {t('nav.bookNow')} <ArrowRight size={11} />
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center" aria-label="Menu">
-            <div className="relative w-5 h-3.5">
-              <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.2 }} className="absolute top-0 left-0 w-full h-0.5 bg-foreground rounded-full origin-center" />
-              <motion.span animate={menuOpen ? { opacity: 0 } : { opacity: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-0.5 bg-foreground rounded-full" />
-              <motion.span animate={menuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.2 }} className="absolute top-2.5 left-0 w-full h-0.5 bg-foreground rounded-full origin-center" />
+          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
+            <div className="relative w-[18px] h-3">
+              <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-0 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
+              <motion.span animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-[1.5px] bg-foreground rounded-full" />
+              <motion.span animate={menuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-2.5 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
             </div>
           </button>
           </div>
@@ -429,156 +429,183 @@ export default function Header() {
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] lg:hidden"
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] lg:hidden"
             onClick={() => setMenuOpen(false)}
           />
 
           <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 bottom-0 w-full sm:w-[85vw] sm:max-w-sm bg-white z-[101] lg:hidden shadow-2xl flex flex-col"
+            transition={{ type: 'spring', damping: 32, stiffness: 380, mass: 0.8 }}
+            className="fixed top-0 right-0 bottom-0 w-full sm:w-[85vw] sm:max-w-[380px] bg-white z-[101] lg:hidden shadow-2xl flex flex-col"
           >
             {/* Panel header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-32 h-auto" />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-28 h-auto" />
               </Link>
-              <button onClick={() => setMenuOpen(false)} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <X size={16} className="text-gray-600" />
+              <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
+                <X size={15} className="text-gray-500" />
               </button>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-              <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
+            <nav className="flex-1 overflow-y-auto py-3 px-3">
+              <div className="space-y-0.5">
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }}>
+                  <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
+                </motion.div>
 
-              {/* Caravans — link + expandable chevron */}
-              <div className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-[15px] font-semibold transition-colors ${active('/caravans') ? 'text-primary bg-primary/5' : 'text-gray-800'}`}>
-                <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex-1">
-                  {t('nav.caravans')}
-                </Link>
-                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-2 -mr-1 rounded-lg hover:bg-gray-100 transition-colors">
-                  <ChevronDown size={16} className={`text-gray-400 transition-transform duration-200 ${mobileSubmenu === 'caravans' ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
-              <AnimatePresence>
-                {mobileSubmenu === 'caravans' && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} className="overflow-hidden">
-                    <div className="pl-4 pr-2 pb-3 pt-1">
-                      <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-2">
-                        {t('home.allCaravans')} <ArrowRight size={12} />
-                      </Link>
-                      <div className="space-y-0.5">
-                        {allCaravans.map(c => (
-                          <Link key={c.id} href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                            <div className="w-11 h-8 rounded-lg overflow-hidden relative shrink-0 bg-gray-100">
-                              <Image src={c.photos[0]} alt={c.name} fill className="object-cover" sizes="44px" />
-                            </div>
-                            <span className="truncate font-medium">{c.name}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Bestemmingen — link + expandable chevron */}
-              <div className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-[15px] font-semibold transition-colors ${active('/bestemmingen') ? 'text-primary bg-primary/5' : 'text-gray-800'}`}>
-                <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex-1">
-                  {t('nav.destinations')}
-                </Link>
-                <button onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')} className="p-2 -mr-1 rounded-lg hover:bg-gray-100 transition-colors">
-                  <ChevronDown size={16} className={`text-gray-400 transition-transform duration-200 ${mobileSubmenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
-              <AnimatePresence>
-                {mobileSubmenu === 'bestemmingen' && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} className="overflow-hidden">
-                    <div className="pl-4 pr-2 pb-3 pt-1">
-                      <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-3">
-                        Alle bestemmingen <ArrowRight size={12} />
-                      </Link>
-
-                      {/* Campings */}
-                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-primary uppercase tracking-widest">Campings</p>
-                      <div className="space-y-0.5 mb-3">
-                        {allCampings.slice(0, 5).map(c => (
-                          <Link key={c.id} href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden relative shrink-0 bg-gray-100">
-                              <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="32px" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="block truncate text-[13px] font-medium">{c.name}</span>
-                              <span className="block text-[11px] text-gray-400">{c.location}</span>
-                            </div>
-                          </Link>
-                        ))}
-                        <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1.5 text-xs text-primary font-semibold">
-                          Alle campings ({allCampings.length}) →
+                {/* Caravans — link + expandable chevron */}
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 }}>
+                  <div className={`flex items-center justify-between px-4 py-3 rounded-xl text-[15px] font-semibold transition-all ${active('/caravans') ? 'text-primary bg-primary/5' : 'text-gray-800 active:bg-gray-50'}`}>
+                    <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex-1">
+                      {t('nav.caravans')}
+                    </Link>
+                    <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-1.5 -mr-1 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors">
+                      <motion.div animate={{ rotate: mobileSubmenu === 'caravans' ? 180 : 0 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }}>
+                        <ChevronDown size={15} className="text-gray-400" />
+                      </motion.div>
+                    </button>
+                  </div>
+                </motion.div>
+                <AnimatePresence>
+                  {mobileSubmenu === 'caravans' && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+                      <div className="pl-3 pr-2 pb-2 pt-1">
+                        <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-2 active:bg-primary/10 transition-colors">
+                          {t('home.allCaravans')} <ArrowRight size={12} />
                         </Link>
+                        <div className="space-y-0.5">
+                          {allCaravans.map((c, i) => (
+                            <motion.div key={c.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
+                              <Link href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                <div className="w-10 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">
+                                  <Image src={c.photos[0]} alt={c.name} fill className="object-cover" sizes="40px" />
+                                </div>
+                                <span className="truncate font-medium text-[13px]">{c.name}</span>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                      {/* Plaatsen */}
-                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-primary uppercase tracking-widest">Plaatsen</p>
-                      <div className="space-y-0.5 mb-3">
-                        {destinations.slice(0, 5).map(d => (
-                          <Link key={d.slug} href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden relative shrink-0 bg-gray-100">
-                              <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="32px" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="block truncate text-[13px] font-medium">{d.name}</span>
-                              <span className="block text-[11px] text-gray-400">{d.region}</span>
-                            </div>
+                {/* Bestemmingen — link + expandable chevron */}
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.11 }}>
+                  <div className={`flex items-center justify-between px-4 py-3 rounded-xl text-[15px] font-semibold transition-all ${active('/bestemmingen') ? 'text-primary bg-primary/5' : 'text-gray-800 active:bg-gray-50'}`}>
+                    <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex-1">
+                      {t('nav.destinations')}
+                    </Link>
+                    <button onClick={() => setMobileSubmenu(mobileSubmenu === 'bestemmingen' ? null : 'bestemmingen')} className="p-1.5 -mr-1 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors">
+                      <motion.div animate={{ rotate: mobileSubmenu === 'bestemmingen' ? 180 : 0 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }}>
+                        <ChevronDown size={15} className="text-gray-400" />
+                      </motion.div>
+                    </button>
+                  </div>
+                </motion.div>
+                <AnimatePresence>
+                  {mobileSubmenu === 'bestemmingen' && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+                      <div className="pl-3 pr-2 pb-2 pt-1">
+                        <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-2 active:bg-primary/10 transition-colors">
+                          Alle bestemmingen <ArrowRight size={12} />
+                        </Link>
+
+                        {/* Campings */}
+                        <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Campings</p>
+                        <div className="space-y-0.5 mb-2">
+                          {allCampings.slice(0, 5).map((c, i) => (
+                            <motion.div key={c.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                              <Link href={`/bestemmingen/${c.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                <div className="w-7 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">
+                                  <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover" sizes="28px" />
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="block truncate text-[13px] font-medium">{c.name}</span>
+                                  <span className="block text-[10px] text-gray-400">{c.location}</span>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                          <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1 text-xs text-primary font-semibold hover:underline">
+                            Alle campings ({allCampings.length}) →
                           </Link>
-                        ))}
-                      </div>
+                        </div>
 
-                      {/* Bezienswaardigheden */}
-                      <p className="px-3 pt-1 pb-2 text-[11px] font-bold text-primary uppercase tracking-widest">Bezienswaardigheden</p>
-                      <div className="space-y-0.5">
-                        {attractions.slice(0, 5).map(a => (
-                          <Link key={a.slug} href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden relative shrink-0 bg-gray-100">
-                              <Image src={a.img} alt={a.name} fill className="object-cover" sizes="32px" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="block truncate text-[13px] font-medium">{a.name}</span>
-                              <span className="block text-[11px] text-gray-400">{a.place}</span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                        {/* Plaatsen */}
+                        <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Plaatsen</p>
+                        <div className="space-y-0.5 mb-2">
+                          {destinations.slice(0, 5).map((d, i) => (
+                            <motion.div key={d.slug} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                              <Link href={`/bestemmingen/${d.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                <div className="w-7 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">
+                                  <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="28px" />
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="block truncate text-[13px] font-medium">{d.name}</span>
+                                  <span className="block text-[10px] text-gray-400">{d.region}</span>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
 
-              <div className="mt-1 pt-2 border-t border-gray-100">
-                <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
-                <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
-                <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
+                        {/* Bezienswaardigheden */}
+                        <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Bezienswaardigheden</p>
+                        <div className="space-y-0.5">
+                          {attractions.slice(0, 5).map((a, i) => (
+                            <motion.div key={a.slug} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                              <Link href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                                <div className="w-7 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">
+                                  <Image src={a.img} alt={a.name} fill className="object-cover" sizes="28px" />
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="block truncate text-[13px] font-medium">{a.name}</span>
+                                  <span className="block text-[10px] text-gray-400">{a.place}</span>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="mt-2 pt-2 border-t border-gray-100/80">
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.14 }}>
+                  <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.17 }}>
+                  <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.20 }}>
+                  <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
+                </motion.div>
               </div>
             </nav>
 
             {/* Bottom CTA */}
-            <div className="p-5 space-y-3 border-t border-gray-100 bg-gray-50/50">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} className="p-4 space-y-2.5 border-t border-gray-100/80 bg-gray-50/60">
               {/* Mobile language switcher */}
-              <div className="flex items-center justify-center gap-1.5 mb-1">
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
                 {(['nl', 'en', 'es'] as Locale[]).map(l => (
-                  <button key={l} onClick={() => setLocale(l)} className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-colors ${locale === l ? 'bg-primary text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200'}`}>
+                  <button key={l} onClick={() => setLocale(l)} className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all active:scale-95 ${locale === l ? 'bg-primary text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'}`}>
                     {localeFlags[l]}
                   </button>
                 ))}
               </div>
-              <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl text-[15px] shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]">
-                {t('nav.bookNow')} <ArrowRight size={16} />
+              <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-[15px] shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
+                {t('nav.bookNow')} <ArrowRight size={15} />
               </Link>
-              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 text-gray-600 font-medium rounded-xl text-sm bg-white border border-gray-200 transition-colors">
-                <User size={15} /> {t('footer.myAccount')}
+              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 text-gray-500 font-medium rounded-xl text-sm bg-white border border-gray-200 hover:border-gray-300 active:bg-gray-50 transition-all">
+                <User size={14} /> {t('footer.myAccount')}
               </Link>
-            </div>
+            </motion.div>
           </motion.div>
         </>
       )}
@@ -590,9 +617,9 @@ export default function Header() {
 /* Mobile nav link helper */
 function MobLink({ href, label, on, close }: { href: string; label: string; on: boolean; close: () => void }) {
   return (
-    <Link href={href} onClick={close} className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-[15px] font-semibold transition-colors ${on ? 'text-primary bg-primary/5' : 'text-gray-800'}`}>
+    <Link href={href} onClick={close} className={`flex items-center justify-between px-4 py-3 rounded-xl text-[15px] font-semibold transition-all ${on ? 'text-primary bg-primary/5' : 'text-gray-800 active:bg-gray-50'}`}>
       {label}
-      <ChevronRight size={14} className={`transition-colors ${on ? 'text-primary' : 'text-gray-300'}`} />
+      <ChevronRight size={13} className={`transition-colors ${on ? 'text-primary' : 'text-gray-300'}`} />
     </Link>
   );
 }

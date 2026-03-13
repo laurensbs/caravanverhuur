@@ -64,16 +64,18 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
     <>
       {/* ===== HERO with Booking Widget ===== */}
       <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[82svh] flex flex-col justify-end overflow-hidden">
-        {/* Parallax background */}
+        {/* Video background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
-          <Image
-            src="/images/hero-costa-brava.jpg"
-            alt={t('home.heroAlt')}
-            fill
-            className="object-cover object-[center_40%]"
-            sizes="100vw"
-            priority
-          />
+          <div className="absolute inset-[-20%] w-[140%] h-[140%]">
+            <iframe
+              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?autoplay=true&muted=true&loop=true&preload=true&t=30"
+              title="Costa Brava hero video"
+              allow="autoplay"
+              loading="eager"
+              className="w-full h-full border-0"
+              style={{ pointerEvents: 'none' }}
+            />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/25" />
         </motion.div>
 
@@ -356,11 +358,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                         <iframe
                           src={`https://play.gumlet.io/embed/${gMatch[1]}?autoplay=false&muted=true&loop=true&preload=true`}
                           title={caravan.name}
-                          allow="autoplay; fullscreen"
-                          allowFullScreen
+                          allow="autoplay"
                           loading="lazy"
                           className="absolute inset-0 w-full h-full border-0"
                         />
+                        <div className="absolute inset-0 z-10" />
                       </div>
                     ) : (
                       <Image src={caravan.photos[0]} alt={caravan.name} fill sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
@@ -507,11 +509,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 <iframe
                   src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?autoplay=false&muted=true&loop=true&preload=true"
                   title="Caravan interieur volledig ingericht"
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
+                  allow="autoplay"
                   loading="lazy"
                   className="absolute inset-0 w-full h-full border-0"
                 />
+                <div className="absolute inset-0 z-10" />
               </div>
             </motion.div>
           </div>
