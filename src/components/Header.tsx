@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Globe, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -164,9 +164,10 @@ export default function Header() {
             <div className="relative h-full flex items-center" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
                 {t('nav.destinations')}
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-10 h-10 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Language"> <Globe size={18} /> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg py-1 min-w-[140px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors ${locale === l ?'text-primary font-semibold' : 'text-foreground-light'}`}>
-                        <span className="text-base">{localeFlags[l]}</span>
-                        {l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}
+                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors" aria-label="Language"> <span className="text-xl leading-none">{localeFlags[locale]}</span> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl ring-1 ring-black/5 py-1.5 min-w-[160px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors hover:bg-gray-50 ${locale === l ? 'text-primary font-semibold bg-primary/5' : 'text-foreground-light'}`}>
+                        <span className="text-lg leading-none">{localeFlags[l]}</span>
+                        <span>{l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}</span>
+                        {locale === l && <span className="ml-auto text-primary">✓</span>}
                       </button>
                     ))}
                   </motion.div>

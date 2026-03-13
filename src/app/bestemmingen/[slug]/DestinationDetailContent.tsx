@@ -27,7 +27,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[35vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
         <Image
           src={allPhotos[activePhoto] || destination.heroImage}
           alt={`${destination.name} — ${destination.region}, Costa Brava`}
@@ -62,7 +62,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               <span className="text-white">{destination.name}</span>
             </nav>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">{destination.name}</h1>
+            <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{destination.name}</h1>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
               <span className="flex items-center gap-1.5"><MapPin size={14} /> {destination.region}</span>
               {destination.population && (

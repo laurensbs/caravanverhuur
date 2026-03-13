@@ -55,7 +55,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[35vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
         {(() => {
           const src = camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg';
           return src.startsWith('http') ? (
@@ -103,7 +103,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               <span className="text-white">{camping.name}</span>
             </nav>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">{camping.name}</h1>
+            <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{camping.name}</h1>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
               <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
               <span className="text-white/40">·</span>

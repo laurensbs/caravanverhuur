@@ -72,20 +72,20 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
             <Tent size={40} className="text-primary/30" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
         {/* Region badge */}
-        <div className="absolute top-3 left-3">
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary/90 backdrop-blur-sm rounded-full text-[11px] font-semibold text-white shadow-sm">
+        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 bg-primary/90 backdrop-blur-sm rounded-full text-[10px] sm:text-[11px] font-semibold text-white shadow-sm">
             <MapPin size={10} /> {camping.region}
           </span>
         </div>
 
         {/* Name overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-0.5 drop-shadow-lg">{camping.name}</h3>
-          <div className="flex items-center gap-1.5 text-white/80 text-xs">
-            <MapPin size={12} /> {camping.location}
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+          <h3 className="text-base sm:text-xl font-bold text-white mb-0.5 drop-shadow-lg leading-tight">{camping.name}</h3>
+          <div className="flex items-center gap-1.5 text-white/80 text-[11px]">
+            <MapPin size={11} /> {camping.location}
           </div>
         </div>
       </div>
@@ -280,44 +280,44 @@ export default function BestemmingenPage() {
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-8 sm:pt-20 sm:pb-10">
+        <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-6 sm:pt-20 sm:pb-10">
           <nav className="flex items-center gap-1.5 text-white/50 text-xs mb-6">
             <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
             <span>/</span>
             <span className="text-white/80">{t('nav.destinations')}</span>
           </nav>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3">
             {t('destinations.heroTitle')}
           </h1>
-          <p className="text-white/80 text-lg sm:text-xl max-w-2xl mb-6">
+          <p className="text-white/80 text-sm sm:text-lg lg:text-xl max-w-2xl mb-4 sm:mb-6">
             {t('destinations.heroSubtitle')}
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-5 mb-8">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-5 mb-4 sm:mb-8">
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Tent size={18} /></div>
-              <div><p className="text-xl font-bold">{totalCampings}</p><p className="text-[11px] text-white/60">Campings</p></div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/15 rounded-lg sm:rounded-xl flex items-center justify-center"><Tent size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
+              <div><p className="text-lg sm:text-xl font-bold">{totalCampings}</p><p className="text-[10px] sm:text-[11px] text-white/60">Campings</p></div>
             </div>
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><MapPin size={18} /></div>
-              <div><p className="text-xl font-bold">{destinations.length}</p><p className="text-[11px] text-white/60">Plaatsen</p></div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/15 rounded-lg sm:rounded-xl flex items-center justify-center"><MapPin size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
+              <div><p className="text-lg sm:text-xl font-bold">{destinations.length}</p><p className="text-[10px] sm:text-[11px] text-white/60">Plaatsen</p></div>
             </div>
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Umbrella size={18} /></div>
-              <div><p className="text-xl font-bold">{allBeaches.length}</p><p className="text-[11px] text-white/60">Stranden</p></div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/15 rounded-lg sm:rounded-xl flex items-center justify-center"><Umbrella size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
+              <div><p className="text-lg sm:text-xl font-bold">{allBeaches.length}</p><p className="text-[10px] sm:text-[11px] text-white/60">Stranden</p></div>
             </div>
             <div className="flex items-center gap-2 text-white/90">
-              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Landmark size={18} /></div>
-              <div><p className="text-xl font-bold">{attractionCards.length}</p><p className="text-[11px] text-white/60">Bezienswaardigheden</p></div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-white/15 rounded-lg sm:rounded-xl flex items-center justify-center"><Landmark size={16} className="sm:w-[18px] sm:h-[18px]" /></div>
+              <div><p className="text-lg sm:text-xl font-bold">{attractionCards.length}</p><p className="text-[10px] sm:text-[11px] text-white/60">Bezienswaardigheden</p></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Tab bar + search (sticky) */}
-      <section className="sticky top-[88px] sm:top-[136px] z-30 bg-white border-b border-gray-200 shadow-sm">
+      <section className="sticky top-[72px] sm:top-[88px] lg:top-[136px] z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           {/* Search — full width on mobile, inline on desktop */}
           <div className="pt-3 pb-2 lg:hidden">
@@ -336,7 +336,7 @@ export default function BestemmingenPage() {
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); if (tab.key !== 'campings') setSelectedRegion(null); }}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[12px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -359,7 +359,7 @@ export default function BestemmingenPage() {
 
       {/* ===== TAB: ALL — Booking.com style mixed rows ===== */}
       {activeTab === 'all' && !search && (
-        <div className="max-w-7xl mx-auto px-4 py-10 space-y-14">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-10 space-y-10 sm:space-y-14">
           {/* Row 1: Popular Destinations */}
           <section>
             <SectionHeader
@@ -370,13 +370,13 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {destinations.map(d => (
-                <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group shrink-0 w-[220px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-base font-bold text-white">{d.name}</h3>
-                      <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {d.region}</p>
+                      <h3 className="text-sm sm:text-base font-bold text-white drop-shadow-sm">{d.name}</h3>
+                      <p className="text-[11px] text-white/80 flex items-center gap-1"><MapPin size={10} /> {d.region}</p>
                     </div>
                   </div>
                   <div className="p-3">
@@ -401,13 +401,13 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {allCampings.slice(0, 12).map(c => (
-                <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[260px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[220px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-primary-50">
                     <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-base font-bold text-white">{c.name}</h3>
-                      <p className="text-xs text-white/70 flex items-center gap-1"><MapPin size={10} /> {c.location}</p>
+                      <h3 className="text-sm sm:text-base font-bold text-white drop-shadow-sm">{c.name}</h3>
+                      <p className="text-[11px] text-white/80 flex items-center gap-1"><MapPin size={10} /> {c.location}</p>
                     </div>
                   </div>
                   <div className="p-3">
@@ -435,13 +435,13 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {attractionCards.map(a => (
-                <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group shrink-0 w-[240px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group shrink-0 w-[200px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="260px" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-sm font-bold text-white">{a.name}</h3>
-                      <p className="text-[11px] text-white/70">{a.place}</p>
+                      <h3 className="text-sm font-bold text-white drop-shadow-sm">{a.name}</h3>
+                      <p className="text-[11px] text-white/80">{a.place}</p>
                     </div>
                   </div>
                   <div className="p-3">
@@ -461,13 +461,13 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {featuredBeaches.map((b, i) => (
-                <Link key={`${b.destSlug}-${i}`} href={`/bestemmingen/${b.destSlug}`} className="group shrink-0 w-[220px] sm:w-[240px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={`${b.destSlug}-${i}`} href={`/bestemmingen/${b.destSlug}`} className="group shrink-0 w-[200px] sm:w-[240px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image src={b.destImage} alt={b.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="240px" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-sm font-bold text-white">{b.name}</h3>
-                      <p className="text-[11px] text-white/70">{b.destination}</p>
+                      <h3 className="text-sm font-bold text-white drop-shadow-sm">{b.name}</h3>
+                      <p className="text-[11px] text-white/80">{b.destination}</p>
                     </div>
                   </div>
                   <div className="p-3">
@@ -490,7 +490,7 @@ export default function BestemmingenPage() {
 
       {/* ===== TAB: CAMPINGS ===== */}
       {(activeTab === 'campings' || (activeTab === 'all' && search)) && (
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
           {activeTab === 'campings' && (
             <div className="flex flex-wrap gap-2 mb-6">
               <button onClick={() => setSelectedRegion(null)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${!selectedRegion ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
