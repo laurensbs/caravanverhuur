@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         .card{background:#fff;border-radius:16px;padding:40px;max-width:480px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
         h1{font-size:24px;margin:0 0 8px}p{color:#64748B;line-height:1.6;margin:8px 0}
         .icon{font-size:48px;margin-bottom:16px}
-        a{color:#0369A1;text-decoration:none;font-weight:600}</style></head>
+        a{color:#1E3A5F;text-decoration:none;font-weight:600}</style></head>
         <body><div class="card">
           <div class="icon">⚠️</div>
           <h1>Link verlopen of ongeldig</h1>
@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
       .card{background:#fff;border-radius:16px;padding:40px;max-width:480px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
       h1{font-size:24px;margin:0 0 8px}p{color:#64748B;line-height:1.6;margin:8px 0}
       .icon{font-size:48px;margin-bottom:16px}
-      a{color:#0369A1;text-decoration:none;font-weight:600}
-      .btn{display:inline-block;background:#0369A1;color:#fff!important;padding:12px 24px;border-radius:10px;margin-top:12px}</style></head>
+      a{color:#1E3A5F;text-decoration:none;font-weight:600}
+      .btn{display:inline-block;background:#1E3A5F;color:#fff!important;padding:12px 24px;border-radius:10px;margin-top:12px}</style></head>
       <body><div class="card">
         <div class="icon">👋</div>
         <h1>Account verwijderd</h1>

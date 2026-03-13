@@ -89,7 +89,7 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
       <!-- Main card -->
       <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
         <!-- Top accent bar -->
-        <tr><td style="height:4px;background:linear-gradient(90deg, #0369A1, #14B8A6);font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="height:4px;background:linear-gradient(90deg, #1E3A5F, #14B8A6);font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:48px 44px 44px;">
           ${content}
         </td></tr>
@@ -105,7 +105,7 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
             ${BRAND_NAME} &middot; ${t.footerTagline}
           </p>
           <p style="margin:0 0 16px;color:#CBD5E1;font-size:12px;line-height:1.5;">
-            <a href="${SITE_URL}" style="color:#0369A1;text-decoration:none;font-weight:500;">caravanverhuurspanje.com</a>
+            <a href="${SITE_URL}" style="color:#1E3A5F;text-decoration:none;font-weight:500;">caravanverhuurspanje.com</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
             <a href="${SITE_URL}/contact" style="color:#94A3B8;text-decoration:none;">${t.footerContact}</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -135,7 +135,7 @@ function subtext(text: string): string {
   return `<p style="margin:0 0 32px;color:#64748B;font-size:15px;line-height:1.65;">${text}</p>`;
 }
 
-function button(label: string, href: string, color: string = '#075985'): string {
+function button(label: string, href: string, color: string = '#1E3A5F'): string {
   return `<div style="text-align:center;margin:36px 0 12px;">
     <a href="${href}" style="display:inline-block;background:${color};color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px ${color}40;">${label}</a>
   </div>`;
@@ -153,14 +153,14 @@ function infoRow(label: string, value: string): string {
 }
 
 function highlight(content: string, accent = false): string {
-  const bg = accent ? '#E0F2FE' : '#F8FAFC';
-  const border = accent ? '#7DD3FC' : '#E2E8F0';
+  const bg = accent ? '#DBEAFE' : '#F8FAFC';
+  const border = accent ? '#93C5FD' : '#E2E8F0';
   return `<div style="background:${bg};border:1px solid ${border};border-radius:14px;padding:22px 26px;margin:0 0 28px;">${content}</div>`;
 }
 
 function badge(emoji: string, label: string): string {
   return `<div style="text-align:center;margin-bottom:12px;">
-    <span style="display:inline-block;background:#E0F2FE;color:#075985;font-size:12px;font-weight:700;padding:6px 16px;border-radius:24px;letter-spacing:0.3px;border:1px solid #7DD3FC;">${emoji} ${label}</span>
+    <span style="display:inline-block;background:#DBEAFE;color:#1E3A5F;font-size:12px;font-weight:700;padding:6px 16px;border-radius:24px;letter-spacing:0.3px;border:1px solid #93C5FD;">${emoji} ${label}</span>
   </div>`;
 }
 
@@ -228,7 +228,7 @@ export async function sendWelcomeEmail(to: string, name: string, locale?: string
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 32px;">
         <tr>
           <td style="padding:8px 4px 8px 0;width:33%;" valign="top">
-            <div style="background:#E0F2FE;border:1px solid #7DD3FC;border-radius:14px;padding:20px 16px;text-align:center;height:100%;">
+            <div style="background:#DBEAFE;border:1px solid #93C5FD;border-radius:14px;padding:20px 16px;text-align:center;height:100%;">
               <div style="font-size:28px;margin-bottom:8px;">\uD83C\uDFD5\uFE0F</div>
               <p style="margin:0;color:#0F172A;font-size:13px;font-weight:600;line-height:1.4;">${t.welcomeCard1}</p>
             </div>
@@ -291,9 +291,9 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${subtext(t.bookingSubtext(firstName))}
 
       <!-- Reference card -->
-      <div style="background:linear-gradient(135deg, #E0F2FE 0%, #E0F2FE 100%);border:1px solid #7DD3FC;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
+      <div style="background:linear-gradient(135deg, #DBEAFE 0%, #DBEAFE 100%);border:1px solid #93C5FD;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
-        <p style="margin:0 0 8px;color:#075985;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
+        <p style="margin:0 0 8px;color:#1E3A5F;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
         <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${t.bookingAwaitConfirm}</span>
       </div>
 
@@ -322,7 +322,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
-                  <td style="color:#075985;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${deadlineLabel}</td>
+                  <td style="color:#1E3A5F;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${deadlineLabel}</td>
                 </tr>
               </table>
             </div>
@@ -427,7 +427,7 @@ export async function sendManualBookingEmail(to: string, data: {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
-                  <td style="color:#075985;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${data.paymentDeadline}</td>
+                  <td style="color:#1E3A5F;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${data.paymentDeadline}</td>
                 </tr>
               </table>
             </div>
@@ -600,7 +600,7 @@ export async function sendBorgChecklistEmail(data: {
       ${button(t.borgButton, checklistUrl)}
 
       <div style="text-align:center;margin-top:16px;">
-        <a href="${dashboardUrl}" style="color:#0369A1;font-size:13px;text-decoration:none;font-weight:500;">${t.borgDashboardLink}</a>
+        <a href="${dashboardUrl}" style="color:#1E3A5F;font-size:13px;text-decoration:none;font-weight:500;">${t.borgDashboardLink}</a>
       </div>
     `, `${t.borgSubject(data.reference)}`, locale),
   });
@@ -800,8 +800,8 @@ export async function sendCountdownEmail(data: {
         <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
           <tr>
             <td style="padding:0 8px;">
-              <div style="background:linear-gradient(135deg, #E0F2FE 0%, #E0F2FE 100%);border:1px solid #7DD3FC;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
-                <div style="font-size:36px;font-weight:800;color:#075985;line-height:1;">${weeks}</div>
+              <div style="background:linear-gradient(135deg, #DBEAFE 0%, #DBEAFE 100%);border:1px solid #93C5FD;border-radius:14px;padding:20px 26px;text-align:center;min-width:80px;">
+                <div style="font-size:36px;font-weight:800;color:#1E3A5F;line-height:1;">${weeks}</div>
                 <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;font-weight:600;">${t.countdownWeeks}</div>
               </div>
             </td>

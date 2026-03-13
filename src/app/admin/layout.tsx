@@ -199,7 +199,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen bg-surface">
         <div className="flex min-h-screen">
           {/* ====== LEFT HERO (desktop only) ====== */}
-          <div className="hidden lg:flex lg:w-1/2 relative bg-[#0C4A6E] overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 relative bg-[#0F2744] overflow-hidden">
             <div className="absolute inset-0 opacity-20">
               <Image
                 src="/images/campings/begur_sa_tuna.jpg"
@@ -209,7 +209,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0C4A6E]/80 via-[#0C4A6E]/60 to-[#0C4A6E]/90" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0F2744]/80 via-[#0F2744]/60 to-[#0F2744]/90" />
             <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
               <div>
                 <Image
@@ -260,7 +260,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {/* ====== RIGHT SIDE — FORM ====== */}
           <div className="w-full lg:w-1/2 flex flex-col">
             {/* Mobile hero header */}
-            <div className="lg:hidden bg-[#0C4A6E] px-5 pt-6 pb-10 relative overflow-hidden">
+            <div className="lg:hidden bg-[#0F2744] px-5 pt-6 pb-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <Image
                   src="/images/campings/begur_sa_tuna.jpg"
