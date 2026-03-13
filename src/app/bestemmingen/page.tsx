@@ -165,14 +165,14 @@ function ScrollRow({ children, className = '' }: { children: React.ReactNode; cl
 /* ------------------------------------------------------------------ */
 /*  Section header helper                                              */
 /* ------------------------------------------------------------------ */
-function SectionHeader({ icon, title, subtitle, href, linkText }: { icon: React.ReactNode; title: string; subtitle: string; href?: string; linkText?: string }) {
+function SectionHeader({ icon, title, subtitle, onAction, linkText }: { icon: React.ReactNode; title: string; subtitle: string; onAction?: () => void; linkText?: string }) {
   return (
     <div className="flex items-end justify-between mb-5">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">{icon} {title}</h2>
         <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
       </div>
-      {href && <Link href={href} className="text-sm text-primary font-medium flex items-center gap-1 shrink-0">{linkText} <ArrowRight size={14} /></Link>}
+      {onAction && <button onClick={onAction} className="text-sm text-primary font-medium flex items-center gap-1 shrink-0">{linkText} <ArrowRight size={14} /></button>}
     </div>
   );
 }
@@ -230,12 +230,17 @@ export default function BestemmingenPage() {
       .catch((e) => console.error('Fetch error:', e));
   }, []);
 
-  // Handle hash for direct linking
+  // Handle hash for direct linking + hashchange
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash === 'campings') setActiveTab('campings');
-    else if (hash === 'plaatsen') setActiveTab('plaatsen');
-    else if (hash === 'bezienswaardigheden') setActiveTab('bezienswaardigheden');
+    const applyHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'campings') setActiveTab('campings');
+      else if (hash === 'plaatsen') setActiveTab('plaatsen');
+      else if (hash === 'bezienswaardigheden') setActiveTab('bezienswaardigheden');
+    };
+    applyHash();
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
   }, []);
 
   // Filter campings
@@ -349,7 +354,7 @@ export default function BestemmingenPage() {
               icon={<MapPin size={22} className="text-amber-500" />}
               title="Populaire plaatsen"
               subtitle="Ontdek de mooiste dorpen en steden aan de Costa Brava"
-              href="#plaatsen" linkText="Alle plaatsen"
+              onAction={() => setActiveTab('plaatsen')} linkText="Alle plaatsen"
             />
             <ScrollRow>
               {destinations.map(d => (
@@ -380,7 +385,7 @@ export default function BestemmingenPage() {
               icon={<Tent size={22} className="text-primary" />}
               title="Populaire campings"
               subtitle={`${totalCampings} campings van luxe resorts tot gezellige familiecampings`}
-              href="#campings" linkText="Alle campings"
+              onAction={() => setActiveTab('campings')} linkText="Alle campings"
             />
             <ScrollRow>
               {allCampings.slice(0, 12).map(c => (
