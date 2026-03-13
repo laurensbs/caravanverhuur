@@ -1398,8 +1398,26 @@ function smartMatch(
     };
   }
 
+  // ===== HELP / CAPABILITIES =====
+  if (/wat kan ik.*vragen|wat kun je|wat kan je|wat kan jij|waar kan.*helpen|help me|wat weet je|wat doe je|welke vragen|welke onderwerpen|waar ken je.*van|assisteer|capabilities|what can you|help|can you help|que puedes|ayuda/.test(lower) && !/boek|prijs|camping|caravan|annul|borg/.test(lower)) {
+    const helpAnswers = isNl ? [
+      `Ik weet alles over Caravanverhuur Spanje${name}! 😊 Stel me gerust een vraag over:\n\n🚐 **Caravans** — welke types, uitrusting, slaapplaatsen\n💰 **Prijzen** — tarieven, aanbetaling, betaalmethoden\n📅 **Boeken** — hoe het werkt, beschikbaarheid, seizoen\n🏕️ **Campings** — locaties, faciliteiten, zwembaden\n📍 **Bestemmingen** — Costa Brava, stranden, dorpjes\n🔒 **Borg & annulering** — voorwaarden en regels\n🛏️ **Inventaris** — wat zit er in de caravan\n✈️ **Reizen** — route, vliegveld, huurauto\n☀️ **Weer & activiteiten** — wat te doen, dagtripjes\n👨‍👩‍👧‍👦 **Gezin & huisdieren** — kindvriendelijk, huisdierbeleid\n🛒 **Praktisch** — WiFi, winkels, sanitair, parkeren\n\nOf ik kan je **direct helpen met boeken** hier in de chat! 🎉`,
+      `Goede vraag${name}! Ik kan je helpen met van alles 🌟\n\n📋 **Populaire onderwerpen:**\n\n• _"Welke caravans hebben jullie?"_\n• _"Wat kost een week?"_\n• _"Hoe boek ik?"_\n• _"Welke campings zijn er?"_\n• _"Hebben jullie airco?"_\n• _"Mag mijn hond mee?"_\n• _"Hoe zit het met de borg?"_\n• _"Kan ik annuleren?"_\n• _"Wat moet ik meenemen?"_\n• _"Hoe kom ik er?"_\n\nJe kunt ook gewoon in je eigen woorden een vraag stellen — ik begrijp het! 😊\n\nOf wil je direct **boeken**? Dat kan hier in de chat!`,
+    ] : isEs ? [
+      `¡Puedo ayudarte con todo sobre Caravanverhuur Spanje${name}! 😊\n\n🚐 Caravanas, precios, campings, reservas, actividades y más.\n\n¿Qué te gustaría saber?`,
+    ] : [
+      `I can help you with everything about Caravanverhuur Spanje${name}! 😊\n\n🚐 Caravans, pricing, campings, booking, activities, and more.\n\nWhat would you like to know?`,
+    ];
+    return {
+      answer: pick(helpAnswers, asked),
+      followUp: isNl ? ['Welke caravans?', 'Wat kost het?', 'Hoe boek ik?', 'Welke campings?'] : isEs ? ['¿Qué caravanas?', '¿Cuánto cuesta?', '¿Cómo reservo?'] : ['Which caravans?', 'What does it cost?', 'How to book?'],
+      confidence: 0.95,
+      topic: 'help',
+    };
+  }
+
   // ===== CAMPING RULES =====
-  if (/regel|rules|regels|verboden|mag.*niet|mag ik|allowed|prohib|niet toegestaan|toege?staan|stil.*uur|stilte.*uur|geluids.*regel|nachtrust|norm|regelment|reglamento|wat mag|wat kan|permiso|verbied|music|muziek.*camping/.test(lower) && !/annul|borg|betaal|prijs/.test(lower)) {
+  if (/regel|rules|regels|verboden|mag.*niet|mag ik|allowed|prohib|niet toegestaan|toege?staan|stil.*uur|stilte.*uur|geluids.*regel|nachtrust|norm|regelment|reglamento|wat mag|permiso|verbied|music|muziek.*camping/.test(lower) && !/annul|borg|betaal|prijs/.test(lower)) {
     return {
       answer: isNl
         ? `De meeste campings hanteren vergelijkbare regels${name}! 📋\n\n🔇 **Stilte**: nachtrust meestal van **23:00 - 07:00**\n🚗 **Auto's**: slagboom dicht na 23:00 op veel campings\n🐶 **Huisdieren**: per camping verschillend — vraag het ons!\n🩳 **Zwembad**: zwembroek/bikini verplicht (geen shorts)\n🔥 **BBQ**: vaak toegestaan op eigen plek, niet met houtskool overal\n🎶 **Muziek**: zachte muziek OK, geluidsoverlast niet\n🚲 **Fietsen**: vaak met fiets over de camping, niet met auto\n\n⚠️ Regels kunnen per camping verschillen.\n\n💡 Bij het inchecken krijg je de campingregels. Niet moeilijk — gewoon respect voor je buren! 😊`
