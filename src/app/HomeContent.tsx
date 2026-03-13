@@ -67,19 +67,18 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
         {/* Parallax background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <Image
-            src="/images/campings/lloret_de_mar_panorama.jpg"
+            src="/images/hero-costa-brava.jpg"
             alt={t('home.heroAlt')}
             fill
-            className="object-cover object-[center_30%]"
+            className="object-cover object-[center_40%]"
             sizes="100vw"
             priority
           />
-          {/* Bottom-heavy gradient so the photo stays vivid at the top */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/25" />
         </motion.div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 pb-8 sm:pb-12 w-full">
-          <div className="max-w-lg mb-5 sm:mb-7">
+          <div className="max-w-2xl mb-5 sm:mb-7">
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -95,7 +94,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="text-2xl sm:text-3xl lg:text-[2.75rem] font-bold text-white leading-[1.2] mb-3 tracking-tight"
+              className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-4 tracking-tight"
             >
               {t('home.heroTitle1')}{' '}
               {t('home.heroTitle2')}
@@ -107,7 +106,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="text-[13px] sm:text-sm text-white/70 leading-relaxed max-w-sm"
+              className="text-sm sm:text-base text-white/70 leading-relaxed max-w-lg"
             >
               {t('home.heroSubtitle')} <span className="text-white font-medium">{t('home.heroHighlight')}</span> {t('home.heroSuffix')}
             </motion.p>
