@@ -762,15 +762,31 @@ function BoekenContent() {
                                 >
                                   <div className="flex flex-col sm:flex-row">
                                     <div className="relative h-44 sm:h-auto sm:w-56 lg:w-64 shrink-0 overflow-hidden">
-                                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
-                                      <div className="absolute top-3 left-3">
+                                      {(() => {
+                                        const gm = c.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
+                                        if (gm) return (
+                                          <>
+                                            <iframe
+                                              src={`https://play.gumlet.io/embed/${gm[1]}?autoplay=true&muted=true&loop=true&preload=true`}
+                                              title={c.name}
+                                              allow="autoplay"
+                                              loading="lazy"
+                                              className="absolute inset-0 w-full h-full border-0 scale-[1.5] origin-center"
+                                              style={{ pointerEvents: 'none' }}
+                                            />
+                                            <div className="absolute inset-0 z-10" />
+                                          </>
+                                        );
+                                        return <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />;
+                                      })()}
+                                      <div className="absolute top-3 left-3 z-20">
                                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md ${
                                           c.type === 'FAMILIE' ? 'bg-primary' :
                                           'bg-primary'
                                         }`}>{c.type}</span>
                                       </div>
                                       {isSelected && (
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-md">
+                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-md z-20">
                                           <Check size={14} className="text-white" />
                                         </motion.div>
                                       )}

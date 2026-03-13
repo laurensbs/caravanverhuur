@@ -147,32 +147,19 @@ export default function CaravanDetailContent({ id }: { id: string }) {
           if (!gumletMatch) return null;
           return (
             <div className="bg-white">
-              <div className="max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
-                <div
-                  className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg"
-                  ref={(el) => {
-                    if (!el) return;
-                    const iframe = el.querySelector('iframe');
-                    if (!iframe) return;
-                    const obs = new IntersectionObserver(([entry]) => {
-                      const src = iframe.getAttribute('src') || '';
-                      if (entry.isIntersecting && !src.includes('autoplay=true')) {
-                        iframe.setAttribute('src', src.replace('autoplay=false', 'autoplay=true'));
-                      } else if (!entry.isIntersecting && src.includes('autoplay=true')) {
-                        iframe.setAttribute('src', src.replace('autoplay=true', 'autoplay=false'));
-                      }
-                    }, { threshold: 0.3 });
-                    obs.observe(el);
-                  }}
-                >
-                  <iframe
-                    src={`https://play.gumlet.io/embed/${gumletMatch[1]}?autoplay=false&muted=true&loop=true&preload=true`}
-                    title={caravan.name}
-                    allow="autoplay; fullscreen"
-                    allowFullScreen
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full border-0"
-                  />
+              <div className="max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl">
+                  <div className="absolute inset-[-10%] w-[120%] h-[120%]">
+                    <iframe
+                      src={`https://play.gumlet.io/embed/${gumletMatch[1]}?autoplay=true&muted=true&loop=true&preload=true`}
+                      title={caravan.name}
+                      allow="autoplay"
+                      loading="eager"
+                      className="w-full h-full border-0"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  </div>
+                  <div className="absolute inset-0 z-10" />
                 </div>
               </div>
             </div>
