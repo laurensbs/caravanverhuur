@@ -27,7 +27,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
         <Image
           src={allPhotos[activePhoto] || destination.heroImage}
           alt={`${destination.name} — ${destination.region}, Costa Brava`}
@@ -54,7 +54,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
         {/* Content overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
           <div className="max-w-6xl mx-auto">
-            <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-3">
+            <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
               <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
               <ChevronRight size={12} />
               <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
@@ -62,8 +62,8 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               <span className="text-white">{destination.name}</span>
             </nav>
 
-            <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3">{destination.name}</h1>
-            <div className="flex flex-wrap items-center gap-3 text-white/80 text-sm">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">{destination.name}</h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
               <span className="flex items-center gap-1.5"><MapPin size={14} /> {destination.region}</span>
               {destination.population && (
                 <>
@@ -83,37 +83,37 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Quick info bar */}
-      <section className="relative z-10 -mt-6">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <section className="relative z-10 -mt-5 sm:-mt-6">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+            <div className="grid grid-cols-4 gap-2 sm:gap-4">
               <div className="text-center">
-                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Globe size={18} className="text-primary" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <Globe size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{destination.region}</p>
-                <p className="text-xs text-gray-500">Regio</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{destination.region}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500">Regio</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Umbrella size={18} className="text-primary" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <Umbrella size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{destination.beaches.length}</p>
-                <p className="text-xs text-gray-500">Stranden</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.beaches.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500">Stranden</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <UtensilsCrossed size={18} className="text-primary" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <UtensilsCrossed size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{destination.restaurants.length}</p>
-                <p className="text-xs text-gray-500">Restaurants</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.restaurants.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500">Restaurants</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center mx-auto mb-1.5">
-                  <Sun size={18} className="text-primary" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
+                  <Sun size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{destination.weather.summer}</p>
-                <p className="text-xs text-gray-500">Zomer</p>
+                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.weather.summer}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500">Zomer</p>
               </div>
             </div>
           </div>
@@ -121,13 +121,13 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Main content */}
-      <section className="max-w-6xl mx-auto px-4 py-10 sm:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+      <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
           {/* Left: main content */}
           <div className="lg:col-span-2 space-y-10">
             {/* Description */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Ontdek {destination.name}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Ontdek {destination.name}</h2>
               <p className="text-gray-600 leading-relaxed text-[15px]">
                 {destination.longDescription || destination.description}
               </p>
@@ -145,7 +145,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Highlights */}
             {destination.highlights.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Wat maakt {destination.name} bijzonder?</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Wat maakt {destination.name} bijzonder?</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.highlights.map(h => (
                     <div key={h} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -162,8 +162,8 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Restaurants */}
             {destination.restaurants.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><UtensilsCrossed size={22} className="text-primary" /> Waar eten in {destination.name}?</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                  <span className="flex items-center gap-2"><UtensilsCrossed size={20} className="text-primary sm:w-[22px] sm:h-[22px]" /> Waar eten in {destination.name}?</span>
                 </h2>
                 <div className="space-y-3">
                   {destination.restaurants.map(r => (
@@ -190,8 +190,8 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Beaches */}
             {destination.beaches.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  <span className="flex items-center gap-2"><Umbrella size={22} className="text-primary" /> Stranden bij {destination.name}</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                  <span className="flex items-center gap-2"><Umbrella size={20} className="text-primary sm:w-[22px] sm:h-[22px]" /> Stranden bij {destination.name}</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.beaches.map(b => (
@@ -283,7 +283,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           {/* Right sidebar */}
           <div className="space-y-6">
             {/* Book CTA */}
-            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white sticky top-28">
+            <div className="hidden lg:block bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white sticky top-28">
               <h3 className="text-lg font-bold mb-2">Caravan huren vlakbij {destination.name}?</h3>
               <p className="text-white/80 text-sm mb-4">
                 Slaap op een camping op loopafstand of korte rijafstand van {destination.name}. Wij regelen alles — jij geniet.
@@ -377,10 +377,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
         <div className="absolute inset-0 bg-[url('/images/campings/golfo_de_rosas.jpg')] bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 drop-shadow-sm">
+          <h2 className="text-xl sm:text-3xl font-bold text-white mb-3 drop-shadow-sm">
             Klaar voor {destination.name}?
           </h2>
-          <p className="text-white/80 mb-6 max-w-xl mx-auto">
+          <p className="text-white/80 mb-6 max-w-xl mx-auto text-sm sm:text-base">
             Jouw volledig ingerichte caravan staat klaar op een camping in de buurt. Inclusief beddengoed, kookgerei en inventaris.
           </p>
           <Link
@@ -391,6 +391,16 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           </Link>
         </div>
       </section>
+
+      {/* Mobile sticky CTA bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 safe-area-bottom">
+        <Link
+          href="/boeken"
+          className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-sm shadow-lg"
+        >
+          {t('nav.bookNow')} <ArrowRight size={16} />
+        </Link>
+      </div>
     </div>
   );
 }

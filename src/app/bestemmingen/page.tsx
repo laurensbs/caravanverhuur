@@ -167,9 +167,9 @@ function ScrollRow({ children, className = '' }: { children: React.ReactNode; cl
 /* ------------------------------------------------------------------ */
 function SectionHeader({ icon, title, subtitle, onAction, linkText }: { icon: React.ReactNode; title: string; subtitle: string; onAction?: () => void; linkText?: string }) {
   return (
-    <div className="flex items-end justify-between mb-5">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">{icon} {title}</h2>
+    <div className="flex items-end justify-between mb-5 gap-3">
+      <div className="min-w-0">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">{icon} {title}</h2>
         <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
       </div>
       {onAction && <button onClick={onAction} className="text-sm text-primary font-medium flex items-center gap-1 shrink-0">{linkText} <ArrowRight size={14} /></button>}
@@ -295,7 +295,7 @@ export default function BestemmingenPage() {
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-5 mb-8">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 sm:gap-5 mb-8">
             <div className="flex items-center gap-2 text-white/90">
               <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center"><Tent size={18} /></div>
               <div><p className="text-xl font-bold">{totalCampings}</p><p className="text-[11px] text-white/60">Campings</p></div>
@@ -319,20 +319,32 @@ export default function BestemmingenPage() {
       {/* Tab bar + search (sticky) */}
       <section className="sticky top-[88px] sm:top-[136px] z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
+          {/* Search — full width on mobile, inline on desktop */}
+          <div className="pt-3 pb-2 lg:hidden">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder={t('destinations.searchPlaceholder')}
+                className="w-full pl-9 pr-8 py-2.5 bg-gray-50 rounded-xl text-sm border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none"
+              />
+              {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><X size={14} /></button>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 py-2 lg:py-3 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); if (tab.key !== 'campings') setSelectedRegion(null); }}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {tab.icon} {tab.label}
               </button>
             ))}
-            {/* Search */}
-            <div className="relative flex-1 min-w-[200px] ml-auto">
+            {/* Search — inline on desktop only */}
+            <div className="relative flex-1 min-w-[200px] ml-auto hidden lg:block">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text" value={search} onChange={e => setSearch(e.target.value)}

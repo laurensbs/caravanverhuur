@@ -494,8 +494,8 @@ function BoekenContent() {
                             className="w-full pl-9 lg:pl-12 pr-4 py-2.5 lg:py-3.5 bg-surface rounded-xl text-sm lg:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
 
-                        <div className="overflow-x-auto lg:overflow-x-visible pb-3 lg:pb-0 scrollbar-hide -mx-4 px-4 sm:-mx-5 sm:px-5 lg:mx-0 lg:px-0">
-                          <div className="flex items-center gap-2 lg:gap-2 w-max lg:w-auto lg:flex-wrap">
+                        <div className="overflow-x-auto lg:overflow-x-visible pb-3 lg:pb-0 scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+                          <div className="flex items-center gap-2 lg:gap-2 flex-nowrap lg:flex-wrap">
                           <button onClick={() => setLocationFilter('all')} className={`px-3 lg:px-3 py-1.5 lg:py-1.5 rounded-full text-xs lg:text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                             {t('booking.allLocations')}
                           </button>
