@@ -61,57 +61,51 @@ export default function ContactPage() {
 
   return (
     <>
-      {/* Hero header with image */}
-      <section className="pt-8 sm:pt-10 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <h1 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground mb-3">{t('contact.sendMessage')}</h1>
-              <p className="text-muted text-base sm:text-lg max-w-2xl mx-auto lg:mx-0">{t('contact.heroSubtitle')}</p>
-            </div>
-            <div className="hidden lg:block">
-              <div className="relative rounded-2xl overflow-hidden aspect-[16/9]">
-                <Image
-                  src="/images/campings/palam_s_-_view_from_beach.jpg"
-                  alt="Costa Brava uitzicht"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </div>
+      {/* Hero banner with background image */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/campings/palam_s_-_view_from_beach.jpg"
+            alt="Costa Brava uitzicht"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/80 to-foreground/60" />
         </div>
-      </section>
+        <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-20">
+          <div className="max-w-xl">
+            <h1 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-white mb-3">{t('contact.sendMessage')}</h1>
+            <p className="text-white/70 text-base sm:text-lg">{t('contact.heroSubtitle')}</p>
+          </div>
 
-      {/* Contact cards row */}
-      <section className="pb-8 sm:pb-10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a href="mailto:info@caravanverhuurspanje.com" className="bg-surface rounded-2xl p-5 sm:p-6 border border-border hover:border-foreground/20 transition-all flex items-center gap-4 group">
-              <div className="w-12 h-12 bg-foreground/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-foreground/15 transition-colors">
-                <Mail size={22} className="text-foreground" />
+          {/* Contact cards — overlapping the hero bottom */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10">
+            <a href="mailto:info@caravanverhuurspanje.com" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-all flex items-center gap-3.5 group">
+              <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center shrink-0">
+                <Mail size={18} className="text-white" />
               </div>
               <div className="min-w-0">
-                <div className="text-sm text-muted">{t('contact.emailLabel')}</div>
-                <div className="text-foreground font-semibold truncate">info@caravanverhuurspanje.com</div>
+                <div className="text-xs text-white/60">{t('contact.emailLabel')}</div>
+                <div className="text-white font-semibold text-sm truncate">info@caravanverhuurspanje.com</div>
               </div>
             </a>
-            <a href="tel:+34650036755" className="bg-surface rounded-2xl p-5 sm:p-6 border border-border hover:border-foreground/20 transition-all flex items-center gap-4 group">
-              <div className="w-12 h-12 bg-foreground/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-foreground/15 transition-colors">
-                <Phone size={22} className="text-foreground" />
+            <a href="tel:+34650036755" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-all flex items-center gap-3.5 group">
+              <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center shrink-0">
+                <Phone size={18} className="text-white" />
               </div>
               <div>
-                <div className="text-sm text-muted">{t('contact.phoneWhatsapp')}</div>
-                <div className="text-foreground font-semibold">+34 650 036 755</div>
+                <div className="text-xs text-white/60">{t('contact.phoneWhatsapp')}</div>
+                <div className="text-white font-semibold text-sm">+34 650 036 755</div>
               </div>
             </a>
-            <div className="bg-surface rounded-2xl p-5 sm:p-6 border border-border flex items-center gap-4">
-              <div className="w-12 h-12 bg-foreground/10 rounded-xl flex items-center justify-center shrink-0">
-                <MapPin size={22} className="text-foreground" />
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 flex items-center gap-3.5">
+              <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center shrink-0">
+                <MapPin size={18} className="text-white" />
               </div>
               <div>
-                <div className="text-sm text-muted">{t('contact.locationLabel')}</div>
-                <div className="text-foreground font-semibold">Costa Brava, Spanje</div>
+                <div className="text-xs text-white/60">{t('contact.locationLabel')}</div>
+                <div className="text-white font-semibold text-sm">Costa Brava, Spanje</div>
               </div>
             </div>
           </div>
