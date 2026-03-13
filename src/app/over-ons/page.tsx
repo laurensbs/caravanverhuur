@@ -59,7 +59,7 @@ export default function OverOnsPage() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src="/images/campings/la_banyera_calella.jpg"
-                  alt="Costa Brava camping"
+                  alt="Camping aan de Costa Brava met uitzicht op de Middellandse Zee"
                   width={600}
                   height={400}
                   className="w-full object-cover"

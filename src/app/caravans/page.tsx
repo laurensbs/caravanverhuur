@@ -306,7 +306,7 @@ export default function CaravansPage() {
                       <div className="relative h-48 sm:h-52 overflow-hidden">
                         <Image
                           src={caravan.photos[0]}
-                          alt={caravan.name}
+                          alt={`${caravan.name} — ${caravan.type} voor ${caravan.maxPersons} personen`}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                          

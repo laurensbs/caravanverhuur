@@ -686,7 +686,7 @@ export async function sendNewsletterEmail(data: {
     ? `<div style="margin:0 0 28px;">
         ${data.photos.map(url =>
           `<div style="margin:0 0 14px;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-            <img src="${url}" alt="" style="width:100%;height:auto;display:block;" />
+            <img src="${url}" alt="Nieuwsbrief afbeelding" style="width:100%;height:auto;display:block;" />
           </div>`
         ).join('')}
       </div>`

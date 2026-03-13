@@ -696,7 +696,7 @@ export default function AdminNieuwsbrieven() {
                             <div key={i} className="flex items-center gap-2">
                               <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-[#FAFAF9]">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = ''; }} />
+                                <img src={url} alt="Nieuwsbrief afbeelding" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = ''; }} />
                               </div>
                               <input
                                 type="text"
@@ -888,7 +888,7 @@ export default function AdminNieuwsbrieven() {
                           {(typeof selected.photos === 'string' ? JSON.parse(selected.photos) : selected.photos).map((url: string, i: number) => (
                             <div key={i} className="rounded-xl overflow-hidden">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={url} alt="" className="w-full h-auto" />
+                              <img src={url} alt="Nieuwsbrief afbeelding" className="w-full h-auto" />
                             </div>
                           ))}
                         </div>
