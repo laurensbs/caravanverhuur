@@ -1719,7 +1719,7 @@ function smartMatch(
     'camping': 'campings', 'campings': 'campings', 'locatie': 'campings', 'locaties': 'campings', 'location': 'campings', 'campsite': 'campings',
     'caravan': 'caravans', 'caravans': 'caravans', 'stacaravan': 'caravans', 'caravana': 'caravans', 'caravanas': 'caravans',
     'airco': 'airco', 'airconditioning': 'airco', 'koeling': 'airco', 'ac': 'airco',
-    'inventaris': 'inventory', 'inbegrepen': 'inventory', 'included': 'inventory', 'inclusief': 'inventory', 'included': 'inventory',
+    'inventaris': 'inventory', 'inbegrepen': 'inventory', 'included': 'inventory', 'inclusief': 'inventory',
     'huisdier': 'pets', 'huisdieren': 'pets', 'hond': 'pets', 'honden': 'pets', 'kat': 'pets', 'pet': 'pets', 'pets': 'pets', 'mascota': 'pets',
     'wifi': 'wifi', 'internet': 'wifi',
     'weer': 'weather', 'weather': 'weather', 'tiempo': 'weather', 'temperatuur': 'weather', 'klimaat': 'weather',
