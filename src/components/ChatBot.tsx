@@ -2465,7 +2465,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed bottom-[7rem] right-3 left-3 sm:left-auto sm:bottom-24 sm:right-5 z-[90] sm:w-[400px] h-[60vh] sm:h-[560px] max-h-[560px] sm:max-h-[75vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+            className="fixed bottom-[7rem] right-3 left-3 sm:left-auto sm:bottom-6 sm:right-[5.5rem] z-[90] sm:w-[400px] h-[60vh] sm:h-[560px] max-h-[560px] sm:max-h-[75vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 rounded-t-2xl">
@@ -2890,7 +2890,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed bottom-[7rem] right-[4.5rem] sm:bottom-[5.5rem] sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
+            className="fixed bottom-[7rem] right-[4.5rem] sm:bottom-8 sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
           >
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative cursor-pointer" onClick={() => { setIsOpen(true); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}>
               <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">

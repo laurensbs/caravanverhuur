@@ -591,21 +591,22 @@ export default function Header() {
             </nav>
 
             {/* Bottom CTA */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} className="p-4 space-y-2.5 border-t border-gray-100/80 bg-gray-50/60">
-              {/* Mobile language switcher */}
-              <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                {(['nl', 'en', 'es'] as Locale[]).map(l => (
-                  <button key={l} onClick={() => setLocale(l)} className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all active:scale-95 ${locale === l ? 'bg-primary text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'}`}>
-                    {localeFlags[l]}
-                  </button>
-                ))}
-              </div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} className="px-4 pt-4 pb-6 space-y-3 border-t border-gray-100/80 bg-gray-50/60">
               <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-[15px] shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
                 {t('nav.bookNow')} <ArrowRight size={15} />
               </Link>
-              <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-2.5 text-gray-500 font-medium rounded-xl text-sm bg-white border border-gray-200 hover:border-gray-300 active:bg-gray-50 transition-all">
-                <User size={14} /> {t('footer.myAccount')}
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/account" onClick={() => setMenuOpen(false)} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-gray-500 font-medium rounded-xl text-sm bg-white border border-gray-200 hover:border-gray-300 active:bg-gray-50 transition-all">
+                  <User size={14} /> {t('footer.myAccount')}
+                </Link>
+                <div className="flex items-center gap-1">
+                  {(['nl', 'en', 'es'] as Locale[]).map(l => (
+                    <button key={l} onClick={() => setLocale(l)} className={`w-9 h-9 rounded-full text-lg flex items-center justify-center transition-all active:scale-90 ${locale === l ? 'bg-primary/10 ring-2 ring-primary' : 'hover:bg-gray-100'}`}>
+                      {localeFlags[l]}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         </>
