@@ -51,90 +51,61 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   const { t } = useLanguage();
 
   const photos = camping.photos || [];
-  const sidePhotos = photos.slice(1, 3);
+  const galleryPhotos = photos.slice(1);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero — bento grid */}
+      {/* Hero — full-width */}
       <section className="relative">
-        <div className="h-[50vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
-          {/* Main image */}
-          <div className="relative h-full md:col-span-2">
-            {(() => {
-              const src = photos[0] || '/og-image.jpg';
-              return src.startsWith('http') ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={src}
-                  alt={`${camping.name} — ${camping.location}, Costa Brava`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={src}
-                  alt={`${camping.name} — ${camping.location}, Costa Brava`}
-                  fill
-                  className="object-cover"
-                  priority
-                  sizes="(max-width: 768px) 100vw, 66vw"
-                />
-              );
-            })()}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
+        <div className="h-[55vh] sm:h-[60vh] md:h-[65vh] overflow-hidden">
+          {(() => {
+            const src = photos[0] || '/og-image.jpg';
+            return src.startsWith('http') ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={src}
+                alt={`${camping.name} — ${camping.location}, Costa Brava`}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <Image
+                src={src}
+                alt={`${camping.name} — ${camping.location}, Costa Brava`}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+            );
+          })()}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/5" />
 
-            {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 sm:p-8">
-              <div className="max-w-6xl mx-auto">
-                <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
-                  <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
-                  <ChevronRight size={12} />
-                  <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
-                  <ChevronRight size={12} />
-                  <span className="text-white">{camping.name}</span>
-                </nav>
+          {/* Content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 sm:p-8 sm:pb-10">
+            <div className="max-w-6xl mx-auto">
+              <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
+                <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
+                <ChevronRight size={12} />
+                <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
+                <ChevronRight size={12} />
+                <span className="text-white">{camping.name}</span>
+              </nav>
 
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{camping.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
-                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><MapPin size={13} /> {camping.location}</span>
-                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Globe size={13} /> {camping.region}</span>
-                </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">{camping.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
+                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><MapPin size={14} /> {camping.location}</span>
+                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><Globe size={14} /> {camping.region}</span>
               </div>
             </div>
           </div>
-
-          {/* Side images — desktop only */}
-          {sidePhotos.length > 0 && (
-            <div className="hidden md:flex md:flex-col md:gap-1 h-full">
-              {sidePhotos.map((photo, i) => (
-                <div key={i} className="relative flex-1 min-h-0">
-                  {photo.startsWith('http') ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={photo}
-                      alt={`${camping.name} foto ${i + 2}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <Image
-                      src={photo}
-                      alt={`${camping.name} foto ${i + 2}`}
-                      fill
-                      className="object-cover"
-                      sizes="33vw"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Quick info bar */}
-      <section className="relative z-10 -mt-5 sm:-mt-6">
+      {/* Stats + Gallery */}
+      <section className="relative z-10 -mt-6 sm:-mt-8">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            {/* Stats */}
             <div className="grid grid-cols-3 divide-x divide-gray-100">
               <div className="text-center px-2 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary truncate">{camping.location}</p>
@@ -149,25 +120,33 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.nearbyPlacesCount')}</p>
               </div>
             </div>
+
+            {/* Gallery thumbnails - visible on all screens */}
+            {galleryPhotos.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
+                  {galleryPhotos.map((photo, i) => (
+                    <div key={i} className="relative w-28 h-20 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
+                      {photo.startsWith('http') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photo} alt={`${camping.name} foto ${i + 2}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                      ) : (
+                        <Image
+                          src={photo}
+                          alt={`${camping.name} foto ${i + 2}`}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 640px) 112px, (max-width: 768px) 160px, 192px"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
-
-      {/* Mobile gallery strip */}
-      {photos.length > 1 && (
-        <div className="md:hidden flex gap-2 px-4 mt-4 overflow-x-auto scrollbar-hide -mx-4 pl-4">
-          {photos.slice(1).map((photo, i) => (
-            <div key={i} className="relative w-32 h-24 rounded-xl overflow-hidden shrink-0">
-              {photo.startsWith('http') ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo} alt={`${camping.name} foto ${i + 2}`} className="w-full h-full object-cover" loading="lazy" />
-              ) : (
-                <Image src={photo} alt={`${camping.name} foto ${i + 2}`} fill className="object-cover" sizes="128px" />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Main content */}
       <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14 pb-24 lg:pb-14">
@@ -194,11 +173,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             {/* Facilities */}
             {camping.facilities && camping.facilities.length > 0 && (
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">{t('destinations.facilitiesTitle')}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5">{t('destinations.facilitiesTitle')}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {camping.facilities.map(f => (
-                    <div key={f} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-9 h-9 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
+                    <div key={f} className="flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
                         {facilityIcons[f] || <Tent size={16} className="text-gray-400" />}
                       </div>
                       <span className="text-sm text-gray-700 font-medium">{f}</span>
@@ -212,22 +191,22 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             {nearbyDestinations.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('destinations.nearbyPlacesTitle')}</h2>
-                <p className="text-gray-500 text-sm mb-4">{t('destinations.nearbyPlacesSubtitle')}</p>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {nearbyDestinations.map(dest => (
+                <p className="text-gray-500 text-sm mb-4 sm:mb-5">{t('destinations.nearbyPlacesSubtitle')}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {nearbyDestinations.slice(0, 6).map(dest => (
                     <Link
                       key={dest.slug}
                       href={`/bestemmingen/${dest.slug}`}
-                      className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
+                      className="group relative aspect-[3/4] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
                       <Image
                         src={dest.heroImage}
                         alt={`${dest.name} — ${dest.region}, Costa Brava`}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        sizes="(max-width: 640px) 50vw, 50vw"
+                        sizes="(max-width: 640px) 50vw, 33vw"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                         <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>
                         <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1">

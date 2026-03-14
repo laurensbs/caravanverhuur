@@ -5,7 +5,7 @@ import Image from 'next/image';
 import {
   MapPin, ArrowRight, ChevronRight, Tent, Globe,
   Umbrella, Sun, Droplets, Star, UtensilsCrossed, Lightbulb,
-  Users, Sparkles,
+  Users, Sparkles, CheckCircle,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { type Destination } from '@/data/destinations';
@@ -21,74 +21,55 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   const { t } = useLanguage();
 
   const allPhotos = [destination.heroImage, ...destination.gallery.filter(g => g !== destination.heroImage)];
-  const sidePhotos = allPhotos.slice(1, 3);
+  const galleryPhotos = allPhotos.slice(1);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero — bento grid */}
+      {/* Hero — full-width */}
       <section className="relative">
-        <div className="h-[50vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
-          {/* Main image */}
-          <div className="relative h-full md:col-span-2">
-            <Image
-              src={allPhotos[0]}
-              alt={`${destination.name} — ${destination.region}, Costa Brava`}
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 768px) 100vw, 66vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
+        <div className="h-[55vh] sm:h-[60vh] md:h-[65vh] overflow-hidden">
+          <Image
+            src={allPhotos[0]}
+            alt={`${destination.name} — ${destination.region}, Costa Brava`}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/5" />
 
-            {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 sm:p-8">
-              <div className="max-w-6xl mx-auto">
-                <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
-                  <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
-                  <ChevronRight size={12} />
-                  <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
-                  <ChevronRight size={12} />
-                  <span className="text-white">{destination.name}</span>
-                </nav>
+          {/* Content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 sm:p-8 sm:pb-10">
+            <div className="max-w-6xl mx-auto">
+              <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
+                <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
+                <ChevronRight size={12} />
+                <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
+                <ChevronRight size={12} />
+                <span className="text-white">{destination.name}</span>
+              </nav>
 
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{destination.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
-                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><MapPin size={13} /> {destination.region}</span>
-                  {destination.population && (
-                    <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Users size={13} /> ~{destination.population}</span>
-                  )}
-                  {destination.knownFor && (
-                    <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Star size={13} /> {destination.knownFor}</span>
-                  )}
-                </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">{destination.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
+                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><MapPin size={14} /> {destination.region}</span>
+                {destination.population && (
+                  <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><Users size={14} /> {destination.population}</span>
+                )}
+                {destination.knownFor && (
+                  <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><Star size={14} /> {destination.knownFor}</span>
+                )}
               </div>
             </div>
           </div>
-
-          {/* Side images — desktop only */}
-          {sidePhotos.length > 0 && (
-            <div className="hidden md:flex md:flex-col md:gap-1 h-full">
-              {sidePhotos.map((photo, i) => (
-                <div key={i} className="relative flex-1 min-h-0">
-                  <Image
-                    src={photo}
-                    alt={`${destination.name} foto ${i + 2}`}
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Quick info bar */}
-      <section className="relative z-10 -mt-5 sm:-mt-6">
+      {/* Stats + Gallery row */}
+      <section className="relative z-10 -mt-6 sm:-mt-8">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
-            <div className="grid grid-cols-4 divide-x divide-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            {/* Stats */}
+            <div className="grid grid-cols-4 divide-x divide-gray-100 mb-0">
               <div className="text-center px-1 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary truncate">{destination.region}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Regio</p>
@@ -106,20 +87,28 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Zomer</p>
               </div>
             </div>
+
+            {/* Gallery thumbnails - visible on all screens */}
+            {galleryPhotos.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
+                  {galleryPhotos.map((photo, i) => (
+                    <div key={i} className="relative w-28 h-20 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
+                      <Image
+                        src={photo}
+                        alt={`${destination.name} foto ${i + 2}`}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        sizes="(max-width: 640px) 112px, (max-width: 768px) 160px, 192px"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
-
-      {/* Mobile gallery strip */}
-      {allPhotos.length > 1 && (
-        <div className="md:hidden flex gap-2 px-4 mt-4 overflow-x-auto scrollbar-hide -mx-4 pl-4">
-          {allPhotos.slice(1).map((photo, i) => (
-            <div key={i} className="relative w-32 h-24 rounded-xl overflow-hidden shrink-0">
-              <Image src={photo} alt={`${destination.name} foto ${i + 2}`} fill className="object-cover" sizes="128px" />
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Weather & travel tip — mobile */}
       <div className="lg:hidden max-w-6xl mx-auto px-4 mt-4">
@@ -169,14 +158,14 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Highlights */}
             {destination.highlights.length > 0 && (
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Wat maakt {destination.name} bijzonder?</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5">Wat maakt {destination.name} bijzonder?</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.highlights.map((h, i) => (
-                    <div key={h} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-primary">{i + 1}</span>
+                    <div key={h} className="flex items-start gap-3.5 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-white">{i + 1}</span>
                       </div>
-                      <span className="text-[13px] sm:text-sm text-gray-700 leading-snug">{h}</span>
+                      <span className="text-sm text-gray-700 leading-relaxed pt-1">{h}</span>
                     </div>
                   ))}
                 </div>
@@ -186,23 +175,23 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Restaurants */}
             {destination.restaurants.length > 0 && (
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                  <span className="flex items-center gap-2"><UtensilsCrossed size={18} className="text-primary sm:w-[20px] sm:h-[20px]" /> Waar eten in {destination.name}?</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5">
+                  <span className="flex items-center gap-2.5"><UtensilsCrossed size={20} className="text-primary" /> Waar eten in {destination.name}?</span>
                 </h2>
-                <div className="space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                   {destination.restaurants.map(r => (
-                    <div key={r.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4">
-                      <div className="flex items-start justify-between mb-1.5">
+                    <div key={r.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="font-bold text-gray-900 text-[15px]">{r.name}</h3>
-                          <p className="text-xs text-gray-500">{r.cuisine}</p>
+                          <h3 className="font-bold text-gray-900">{r.name}</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">{r.cuisine}</p>
                         </div>
-                        <span className="text-xs font-semibold text-primary bg-primary/5 px-2 py-0.5 rounded-full shrink-0 ml-2">{r.price}</span>
+                        <span className="text-xs font-bold text-white bg-primary px-2.5 py-1 rounded-lg shrink-0 ml-2">{r.price}</span>
                       </div>
-                      <p className="text-[13px] sm:text-sm text-gray-600 mb-2">{r.description}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed mb-3">{r.description}</p>
                       {r.mustTry && (
-                        <div className="flex items-center gap-1.5 text-xs text-primary/70 bg-primary/5 px-2.5 py-1 rounded-lg w-fit">
-                          <Star size={12} /> Must try: {r.mustTry}
+                        <div className="flex items-center gap-2 text-xs font-medium text-primary bg-primary/5 px-3 py-2 rounded-xl">
+                          <Star size={13} className="shrink-0" /> Must try: <span className="font-bold">{r.mustTry}</span>
                         </div>
                       )}
                     </div>
@@ -214,27 +203,27 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {/* Beaches */}
             {destination.beaches.length > 0 && (
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                  <span className="flex items-center gap-2"><Umbrella size={20} className="text-primary sm:w-[22px] sm:h-[22px]" /> Stranden bij {destination.name}</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5">
+                  <span className="flex items-center gap-2.5"><Umbrella size={20} className="text-primary" /> Stranden bij {destination.name}</span>
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.beaches.map(b => (
-                    <div key={b.name} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                      <h3 className="font-bold text-gray-900 mb-1">{b.name}</h3>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.type === 'zand' ? 'bg-primary/5 text-primary' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-primary/5 text-primary/70'}`}>
+                    <div key={b.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+                      <h3 className="font-bold text-gray-900 text-base mb-2">{b.name}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                        <span className={`px-2 py-1 rounded-lg text-[11px] font-semibold ${b.type === 'zand' ? 'bg-amber-50 text-amber-700' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-700'}`}>
                           {b.type === 'zand' ? '🏖️ Zand' : b.type === 'kiezel' ? '🪨 Kiezel' : b.type === 'rotsen' ? '🪨 Rotsen' : '🏖️ Mix'}
                         </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${b.vibe === 'familiaal' ? 'bg-accent/10 text-accent-dark' : b.vibe === 'levendig' ? 'bg-primary/5 text-primary' : b.vibe === 'rustig' ? 'bg-gray-100 text-gray-600' : 'bg-primary/10 text-primary'}`}>
+                        <span className={`px-2 py-1 rounded-lg text-[11px] font-semibold ${b.vibe === 'familiaal' ? 'bg-green-50 text-green-700' : b.vibe === 'levendig' ? 'bg-purple-50 text-purple-700' : b.vibe === 'rustig' ? 'bg-blue-50 text-blue-600' : 'bg-cyan-50 text-cyan-700'}`}>
                           {b.vibe === 'familiaal' ? '👨‍👩‍👧 Familiaal' : b.vibe === 'levendig' ? '🎉 Levendig' : b.vibe === 'rustig' ? '🧘 Rustig' : '🌊 Wild'}
                         </span>
                         {b.facilities && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/5 text-primary/70">
-                            ✓ Faciliteiten
+                          <span className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-primary/5 text-primary">
+                            <CheckCircle size={11} className="inline mr-0.5 -mt-0.5" /> Faciliteiten
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">{b.description}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">{b.description}</p>
                     </div>
                   ))}
                 </div>
@@ -245,22 +234,22 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {otherDestinations.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
-                <p className="text-gray-500 text-sm mb-3 sm:mb-4">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {otherDestinations.map(dest => (
+                <p className="text-gray-500 text-sm mb-4 sm:mb-5">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {otherDestinations.slice(0, 6).map(dest => (
                     <Link
                       key={dest.slug}
                       href={`/bestemmingen/${dest.slug}`}
-                      className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
+                      className="group relative aspect-[3/4] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
                       <Image
                         src={dest.heroImage}
                         alt={`${dest.name} — ${dest.region}, Costa Brava`}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        sizes="(max-width: 640px) 50vw, 50vw"
+                        sizes="(max-width: 640px) 50vw, 33vw"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                         <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>
                         <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1">
