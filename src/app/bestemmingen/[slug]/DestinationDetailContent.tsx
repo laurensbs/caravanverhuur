@@ -27,7 +27,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero — bento grid */}
       <section className="relative">
-        <div className="h-[45vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
+        <div className="h-[50vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
           {/* Main image */}
           <div className="relative h-full md:col-span-2">
             <Image
@@ -38,10 +38,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               priority
               sizes="(max-width: 768px) 100vw, 66vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
 
             {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 sm:p-8">
+            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 sm:p-8">
               <div className="max-w-6xl mx-auto">
                 <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
                   <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
@@ -51,20 +51,14 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                   <span className="text-white">{destination.name}</span>
                 </nav>
 
-                <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{destination.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
-                  <span className="flex items-center gap-1.5"><MapPin size={14} /> {destination.region}</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{destination.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
+                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><MapPin size={13} /> {destination.region}</span>
                   {destination.population && (
-                    <>
-                      <span className="text-white/40">·</span>
-                      <span className="flex items-center gap-1.5"><Users size={14} /> {destination.population}</span>
-                    </>
+                    <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Users size={13} /> ~{destination.population}</span>
                   )}
                   {destination.knownFor && (
-                    <>
-                      <span className="text-white/40">·</span>
-                      <span className="flex items-center gap-1.5"><Star size={14} /> {destination.knownFor}</span>
-                    </>
+                    <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Star size={13} /> {destination.knownFor}</span>
                   )}
                 </div>
               </div>
@@ -93,21 +87,21 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       {/* Quick info bar */}
       <section className="relative z-10 -mt-5 sm:-mt-6">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-            <div className="flex items-center justify-between divide-x divide-gray-100">
-              <div className="flex-1 text-center px-1 sm:px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+            <div className="grid grid-cols-4 divide-x divide-gray-100">
+              <div className="text-center px-1 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary truncate">{destination.region}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Regio</p>
               </div>
-              <div className="flex-1 text-center px-1 sm:px-4">
+              <div className="text-center px-1 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary">{destination.beaches.length}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Stranden</p>
               </div>
-              <div className="flex-1 text-center px-1 sm:px-4">
+              <div className="text-center px-1 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary">{destination.restaurants.length}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Restaurants</p>
               </div>
-              <div className="flex-1 text-center px-1 sm:px-4">
+              <div className="text-center px-1 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary">{destination.weather.summer}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Zomer</p>
               </div>
@@ -115,6 +109,40 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           </div>
         </div>
       </section>
+
+      {/* Mobile gallery strip */}
+      {allPhotos.length > 1 && (
+        <div className="md:hidden flex gap-2 px-4 mt-4 overflow-x-auto scrollbar-hide -mx-4 pl-4">
+          {allPhotos.slice(1).map((photo, i) => (
+            <div key={i} className="relative w-32 h-24 rounded-xl overflow-hidden shrink-0">
+              <Image src={photo} alt={`${destination.name} foto ${i + 2}`} fill className="object-cover" sizes="128px" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Weather & travel tip — mobile */}
+      <div className="lg:hidden max-w-6xl mx-auto px-4 mt-4">
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center">
+                <Sun size={18} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Zomer {destination.weather.summer}</p>
+                <p className="text-xs text-gray-500">Water: {destination.weather.water}</p>
+              </div>
+            </div>
+            {destination.travelTip && (
+              <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1.5 rounded-lg max-w-[50%]">
+                <Lightbulb size={12} className="text-primary shrink-0" />
+                <p className="text-[11px] text-primary/80 leading-tight line-clamp-2">{destination.travelTip}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Main content */}
       <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14 pb-24 lg:pb-14">
@@ -142,11 +170,11 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.highlights.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Wat maakt {destination.name} bijzonder?</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {destination.highlights.map(h => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {destination.highlights.map((h, i) => (
                     <div key={h} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-7 h-7 bg-primary/5 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                        <Star size={12} className="text-primary" />
+                      <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-primary">{i + 1}</span>
                       </div>
                       <span className="text-[13px] sm:text-sm text-gray-700 leading-snug">{h}</span>
                     </div>

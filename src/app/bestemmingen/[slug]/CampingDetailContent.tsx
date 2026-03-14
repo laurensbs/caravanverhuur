@@ -80,10 +80,10 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                 />
               );
             })()}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
 
             {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 sm:p-8">
+            <div className="absolute bottom-0 left-0 right-0 p-5 pb-10 sm:p-8">
               <div className="max-w-6xl mx-auto">
                 <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
                   <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
@@ -93,11 +93,10 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                   <span className="text-white">{camping.name}</span>
                 </nav>
 
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{camping.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-sm sm:text-sm">
-                  <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
-                  <span className="text-white/40">·</span>
-                  <span className="flex items-center gap-1.5"><Globe size={14} /> {camping.region}</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{camping.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
+                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><MapPin size={13} /> {camping.location}</span>
+                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full"><Globe size={13} /> {camping.region}</span>
                 </div>
               </div>
             </div>
@@ -135,17 +134,17 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       {/* Quick info bar */}
       <section className="relative z-10 -mt-5 sm:-mt-6">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-            <div className="flex items-center justify-between divide-x divide-gray-100">
-              <div className="flex-1 text-center px-2 sm:px-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+            <div className="grid grid-cols-3 divide-x divide-gray-100">
+              <div className="text-center px-2 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary truncate">{camping.location}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.locationLabel')}</p>
               </div>
-              <div className="flex-1 text-center px-2 sm:px-4">
+              <div className="text-center px-2 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary">{camping.facilities?.length || 0}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.facilitiesLabel')}</p>
               </div>
-              <div className="flex-1 text-center px-2 sm:px-4">
+              <div className="text-center px-2 sm:px-4">
                 <p className="text-sm sm:text-lg font-bold text-primary">{nearbyDestinations.length}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.nearbyPlacesCount')}</p>
               </div>
@@ -153,6 +152,22 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
           </div>
         </div>
       </section>
+
+      {/* Mobile gallery strip */}
+      {photos.length > 1 && (
+        <div className="md:hidden flex gap-2 px-4 mt-4 overflow-x-auto scrollbar-hide -mx-4 pl-4">
+          {photos.slice(1).map((photo, i) => (
+            <div key={i} className="relative w-32 h-24 rounded-xl overflow-hidden shrink-0">
+              {photo.startsWith('http') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photo} alt={`${camping.name} foto ${i + 2}`} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <Image src={photo} alt={`${camping.name} foto ${i + 2}`} fill className="object-cover" sizes="128px" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Main content */}
       <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14 pb-24 lg:pb-14">
