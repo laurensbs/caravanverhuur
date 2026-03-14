@@ -50,29 +50,29 @@ export default function OverOnsPage() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative min-h-[45vh] sm:min-h-[55vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-end overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/images/campings/la_banyera_calella.jpg"
-            alt="Costa Brava camping luchtfoto"
+            src="/images/destinations/tossa_a_rea.jpg"
+            alt="Costa Brava luchtfoto"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-28 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 pb-10 sm:pb-14 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
             className="max-w-2xl"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/15 backdrop-blur-sm text-white text-sm font-medium rounded-full mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/15 backdrop-blur-md text-white text-sm font-medium rounded-full mb-5">
               <Sparkles size={16} />
               {t('about.heroSubtitle')}
             </span>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-4 sm:mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-4 sm:mb-5">
               {t('about.heroTitle')}
             </h1>
             <p className="text-white/85 text-base sm:text-xl leading-relaxed max-w-xl">
@@ -116,17 +116,26 @@ export default function OverOnsPage() {
               transition={{ duration: 0.7, delay: 0.2 }}
             >
               <div className="relative">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/images/campings/la_banyera_calella.jpg"
-                    alt="Camping aan de Costa Brava met uitzicht op de Middellandse Zee"
-                    width={600}
-                    height={400}
-                    className="w-full object-cover"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4]">
+                    <Image
+                      src="/images/campings/cala_d_aiguablava__begur.jpg"
+                      alt="Baai aan de Costa Brava"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] mt-8">
+                    <Image
+                      src="/images/campings/platja_gran_platja_d_aro.jpg"
+                      alt="Strand Costa Brava"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
                 {/* Floating accent card */}
-                <div className="absolute -bottom-6 -left-4 sm:-left-6 bg-white rounded-2xl shadow-xl p-4 sm:p-5 border border-border">
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-xl p-4 sm:p-5 border border-border">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
                       <Sun className="text-white" size={22} />
@@ -166,27 +175,25 @@ export default function OverOnsPage() {
             whileInView="visible"
             viewport={{ once: true, margin: '-30px' }}
             variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
           >
             {[
-              { icon: <Heart size={24} />, title: t('about.adv1Title'), desc: t('about.adv1Desc'), color: 'bg-primary' },
-              { icon: <Shield size={24} />, title: t('about.adv2Title'), desc: t('about.adv2Desc'), color: 'bg-primary-dark' },
-              { icon: <Target size={24} />, title: t('about.adv3Title'), desc: t('about.adv3Desc'), color: 'bg-primary' },
-              { icon: <Award size={24} />, title: t('about.adv4Title'), desc: t('about.adv4Desc'), color: 'bg-primary-dark' },
+              { icon: <Heart size={24} />, title: t('about.adv1Title'), desc: t('about.adv1Desc'), color: 'from-primary to-primary-dark' },
+              { icon: <Shield size={24} />, title: t('about.adv2Title'), desc: t('about.adv2Desc'), color: 'from-primary-dark to-primary' },
+              { icon: <Target size={24} />, title: t('about.adv3Title'), desc: t('about.adv3Desc'), color: 'from-primary to-primary-dark' },
+              { icon: <Award size={24} />, title: t('about.adv4Title'), desc: t('about.adv4Desc'), color: 'from-primary-dark to-primary' },
             ].map((item, i) => (
               <motion.div
                 key={i}
                 variants={scaleIn}
                 custom={i}
-                className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm"
+                className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-lg transition-shadow"
               >
-                <div className="flex items-center gap-3 sm:gap-4 mb-3">
-                  <div className={`w-11 h-11 sm:w-12 sm:h-12 ${item.color} rounded-xl flex items-center justify-center shadow-md shrink-0`}>
-                    <div className="text-white">{item.icon}</div>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-foreground">{item.title}</h3>
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center shadow-md mb-4`}>
+                  <div className="text-white">{item.icon}</div>
                 </div>
-                <p className="text-sm text-muted leading-relaxed">{item.desc}</p>
+                <h3 className="text-sm sm:text-base font-bold text-foreground mb-2">{item.title}</h3>
+                <p className="text-xs sm:text-sm text-muted leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -278,7 +285,15 @@ export default function OverOnsPage() {
 
       {/* ===== CIJFERS ===== */}
       <section className="py-14 sm:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary" />
+        <div className="absolute inset-0">
+          <Image
+            src="/images/campings/begur_sa_tuna.jpg"
+            alt="Costa Brava"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-primary/90" />
+        </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -300,20 +315,20 @@ export default function OverOnsPage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-3 gap-4 sm:gap-6"
+            className="grid grid-cols-3 gap-4 sm:gap-8 max-w-4xl mx-auto"
           >
             {[
               { number: '4', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Users size={24} /> },
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub'), icon: <Star size={24} /> },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub'), icon: <Award size={24} /> },
             ].map((stat, i) => (
-              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-5 sm:p-8 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/15">
-                <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-4 sm:p-8">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <div className="text-white">{stat.icon}</div>
                 </div>
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stat.number}</div>
-                <div className="font-semibold text-white text-sm">{stat.label}</div>
-                <div className="text-xs text-white/60 mt-1">{stat.sub}</div>
+                <div className="text-3xl sm:text-5xl font-extrabold text-white mb-1">{stat.number}</div>
+                <div className="font-semibold text-white text-sm sm:text-base">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-white/60 mt-1">{stat.sub}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -322,8 +337,15 @@ export default function OverOnsPage() {
 
       {/* ===== MOEDERBEDRIJF ===== */}
       <section className="py-14 sm:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/campings/palam_s_-_view_from_beach.jpg')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-primary-dark/90" />
+        <div className="absolute inset-0">
+          <Image
+            src="/images/campings/palam_s_-_view_from_beach.jpg"
+            alt="Costa Brava kust"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-primary-dark/85" />
+        </div>
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-6">

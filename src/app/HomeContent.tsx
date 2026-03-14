@@ -361,7 +361,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                           title={caravan.name}
                           allow="autoplay"
                           loading="lazy"
-                          className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
+                          className="absolute inset-0 w-full h-full border-0"
                           style={{ pointerEvents: 'none' }}
                         />
                         <div className="absolute inset-0 z-10" />
@@ -499,7 +499,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   title="Caravan interieur volledig ingericht"
                   allow="autoplay"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
+                  className="absolute inset-0 w-full h-full border-0"
                   style={{ pointerEvents: 'none' }}
                 />
                 <div className="absolute inset-0 z-10" />

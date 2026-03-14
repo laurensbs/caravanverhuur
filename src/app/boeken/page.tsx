@@ -774,7 +774,7 @@ function BoekenContent() {
                                               title={c.name}
                                               allow="autoplay"
                                               loading="lazy"
-                                              className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
+                                              className="absolute inset-0 w-full h-full border-0"
                                               style={{ pointerEvents: 'none' }}
                                             />
                                             <div className="absolute inset-0 z-10" />
