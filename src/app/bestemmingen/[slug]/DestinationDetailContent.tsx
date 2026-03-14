@@ -27,7 +27,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] overflow-hidden">
         <Image
           src={allPhotos[activePhoto] || destination.heroImage}
           alt={`${destination.name} — ${destination.region}, Costa Brava`}
@@ -85,35 +85,23 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       {/* Quick info bar */}
       <section className="relative z-10 -mt-5 sm:-mt-6">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
-            <div className="grid grid-cols-4 gap-2 sm:gap-4">
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <Globe size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{destination.region}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">Regio</p>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="flex items-center justify-between divide-x divide-gray-100">
+              <div className="flex-1 text-center px-1 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary truncate">{destination.region}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Regio</p>
               </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <Umbrella size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.beaches.length}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">Stranden</p>
+              <div className="flex-1 text-center px-1 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary">{destination.beaches.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Stranden</p>
               </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <UtensilsCrossed size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.restaurants.length}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">Restaurants</p>
+              <div className="flex-1 text-center px-1 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary">{destination.restaurants.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Restaurants</p>
               </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <Sun size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{destination.weather.summer}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">Zomer</p>
+              <div className="flex-1 text-center px-1 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary">{destination.weather.summer}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">Zomer</p>
               </div>
             </div>
           </div>
@@ -121,10 +109,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       </section>
 
       {/* Main content */}
-      <section className="max-w-6xl mx-auto px-4 py-6 sm:py-14">
+      <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14 pb-24 lg:pb-14">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left: main content */}
-          <div className="lg:col-span-2 space-y-8 sm:space-y-10">
+          <div className="lg:col-span-2 space-y-10 sm:space-y-12">
             {/* Description */}
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Ontdek {destination.name}</h2>
@@ -146,7 +134,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             {destination.highlights.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Wat maakt {destination.name} bijzonder?</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.highlights.map(h => (
                     <div key={h} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
                       <div className="w-7 h-7 bg-primary/5 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
@@ -247,31 +235,26 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
                 <p className="text-gray-500 text-sm mb-3 sm:mb-4">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   {otherDestinations.map(dest => (
                     <Link
                       key={dest.slug}
                       href={`/bestemmingen/${dest.slug}`}
-                      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all"
+                      className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <Image
-                          src={dest.heroImage}
-                          alt={`${dest.name} — ${dest.region}, Costa Brava`}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          sizes="(max-width: 640px) 50vw, 33vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-sm font-bold text-white">{dest.name}</h3>
-                          <div className="flex items-center gap-1.5 text-white/70 text-[11px] mt-0.5">
-                            <MapPin size={10} /> {dest.region}
-                          </div>
+                      <Image
+                        src={dest.heroImage}
+                        alt={`${dest.name} — ${dest.region}, Costa Brava`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        sizes="(max-width: 640px) 50vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                        <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>
+                        <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1">
+                          <MapPin size={12} /> {dest.region}
                         </div>
-                      </div>
-                      <div className="p-2.5">
-                        <p className="text-xs text-gray-600 line-clamp-2">{dest.description}</p>
                       </div>
                     </Link>
                   ))}
@@ -370,26 +353,6 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               </div>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="relative overflow-hidden py-14 sm:py-16">
-        <div className="absolute inset-0 bg-[url('/images/campings/golfo_de_rosas.jpg')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary-dark/90" />
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-xl sm:text-3xl font-bold text-white mb-3 drop-shadow-sm">
-            Klaar voor {destination.name}?
-          </h2>
-          <p className="text-white/80 mb-6 max-w-xl mx-auto text-sm sm:text-base">
-            Jouw volledig ingerichte caravan staat klaar op een camping in de buurt. Inclusief beddengoed, kookgerei en inventaris.
-          </p>
-          <Link
-            href="/boeken"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-primary font-bold rounded-xl text-sm transition-all hover:scale-105 hover:shadow-xl shadow-lg"
-          >
-            {t('nav.bookNow')} <ArrowRight size={16} />
-          </Link>
         </div>
       </section>
 

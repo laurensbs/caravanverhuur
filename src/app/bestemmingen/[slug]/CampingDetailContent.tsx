@@ -55,7 +55,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] overflow-hidden">
         {(() => {
           const src = camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg';
           return src.startsWith('http') ? (
@@ -116,28 +116,19 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       {/* Quick info bar */}
       <section className="relative z-10 -mt-5 sm:-mt-6">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <MapPin size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{camping.location}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">{t('destinations.locationLabel')}</p>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="flex items-center justify-between divide-x divide-gray-100">
+              <div className="flex-1 text-center px-2 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary truncate">{camping.location}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.locationLabel')}</p>
               </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <CheckCircle size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{camping.facilities?.length || 0}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">{t('destinations.facilitiesLabel')}</p>
+              <div className="flex-1 text-center px-2 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary">{camping.facilities?.length || 0}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.facilitiesLabel')}</p>
               </div>
-              <div className="text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1">
-                  <Navigation size={16} className="text-primary sm:w-[18px] sm:h-[18px]" />
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-900">{nearbyDestinations.length}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500">{t('destinations.nearbyPlacesCount')}</p>
+              <div className="flex-1 text-center px-2 sm:px-4">
+                <p className="text-sm sm:text-lg font-bold text-primary">{nearbyDestinations.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.nearbyPlacesCount')}</p>
               </div>
             </div>
           </div>
@@ -145,8 +136,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       </section>
 
       {/* Main content */}
-      <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
+      <section className="max-w-6xl mx-auto px-4 py-8 sm:py-14 pb-24 lg:pb-14">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left: main content */}
           <div className="lg:col-span-2 space-y-10">
             {/* Description */}
@@ -223,34 +214,25 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{t('destinations.nearbyPlacesTitle')}</h2>
                 <p className="text-gray-500 text-sm mb-4">{t('destinations.nearbyPlacesSubtitle')}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   {nearbyDestinations.map(dest => (
                     <Link
                       key={dest.slug}
                       href={`/bestemmingen/${dest.slug}`}
-                      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all"
+                      className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <Image
-                          src={dest.heroImage}
-                          alt={`${dest.name} — ${dest.region}, Costa Brava`}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          sizes="(max-width: 640px) 50vw, 33vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-sm font-bold text-white">{dest.name}</h3>
-                          <div className="flex items-center gap-1.5 text-white/70 text-[11px] mt-0.5">
-                            <MapPin size={10} /> {dest.region}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-2.5">
-                        <p className="text-xs text-gray-600 line-clamp-2 mb-2">{dest.description}</p>
-                        <div className="flex items-center gap-2 text-[11px] text-gray-400">
-                          {dest.weather && <span className="flex items-center gap-0.5"><Sun size={10} className="text-primary/50" /> {dest.weather.summer}</span>}
-                          {dest.beaches?.length > 0 && <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {dest.beaches.length} {t('destinations.beachesShort')}</span>}
+                      <Image
+                        src={dest.heroImage}
+                        alt={`${dest.name} — ${dest.region}, Costa Brava`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        sizes="(max-width: 640px) 50vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                        <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>
+                        <div className="flex items-center gap-1.5 text-white/80 text-xs mt-1">
+                          <MapPin size={12} /> {dest.region}
                         </div>
                       </div>
                     </Link>
@@ -349,23 +331,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                 </Link>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA banner */}
-      <section className="max-w-6xl mx-auto px-4 pb-24 lg:pb-16">
-        <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-20" />
-          <div className="relative">
-            <h2 className="text-xl sm:text-3xl font-bold mb-3">{t('destinations.ctaTitle')}</h2>
-            <p className="text-white/80 mb-6 max-w-lg mx-auto text-sm sm:text-base">{t('destinations.ctaSubtitle')}</p>
-            <Link
-              href="/boeken"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary font-bold rounded-full text-sm transition-transform hover:scale-105 shadow-lg"
-            >
-              {t('nav.bookNow')} <ArrowRight size={16} />
-            </Link>
           </div>
         </div>
       </section>
