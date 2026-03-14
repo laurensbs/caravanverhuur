@@ -97,14 +97,12 @@ export default function AdminDashboard() {
     loadCustomData();
     fetch('/api/admin/dashboard', { credentials: 'include' })
       .then(async res => {
-        if (!res.ok) throw new Error('API error');
-        return res.json();
+        const body = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(body?.error || `API error (${res.status})`);
+        if (body?.error) throw new Error(body.error);
+        setData(body);
       })
-      .then(d => {
-        if (d.error) throw new Error(d.error);
-        setData(d);
-      })
-      .catch(() => setError('Could not load dashboard'))
+      .catch((e) => setError(e?.message || 'Could not load dashboard'))
       .finally(() => setLoading(false));
   }, []);
 

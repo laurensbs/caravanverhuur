@@ -149,9 +149,9 @@ export default function CaravanDetailContent({ id }: { id: string }) {
             <div className="bg-white">
               <div className="max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
                 <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl">
-                  <div className="absolute inset-[-25%] sm:inset-[-10%] w-[150%] sm:w-[120%] h-[150%] sm:h-[120%]">
+                  <div className="absolute inset-[-50%] sm:inset-[-25%] w-[200%] sm:w-[150%] h-[200%] sm:h-[150%]" style={{ top: 0, transformOrigin: 'top center' }}>
                     <iframe
-                      src={`https://play.gumlet.io/embed/${gumletMatch[1]}?background=true&disable_player_controls=true&preload=true`}
+                      src={`https://play.gumlet.io/embed/${gumletMatch[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
                       title={caravan.name}
                       allow="autoplay"
                       loading="eager"

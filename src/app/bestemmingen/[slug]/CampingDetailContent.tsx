@@ -57,7 +57,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero — bento grid */}
       <section className="relative">
-        <div className="h-[45vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
+        <div className="h-[50vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
           {/* Main image */}
           <div className="relative h-full md:col-span-2">
             {(() => {
@@ -83,7 +83,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
             {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
+            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 sm:p-8">
               <div className="max-w-6xl mx-auto">
                 <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
                   <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
@@ -93,8 +93,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                   <span className="text-white">{camping.name}</span>
                 </nav>
 
-                <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{camping.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 leading-tight">{camping.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-sm sm:text-sm">
                   <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
                   <span className="text-white/40">·</span>
                   <span className="flex items-center gap-1.5"><Globe size={14} /> {camping.region}</span>

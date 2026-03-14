@@ -41,7 +41,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
             {/* Content overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
+            <div className="absolute bottom-0 left-0 right-0 p-4 pb-10 sm:p-8">
               <div className="max-w-6xl mx-auto">
                 <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
                   <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>

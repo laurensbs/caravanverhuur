@@ -2890,14 +2890,14 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed bottom-[4.5rem] right-[4.5rem] sm:bottom-8 sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
+            className="fixed bottom-3 right-[4.5rem] sm:bottom-7 sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
           >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 pr-8 relative cursor-pointer" onClick={() => { setIsOpen(true); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}>
-              <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
-                <X size={12} className="text-gray-500" />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2.5 pr-7 sm:p-3 sm:pr-8 relative cursor-pointer" onClick={() => { setIsOpen(true); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}>
+              <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
+                <X size={11} className="text-gray-500" />
               </button>
-              <p className="text-[13px] sm:text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
-              <div className="absolute -right-2 bottom-3 w-4 h-4 bg-white border-r border-b border-gray-200 rotate-[-45deg]" />
+              <p className="text-xs sm:text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
+              <div className="absolute -right-2 bottom-3 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-white border-r border-b border-gray-200 rotate-[-45deg]" />
             </div>
           </motion.div>
         )}

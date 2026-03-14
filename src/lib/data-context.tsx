@@ -24,14 +24,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetch('/api/admin/caravans')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
       .then(data => { if (data.caravans?.length) setCustomCaravans(data.caravans); })
-      .catch(e => console.error('Fetch caravans error:', e));
+      .catch(() => { /* Not authenticated or unavailable — use static data */ });
 
     fetch('/api/campings')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
       .then(data => { if (data.campings?.length) setCampings(data.campings); })
-      .catch(e => console.error('Fetch campings error:', e));
+      .catch(() => { /* Unavailable — use static data */ });
   }, []);
 
   // API already returns the full merged list (static + overrides + custom)

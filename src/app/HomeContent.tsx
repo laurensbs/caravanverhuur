@@ -68,24 +68,42 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[82svh] flex flex-col justify-end overflow-hidden">
         {/* Video background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Poster image fallback */}
+            <img
+              src="https://video.gumlet.io/69b470b7bf83f6c336bc88cc/69b49548dc37184fc78c660f/thumbnail-1-0.png?format=auto&ar=1920:1080&mode=crop&w=1600"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Mobile: native video with object-cover (fills portrait screen properly) */}
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover sm:hidden"
+              poster="https://video.gumlet.io/69b470b7bf83f6c336bc88cc/69b49548dc37184fc78c660f/thumbnail-1-0.png?format=auto&ar=1920:1080&mode=crop&w=800"
+            >
+              <source src="https://video.gumlet.io/69b470b7bf83f6c336bc88cc/69b49548dc37184fc78c660f/main.m3u8" type="application/x-mpegURL" />
+            </video>
+            {/* Desktop: iframe (better quality, autoplay works reliably) */}
             <iframe
-              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&disable_player_controls=true&preload=true&t=30"
+              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p&t=30"
               title="Costa Brava hero video"
-              allow="autoplay"
+              allow="autoplay; fullscreen"
               loading="eager"
-              className="border-0 min-w-[180%] min-h-[180%] sm:min-w-[140%] sm:min-h-[140%]"
+              className="border-0 absolute inset-0 w-full h-full scale-[1.4] hidden sm:block"
               style={{ pointerEvents: 'none' }}
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/20 sm:from-black/80 sm:via-black/40 sm:to-black/15" />
         </motion.div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 pb-8 sm:pb-12 w-full">
           <div className="max-w-2xl mb-5 sm:mb-7">
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
               className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3"
             >
@@ -95,8 +113,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-4 tracking-tight"
             >
@@ -107,8 +125,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.2 }}
               className="text-sm sm:text-base text-white/70 leading-relaxed max-w-lg"
             >
@@ -271,33 +289,35 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
           </div>
 
-          {/* Mobile: clean compact grid */}
-          <div className="md:hidden grid grid-cols-2 gap-3">
-            {[
-              { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={20} /> },
-              { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={20} /> },
-              { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={20} /> },
-              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={20} /> },
-              { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={20} /> },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.4 }}
-                className={`bg-surface rounded-xl p-4 ${i === 4 ? 'col-span-2' : ''}`}
-              >
-                <div className="flex items-center gap-3 mb-1.5">
-                  <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white shadow-md shrink-0">
-                    {item.icon}
+          {/* Mobile: horizontal scroll */}
+          <div className="md:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 w-max pb-2">
+              {[
+                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
+                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
+                { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={18} /> },
+                { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={18} /> },
+                { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06, duration: 0.4 }}
+                  className="w-[260px] shrink-0 bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+                >
+                  <div className="flex items-center gap-3 mb-2.5">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md shrink-0">
+                      {item.icon}
+                    </div>
+                    <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
                   </div>
-                  <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
-                </div>
-                <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
-                <p className="text-xs text-muted mt-0.5 leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
+                  <h3 className="font-semibold text-foreground text-[15px] leading-tight mb-1">{item.title}</h3>
+                  <p className="text-xs text-muted leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -337,11 +357,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     return gMatch ? (
                       <div className="absolute inset-0 overflow-hidden">
                         <iframe
-                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&disable_player_controls=true&preload=true`}
+                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
                           title={caravan.name}
                           allow="autoplay"
                           loading="lazy"
-                          className="absolute inset-0 w-full h-full border-0 scale-[1.5] origin-center"
+                          className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
                           style={{ pointerEvents: 'none' }}
                         />
                         <div className="absolute inset-0 z-10" />
@@ -371,7 +391,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
                     <span>{caravan.manufacturer}</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-muted mb-3 line-clamp-2 hidden sm:block sm:min-h-[2.5rem]">{caravan.description}</p>
+                  <p className="text-xs sm:text-sm text-muted mb-3 line-clamp-2 sm:min-h-[2.5rem]">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3">
                     {caravan.amenities.slice(0, 3).map(a => (
                       <span key={a} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
@@ -475,11 +495,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
                 <iframe
-                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&disable_player_controls=true&preload=true"
+                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p"
                   title="Caravan interieur volledig ingericht"
                   allow="autoplay"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full border-0 scale-[1.15] origin-center"
+                  className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
                   style={{ pointerEvents: 'none' }}
                 />
                 <div className="absolute inset-0 z-10" />

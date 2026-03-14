@@ -30,7 +30,12 @@ export async function GET() {
       return NextResponse.json({ stats, recentBookings, recentContacts, upcomingStays });
     } catch (retryError) {
       console.error('Retry failed:', retryError);
-      return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
+      const msg = retryError instanceof Error ? retryError.message : 'Unknown error';
+      const hasDbUrl = !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
+      return NextResponse.json(
+        { error: hasDbUrl ? `Database fout: ${msg}` : 'Geen database verbinding — stel POSTGRES_URL in als environment variable' },
+        { status: 500 },
+      );
     }
   }
 }

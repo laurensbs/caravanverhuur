@@ -770,11 +770,11 @@ function BoekenContent() {
                                         if (gm) return (
                                           <>
                                             <iframe
-                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true`}
+                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
                                               title={c.name}
                                               allow="autoplay"
                                               loading="lazy"
-                                              className="absolute inset-0 w-full h-full border-0 scale-[1.5] origin-center"
+                                              className="absolute inset-0 w-full h-full border-0 scale-[2.5] origin-top"
                                               style={{ pointerEvents: 'none' }}
                                             />
                                             <div className="absolute inset-0 z-10" />

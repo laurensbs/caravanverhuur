@@ -12,10 +12,11 @@ export default function WeatherBar() {
   const [visible, setVisible] = useState(true);
   const { t } = useLanguage();
 
-  if (!visible) return null;
-
   return (
-    <div className="bg-foreground text-white text-[11px] sm:text-xs relative">
+    <div
+      className="bg-foreground text-white text-[11px] sm:text-xs relative overflow-hidden transition-all duration-300 ease-out"
+      style={{ maxHeight: visible ? '40px' : '0px', opacity: visible ? 1 : 0 }}
+    >
       <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-center gap-2.5">
         <p className="text-center flex items-center gap-1.5 flex-wrap justify-center tracking-wide">
           <span className="font-semibold uppercase">{t('weather.barSeason')}</span>
