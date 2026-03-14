@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -50,66 +49,86 @@ interface Props {
 
 export default function CampingDetailContent({ camping, nearbyDestinations, otherCampings }: Props) {
   const { t } = useLanguage();
-  const [activePhoto, setActivePhoto] = useState(0);
+
+  const photos = camping.photos || [];
+  const sidePhotos = photos.slice(1, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero */}
-      <section className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] overflow-hidden">
-        {(() => {
-          const src = camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg';
-          return src.startsWith('http') ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={src}
-              alt={`${camping.name} — ${camping.location}, Costa Brava`}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <Image
-              src={src}
-              alt={`${camping.name} — ${camping.location}, Costa Brava`}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-          );
-        })()}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      {/* Hero — bento grid */}
+      <section className="relative">
+        <div className="h-[45vh] sm:h-[55vh] md:h-[60vh] md:grid md:grid-cols-3 md:gap-1 overflow-hidden">
+          {/* Main image */}
+          <div className="relative h-full md:col-span-2">
+            {(() => {
+              const src = photos[0] || '/og-image.jpg';
+              return src.startsWith('http') ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={src}
+                  alt={`${camping.name} — ${camping.location}, Costa Brava`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={src}
+                  alt={`${camping.name} — ${camping.location}, Costa Brava`}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 66vw"
+                />
+              );
+            })()}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-        {/* Photo gallery dots */}
-        {camping.photos && camping.photos.length > 1 && (
-          <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {camping.photos.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActivePhoto(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-all ${i === activePhoto ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`}
-              />
-            ))}
-          </div>
-        )}
+            {/* Content overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
+              <div className="max-w-6xl mx-auto">
+                <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
+                  <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
+                  <ChevronRight size={12} />
+                  <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
+                  <ChevronRight size={12} />
+                  <span className="text-white">{camping.name}</span>
+                </nav>
 
-        {/* Content overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Breadcrumbs */}
-            <nav className="hidden sm:flex items-center gap-1.5 text-white/60 text-xs mb-3">
-              <Link href="/" className="hover:text-white/80 transition-colors">Home</Link>
-              <ChevronRight size={12} />
-              <Link href="/bestemmingen" className="hover:text-white/80 transition-colors">{t('nav.destinations')}</Link>
-              <ChevronRight size={12} />
-              <span className="text-white">{camping.name}</span>
-            </nav>
-
-            <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{camping.name}</h1>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
-              <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
-              <span className="text-white/40">·</span>
-              <span className="flex items-center gap-1.5"><Globe size={14} /> {camping.region}</span>
+                <h1 className="text-xl sm:text-4xl md:text-5xl font-bold text-white mb-1.5 sm:mb-3 leading-tight">{camping.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/80 text-xs sm:text-sm">
+                  <span className="flex items-center gap-1.5"><MapPin size={14} /> {camping.location}</span>
+                  <span className="text-white/40">·</span>
+                  <span className="flex items-center gap-1.5"><Globe size={14} /> {camping.region}</span>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Side images — desktop only */}
+          {sidePhotos.length > 0 && (
+            <div className="hidden md:flex md:flex-col md:gap-1 h-full">
+              {sidePhotos.map((photo, i) => (
+                <div key={i} className="relative flex-1 min-h-0">
+                  {photo.startsWith('http') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photo}
+                      alt={`${camping.name} foto ${i + 2}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <Image
+                      src={photo}
+                      alt={`${camping.name} foto ${i + 2}`}
+                      fill
+                      className="object-cover"
+                      sizes="33vw"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -169,41 +188,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                       </div>
                       <span className="text-sm text-gray-700 font-medium">{f}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Photo gallery */}
-            {camping.photos && camping.photos.length > 1 && (
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">{t('destinations.photosTitle')}</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {camping.photos.map((photo, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setActivePhoto(i); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="relative aspect-[16/10] rounded-2xl overflow-hidden group"
-                    >
-                      {photo.startsWith('http') ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={photo}
-                          alt={`${camping.name} foto ${i + 1}`}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <Image
-                          src={photo}
-                          alt={`${camping.name} foto ${i + 1}`}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 50vw, 33vw"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </button>
                   ))}
                 </div>
               </div>
