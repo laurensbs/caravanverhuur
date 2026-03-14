@@ -89,6 +89,7 @@ const NAV_SECTIONS: NavSection[] = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [role, setRole] = useState<AdminRole>('staff');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -147,7 +148,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           }
         }
       })
-      .catch((e) => console.error('Fetch error:', e));
+      .catch((e) => console.error('Fetch error:', e))
+      .finally(() => setCheckingAuth(false));
 
     if (window.location.hostname.startsWith('admin.')) {
       setMainSiteUrl(`https://${window.location.hostname.replace('admin.', '')}`);
@@ -192,6 +194,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setPassword('');
     setUsername('');
   };
+
+  /* ── Loading state while checking auth ──────────── */
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-foreground border-t-transparent" />
+      </div>
+    );
+  }
 
   /* ── Login Screen ───────────────────────────────── */
   if (!authenticated) {
@@ -640,7 +651,7 @@ function AdminLayoutInner({
   // Fetch badge counts periodically
   useEffect(() => {
     const fetchBadges = () => {
-      fetch('/api/admin/badges')
+      fetch('/api/admin/badges', { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) {
@@ -669,7 +680,7 @@ function AdminLayoutInner({
     }
     setSearchLoading(true);
     searchTimerRef.current = setTimeout(() => {
-      fetch(`/api/admin/search?q=${encodeURIComponent(searchQuery)}`)
+      fetch(`/api/admin/search?q=${encodeURIComponent(searchQuery)}`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) setSearchResults(data);

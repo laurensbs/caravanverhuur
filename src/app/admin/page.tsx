@@ -95,15 +95,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadCustomData();
-    fetch('/api/admin/dashboard')
+    fetch('/api/admin/dashboard', { credentials: 'include' })
       .then(async res => {
-        if (!res.ok) {
-          // Try to auto-setup database
-          await fetch('/api/setup');
-          const retry = await fetch('/api/admin/dashboard');
-          if (!retry.ok) throw new Error('API error');
-          return retry.json();
-        }
+        if (!res.ok) throw new Error('API error');
         return res.json();
       })
       .then(d => {
