@@ -447,9 +447,9 @@ function BoekenContent() {
                         <p className="text-sm font-semibold text-muted mb-2">{t('booking.popularPeriods')}</p>
                         <div className="grid grid-cols-3 gap-2 sm:gap-3">
                           {[
-                            { label: t('booking.oneWeek'), days: 7, icon: '🌴' },
-                            { label: t('booking.twoWeeks'), days: 14, icon: '☀️' },
-                            { label: t('booking.threeWeeks'), days: 21, icon: '🏖️' },
+                            { label: t('booking.oneWeek'), days: 7, img: '/images/campings/begur_sa_tuna.jpg' },
+                            { label: t('booking.twoWeeks'), days: 14, img: '/images/campings/platja_gran_platja_d_aro.jpg' },
+                            { label: t('booking.threeWeeks'), days: 21, img: '/images/campings/cala_d_aiguablava__begur.jpg' },
                           ].map(q => {
                             const start = new Date();
                             start.setMonth(start.getMonth() + 4);
@@ -464,13 +464,16 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className={`rounded-xl p-3 lg:p-4 text-left transition-all border-2 cursor-pointer hover:shadow-md ${
-                                  isActive ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
+                                className={`group relative rounded-xl overflow-hidden text-left transition-all cursor-pointer aspect-[4/3] ${
+                                  isActive ? 'ring-2 ring-accent ring-offset-2 shadow-lg' : 'hover:shadow-lg hover:scale-[1.02]'
                                 }`}
                               >
-                                <span className="text-xl lg:text-2xl mb-1 block">{q.icon}</span>
-                                <p className="font-bold text-sm text-foreground">{q.label}</p>
-                                <p className="text-[11px] lg:text-xs text-muted">{q.days} {t('booking.nightPlural')}</p>
+                                <Image src={q.img} alt={q.label} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <div className={`absolute inset-0 transition-colors duration-300 ${isActive ? 'bg-accent/60' : 'bg-foreground/50 group-hover:bg-foreground/40'}`} />
+                                <div className="relative z-10 flex flex-col justify-end h-full p-3 lg:p-4">
+                                  <p className="font-bold text-sm lg:text-base text-white drop-shadow-sm">{q.label}</p>
+                                  <p className="text-[11px] lg:text-xs text-white/80">{q.days} {t('booking.nightPlural')}</p>
+                                </div>
                               </button>
                             );
                           })}
