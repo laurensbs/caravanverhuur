@@ -367,32 +367,6 @@ export default function OverOnsPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* ===== CTA ===== */}
-      <section className="py-14 sm:py-24 bg-surface">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold tracking-tight text-foreground mb-4">
-              {t('about.ctaTitle')}
-            </h2>
-            <p className="text-muted text-lg sm:text-xl mb-8 max-w-xl mx-auto leading-relaxed">
-              {t('about.ctaSubtitle')}
-            </p>
-            <Link
-              href="/caravans"
-              className="inline-flex items-center gap-2 px-8 sm:px-10 py-3.5 sm:py-4 bg-primary text-white font-semibold rounded-full transition-all hover:bg-primary-dark hover:scale-105 shadow-lg text-base sm:text-lg"
-            >
-              {t('about.ctaButton')}
-              <ArrowRight size={20} />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
     </>
   );
 }
