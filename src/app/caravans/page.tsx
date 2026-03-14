@@ -301,7 +301,7 @@ export default function CaravansPage() {
                   {filtered.map((caravan) => (
                     <div
                       key={caravan.id}
-                      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
+                      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col"
                     >
                       <div className="relative h-48 sm:h-52 overflow-hidden">
                         {(() => {
@@ -333,24 +333,24 @@ export default function CaravansPage() {
                           <span className="text-sm font-bold text-foreground">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
                         </div>
                       </div>
-                      <div className="p-4 sm:p-5">
+                      <div className="p-4 sm:p-5 flex flex-col flex-1">
                         <h3 className="text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
-                        <div className="flex items-center gap-4 text-sm text-muted mb-3">
+                        <div className="flex items-center gap-4 text-sm text-muted mb-2">
                           <span className="flex items-center gap-1">
                             <Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}
                           </span>
-                          <span>{caravan.manufacturer} &bull; {caravan.year}</span>
+                          <span>{caravan.manufacturer}</span>
                         </div>
-                        <p className="text-sm text-foreground-light mb-3 line-clamp-3 min-h-[3.75rem]">{caravan.description}</p>
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {caravan.amenities.slice(0, 4).map(a => (
+                        <p className="text-sm text-foreground-light mb-3 line-clamp-2 min-h-[2.5rem]">{caravan.description}</p>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {caravan.amenities.slice(0, 3).map(a => (
                             <span key={a} className="text-xs px-2 py-1 bg-surface rounded-md text-muted">{a}</span>
                           ))}
-                          {caravan.amenities.length > 4 && (
-                            <span className="text-xs px-2 py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 4}</span>
+                          {caravan.amenities.length > 3 && (
+                            <span className="text-xs px-2 py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
                           )}
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 mt-auto">
                           <Link
                             href={`/caravans/${caravan.id}`}
                             className="flex-1 text-center py-2.5 border border-border text-foreground font-semibold rounded-xl hover:bg-surface transition-colors text-sm"
