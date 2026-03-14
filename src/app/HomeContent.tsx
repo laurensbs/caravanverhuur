@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect, useCallback } from 'react';
 import {
   Shield,
@@ -53,59 +53,14 @@ const scaleIn = {
 };
 
 
-function ScrollStep({
-  item,
-  index,
-  total,
-  scrollYProgress,
-  stepLabel,
-}: {
-  item: { step: string; title: string; desc: string; icon: React.ReactNode };
-  index: number;
-  total: number;
-  scrollYProgress: MotionValue<number>;
-  stepLabel: string;
-}) {
-  const start = index / total;
-  const end = (index + 0.6) / total;
-  const opacity = useTransform(scrollYProgress, [start, end], [0.25, 1]);
-  const scale = useTransform(scrollYProgress, [start, end], [0.85, 1]);
-  const lineScaleY = useTransform(scrollYProgress, [start, end], [0, 1]);
-
-  return (
-    <motion.div style={{ opacity }} className="flex gap-4 relative">
-      {index < total - 1 && (
-        <div className="absolute left-[19px] top-10 w-0.5 h-full bg-primary/10">
-          <motion.div
-            style={{ scaleY: lineScaleY, transformOrigin: 'top' }}
-            className="w-full h-full bg-primary/40"
-          />
-        </div>
-      )}
-      <motion.div
-        style={{ scale }}
-        className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10"
-      >
-        {item.icon}
-      </motion.div>
-      <div className="pb-6">
-        <div className="text-xs font-bold text-primary uppercase tracking-wider">{stepLabel} {item.step}</div>
-        <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
-        <p className="text-xs text-muted mt-0.5">{item.desc}</p>
-      </div>
-    </motion.div>
-  );
-}
 
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR');
   const heroRef = useRef<HTMLDivElement>(null);
-  const stepsRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const { scrollYProgress: stepsProgress } = useScroll({ target: stepsRef, offset: ['start 0.85', 'end 0.4'] });
 
   return (
     <>
@@ -119,7 +74,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               title="Costa Brava hero video"
               allow="autoplay"
               loading="eager"
-              className="border-0 min-w-[300%] min-h-[300%] sm:min-w-[140%] sm:min-h-[140%]"
+              className="border-0 min-w-[180%] min-h-[180%] sm:min-w-[140%] sm:min-h-[140%]"
               style={{ pointerEvents: 'none' }}
             />
           </div>
@@ -316,23 +271,32 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
           </div>
 
-          {/* Mobile: vertical timeline with scroll-activated coloring */}
-          <div ref={stepsRef} className="md:hidden space-y-0">
+          {/* Mobile: clean compact grid */}
+          <div className="md:hidden grid grid-cols-2 gap-3">
             {[
-              { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
-              { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
-              { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={18} /> },
-              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={18} /> },
-              { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },
+              { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={20} /> },
+              { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={20} /> },
+              { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={20} /> },
+              { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={20} /> },
+              { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={20} /> },
             ].map((item, i) => (
-              <ScrollStep
+              <motion.div
                 key={item.step}
-                item={item}
-                index={i}
-                total={5}
-                scrollYProgress={stepsProgress}
-                stepLabel={t('home.step')}
-              />
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.4 }}
+                className={`bg-surface rounded-xl p-4 ${i === 4 ? 'col-span-2' : ''}`}
+              >
+                <div className="flex items-center gap-3 mb-1.5">
+                  <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white shadow-md shrink-0">
+                    {item.icon}
+                  </div>
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
+                </div>
+                <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
+                <p className="text-xs text-muted mt-0.5 leading-relaxed">{item.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
