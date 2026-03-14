@@ -32,7 +32,7 @@ function detectLocale(request: NextRequest): Locale {
   return DEFAULT_LOCALE;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const { pathname } = request.nextUrl;
   const isAdminSubdomain = hostname.startsWith('admin.');
