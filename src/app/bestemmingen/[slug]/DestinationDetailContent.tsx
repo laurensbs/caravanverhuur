@@ -27,7 +27,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[35vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
         <Image
           src={allPhotos[activePhoto] || destination.heroImage}
           alt={`${destination.name} — ${destination.region}, Costa Brava`}
@@ -283,7 +283,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
           {/* Right sidebar */}
           <div className="space-y-5">
             {/* Book CTA */}
-            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-28">
+            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-[108px]">
               <h3 className="text-base sm:text-lg font-bold mb-2">Caravan huren vlakbij {destination.name}?</h3>
               <p className="text-white/80 text-sm mb-4 leading-relaxed">
                 Slaap op een camping op loopafstand of korte rijafstand van {destination.name}. Wij regelen alles — jij geniet.

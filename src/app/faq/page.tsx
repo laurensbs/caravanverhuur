@@ -112,7 +112,7 @@ export default function FAQPage() {
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
 
             {/* Left sidebar — category nav + search + assistant */}
-            <aside className="lg:sticky lg:top-28 lg:self-start space-y-4">
+            <aside className="lg:sticky lg:top-[108px] lg:self-start space-y-4">
               {/* Search */}
               <div className="relative">
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />

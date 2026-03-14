@@ -55,7 +55,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative h-[35vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] overflow-hidden">
         {(() => {
           const src = camping.photos?.[activePhoto] || camping.photos?.[0] || '/og-image.jpg';
           return src.startsWith('http') ? (
@@ -263,7 +263,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
           {/* Right sidebar */}
           <div className="space-y-5">
             {/* Book CTA */}
-            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-28">
+            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-[108px]">
               <h3 className="text-base sm:text-lg font-bold mb-2">{t('destinations.bookAtCamping')}</h3>
               <p className="text-white/80 text-sm mb-4 leading-relaxed">{t('destinations.bookAtCampingDesc').replace('{name}', camping.name)}</p>
               <Link
@@ -354,7 +354,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
       </section>
 
       {/* CTA banner */}
-      <section className="max-w-6xl mx-auto px-4 pb-16 lg:pb-16 pb-24">
+      <section className="max-w-6xl mx-auto px-4 pb-24 lg:pb-16">
         <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center opacity-20" />
           <div className="relative">

@@ -317,7 +317,7 @@ export default function BestemmingenPage() {
       </section>
 
       {/* Tab bar + search (sticky) */}
-      <section className="sticky top-[72px] sm:top-[88px] lg:top-[136px] z-30 bg-white border-b border-gray-200 shadow-sm">
+      <section className="sticky top-[80px] sm:top-[100px] lg:top-[100px] z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           {/* Search — full width on mobile, inline on desktop */}
           <div className="pt-3 pb-2 lg:hidden">
@@ -370,9 +370,9 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {destinations.map(d => (
-                <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group shrink-0 w-[220px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group shrink-0 w-[260px] sm:w-[300px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
+                    <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="300px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <h3 className="text-sm sm:text-base font-bold text-white drop-shadow-sm">{d.name}</h3>
@@ -401,9 +401,9 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {allCampings.slice(0, 12).map(c => (
-                <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[220px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={c.id} href={`/bestemmingen/${c.slug}`} className="group shrink-0 w-[260px] sm:w-[300px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 to-primary-50">
-                    <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
+                    <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="300px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <h3 className="text-sm sm:text-base font-bold text-white drop-shadow-sm">{c.name}</h3>
@@ -435,9 +435,9 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {attractionCards.map(a => (
-                <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group shrink-0 w-[200px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group shrink-0 w-[240px] sm:w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="260px" />
+                    <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="280px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <h3 className="text-sm font-bold text-white drop-shadow-sm">{a.name}</h3>
@@ -461,7 +461,7 @@ export default function BestemmingenPage() {
             />
             <ScrollRow>
               {featuredBeaches.map((b, i) => (
-                <Link key={`${b.destSlug}-${i}`} href={`/bestemmingen/${b.destSlug}`} className="group shrink-0 w-[200px] sm:w-[240px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                <Link key={`${b.destSlug}-${i}`} href={`/bestemmingen/${b.destSlug}`} className="group shrink-0 w-[240px] sm:w-[260px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image src={b.destImage} alt={b.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="240px" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />

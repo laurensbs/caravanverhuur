@@ -151,7 +151,7 @@ export default function CaravanDetailContent({ id }: { id: string }) {
                 <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl">
                   <div className="absolute inset-[-25%] sm:inset-[-10%] w-[150%] sm:w-[120%] h-[150%] sm:h-[120%]">
                     <iframe
-                      src={`https://play.gumlet.io/embed/${gumletMatch[1]}?background=true&preload=true`}
+                      src={`https://play.gumlet.io/embed/${gumletMatch[1]}?background=true&disable_player_controls=true&preload=true`}
                       title={caravan.name}
                       allow="autoplay"
                       loading="eager"

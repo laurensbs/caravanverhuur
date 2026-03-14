@@ -444,8 +444,8 @@ function BoekenContent() {
 
                       {/* Quick pick */}
                       <div>
-                        <p className="text-sm font-semibold text-muted mb-3">{t('booking.popularPeriods')}</p>
-                        <div className="grid grid-cols-3 gap-3">
+                        <p className="text-sm font-semibold text-muted mb-2">{t('booking.popularPeriods')}</p>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
                           {[
                             { label: t('booking.oneWeek'), days: 7, icon: '🌴' },
                             { label: t('booking.twoWeeks'), days: 14, icon: '☀️' },
@@ -464,13 +464,13 @@ function BoekenContent() {
                                   setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
-                                className={`rounded-2xl p-4 lg:p-5 text-left transition-all border-2 cursor-pointer hover:shadow-md ${
+                                className={`rounded-xl p-3 lg:p-4 text-left transition-all border-2 cursor-pointer hover:shadow-md ${
                                   isActive ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
                                 }`}
                               >
-                                <span className="text-2xl lg:text-3xl mb-1.5 block">{q.icon}</span>
-                                <p className="font-bold text-sm lg:text-base text-foreground">{q.label}</p>
-                                <p className="text-xs lg:text-sm text-muted">{q.days} {t('booking.nightPlural')}</p>
+                                <span className="text-xl lg:text-2xl mb-1 block">{q.icon}</span>
+                                <p className="font-bold text-sm text-foreground">{q.label}</p>
+                                <p className="text-[11px] lg:text-xs text-muted">{q.days} {t('booking.nightPlural')}</p>
                               </button>
                             );
                           })}
@@ -767,7 +767,7 @@ function BoekenContent() {
                                         if (gm) return (
                                           <>
                                             <iframe
-                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&preload=true`}
+                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true`}
                                               title={c.name}
                                               allow="autoplay"
                                               loading="lazy"
@@ -1094,7 +1094,7 @@ function BoekenContent() {
 
             {/* ===== RIGHT SIDEBAR ===== */}
             <div className="hidden lg:block">
-              <div className="sticky top-[72px] space-y-4">
+              <div className="sticky top-[100px] space-y-4">
                 {/* Live summary card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="bg-gradient-to-r from-primary to-primary-dark px-5 py-4 text-white">

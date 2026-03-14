@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion';
 import { useRef, useEffect, useCallback } from 'react';
 import {
   Shield,
@@ -53,12 +53,59 @@ const scaleIn = {
 };
 
 
+function ScrollStep({
+  item,
+  index,
+  total,
+  scrollYProgress,
+  stepLabel,
+}: {
+  item: { step: string; title: string; desc: string; icon: React.ReactNode };
+  index: number;
+  total: number;
+  scrollYProgress: MotionValue<number>;
+  stepLabel: string;
+}) {
+  const start = index / total;
+  const end = (index + 0.6) / total;
+  const opacity = useTransform(scrollYProgress, [start, end], [0.25, 1]);
+  const scale = useTransform(scrollYProgress, [start, end], [0.85, 1]);
+  const lineScaleY = useTransform(scrollYProgress, [start, end], [0, 1]);
+
+  return (
+    <motion.div style={{ opacity }} className="flex gap-4 relative">
+      {index < total - 1 && (
+        <div className="absolute left-[19px] top-10 w-0.5 h-full bg-primary/10">
+          <motion.div
+            style={{ scaleY: lineScaleY, transformOrigin: 'top' }}
+            className="w-full h-full bg-primary/40"
+          />
+        </div>
+      )}
+      <motion.div
+        style={{ scale }}
+        className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10"
+      >
+        {item.icon}
+      </motion.div>
+      <div className="pb-6">
+        <div className="text-xs font-bold text-primary uppercase tracking-wider">{stepLabel} {item.step}</div>
+        <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
+        <p className="text-xs text-muted mt-0.5">{item.desc}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
   const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);
   const heroRef = useRef<HTMLDivElement>(null);
+  const stepsRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const { scrollYProgress: stepsProgress } = useScroll({ target: stepsRef, offset: ['start 0.85', 'end 0.4'] });
 
   return (
     <>
@@ -68,7 +115,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <div className="absolute inset-[-100%] sm:inset-[-20%] w-[300%] sm:w-[140%] h-[300%] sm:h-[140%]">
             <iframe
-              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&preload=true&t=30"
+              src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&disable_player_controls=true&preload=true&t=30"
               title="Costa Brava hero video"
               allow="autoplay"
               loading="eager"
@@ -270,8 +317,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
           </div>
 
-          {/* Mobile: vertical timeline */}
-          <div className="md:hidden space-y-0">
+          {/* Mobile: vertical timeline with scroll-activated coloring */}
+          <div ref={stepsRef} className="md:hidden space-y-0">
             {[
               { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
               { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
@@ -279,27 +326,14 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={18} /> },
               { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },
             ].map((item, i) => (
-              <motion.div
+              <ScrollStep
                 key={item.step}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="flex gap-4 relative"
-              >
-                {/* Line */}
-                {i < 4 && (
-                  <div className="absolute left-[19px] top-10 w-0.5 h-full bg-primary/20" />
-                )}
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shrink-0 z-10">
-                  {item.icon}
-                </div>
-                <div className="pb-6">
-                  <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
-                  <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
-                  <p className="text-xs text-muted mt-0.5">{item.desc}</p>
-                </div>
-              </motion.div>
+                item={item}
+                index={i}
+                total={5}
+                scrollYProgress={stepsProgress}
+                stepLabel={t('home.step')}
+              />
             ))}
           </div>
         </div>
@@ -340,7 +374,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     return gMatch ? (
                       <div className="absolute inset-0 overflow-hidden">
                         <iframe
-                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&preload=true`}
+                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&disable_player_controls=true&preload=true`}
                           title={caravan.name}
                           allow="autoplay"
                           loading="lazy"
@@ -478,7 +512,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
                 <iframe
-                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&preload=true"
+                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&disable_player_controls=true&preload=true"
                   title="Caravan interieur volledig ingericht"
                   allow="autoplay"
                   loading="lazy"

@@ -309,7 +309,7 @@ export default function CaravansPage() {
                           if (gm) return (
                             <>
                               <iframe
-                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&preload=true`}
+                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true`}
                                 title={caravan.name}
                                 allow="autoplay"
                                 loading="lazy"

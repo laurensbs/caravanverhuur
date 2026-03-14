@@ -130,7 +130,7 @@ export default function Header() {
 
   const active = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
   const navCls = (href: string) =>
-    `px-3 py-2 text-[14px] font-semibold tracking-tight font-heading transition-colors relative ${active(href) ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full' : 'text-foreground-light hover:text-foreground'}`;
+    `px-3 py-2 text-[15px] font-semibold tracking-tight font-heading transition-colors relative ${active(href) ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full' : 'text-foreground-light hover:text-foreground'}`;
 
   return (
     <>
@@ -138,15 +138,15 @@ export default function Header() {
       <WeatherBar />
 
         <header className="relative bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-[72px]">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={320} height={80}
-              className="w-32 sm:w-44 lg:w-52 h-auto object-contain"
-              sizes="(max-width: 640px) 144px, (max-width: 1024px) 192px, 240px"
+              className="w-36 sm:w-48 lg:w-56 h-auto object-contain"
+              sizes="(max-width: 640px) 160px, (max-width: 1024px) 208px, 260px"
             />
           </Link>
 
@@ -245,17 +245,17 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/boeken" className="ml-3 px-5 py-2 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
+            <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
               {t('nav.bookNow')} <ArrowRight size={14} />
             </Link>
           </nav>
 
           {/* Mobile Boek nu + hamburger */}
           <div className="lg:hidden flex items-center gap-1.5">
-          <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
-            {t('nav.bookNow')} <ArrowRight size={11} />
+          <Link href="/boeken" className="px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
+            {t('nav.bookNow')} <ArrowRight size={12} />
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="w-10 h-10 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
             <div className="relative w-[18px] h-3">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-0 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
               <motion.span animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-[1.5px] bg-foreground rounded-full" />
