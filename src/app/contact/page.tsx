@@ -73,14 +73,14 @@ export default function ContactPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/80 to-foreground/60" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-20">
+        <div className="relative max-w-7xl mx-auto px-4 py-12 sm:py-20">
           <div className="max-w-xl">
-            <h1 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-white mb-3">{t('contact.sendMessage')}</h1>
-            <p className="text-white/70 text-base sm:text-lg">{t('contact.heroSubtitle')}</p>
+            <h1 className="text-2xl sm:text-4xl font-heading font-extrabold tracking-tight text-white mb-2 sm:mb-3">{t('contact.sendMessage')}</h1>
+            <p className="text-white/70 text-sm sm:text-lg">{t('contact.heroSubtitle')}</p>
           </div>
 
           {/* Contact cards — overlapping the hero bottom */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mt-8 sm:mt-10">
             <a href="mailto:info@caravanverhuurspanje.com" className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-all flex items-center gap-3.5 group">
               <div className="w-10 h-10 bg-white/15 rounded-lg flex items-center justify-center shrink-0">
                 <Mail size={18} className="text-white" />
@@ -113,30 +113,30 @@ export default function ContactPage() {
       </section>
 
       {/* Form + sidebar */}
-      <section className="pb-12 sm:pb-16">
+      <section className="pb-8 sm:pb-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-10">
             {/* Contact form — spans 2 cols */}
             <div className="lg:col-span-2">
-              <div className="bg-surface rounded-2xl p-5 sm:p-8 border border-border">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="bg-surface rounded-2xl p-4 sm:p-8 border border-border">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.nameLabel')} *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.nameLabel')} *</label>
                       <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t('contact.placeholderName')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.emailLabel')} *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.emailLabel')} *</label>
                       <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t('contact.placeholderEmail')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.phoneLabel')}</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.phoneLabel')}</label>
                       <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t('contact.placeholderPhone')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">{t('contact.subjectLabel')} *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.subjectLabel')} *</label>
                       <select required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all">
                         <option value="">{t('contact.subjectPlaceholder')}</option>
                         <option value="boeking">{t('contact.subjectBooking')}</option>
@@ -149,7 +149,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">{t('contact.messageLabel')} *</label>
+                    <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.messageLabel')} *</label>
                     <textarea
                       required
                       value={form.message}

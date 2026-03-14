@@ -50,7 +50,7 @@ export default function OverOnsPage() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative min-h-[50vh] sm:min-h-[55vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[45vh] sm:min-h-[55vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/images/campings/la_banyera_calella.jpg"
@@ -61,7 +61,7 @@ export default function OverOnsPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-28 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-28 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -72,10 +72,10 @@ export default function OverOnsPage() {
               <Sparkles size={16} />
               {t('about.heroSubtitle')}
             </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-4 sm:mb-6">
               {t('about.heroTitle')}
             </h1>
-            <p className="text-white/85 text-lg sm:text-xl leading-relaxed max-w-xl">
+            <p className="text-white/85 text-base sm:text-xl leading-relaxed max-w-xl">
               {t('about.missionText')}
             </p>
           </motion.div>
@@ -96,13 +96,13 @@ export default function OverOnsPage() {
               <h2 className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground mt-2 mb-6">
                 {t('about.whoWeAreTitle')}
               </h2>
-              <p className="text-muted text-lg mb-5 leading-relaxed">
+              <p className="text-muted text-base sm:text-lg mb-4 sm:mb-5 leading-relaxed">
                 {t('about.whoWeAreText1')}
               </p>
-              <p className="text-muted text-lg mb-5 leading-relaxed">
+              <p className="text-muted text-base sm:text-lg mb-4 sm:mb-5 leading-relaxed">
                 {t('about.whoWeAreText2')}
               </p>
-              <p className="text-muted text-lg leading-relaxed">
+              <p className="text-muted text-base sm:text-lg leading-relaxed">
                 {t('about.whoWeAreText3pre')}{' '}
                 <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline font-medium hover:text-primary-dark transition-colors">Caravanstalling-Spanje</a>{' '}
                 {t('about.whoWeAreText3post')}
@@ -125,15 +125,15 @@ export default function OverOnsPage() {
                     className="w-full object-cover"
                   />
                 </div>
-                {/* Floating stats card */}
+                {/* Floating accent card */}
                 <div className="absolute -bottom-6 -left-4 sm:-left-6 bg-white rounded-2xl shadow-xl p-4 sm:p-5 border border-border">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                      <MapPin className="text-white" size={22} />
+                      <Sun className="text-white" size={22} />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-foreground">30+</div>
-                      <div className="text-sm text-muted">{t('about.stat1Label')}</div>
+                      <div className="text-2xl font-bold text-foreground">100%</div>
+                      <div className="text-sm text-muted">{t('home.statRelaxed')}</div>
                     </div>
                   </div>
                 </div>
@@ -300,11 +300,10 @@ export default function OverOnsPage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+            className="grid grid-cols-3 gap-4 sm:gap-6"
           >
             {[
-              { number: '30+', label: t('about.stat1Label'), sub: t('about.stat1Sub'), icon: <MapPin size={24} /> },
-              { number: '6', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Users size={24} /> },
+              { number: '4', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Users size={24} /> },
               { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub'), icon: <Star size={24} /> },
               { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub'), icon: <Award size={24} /> },
             ].map((stat, i) => (

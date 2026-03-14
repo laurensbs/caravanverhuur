@@ -100,7 +100,7 @@ function ScrollStep({
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
-  const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR').slice(0, 3);
+  const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR');
   const heroRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -113,13 +113,13 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       <section ref={heroRef} className="relative min-h-[85svh] sm:min-h-[82svh] flex flex-col justify-end overflow-hidden">
         {/* Video background */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
-          <div className="absolute inset-[-100%] sm:inset-[-20%] w-[300%] sm:w-[140%] h-[300%] sm:h-[140%]">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
             <iframe
               src="https://play.gumlet.io/embed/69b49548dc37184fc78c660f?background=true&disable_player_controls=true&preload=true&t=30"
               title="Costa Brava hero video"
               allow="autoplay"
               loading="eager"
-              className="w-full h-full border-0"
+              className="border-0 min-w-[300%] min-h-[300%] sm:min-w-[140%] sm:min-h-[140%]"
               style={{ pointerEvents: 'none' }}
             />
           </div>
@@ -173,7 +173,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           >
             {[
               { value: '4', label: t('home.statCaravans') },
-              { value: '30+', label: t('home.statCampings') },
               { value: '100%', label: t('home.statRelaxed') },
             ].map((stat, si) => (
               <div key={si} className="flex items-baseline gap-1.5">
@@ -358,7 +357,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
 
           {/* Mobile: horizontal scroll / Desktop: grid */}
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 lg:gap-8 sm:overflow-visible scrollbar-hide">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide">
             {featuredCaravans.map((caravan, i) => (
               <motion.div
                 key={caravan.id}
@@ -366,9 +365,9 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
+                className="snap-center shrink-0 w-[72vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
               >
-                <div className="relative h-44 sm:h-56 overflow-hidden">
+                <div className="relative h-40 sm:h-48 overflow-hidden">
                   {caravan.videoUrl?.includes('gumlet.tv') ? (() => {
                     const gMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/(\w+)/);
                     return gMatch ? (
@@ -384,14 +383,14 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                         <div className="absolute inset-0 z-10" />
                       </div>
                     ) : (
-                      <Image src={caravan.photos[0]} alt={caravan.name} fill sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                      <Image src={caravan.photos[0]} alt={caravan.name} fill sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw" className="object-cover" />
                     );
                   })() : (
                     <Image
                       src={caravan.photos[0]}
                       alt={caravan.name}
                       fill
-                      sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
+                      sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover transition-transform duration-700 ease-out"
                     />
                   )}
@@ -402,7 +401,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">{t('home.perWeek')}</span></span>
                   </div>
                 </div>
-                <div className="p-4 sm:p-6 flex flex-col flex-1">
+                <div className="p-3 sm:p-4 flex flex-col flex-1">
                   <h3 className="text-sm sm:text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
                   <div className="flex items-center gap-3 text-xs sm:text-sm text-muted mb-2 sm:mb-3">
                     <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
