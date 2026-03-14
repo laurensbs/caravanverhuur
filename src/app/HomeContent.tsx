@@ -407,7 +407,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                     <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
                     <span>{caravan.manufacturer}</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-2 hidden sm:block sm:min-h-[2.5rem]">{caravan.description}</p>
+                  <p className="text-xs sm:text-sm text-muted mb-3 sm:mb-4 line-clamp-3 hidden sm:block sm:min-h-[3.75rem]">{caravan.description}</p>
                   <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {caravan.amenities.slice(0, 3).map(a => (
                       <span key={a} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>

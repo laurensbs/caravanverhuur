@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
-import ScrollToTop from "@/components/ScrollToTop";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -132,7 +131,6 @@ export default function RootLayout({
         <LayoutWrapper
           header={<Header />}
           footer={<Footer />}
-          scrollToTop={<ScrollToTop />}
           cookieConsent={<CookieConsent />}
         >
           {children}

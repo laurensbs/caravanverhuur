@@ -341,7 +341,7 @@ export default function CaravansPage() {
                           </span>
                           <span>{caravan.manufacturer} &bull; {caravan.year}</span>
                         </div>
-                        <p className="text-sm text-foreground-light mb-3 line-clamp-2">{caravan.description}</p>
+                        <p className="text-sm text-foreground-light mb-3 line-clamp-3 min-h-[3.75rem]">{caravan.description}</p>
                         <div className="flex flex-wrap gap-1 mb-4">
                           {caravan.amenities.slice(0, 4).map(a => (
                             <span key={a} className="text-xs px-2 py-1 bg-surface rounded-md text-muted">{a}</span>

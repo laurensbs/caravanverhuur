@@ -21,13 +21,11 @@ export function LayoutWrapper({
   children,
   header,
   footer,
-  scrollToTop,
   cookieConsent,
 }: {
   children: ReactNode;
   header: ReactNode;
   footer: ReactNode;
-  scrollToTop: ReactNode;
   cookieConsent: ReactNode;
 }) {
   const pathname = usePathname();
@@ -62,7 +60,6 @@ export function LayoutWrapper({
         {header}
         <main className="min-h-screen">{children}</main>
         {footer}
-        {scrollToTop}
         {cookieConsent}
         <ChatBot />
       </DataProvider>
