@@ -244,8 +244,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
 
           {/* Right sidebar */}
           <div className="space-y-5">
-            {/* Book CTA */}
-            <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-5 sm:p-6 text-white lg:sticky lg:top-[108px]">
+            {/* Book CTA — desktop only, mobile has sticky bar */}
+            <div className="hidden lg:block bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 text-white lg:sticky lg:top-[108px]">
               <h3 className="text-base sm:text-lg font-bold mb-2">{t('destinations.bookAtCamping')}</h3>
               <p className="text-white/80 text-sm mb-4 leading-relaxed">{t('destinations.bookAtCampingDesc').replace('{name}', camping.name)}</p>
               <Link
@@ -266,8 +266,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               )}
             </div>
 
-            {/* Location info */}
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+            {/* Location info — desktop only */}
+            <div className="hidden lg:block bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <MapPin size={16} className="text-primary" /> {t('destinations.locationInfoTitle')}
               </h3>
@@ -296,22 +296,22 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                       href={`/bestemmingen/${c.slug}`}
                       className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors group border border-transparent hover:border-gray-100"
                     >
-                      <div className="w-10 h-10 rounded-lg overflow-hidden relative bg-gray-100 shrink-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                         {(c.photos?.[0] || '').startsWith('http') ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={c.photos[0]}
                             alt={c.name}
-                            className="absolute inset-0 w-full h-full object-cover"
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                         ) : (
                           <Image
                             src={c.photos?.[0] || '/og-image.jpg'}
                             alt={c.name}
-                            fill
-                            className="object-cover"
-                            sizes="40px"
+                            width={40}
+                            height={40}
+                            className="object-cover w-full h-full"
                           />
                         )}
                       </div>
