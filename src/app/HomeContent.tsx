@@ -289,9 +289,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.div>
           </div>
 
-          {/* Mobile: horizontal scroll */}
-          <div className="md:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-3 w-max pb-2">
+          {/* Mobile: compact vertical list */}
+          <div className="md:hidden space-y-3">
               {[
                 { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
                 { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
@@ -301,23 +300,24 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               ].map((item, i) => (
                 <motion.div
                   key={item.step}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.06, duration: 0.4 }}
-                  className="w-[260px] shrink-0 bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
+                  className="flex items-start gap-3 bg-white rounded-xl p-3.5 shadow-sm border border-gray-100"
                 >
-                  <div className="flex items-center gap-3 mb-2.5">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md shrink-0">
-                      {item.icon}
-                    </div>
-                    <div className="text-xs font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</div>
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md shrink-0">
+                    {item.icon}
                   </div>
-                  <h3 className="font-semibold text-foreground text-[15px] leading-tight mb-1">{item.title}</h3>
-                  <p className="text-xs text-muted leading-relaxed">{item.desc}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{t('home.step')} {item.step}</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground text-[14px] leading-tight">{item.title}</h3>
+                    <p className="text-xs text-muted leading-relaxed mt-0.5">{item.desc}</p>
+                  </div>
                 </motion.div>
               ))}
-            </div>
           </div>
         </div>
       </section>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Calendar, CreditCard, Shield, Settings, LogOut } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Calendar, CreditCard, Shield, Settings, LogOut, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -245,17 +245,40 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
+            {/* Chat button */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-muted hover:text-primary hover:bg-primary/5 transition-colors"
+              aria-label="Chat"
+            >
+              <MessageCircle size={18} />
+            </button>
+
+            <Link href="/boeken" className="ml-2 px-6 py-2.5 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
               {t('nav.bookNow')} <ArrowRight size={14} />
             </Link>
           </nav>
 
-          {/* Mobile Boek nu + hamburger */}
-          <div className="lg:hidden flex items-center gap-1.5">
-          <Link href="/boeken" className="px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
-            {t('nav.bookNow')} <ArrowRight size={12} />
+          {/* Mobile actions */}
+          <div className="lg:hidden flex items-center gap-1">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
+            className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-primary transition-colors"
+            aria-label="Chat"
+          >
+            <MessageCircle size={17} />
+          </button>
+          <Link href="/account" className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-primary transition-colors" aria-label="Account">
+            {loggedInUser ? (
+              <span className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">{loggedInUser.name.charAt(0).toUpperCase()}</span>
+            ) : (
+              <User size={17} />
+            )}
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="w-10 h-10 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
+          <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
+            {t('nav.bookNow')} <ArrowRight size={11} />
+          </Link>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
             <div className="relative w-[18px] h-3">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-0 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
               <motion.span animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-[1.5px] bg-foreground rounded-full" />

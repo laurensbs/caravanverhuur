@@ -1944,13 +1944,19 @@ export default function ChatBot() {
     return () => window.removeEventListener('open-chatbot', handler);
   }, []);
 
-  // Playful bubble after 5s, auto-dismiss after 8s
+  // Listen for toggle-chatbot events from header button
   useEffect(() => {
-    if (bubbleDismissed || isOpen) return;
-    const showTimer = setTimeout(() => setShowBubble(true), 5000);
-    const hideTimer = setTimeout(() => { setShowBubble(false); setBubbleDismissed(true); }, 13000);
-    return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
-  }, [bubbleDismissed, isOpen]);
+    const handler = () => {
+      setIsOpen(prev => !prev);
+      setHasNewMessage(false);
+      setBubbleDismissed(true);
+      setShowBubble(false);
+    };
+    window.addEventListener('toggle-chatbot', handler);
+    return () => window.removeEventListener('toggle-chatbot', handler);
+  }, []);
+
+  // Bubble disabled — chat is triggered from header button
 
   // Init conversation
   useEffect(() => {
@@ -2882,57 +2888,10 @@ export default function ChatBot() {
         )}
       </AnimatePresence>
 
-      {/* ===== PLAYFUL BUBBLE ===== */}
-      <AnimatePresence>
-        {showBubble && !isOpen && !bubbleDismissed && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed bottom-3 right-[4.5rem] sm:bottom-7 sm:right-24 z-[88] max-w-[200px] sm:max-w-[220px]"
-          >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2.5 pr-7 sm:p-3 sm:pr-8 relative cursor-pointer" onClick={() => { setIsOpen(true); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}>
-              <button onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); setShowBubble(false); }} className="absolute -top-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center cursor-pointer">
-                <X size={11} className="text-gray-500" />
-              </button>
-              <p className="text-xs sm:text-sm text-foreground font-medium leading-snug">{bubbleTexts[locale] || bubbleTexts.nl}</p>
-              <div className="absolute -right-2 bottom-3 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-white border-r border-b border-gray-200 rotate-[-45deg]" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ===== FLOATING BUTTON (RIGHT CORNER) ===== */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
-        onClick={() => { setIsOpen(!isOpen); setHasNewMessage(false); setBubbleDismissed(true); setShowBubble(false); }}
-        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[89] w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer safe-area-fab ${
-          isOpen ? 'bg-gray-600 rotate-90' : 'bg-primary hover:scale-110 hover:shadow-xl'
-        }`}
-        aria-label={isOpen ? (isNl ? 'Sluit chat' : isEs ? 'Cerrar chat' : 'Close chat') : (isNl ? 'Open chat' : isEs ? 'Abrir chat' : 'Open chat')}
-      >
-        {isOpen ? (
-          <X size={22} className="text-white" />
-        ) : (
-          <>
-            <MessageCircle size={22} className="text-white" />
-            {hasNewMessage && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse" />}
-          </>
-        )}
-      </motion.button>
-
       <style jsx>{`
         .safe-area-bottom { padding-bottom: max(0.625rem, env(safe-area-inset-bottom)); }
-        .safe-area-fab { margin-bottom: env(safe-area-inset-bottom, 0px); }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        @media (max-width: 639px) {
-          .w-13 { width: 3.25rem; }
-          .h-13 { height: 3.25rem; }
-        }
       `}</style>
     </>
   );
