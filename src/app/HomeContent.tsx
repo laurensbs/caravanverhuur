@@ -23,8 +23,10 @@ import {
   Sun,
   MapPin,
   LayoutDashboard,
+  Umbrella,
 } from 'lucide-react';
 import type { Caravan } from '@/data/caravans';
+import { destinations } from '@/data/destinations';
 import BookingWidget from '@/components/BookingWidget';
 import WeatherChecker from '@/components/WeatherChecker';
 import { useLanguage } from '@/i18n/context';
@@ -413,6 +415,115 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               className="inline-flex items-center px-6 sm:px-8 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm hover:bg-primary-dark"
             >
               {t('home.allCaravans')}
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== DESTINATIONS / CAMPINGS SECTION ===== */}
+      <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-10 sm:mb-16"
+          >
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
+              {t('home.destinationsTitle')}
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-xl mx-auto text-sm sm:text-lg">
+              {t('home.destinationsSubtitle')}
+            </motion.p>
+          </motion.div>
+
+          {/* Region cards — 3 columns on desktop, scroll on mobile */}
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible scrollbar-hide">
+            {[
+              {
+                region: 'Baix Empordà',
+                img: '/images/campings/cala_d_aiguablava__begur.jpg',
+                desc: t('destinations.regionBaixDesc'),
+              },
+              {
+                region: 'Alt Empordà',
+                img: '/images/campings/cap_de_creus_landscape.jpg',
+                desc: t('destinations.regionAltDesc'),
+              },
+              {
+                region: 'La Selva',
+                img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg',
+                desc: t('destinations.regionSelvaDesc'),
+              },
+            ].map((item, i) => {
+              const regionDests = destinations.filter(d => d.region === item.region);
+              return (
+                <motion.div
+                  key={item.region}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  className="snap-center shrink-0 w-[80vw] sm:w-auto"
+                >
+                  <Link href={`/bestemmingen#${item.region.toLowerCase().replace(/\s+/g, '-')}`} className="group block rounded-2xl overflow-hidden relative aspect-[4/3]">
+                    <Image src={item.img} alt={item.region} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 80vw, 33vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/85 transition-colors" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                      <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{item.region}</h3>
+                      <p className="text-xs sm:text-[13px] text-white/70 line-clamp-2 mb-2">{item.desc}</p>
+                      <div className="flex items-center gap-3 text-[11px] text-white/60">
+                        <span className="flex items-center gap-1"><MapPin size={11} /> {regionDests.length} {t('destinations.placesLabel').toLowerCase()}</span>
+                        <span className="flex items-center gap-1"><Umbrella size={11} /> {regionDests.reduce((a, d) => a + d.beaches.length, 0)} {t('destinations.beaches')}</span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Featured destinations — compact row */}
+          <div className="mt-8 sm:mt-12">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
+            </h3>
+            <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+              {destinations.slice(0, 8).map((d, i) => (
+                <motion.div
+                  key={d.slug}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05, duration: 0.4 }}
+                  className="snap-center shrink-0"
+                >
+                  <Link href={`/bestemmingen/${d.slug}`} className="group block w-[130px] sm:w-[150px]">
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-1.5">
+                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="150px" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    </div>
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground text-center truncate">{d.name}</h4>
+                    <p className="text-[10px] text-muted text-center">{d.beaches.length} {t('destinations.beaches')}</p>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-center mt-8 sm:mt-10"
+          >
+            <Link
+              href="/bestemmingen"
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm hover:bg-primary-dark"
+            >
+              {t('home.allDestinations')} <ArrowRight size={14} />
             </Link>
           </motion.div>
         </div>

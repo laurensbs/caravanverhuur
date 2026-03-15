@@ -451,9 +451,8 @@ function BoekenContent() {
                             { label: t('booking.twoWeeks'), days: 14, img: '/images/campings/platja_gran_platja_d_aro.jpg' },
                             { label: t('booking.threeWeeks'), days: 21, img: '/images/campings/cala_d_aiguablava__begur.jpg' },
                           ].map(q => {
-                            const start = new Date();
-                            start.setMonth(start.getMonth() + 4);
-                            start.setDate(1);
+                            // Use the already-entered check-in date, or fall back to 4 months from now
+                            const start = checkIn ? new Date(checkIn + 'T00:00:00') : (() => { const d = new Date(); d.setMonth(d.getMonth() + 4); d.setDate(1); return d; })();
                             const end = new Date(start);
                             end.setDate(start.getDate() + q.days);
                             const isActive = checkIn === start.toISOString().split('T')[0] && checkOut === end.toISOString().split('T')[0];
@@ -461,7 +460,7 @@ function BoekenContent() {
                               <button
                                 key={q.label}
                                 onClick={() => {
-                                  setCheckIn(start.toISOString().split('T')[0]);
+                                  if (!checkIn) setCheckIn(start.toISOString().split('T')[0]);
                                   setCheckOut(end.toISOString().split('T')[0]);
                                 }}
                                 className={`group relative rounded-xl overflow-hidden text-left transition-all cursor-pointer aspect-[4/3] ${
