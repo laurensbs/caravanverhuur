@@ -27,6 +27,8 @@ export default function CaravanDetailContent({ id }: { id: string }) {
   const touchStartX = useRef(0);
   const { t } = useLanguage();
 
+  const [lightboxPhoto, setLightboxPhoto] = useState(0);
+
   // Close lightbox on Escape
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -47,12 +49,20 @@ export default function CaravanDetailContent({ id }: { id: string }) {
   const caravan = customCaravans.find(c => c.id === id) || (!loadingCustom ? getStaticCaravanById(id) : null);
   const allCaravans = customCaravans.length > 0 ? customCaravans : staticCaravans;
 
+  // Detect Gumlet video
+  const gumletMatch = caravan?.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
+  const gumletId = gumletMatch?.[1] || null;
+  // Media items: video (if gumlet) as first slide, then photos
+  const mediaCount = (caravan?.photos.length || 0) + (gumletId ? 1 : 0);
+  const isVideoSlide = (index: number) => gumletId !== null && index === 0;
+  const photoIndexFor = (index: number) => gumletId ? index - 1 : index;
+
   const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: TouchEvent) => {
     if (!caravan) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && activePhoto < caravan.photos.length - 1) setActivePhoto(p => p + 1);
+      if (diff > 0 && activePhoto < mediaCount - 1) setActivePhoto(p => p + 1);
       if (diff < 0 && activePhoto > 0) setActivePhoto(p => p - 1);
     }
   };
@@ -82,31 +92,31 @@ export default function CaravanDetailContent({ id }: { id: string }) {
             className="fixed inset-0 bg-black z-[100] flex flex-col"
           >
             <div className="flex items-center justify-between p-4">
-              <span className="text-white/60 text-sm">{activePhoto + 1} / {caravan.photos.length}</span>
+              <span className="text-white/60 text-sm">{lightboxPhoto + 1} / {caravan.photos.length}</span>
               <button onClick={() => setLightboxOpen(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white">
                 <X size={20} />
               </button>
             </div>
-            <div className="flex-1 relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div className="flex-1 relative">
               <Image
-                src={caravan.photos[activePhoto]}
-                alt={`${caravan.name} foto ${activePhoto + 1}`}
+                src={caravan.photos[lightboxPhoto]}
+                alt={`${caravan.name} foto ${lightboxPhoto + 1}`}
                 fill
                 className="object-contain"
                 sizes="100vw"
               />
               {/* Nav arrows */}
-              {activePhoto > 0 && (
+              {lightboxPhoto > 0 && (
                 <button
-                  onClick={() => setActivePhoto(p => p - 1)}
+                  onClick={() => setLightboxPhoto(p => p - 1)}
                   className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white"
                 >
                   <ChevronLeft size={24} />
                 </button>
               )}
-              {activePhoto < caravan.photos.length - 1 && (
+              {lightboxPhoto < caravan.photos.length - 1 && (
                 <button
-                  onClick={() => setActivePhoto(p => p + 1)}
+                  onClick={() => setLightboxPhoto(p => p + 1)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white"
                 >
                   <ChevronRight size={24} />
@@ -114,12 +124,12 @@ export default function CaravanDetailContent({ id }: { id: string }) {
               )}
             </div>
             {/* Thumbnails */}
-            <div className="flex gap-2 p-4 justify-center">
+            <div className="flex gap-2 p-4 justify-center overflow-x-auto">
               {caravan.photos.map((photo, i) => (
                 <button
                   key={i}
-                  onClick={() => setActivePhoto(i)}
-                  className={`relative w-16 h-12 rounded-lg overflow-hidden transition-all ${activePhoto === i ? 'ring-2 ring-white' : 'opacity-50'}`}
+                  onClick={() => setLightboxPhoto(i)}
+                  className={`relative w-16 h-12 rounded-lg overflow-hidden shrink-0 transition-all ${lightboxPhoto === i ? 'ring-2 ring-white' : 'opacity-50'}`}
                 >
                   <Image src={photo} alt={`${caravan.name} miniatuur ${i + 1}`} fill className="object-cover" />
                 </button>
@@ -141,50 +151,45 @@ export default function CaravanDetailContent({ id }: { id: string }) {
           </div>
         </div>
 
-        {/* Video hero - shown above photos for Gumlet videos */}
-        {caravan.videoUrl && (() => {
-          const gumletMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/([\w-]+)/);
-          if (!gumletMatch) return null;
-          return (
-            <div className="bg-white">
-              <div className="max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl">
+        {/* Photo gallery - mobile swipe, desktop grid */}
+        <div className="bg-white">
+          {/* Mobile: full-width swipeable (video as first slide if available) */}
+          <div className="sm:hidden relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <button onClick={() => { if (!isVideoSlide(activePhoto)) { setLightboxPhoto(photoIndexFor(activePhoto)); setLightboxOpen(true); } }} className="block w-full">
+              <div className="relative aspect-[4/3]">
+                {isVideoSlide(activePhoto) ? (
                   <iframe
-                    src={`https://play.gumlet.io/embed/${gumletMatch[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
+                    src={`https://play.gumlet.io/embed/${gumletId}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
                     title={caravan.name}
                     allow="autoplay"
                     loading="eager"
                     className="absolute inset-0 w-full h-full border-0"
-                    style={{ pointerEvents: 'none' }}
                   />
-                  <div className="absolute inset-0 z-10" />
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Photo gallery - mobile swipe, desktop grid */}
-        <div className="bg-white">
-          {/* Mobile: full-width swipeable */}
-          <div className="sm:hidden relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-            <button onClick={() => setLightboxOpen(true)} className="block w-full">
-              <div className="relative aspect-[4/3]">
-                <Image src={caravan.photos[activePhoto]} alt={caravan.name} fill className="object-cover" priority sizes="100vw" />
+                ) : (
+                  <Image src={caravan.photos[photoIndexFor(activePhoto)]} alt={caravan.name} fill className="object-cover" priority sizes="100vw" />
+                )}
                 <div className="absolute top-3 left-3 flex items-center gap-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'}`}>{caravan.type}</span>
                 </div>
                 <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                  <span className="text-xs font-medium text-white">{activePhoto + 1}/{caravan.photos.length}</span>
+                  <span className="text-xs font-medium text-white">{activePhoto + 1}/{mediaCount}</span>
                 </div>
               </div>
             </button>
             <div className="flex gap-1.5 px-4 py-2.5 overflow-x-auto scrollbar-hide">
+              {gumletId && (
+                <button
+                  onClick={() => setActivePhoto(0)}
+                  className={`relative w-14 h-10 rounded-lg overflow-hidden shrink-0 transition-all bg-black flex items-center justify-center ${activePhoto === 0 ? 'ring-2 ring-primary' : 'opacity-50'}`}
+                >
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><polygon points="5,3 19,12 5,21" /></svg>
+                </button>
+              )}
               {caravan.photos.map((photo, i) => (
                 <button
                   key={i}
-                  onClick={() => setActivePhoto(i)}
-                  className={`relative w-14 h-10 rounded-lg overflow-hidden shrink-0 transition-all ${activePhoto === i ? 'ring-2 ring-primary' : 'opacity-50'}`}
+                  onClick={() => setActivePhoto(gumletId ? i + 1 : i)}
+                  className={`relative w-14 h-10 rounded-lg overflow-hidden shrink-0 transition-all ${activePhoto === (gumletId ? i + 1 : i) ? 'ring-2 ring-primary' : 'opacity-50'}`}
                 >
                   <Image src={photo} alt={`${caravan.name} miniatuur ${i + 1}`} fill className="object-cover" />
                 </button>
@@ -192,18 +197,53 @@ export default function CaravanDetailContent({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* Desktop: grid layout */}
+          {/* Desktop: grid layout (video replaces first large cell if present) */}
           <div className="hidden sm:block max-w-6xl mx-auto px-4 py-4">
             <div className="grid grid-cols-4 gap-2.5 h-72 lg:h-80">
-              <button
-                onClick={() => { setActivePhoto(0); setLightboxOpen(true); }}
-                className="col-span-2 relative rounded-xl overflow-hidden group"
-              >
-                <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover transition-transform duration-500" priority sizes="(max-width: 1024px) 50vw, 33vw" />
-                <div className="absolute top-3 left-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
-                    caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'
-                  }`}>{caravan.type}</span> </div> </button> {caravan.photos.slice(1).map((photo, i) => ( <button key={i} onClick={() => { setActivePhoto(i + 1); setLightboxOpen(true); }} className="relative rounded-xl overflow-hidden group" > <Image src={photo} alt={`${caravan.name} foto ${i + 2}`} fill className="object-cover transition-transform duration-500" /> </button> ))} </div> </div> </div> {/* Content */} <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 lg:pb-8"> <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"> {/* Main */} <div className="lg:col-span-2 space-y-3 sm:space-y-6"> {/* Title & meta */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <div className="flex items-start justify-between mb-1"> <span className="text-[11px] font-mono text-muted">{caravan.reference}</span> <div className="flex items-center gap-1 text-primary"> <Star size={14} className="fill-primary" /> <span className="text-xs font-semibold">{caravan.type}</span> </div> </div> <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2">{caravan.name}</h1> <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted mb-3"> <span className="flex items-center gap-1 bg-surface px-2 py-1 rounded-full"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span> <span className="bg-surface px-2 py-1 rounded-full">{caravan.manufacturer}</span> <span className="bg-surface px-2 py-1 rounded-full">{t('caravans.yearBuilt')} {caravan.year}</span> </div> <p className="text-foreground-light text-sm leading-relaxed">{caravan.description}</p> </div> {/* Video */} {caravan.videoUrl && (() => { const ytMatch = caravan.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]+)/); const gumletMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/([\w-]+)/); if (gumletMatch) { return null; } const videoId = ytMatch?.[1]; return videoId ? ( <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">Video</h2> <div className="relative w-full aspect-video rounded-xl overflow-hidden"> <iframe src={`https://www.youtube.com/embed/${videoId}`} title={caravan.name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" className="absolute inset-0 w-full h-full" /> </div> </div> ) : null; })()} {/* Amenities */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">{t('caravans.amenities')}</h2> <div className="grid grid-cols-2 gap-2"> {caravan.amenities.map(a => ( <div key={a} className="flex items-center gap-2 py-2 px-2.5 bg-surface rounded-xl"> <span className="text-primary">{amenityIcons[a] || <CheckCircle size={14} />}</span> <span className="text-xs sm:text-sm text-foreground-light">{a}</span> </div> ))} </div> </div> {/* Inventory */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">{t('caravans.inventory')}</h2> <p className="text-[11px] text-muted mb-3">{t('caravans.inventoryIncluded')}</p> <div className="grid grid-cols-2 gap-1.5"> {caravan.inventory.map(item => ( <div key={item} className="flex items-center gap-2 text-xs sm:text-sm text-foreground-light py-0.5"> <CheckCircle size={13} className="text-primary shrink-0" /> {item} </div> ))} </div> </div> {/* Trust signals */} <div className="grid grid-cols-3 gap-2 sm:gap-3"> {[ { icon: <Shield size={18} className="text-primary" />, label: t('caravans.trustSafe') }, { icon: <Calendar size={18} className="text-primary" />, label: t('caravans.trustFlex') }, { icon: <MapPin size={18} className="text-primary" />, label: t('caravans.trustCampings') }, ].map(t2 => ( <div key={t2.label} className="bg-white rounded-xl p-2.5 sm:p-3 text-center"> <div className="flex justify-center mb-1">{t2.icon}</div> <span className="text-[10px] sm:text-xs font-medium text-foreground-light leading-tight">{t2.label}</span> </div> ))} </div> </div> {/* Sidebar - pricing & CTA */} <div className="space-y-4"> <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32"> <h3 className="font-bold text-foreground mb-4">{t('caravans.prices')}</h3> <div className="space-y-3 mb-5"> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerDay')}</span> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerDay}</span> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span> <div className="text-right"> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span> <div className="text-xs text-muted"> {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')} </div> </div> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-surface rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.depositReturn')}</span> <span className="text-lg font-semibold text-foreground-light">&euro;{caravan.deposit}</span> </div> </div> <Link href={`/boeken?caravan=${caravan.id}`}
+              {/* First large cell: video or photo */}
+              {gumletId ? (
+                <div className="col-span-2 relative rounded-xl overflow-hidden">
+                  <iframe
+                    src={`https://play.gumlet.io/embed/${gumletId}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
+                    title={caravan.name}
+                    allow="autoplay"
+                    loading="eager"
+                    className="absolute inset-0 w-full h-full border-0"
+                  />
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'}`}>{caravan.type}</span>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setLightboxPhoto(0); setLightboxOpen(true); }}
+                  className="col-span-2 relative rounded-xl overflow-hidden group"
+                >
+                  <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover transition-transform duration-500" priority sizes="(max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute top-3 left-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${caravan.type === 'FAMILIE' ? 'bg-primary' : 'bg-primary-light'}`}>{caravan.type}</span>
+                  </div>
+                </button>
+              )}
+              {/* Remaining photo cells */}
+              {(gumletId ? caravan.photos : caravan.photos.slice(1)).slice(0, 4).map((photo, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setLightboxPhoto(gumletId ? i : i + 1); setLightboxOpen(true); }}
+                  className="relative rounded-xl overflow-hidden group"
+                >
+                  <Image src={photo} alt={`${caravan.name} foto ${i + 1}`} fill className="object-cover transition-transform duration-500" />
+                  {/* Show remaining count on last visible cell */}
+                  {i === 3 && caravan.photos.length > (gumletId ? 4 : 5) && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">+{caravan.photos.length - (gumletId ? 4 : 5)}</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div> {/* Content */} <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-28 lg:pb-8"> <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"> {/* Main */} <div className="lg:col-span-2 space-y-3 sm:space-y-6"> {/* Title & meta */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <div className="flex items-start justify-between mb-1"> <span className="text-[11px] font-mono text-muted">{caravan.reference}</span> <div className="flex items-center gap-1 text-primary"> <Star size={14} className="fill-primary" /> <span className="text-xs font-semibold">{caravan.type}</span> </div> </div> <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-2">{caravan.name}</h1> <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted mb-3"> <span className="flex items-center gap-1 bg-surface px-2 py-1 rounded-full"><Users size={14} /> Max {caravan.maxPersons} {t('caravans.persShort')}</span> <span className="bg-surface px-2 py-1 rounded-full">{caravan.manufacturer}</span> <span className="bg-surface px-2 py-1 rounded-full">{t('caravans.yearBuilt')} {caravan.year}</span> </div> <p className="text-foreground-light text-sm leading-relaxed">{caravan.description}</p> </div> {/* Video */} {caravan.videoUrl && (() => { const ytMatch = caravan.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]+)/); const gumletMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/([\w-]+)/); if (gumletMatch) { return null; } const videoId = ytMatch?.[1]; return videoId ? ( <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">Video</h2> <div className="relative w-full aspect-video rounded-xl overflow-hidden"> <iframe src={`https://www.youtube.com/embed/${videoId}`} title={caravan.name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" className="absolute inset-0 w-full h-full" /> </div> </div> ) : null; })()} {/* Amenities */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">{t('caravans.amenities')}</h2> <div className="grid grid-cols-2 gap-2"> {caravan.amenities.map(a => ( <div key={a} className="flex items-center gap-2 py-2 px-2.5 bg-surface rounded-xl"> <span className="text-primary">{amenityIcons[a] || <CheckCircle size={14} />}</span> <span className="text-xs sm:text-sm text-foreground-light">{a}</span> </div> ))} </div> </div> {/* Inventory */} <div className="bg-white rounded-2xl p-4 sm:p-6"> <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">{t('caravans.inventory')}</h2> <p className="text-[11px] text-muted mb-3">{t('caravans.inventoryIncluded')}</p> <div className="grid grid-cols-2 gap-1.5"> {caravan.inventory.map(item => ( <div key={item} className="flex items-center gap-2 text-xs sm:text-sm text-foreground-light py-0.5"> <CheckCircle size={13} className="text-primary shrink-0" /> {item} </div> ))} </div> </div> {/* Trust signals */} <div className="grid grid-cols-3 gap-2 sm:gap-3"> {[ { icon: <Shield size={18} className="text-primary" />, label: t('caravans.trustSafe') }, { icon: <Calendar size={18} className="text-primary" />, label: t('caravans.trustFlex') }, { icon: <MapPin size={18} className="text-primary" />, label: t('caravans.trustCampings') }, ].map(t2 => ( <div key={t2.label} className="bg-white rounded-xl p-2.5 sm:p-3 text-center"> <div className="flex justify-center mb-1">{t2.icon}</div> <span className="text-[10px] sm:text-xs font-medium text-foreground-light leading-tight">{t2.label}</span> </div> ))} </div> </div> {/* Sidebar - pricing & CTA */} <div className="space-y-4"> <div className="bg-white rounded-2xl p-5 sm:sticky sm:top-32"> <h3 className="font-bold text-foreground mb-4">{t('caravans.prices')}</h3> <div className="space-y-3 mb-5"> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerDay')}</span> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerDay}</span> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-primary/5 rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.pricePerWeek')}</span> <div className="text-right"> <span className="text-xl font-bold text-primary">&euro;{caravan.pricePerWeek}</span> <div className="text-xs text-muted"> {Math.round((1 - caravan.pricePerWeek / (caravan.pricePerDay * 7)) * 100)}% {t('caravans.discount')} </div> </div> </div> <div className="flex items-center justify-between py-2.5 px-3 bg-surface rounded-xl"> <span className="text-sm text-foreground-light">{t('caravans.depositReturn')}</span> <span className="text-lg font-semibold text-foreground-light">&euro;{caravan.deposit}</span> </div> </div> <Link href={`/boeken?caravan=${caravan.id}`}
                   className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary text-white font-bold rounded-xl transition-colors mb-2"
                 >
                   {t('caravans.bookThisCaravan')}
