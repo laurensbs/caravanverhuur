@@ -352,32 +352,13 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 className="snap-center shrink-0 w-[72vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
               >
                 <div className="relative h-40 sm:h-48 overflow-hidden">
-                  {caravan.videoUrl?.includes('gumlet.tv') ? (() => {
-                    const gMatch = caravan.videoUrl!.match(/gumlet\.tv\/watch\/(\w+)/);
-                    return gMatch ? (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <iframe
-                          src={`https://play.gumlet.io/embed/${gMatch[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
-                          title={caravan.name}
-                          allow="autoplay"
-                          loading="lazy"
-                          className="absolute inset-0 w-full h-full border-0"
-                          style={{ pointerEvents: 'none' }}
-                        />
-                        <div className="absolute inset-0 z-10" />
-                      </div>
-                    ) : (
-                      <Image src={caravan.photos[0]} alt={caravan.name} fill sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw" className="object-cover" />
-                    );
-                  })() : (
-                    <Image
-                      src={caravan.photos[0]}
-                      alt={caravan.name}
-                      fill
-                      sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-700 ease-out"
-                    />
-                  )}
+                  <Image
+                    src={caravan.photos[0]}
+                    alt={caravan.name}
+                    fill
+                    sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-out"
+                  />
                   {/* Subtle gradient overlay at bottom */}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
 
