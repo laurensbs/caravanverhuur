@@ -74,7 +74,6 @@ export const caravans: Caravan[] = [
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/hobby-650.jpg',
     ],
-    videoUrl: 'https://gumlet.tv/watch/69b48353bf83f6c336be24eb/',
     amenities: ['Verwarming', 'Koelkast', 'Kookplaat (3 pits)', 'Rondzit', 'Treinzit', 'Vast bed'],
     inventory: ['Inventaris optioneel tegen vergoeding'],
     pricePerDay: 60,
