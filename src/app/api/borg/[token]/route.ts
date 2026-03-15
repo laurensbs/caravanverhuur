@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBorgChecklistByToken, customerAgreeBorgChecklist, createPayment, getBookingById } from '@/lib/db';
+import { borgLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
+    const ip = getClientIp(request);
+    const rl = borgLimiter.check(ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { token } = await params;
     const checklist = await getBorgChecklistByToken(token);
 

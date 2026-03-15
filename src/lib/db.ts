@@ -749,12 +749,7 @@ export function getDefaultBorgItems() {
 }
 
 function generateToken(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+  return crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').slice(0, 8);
 }
 
 export async function createBorgChecklist(data: {

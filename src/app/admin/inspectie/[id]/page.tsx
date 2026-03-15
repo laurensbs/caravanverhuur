@@ -113,6 +113,27 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
   const [completed, setCompleted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoProcessing, setPhotoProcessing] = useState(false);
+  const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-save progress every 30 seconds when inspecting
+  useEffect(() => {
+    if (step !== 'inspect' && step !== 'notes') return;
+    if (!checklist) return;
+    autoSaveTimer.current = setInterval(() => {
+      fetch('/api/borg', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: checklist.id,
+          items: checklist.items,
+          generalNotes,
+          staffName: staffName || undefined,
+          status: 'IN_BEHANDELING',
+        }),
+      }).catch(() => {});
+    }, 30000);
+    return () => { if (autoSaveTimer.current) clearInterval(autoSaveTimer.current); };
+  }, [step, checklist, generalNotes, staffName]);
 
   const fetchChecklist = useCallback(async () => {
     try {

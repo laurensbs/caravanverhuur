@@ -89,6 +89,9 @@ export const checkoutLimiter = rateLimit({ name: 'checkout', maxRequests: 10, wi
 /** Booking creation: 5 bookings per 30 minutes per IP */
 export const bookingLimiter = rateLimit({ name: 'booking', maxRequests: 5, windowSeconds: 30 * 60 });
 
+/** Borg token lookup: 20 requests per 5 minutes per IP */
+export const borgLimiter = rateLimit({ name: 'borg', maxRequests: 20, windowSeconds: 5 * 60 });
+
 /**
  * Extract client IP from request headers.
  */
