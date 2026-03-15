@@ -222,6 +222,10 @@ export default function CaravanDetailContent({ id }: { id: string }) {
                   <Shield size={14} />
                   <span>{t('caravans.safePaymentNote')}</span>
                 </div>
+                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                  <MapPin size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-800 leading-relaxed">{t('caravans.campingNotice')}</p>
+                </div>
               </div>
             </div>
           </div>

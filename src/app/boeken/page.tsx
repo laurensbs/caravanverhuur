@@ -691,6 +691,12 @@ function BoekenContent() {
                           <p className="text-xs text-muted mt-1.5">{t('booking.spotNote')}</p>
                         </motion.div>
                       )}
+
+                      {/* Camping separate notice */}
+                      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                        <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-800 leading-relaxed">{t('booking.campingSeparateTooltip')}</p>
+                      </div>
                     </div>
                   )}
 
@@ -1000,6 +1006,7 @@ function BoekenContent() {
                             <p className="text-xs text-muted uppercase tracking-wider mb-1">{t('booking.campingLabel')}</p>
                             <p className="font-semibold">{chosenCamping?.name}, {chosenCamping?.location}</p>
                             {spotNumber && <p className="text-sm text-muted mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>}
+                            <p className="text-[11px] text-amber-700 mt-1">{t('booking.campingSeparateNotice')}</p>
                           </div>
 
                           <div className="bg-surface rounded-xl p-4">
@@ -1123,6 +1130,7 @@ function BoekenContent() {
                       <div>
                         <p className="font-semibold text-foreground text-[13px]">{chosenCamping ? chosenCamping.name : t('booking.noCamping')}</p>
                         {chosenCamping && <p className="text-xs text-muted">{chosenCamping.location}</p>}
+                        {chosenCamping && <p className="text-[10px] text-amber-700 mt-0.5">{t('booking.campingSeparateNotice')}</p>}
                       </div>
                     </div>
 

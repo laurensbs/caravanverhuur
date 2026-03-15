@@ -42,6 +42,10 @@ export default function VoorwaardenPage() {
             <CreditCard size={20} className="text-primary shrink-0 mt-0.5" />
             <p className="text-sm text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.s2Note') }} />
           </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+            <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.s2CampingNote') }} />
+          </div>
         </div>
       ),
     },

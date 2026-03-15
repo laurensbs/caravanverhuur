@@ -20,6 +20,7 @@ export default function FAQPage() {
         { q: t('faq.q1_3'), a: t('faq.a1_3') },
         { q: t('faq.q1_4'), a: t('faq.a1_4') },
         { q: t('faq.q1_5'), a: t('faq.a1_5') },
+        { q: t('faq.q1_6'), a: t('faq.a1_6') },
       ],
     },
     {
