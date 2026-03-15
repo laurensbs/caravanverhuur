@@ -267,15 +267,15 @@ export default function Footer() {
           <p className="text-center text-[10px] sm:text-xs text-white/60 uppercase tracking-wider font-medium mb-3 sm:mb-4">
             Programa Kit Digital financiado por los fondos Next Generation del Mecanismo de Recuperación y Resiliencia
           </p>
-          <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
-            {/* EU logo */}
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-8 sm:h-10 object-contain" />
+          <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap">
+            {/* EU flag */}
+            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-10 sm:h-12 object-contain" />
             {/* Gobierno de España */}
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Logotipo_del_Gobierno_de_Espa%C3%B1a.svg/200px-Logotipo_del_Gobierno_de_Espa%C3%B1a.svg.png" alt="Gobierno de España" className="h-8 sm:h-10 object-contain brightness-0 invert" />
+            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-10 sm:h-12 object-contain" />
             {/* Red.es */}
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Red.es_logo.svg/120px-Red.es_logo.svg.png" alt="Red.es" className="h-6 sm:h-8 object-contain brightness-0 invert" />
-            {/* Plan de Recuperación */}
-            <img src="https://planderecuperacion.gob.es/sites/default/files/2022-12/Logo%20Kit%20Digital.png" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-8 sm:h-10 object-contain" />
+            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-8 sm:h-10 object-contain" />
+            {/* Kit Digital */}
+            <img src="/images/badges/kit-digital.svg" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-10 sm:h-12 object-contain" />
           </div>
         </div>
       </div>

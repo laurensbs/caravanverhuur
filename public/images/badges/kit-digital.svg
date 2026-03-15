@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80">
+  <rect width="400" height="80" fill="none"/>
+  <!-- Kit Digital logo mark -->
+  <g transform="translate(10,12)">
+    <rect x="0" y="0" width="56" height="56" rx="10" fill="#00A3E0"/>
+    <text x="28" y="30" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="white" font-weight="800" text-anchor="middle" letter-spacing="-0.5">Kit</text>
+    <text x="28" y="47" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="white" font-weight="600" text-anchor="middle" letter-spacing="0.5">Digital</text>
+  </g>
+  <!-- Text -->
+  <text x="80" y="30" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="white" font-weight="600" letter-spacing="0.3">Plan de Recuperación,</text>
+  <text x="80" y="48" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="white" font-weight="600" letter-spacing="0.3">Transformación y Resiliencia</text>
+  <line x1="80" y1="55" x2="340" y2="55" stroke="white" stroke-opacity="0.2" stroke-width="0.5"/>
+  <text x="80" y="68" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="white" fill-opacity="0.5" letter-spacing="0.3">Financiado por la Unión Europea – NextGenerationEU</text>
+</svg>
