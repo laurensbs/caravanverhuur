@@ -144,7 +144,7 @@ function BoekenContent() {
   const canNext = () => {
     switch (step) {
       case 1: return checkIn && checkOut && nights > 0;
-      case 2: return campingId !== '';
+      case 2: return campingId !== '' && spotNumber.trim() !== '';
       case 3: return adults >= 1 && selectedCaravan !== '';
       case 4: return name && email && phone && termsAccepted;
       default: return false;
@@ -186,7 +186,7 @@ function BoekenContent() {
         body: JSON.stringify({
           guestName: name, guestEmail: email, guestPhone: phone,
           adults, children, specialRequests: specialRequests || undefined,
-          caravanId: selectedCaravan, campingId, spotNumber: spotNumber || undefined,
+          caravanId: selectedCaravan, campingId, spotNumber: spotNumber.trim(),
           checkIn, checkOut, nights, totalPrice: discountedTotal,
           borgAmount: chosenCaravan?.deposit || 0,
           discountCode: discountApplied?.code || undefined,
@@ -489,125 +489,90 @@ function BoekenContent() {
                         <p className="text-sm lg:text-base text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
-                        <div className="relative mb-3 lg:mb-4">
-                          <Search size={16} className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 text-muted lg:w-5 lg:h-5" />
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4 lg:p-6">
+                        <div className="relative mb-3">
+                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                           <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
-                            className="w-full pl-9 lg:pl-12 pr-4 py-2.5 lg:py-3.5 bg-surface rounded-xl text-sm lg:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
+                            className="w-full pl-9 pr-4 py-2.5 lg:py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
                         </div>
 
-                        <div className="overflow-x-auto lg:overflow-x-visible pb-3 lg:pb-0 scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
-                          <div className="flex items-center gap-2 lg:gap-2 flex-nowrap lg:flex-wrap">
-                          <button onClick={() => setLocationFilter('all')} className={`px-3 lg:px-3 py-1.5 lg:py-1.5 rounded-full text-xs lg:text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
+                        <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide -mx-3 px-3 sm:-mx-4 sm:px-4 lg:mx-0 lg:px-0 lg:flex-wrap">
+                          <button onClick={() => setLocationFilter('all')} className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${locationFilter === 'all' ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                             {t('booking.allLocations')}
                           </button>
                           {locations.map(loc => (
-                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-3 lg:px-3 py-1.5 lg:py-1.5 rounded-full text-xs lg:text-xs font-semibold whitespace-nowrap transition-all ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
+                            <button key={loc} onClick={() => setLocationFilter(loc)} className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${locationFilter === loc ? 'bg-primary text-white shadow-sm' : 'bg-surface-alt text-foreground-light'}`}>
                               {loc}
                             </button>
                           ))}
-                          </div>
                         </div>
-                      </div>
 
-                      {/* Camping cards */}
-                      {(() => {
-                        const isFiltering = campingSearch.trim() || locationFilter !== 'all';
-                        const visibleCampings = (showAllCampings || isFiltering) ? filteredCampings : filteredCampings.slice(0, 6);
-                        const hasMore = !isFiltering && !showAllCampings && filteredCampings.length > 6;
-                        return (
-                          <>
-                            <div className="space-y-2 sm:space-y-3 lg:space-y-3">
-                              {visibleCampings.map(c => {
-                                const isSelected = campingId === c.id;
-                                return (
-                                  <motion.button
-                                    key={c.id}
-                                    layout
-                                    onClick={() => setCampingId(c.id)}
-                                    className={`w-full text-left rounded-xl sm:rounded-2xl border-2 transition-all hover:shadow-md overflow-hidden ${
-                                      isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-primary/30'
-                                    }`}
-                                  >
-                                    {/* Mobile layout */}
-                                    <div className="lg:hidden px-3 py-2.5 sm:p-4">
-                                      <div className="flex items-center justify-between gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-0.5">
-                                            <h3 className="font-bold text-sm sm:text-base text-foreground truncate">{c.name}</h3>
-                                            {isSelected && (
-                                              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
-                                                <Check size={12} className="text-white" />
-                                              </motion.div>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted">
-                                            <MapPin size={12} /> {c.location}
-                                          </div>
-                                          <p className="text-xs text-muted line-clamp-1 mt-0.5 hidden sm:block">{c.description}</p>
-                                        </div>
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-primary/10' : 'bg-surface'}`}>
-                                          <Tent size={20} className={isSelected ? 'text-primary' : 'text-muted'} />
-                                        </div>
+                        {/* Camping list — compact on mobile, cards on desktop */}
+                        <div className="mt-2 max-h-[340px] sm:max-h-[400px] lg:max-h-[480px] overflow-y-auto rounded-xl border border-gray-100">
+                          {(() => {
+                            const isFiltering = campingSearch.trim() || locationFilter !== 'all';
+                            const visibleCampings = (showAllCampings || isFiltering) ? filteredCampings : filteredCampings.slice(0, 12);
+                            const hasMore = !isFiltering && !showAllCampings && filteredCampings.length > 12;
+                            return (
+                              <>
+                                {visibleCampings.map((c, idx) => {
+                                  const isSelected = campingId === c.id;
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      onClick={() => setCampingId(c.id)}
+                                      className={`w-full text-left flex items-center gap-2.5 sm:gap-3 px-3 py-2.5 sm:py-3 transition-colors ${
+                                        isSelected ? 'bg-primary/5' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                                      } ${idx > 0 ? 'border-t border-gray-100' : ''} hover:bg-primary/5`}
+                                    >
+                                      {/* Radio indicator */}
+                                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                        isSelected ? 'border-primary bg-primary' : 'border-gray-300'
+                                      }`}>
+                                        {isSelected && <Check size={11} className="text-white" />}
                                       </div>
-                                    </div>
 
-                                    {/* Desktop layout with photo */}
-                                    <div className="hidden lg:flex items-stretch">
-                                      {c.photos?.[0] && (
-                                        <div className="relative w-28 shrink-0">
-                                          <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
-                                          {isSelected && (
-                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 left-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-md">
-                                              <Check size={12} className="text-white" />
-                                            </motion.div>
-                                          )}
-                                        </div>
-                                      )}
-                                      <div className="flex-1 min-w-0 px-4 py-3">
-                                        <div className="flex items-center gap-2">
-                                          <h3 className="font-bold text-[15px] text-foreground truncate">{c.name}</h3>
-                                          {!c.photos?.[0] && isSelected && (
-                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
-                                              <Check size={12} className="text-white" />
-                                            </motion.div>
-                                          )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
-                                          <MapPin size={12} /> {c.location}
-                                        </div>
-                                        <p className="text-xs text-muted line-clamp-1 mt-1">{c.description}</p>
-                                        {c.facilities && c.facilities.length > 0 && (
-                                          <div className="flex flex-wrap gap-1 mt-1.5">
-                                            {c.facilities.slice(0, 4).map(f => (
-                                              <span key={f} className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>{f}</span>
-                                            ))}
-                                            {c.facilities.length > 4 && (
-                                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400">+{c.facilities.length - 4}</span>
-                                            )}
-                                          </div>
+                                      {/* Photo (desktop only) */}
+                                      <div className="hidden sm:block relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                                        {c.photos?.[0] ? (
+                                          <Image src={c.photos[0]} alt={c.name} fill className="object-cover" sizes="48px" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center"><Tent size={16} className="text-gray-300" /></div>
                                         )}
                                       </div>
-                                    </div>
-                                  </motion.button>
-                                );
-                              })}
-                              {filteredCampings.length === 0 && (
-                                <div className="text-center py-10 text-muted">{t('booking.noCampings')}</div>
-                              )}
-                            </div>
-                            {hasMore && (
-                              <button
-                                onClick={() => setShowAllCampings(true)}
-                                className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-semibold text-foreground-light hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-2"
-                              >
-                                <ChevronRight size={16} className="rotate-90" />
-                                {`Toon alle ${filteredCampings.length} campings`}
-                              </button>
-                            )}
-                          </>
-                        );
-                      })()}
+
+                                      {/* Info */}
+                                      <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-semibold truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>{c.name}</p>
+                                        <p className="text-[11px] sm:text-xs text-muted flex items-center gap-1 truncate"><MapPin size={10} className="shrink-0" /> {c.location}</p>
+                                      </div>
+
+                                      {/* Facilities (tablet+ only) */}
+                                      <div className="hidden lg:flex items-center gap-1 shrink-0">
+                                        {c.facilities?.slice(0, 3).map(f => (
+                                          <span key={f} className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>{f}</span>
+                                        ))}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                                {filteredCampings.length === 0 && (
+                                  <div className="text-center py-8 text-muted text-sm">{t('booking.noCampings')}</div>
+                                )}
+                                {hasMore && (
+                                  <button
+                                    onClick={() => setShowAllCampings(true)}
+                                    className="w-full py-2.5 border-t border-gray-100 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5"
+                                  >
+                                    <ChevronRight size={14} className="rotate-90" />
+                                    {`Toon alle ${filteredCampings.length} campings`}
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
 
                       {/* Camping not listed */}
                       {!campingRequestSent ? (
@@ -678,16 +643,16 @@ function BoekenContent() {
                         </motion.div>
                       )}
 
-                      {/* Spot number */}
+                      {/* Spot number — required */}
                       {campingId && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-sm p-5">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
                           <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-2">
                             <Hash size={14} className="text-primary" />
-                            {t('booking.preferredSpot')}
+                            {t('booking.spotNumberLabel')} <span className="text-red-500">*</span>
                           </label>
                           <input type="text" value={spotNumber} onChange={e => setSpotNumber(e.target.value)} placeholder={t('booking.spotPlaceholder')}
-                            className="w-full px-4 py-3 bg-surface rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all" />
-                          <p className="text-xs text-muted mt-1.5">{t('booking.spotNote')}</p>
+                            className={`w-full px-4 py-3 bg-surface rounded-xl border focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm ${!spotNumber.trim() ? 'border-gray-200' : 'border-primary/30'}`} />
+                          <p className="text-xs text-muted mt-1.5">{t('booking.spotRequiredNote')}</p>
                         </motion.div>
                       )}
 
@@ -1004,7 +969,7 @@ function BoekenContent() {
                           <div className="bg-surface rounded-xl p-4">
                             <p className="text-xs text-muted uppercase tracking-wider mb-1">{t('booking.campingLabel')}</p>
                             <p className="font-semibold">{chosenCamping?.name}, {chosenCamping?.location}</p>
-                            {spotNumber && <p className="text-sm text-muted mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>}
+                            <p className="text-sm text-muted mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>
                             <p className="text-[11px] text-amber-700 mt-1">{t('booking.campingSeparateNotice')}</p>
                           </div>
 
@@ -1129,6 +1094,7 @@ function BoekenContent() {
                       <div>
                         <p className="font-semibold text-foreground text-[13px]">{chosenCamping ? chosenCamping.name : t('booking.noCamping')}</p>
                         {chosenCamping && <p className="text-xs text-muted">{chosenCamping.location}</p>}
+                        {spotNumber && <p className="text-[11px] text-foreground-light mt-0.5">{t('booking.spotLabel')} {spotNumber}</p>}
                         {chosenCamping && <p className="text-[10px] text-amber-700 mt-0.5">{t('booking.campingSeparateNotice')}</p>}
                       </div>
                     </div>

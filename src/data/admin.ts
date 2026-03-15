@@ -53,6 +53,7 @@ export interface Booking {
   deposit_amount: number;
   remaining_amount: number;
   borg_amount: number;
+  spot_number?: string;
   admin_notes?: string;
   // Payments are fetched separately
   payments?: Payment[];

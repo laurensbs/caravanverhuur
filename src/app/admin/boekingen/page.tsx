@@ -159,6 +159,9 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             <div>
               <p className="text-sm font-medium text-foreground">{camping?.name || booking.camping_id}</p>
               <p className="text-xs text-muted">{camping?.location}</p>
+              {booking.spot_number && (
+                <p className="text-xs font-semibold text-primary mt-0.5">📍 {t('bookings.spotNumber')}: {booking.spot_number}</p>
+              )}
             </div>
           </div>
         </div>
@@ -167,6 +170,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             <strong>{t('bookings.checkIn')}:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
             <strong>{t('bookings.checkOut')}:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
             <strong>{t('bookings.nightsLabel')}:</strong> {booking.nights}
+            {booking.spot_number && (<>&nbsp;|&nbsp; <strong>{t('bookings.spotNumber')}:</strong> <span className="text-primary font-semibold">{booking.spot_number}</span></>)}
           </p>
         </div>
       </div>
@@ -834,7 +838,7 @@ export default function BookingenPage() {
                     <span className="text-xs text-muted">{booking.reference}</span>
                   </div>
                   <p className="text-xs text-muted truncate mt-0.5">
-                    {caravan?.name} → {camping?.name} &nbsp;|&nbsp; {formatDate(booking.check_in)} – {formatDate(booking.check_out)}
+                    {caravan?.name} → {camping?.name}{booking.spot_number ? ` (${booking.spot_number})` : ''} &nbsp;|&nbsp; {formatDate(booking.check_in)} – {formatDate(booking.check_out)}
                   </p>
                 </div>
 
