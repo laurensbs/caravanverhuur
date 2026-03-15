@@ -44,7 +44,7 @@ export const destinations: Destination[] = [
     heroImage: '/images/campings/els_masos_de_pals.jpg',
     gallery: [
       '/images/campings/els_masos_de_pals.jpg',
-      '/images/destinations/arr_s_de_pals.jpg',
+      '/images/campings/begur_sa_tuna.jpg',
     ],
     description: 'Pals is een betoverend middeleeuws dorpje op een heuvel met uitzicht over rijstvelden en de Middellandse Zee. De smalle straatjes, gotische kerk en romaanse toren maken het tot een pareltje aan de Costa Brava. Het uitgestrekte strand van Platja de Pals biedt kilometers fijn zand omringd door pijnbomen.',
     longDescription: 'Het historisch centrum van Pals, lokaal bekend als "El Pedró", is een van de best bewaarde middeleeuwse kernen van Catalonië. De romaanse toren uit de 11e-12e eeuw domineert het silhouet van het dorp en biedt een spectaculair uitzicht over de vlakte van het Empordà tot aan de Illes Medes. De rijstvelden rondom Pals zijn uniek voor de Costa Brava — hier wordt al eeuwenlang rijst verbouwd, wat heeft geleid tot een rijke culinaire traditie.',

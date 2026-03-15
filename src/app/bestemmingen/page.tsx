@@ -9,7 +9,7 @@ import { destinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon,
+  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon, ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -159,12 +159,18 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
 /*  Curated attractions (top 6 shown on overview)                      */
 /* ------------------------------------------------------------------ */
 const attractionCards = [
-  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
-  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
-  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
-  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️', img: '/images/campings/cap_de_creus_landscape.jpg' },
-  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
-  { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', img: '/images/campings/els_masos_de_pals.jpg' },
+  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', icon: '🎨', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg', desc: 'Het surrealistische meesterwerk van Salvador Dalí' },
+  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', icon: '🏰', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg', desc: 'De enige versterkte middeleeuwse stad aan de kust' },
+  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', icon: '🏝️', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg', desc: 'Snorkelen en duiken in een beschermd marien reservaat' },
+  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', icon: '⛰️', img: '/images/campings/cap_de_creus_landscape.jpg', desc: 'Het meest oostelijke punt van het Iberisch schiereiland' },
+  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', icon: '🌺', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg', desc: 'Botanische tuin met panoramisch uitzicht op de kust' },
+  { name: 'Middeleeuws Pals', place: 'Pals', slug: 'pals', icon: '🏘️', img: '/images/campings/els_masos_de_pals.jpg', desc: 'Prachtig bewaard middeleeuws dorpje op een heuvel' },
+  { name: 'Jardins de Cap Roig', place: 'Calella de Palafrugell', slug: 'calella-de-palafrugell', icon: '🎭', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg', desc: 'Botanische tuin met zomerfestival en zeezicht' },
+  { name: 'Aiguamolls de l\'Empordà', place: 'Sant Pere Pescador', slug: 'sant-pere-pescador', icon: '🦩', img: '/images/campings/animales-aiguamolls_l_emporda-2013.jpg', desc: 'Natuurpark met flamingo\'s, reigers en wandelroutes' },
+  { name: 'Cala Sa Tuna', place: 'Begur', slug: 'begur', icon: '🏖️', img: '/images/campings/begur_sa_tuna.jpg', desc: 'Schilderachtige baai met kristalhelder turquoise water' },
+  { name: 'Empuriabrava Kanalen', place: 'Empuriabrava', slug: 'empuriabrava', icon: '⛵', img: '/images/campings/canal_principal_de_empuriabrava.jpg', desc: 'Europa\'s grootste residentiële jachthaven' },
+  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', icon: '🏰', img: '/images/campings/begurcastle.jpg', desc: 'Ruïne met 360° panoramisch uitzicht over de Costa Brava' },
+  { name: 'Ciutadella de Roses', place: 'Roses', slug: 'roses', icon: '🏛️', img: '/images/campings/ciutadella_de_roses-2022.jpg', desc: 'Historische vesting met Griekse, Romeinse en middeleeuwse resten' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -403,7 +409,7 @@ export default function BestemmingenPage() {
               <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{t('destinations.interactiveMap')}</h2>
             </div>
             <p className="text-sm text-gray-500 mb-5">{t('destinations.mapSub')}</p>
-            <CostaBravaMap destinations={destinations} />
+            <CostaBravaMap destinations={destinations} campings={allCampings} />
           </div>
         </section>
       )}
@@ -423,26 +429,34 @@ export default function BestemmingenPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {destinations.map(d => {
                 const nearbyCampings = allCampings.filter(c => c.nearestDestinations?.includes(d.slug));
+                const gmUrl = `https://www.google.com/maps/search/?api=1&query=${d.coordinates.lat},${d.coordinates.lng}`;
                 return (
-                  <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, 25vw" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-3">
-                        <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{d.name}</h3>
-                        <p className="text-[10px] sm:text-[11px] text-white/70">{d.region}</p>
+                  <div key={d.slug} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                    <Link href={`/bestemmingen/${d.slug}`}>
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, 25vw" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-3">
+                          <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{d.name}</h3>
+                          <p className="text-[10px] sm:text-[11px] text-white/70">{d.region}</p>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                     <div className="p-2.5 sm:p-3">
-                      <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-gray-400">
-                        <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {d.beaches.length}</span>
-                        <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-primary/50" /> {d.restaurants.length}</span>
-                        {nearbyCampings.length > 0 && (
-                          <span className="flex items-center gap-0.5"><Tent size={10} className="text-primary/50" /> {nearbyCampings.length}</span>
-                        )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-gray-400">
+                          <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {d.beaches.length}</span>
+                          <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-primary/50" /> {d.restaurants.length}</span>
+                          {nearbyCampings.length > 0 && (
+                            <span className="flex items-center gap-0.5"><Tent size={10} className="text-primary/50" /> {nearbyCampings.length}</span>
+                          )}
+                        </div>
+                        <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-[11px] text-blue-400 hover:text-blue-600 font-medium inline-flex items-center gap-0.5 transition-colors">
+                          <ExternalLink size={9} /> Maps
+                        </a>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -473,54 +487,77 @@ export default function BestemmingenPage() {
         </section>
       )}
 
-      {/* ===== HIGHLIGHTS — bento grid ===== */}
+      {/* ===== HIGHLIGHTS — attractions grid ===== */}
       {!search && (
         <section id="bezienswaardigheden" className="max-w-7xl mx-auto px-4 py-8 sm:py-12 scroll-mt-[120px]">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 mb-1">
             <Star size={20} className="text-primary" /> {t('destinations.highlightsTitle')}
           </h2>
           <p className="text-sm text-gray-500 mb-5">{t('destinations.highlightsSub')}</p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:auto-rows-[200px]">
-            {attractionCards.map((a, i) => (
-              <Link
-                key={a.slug + a.name}
-                href={`/bestemmingen/${a.slug}`}
-                className={`group relative rounded-xl overflow-hidden ${
-                  i === 0
-                    ? 'col-span-2 aspect-[2/1] lg:aspect-auto lg:row-span-2'
-                    : i === attractionCards.length - 1
-                    ? 'col-span-2 aspect-[2/1] lg:col-span-1 lg:aspect-auto'
-                    : 'aspect-[4/3] lg:aspect-auto'
-                }`}
-              >
-                <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes={i === 0 ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 640px) 50vw, 33vw'} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className={`absolute bottom-0 left-0 right-0 ${i === 0 ? 'p-4 sm:p-6' : 'p-3'}`}>
-                  <span className={`${i === 0 ? 'text-2xl sm:text-3xl mb-2' : 'text-lg sm:text-xl mb-1'} block`}>{a.icon}</span>
-                  <h3 className={`${i === 0 ? 'text-lg sm:text-2xl' : 'text-sm sm:text-base'} font-bold text-white leading-tight`}>{a.name}</h3>
-                  <p className={`${i === 0 ? 'text-xs sm:text-sm' : 'text-[11px]'} text-white/70 flex items-center gap-1 mt-0.5`}><MapPin size={i === 0 ? 12 : 9} /> {a.place}</p>
+
+          {/* Featured — first 2 cards large */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+            {attractionCards.slice(0, 2).map((a) => {
+              const dest = destinations.find(d => d.slug === a.slug);
+              const gmUrl = dest ? `https://www.google.com/maps/search/?api=1&query=${dest.coordinates.lat},${dest.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.name + ' ' + a.place + ' Costa Brava')}`;
+              return (
+                <div key={a.slug + a.name} className="group relative rounded-xl overflow-hidden aspect-[16/9] sm:aspect-[16/10]">
+                  <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 50vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <span className="text-2xl sm:text-3xl block mb-1">{a.icon}</span>
+                    <h3 className="text-base sm:text-xl font-bold text-white leading-tight">{a.name}</h3>
+                    <p className="text-xs text-white/70 flex items-center gap-1 mt-0.5 mb-2"><MapPin size={11} /> {a.place}</p>
+                    <p className="text-xs sm:text-sm text-white/80 line-clamp-2 mb-3">{a.desc}</p>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/bestemmingen/${a.slug}`} className="px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-white/30 transition-colors">
+                        Ontdek →
+                      </Link>
+                      <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 bg-white/10 backdrop-blur-sm text-white/80 text-xs font-medium rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-1">
+                        <ExternalLink size={10} /> Maps
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
+          </div>
+
+          {/* Remaining cards — compact grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {attractionCards.slice(2).map((a) => {
+              const dest = destinations.find(d => d.slug === a.slug);
+              const gmUrl = dest ? `https://www.google.com/maps/search/?api=1&query=${dest.coordinates.lat},${dest.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.name + ' ' + a.place + ' Costa Brava')}`;
+              return (
+                <div key={a.slug + a.name} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="text-lg">{a.icon}</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{a.name}</h3>
+                      <p className="text-[10px] sm:text-[11px] text-white/70 flex items-center gap-1 mt-0.5"><MapPin size={9} /> {a.place}</p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-3">{a.desc}</p>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/bestemmingen/${a.slug}`} className="flex-1 text-center py-1.5 bg-primary/5 text-primary font-semibold rounded-lg text-xs hover:bg-primary hover:text-white transition-colors">
+                        Ontdek →
+                      </Link>
+                      <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="py-1.5 px-2.5 bg-blue-50 text-blue-500 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors inline-flex items-center gap-1">
+                        <ExternalLink size={10} /> Maps
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
-
-      {/* ===== CTA ===== */}
-      <section className="bg-primary text-white py-10 sm:py-14">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-xl sm:text-3xl font-bold mb-2">{t('destinations.ctaReady')}</h2>
-          <p className="text-white/70 text-sm sm:text-base mb-6">{t('destinations.ctaDesc')}</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/boeken" className="px-6 py-3 bg-white text-primary font-semibold rounded-xl text-sm hover:bg-gray-100 transition-colors">
-              {t('destinations.bookNow')}
-            </Link>
-            <Link href="/caravans" className="px-6 py-3 bg-white/15 text-white font-semibold rounded-xl text-sm hover:bg-white/25 transition-colors">
-              {t('destinations.viewCaravans')}
-            </Link>
-          </div>
-        </div>
-      </section>
 
     </div>
   );
