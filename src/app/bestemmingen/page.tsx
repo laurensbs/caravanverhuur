@@ -3,14 +3,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, Landmark, UtensilsCrossed, Star,
+  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+
+/* Dynamic map — Leaflet needs browser */
+const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[350px] sm:h-[420px] md:h-[500px] lg:h-[560px] bg-gray-100 rounded-2xl flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm font-medium">Kaart laden...</p>
+      </div>
+    </div>
+  ),
+});
 
 /* ------------------------------------------------------------------ */
 /*  Facility icons                                                     */
@@ -175,13 +189,19 @@ export default function BestemmingenPage() {
       .catch((e) => console.error('Fetch error:', e));
   }, []);
 
-  // Handle hash for direct linking
+  // Handle hash for direct linking + section scroll
   useEffect(() => {
     const applyHash = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['Baix Empordà', 'Alt Empordà', 'La Selva'].some(r => r.toLowerCase().replace(/\s+/g, '-') === hash)) {
-        const region = regionOrder.find(r => r.toLowerCase().replace(/\s+/g, '-') === hash);
-        if (region) setSelectedRegion(region);
+      if (!hash) return;
+      // Region filtering
+      const region = regionOrder.find(r => r.toLowerCase().replace(/\s+/g, '-') === hash);
+      if (region) { setSelectedRegion(region); return; }
+      // Section scrolling
+      if (['campings', 'plaatsen', 'bezienswaardigheden'].includes(hash)) {
+        setTimeout(() => {
+          document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       }
     };
     applyHash();
@@ -220,19 +240,20 @@ export default function BestemmingenPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero — compact, camping-first messaging */}
-      <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-6 sm:pt-16 sm:pb-8">
+      <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden min-h-[40vh] sm:min-h-[35vh] flex flex-col justify-end">
+        <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
+        <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-8 sm:pt-16 sm:pb-10 w-full">
           <nav className="flex items-center gap-1.5 text-white/50 text-xs mb-4 sm:mb-6">
             <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
             <span>/</span>
             <span className="text-white/80">{t('nav.destinations')}</span>
           </nav>
 
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4">
             {t('destinations.heroTitle')}
           </h1>
-          <p className="text-white/80 text-sm sm:text-lg max-w-2xl mb-5">
+          <p className="text-white/80 text-sm sm:text-lg max-w-2xl mb-6">
             {t('destinations.heroSubtitle')}
           </p>
 
@@ -327,7 +348,7 @@ export default function BestemmingenPage() {
       )}
 
       {/* ===== CAMPINGS GRID — main content ===== */}
-      <section className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+      <section id="campings" className="max-w-7xl mx-auto px-4 py-6 sm:py-8 scroll-mt-[120px]">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -373,9 +394,23 @@ export default function BestemmingenPage() {
         )}
       </section>
 
+      {/* ===== INTERACTIVE MAP ===== */}
+      {!search && (
+        <section className="bg-white py-8 sm:py-12 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <MapIcon size={20} className="text-primary" />
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{t('destinations.interactiveMap')}</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-5">{t('destinations.mapSub')}</p>
+            <CostaBravaMap destinations={destinations} />
+          </div>
+        </section>
+      )}
+
       {/* ===== PLACES TO EXPLORE — destinations grid ===== */}
       {!search && (
-        <section className="bg-surface py-10 sm:py-14">
+        <section id="plaatsen" className="bg-surface py-10 sm:py-14 scroll-mt-[120px]">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-end justify-between mb-5 gap-3">
               <div>
@@ -386,7 +421,7 @@ export default function BestemmingenPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {destinations.slice(0, 8).map(d => {
+              {destinations.map(d => {
                 const nearbyCampings = allCampings.filter(c => c.nearestDestinations?.includes(d.slug));
                 return (
                   <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
@@ -411,13 +446,6 @@ export default function BestemmingenPage() {
                 );
               })}
             </div>
-            {destinations.length > 8 && (
-              <div className="text-center mt-6">
-                <Link href="/bestemmingen" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors">
-                  {t('destinations.allDestinations')} ({destinations.length}) <ArrowRight size={14} />
-                </Link>
-              </div>
-            )}
           </div>
         </section>
       )}
@@ -445,22 +473,32 @@ export default function BestemmingenPage() {
         </section>
       )}
 
-      {/* ===== HIGHLIGHTS — top attractions ===== */}
+      {/* ===== HIGHLIGHTS — bento grid ===== */}
       {!search && (
-        <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
+        <section id="bezienswaardigheden" className="max-w-7xl mx-auto px-4 py-8 sm:py-12 scroll-mt-[120px]">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 mb-1">
             <Star size={20} className="text-primary" /> {t('destinations.highlightsTitle')}
           </h2>
           <p className="text-sm text-gray-500 mb-5">{t('destinations.highlightsSub')}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-            {attractionCards.map(a => (
-              <Link key={a.slug + a.name} href={`/bestemmingen/${a.slug}`} className="group relative rounded-xl overflow-hidden aspect-[4/3]">
-                <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, 33vw" />
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:auto-rows-[200px]">
+            {attractionCards.map((a, i) => (
+              <Link
+                key={a.slug + a.name}
+                href={`/bestemmingen/${a.slug}`}
+                className={`group relative rounded-xl overflow-hidden ${
+                  i === 0
+                    ? 'col-span-2 aspect-[2/1] lg:aspect-auto lg:row-span-2'
+                    : i === attractionCards.length - 1
+                    ? 'col-span-2 aspect-[2/1] lg:col-span-1 lg:aspect-auto'
+                    : 'aspect-[4/3] lg:aspect-auto'
+                }`}
+              >
+                <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes={i === 0 ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 640px) 50vw, 33vw'} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <span className="text-lg sm:text-xl mb-1 block">{a.icon}</span>
-                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{a.name}</h3>
-                  <p className="text-[11px] text-white/70 flex items-center gap-1"><MapPin size={9} /> {a.place}</p>
+                <div className={`absolute bottom-0 left-0 right-0 ${i === 0 ? 'p-4 sm:p-6' : 'p-3'}`}>
+                  <span className={`${i === 0 ? 'text-2xl sm:text-3xl mb-2' : 'text-lg sm:text-xl mb-1'} block`}>{a.icon}</span>
+                  <h3 className={`${i === 0 ? 'text-lg sm:text-2xl' : 'text-sm sm:text-base'} font-bold text-white leading-tight`}>{a.name}</h3>
+                  <p className={`${i === 0 ? 'text-xs sm:text-sm' : 'text-[11px]'} text-white/70 flex items-center gap-1 mt-0.5`}><MapPin size={i === 0 ? 12 : 9} /> {a.place}</p>
                 </div>
               </Link>
             ))}

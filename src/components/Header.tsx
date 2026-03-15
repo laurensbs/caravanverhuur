@@ -535,7 +535,7 @@ export default function Header() {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
                       <div className="pl-3 pr-2 pb-2 pt-1">
                         <Link href="/bestemmingen" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-2 active:bg-primary/10 transition-colors">
-                          Alle bestemmingen <ArrowRight size={12} />
+                          {t('destinations.allDestinations')} <ArrowRight size={12} />
                         </Link>
 
                         {/* Campings */}

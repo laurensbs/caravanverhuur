@@ -7,7 +7,7 @@ const nl: Dict = {
   nav: {
     home: 'Home',
     caravans: 'Caravans',
-    destinations: 'Bestemmingen',
+    destinations: 'Costa Brava',
     about: 'Over Ons',
     faq: 'FAQ',
     contact: 'Contact',
@@ -293,7 +293,7 @@ const nl: Dict = {
     custom: 'NIEUW',
   },
   destinations: {
-    heroTitle: 'Bestemmingen Costa Brava — Dorpen, Stranden & Campings',
+    heroTitle: 'Costa Brava — Campings, Dorpen & Stranden',
     heroSubtitle: 'Vind jouw ideale vakantiebestemming aan de Spaanse kust: 14 pittoreske plaatsen, 30+ campings en de mooiste stranden',
     highlights: 'Highlights',
     bestFor: 'Perfect voor',
@@ -392,6 +392,7 @@ const nl: Dict = {
     search: 'Zoek...',
     filters: 'Filters',
     interactiveMap: 'Interactieve Kaart',
+    mapSub: 'Tik op een marker om meer te ontdekken over de bestemming',
     noDestinations: 'Geen bestemmingen gevonden',
     topBeaches: 'Top stranden',
     culinaryHighlights: 'Culinaire highlights',
@@ -1276,7 +1277,7 @@ const en: Dict = {
   nav: {
     home: 'Home',
     caravans: 'Caravans',
-    destinations: 'Destinations',
+    destinations: 'Costa Brava',
     about: 'About Us',
     faq: 'FAQ',
     contact: 'Contact',
@@ -1555,7 +1556,7 @@ const en: Dict = {
     custom: 'NEW',
   },
   destinations: {
-    heroTitle: 'Destinations on the Costa Brava',
+    heroTitle: 'Costa Brava — Campings, Towns & Beaches',
     heroSubtitle: 'Discover the most beautiful places on the Spanish coast',
     highlights: 'Highlights',
     bestFor: 'Best for',
@@ -1651,6 +1652,7 @@ const en: Dict = {
     search: 'Search...',
     filters: 'Filters',
     interactiveMap: 'Interactive Map',
+    mapSub: 'Click a marker to discover more about the destination',
     noDestinations: 'No destinations found',
     topBeaches: 'Top beaches',
     culinaryHighlights: 'Culinary highlights',
@@ -2522,7 +2524,7 @@ const es: Dict = {
   nav: {
     home: 'Inicio',
     caravans: 'Caravanas',
-    destinations: 'Destinos',
+    destinations: 'Costa Brava',
     about: 'Sobre Nosotros',
     faq: 'Preguntas',
     contact: 'Contacto',
@@ -2801,7 +2803,7 @@ const es: Dict = {
     custom: 'NUEVO',
   },
   destinations: {
-    heroTitle: 'Destinos en la Costa Brava',
+    heroTitle: 'Costa Brava — Campings, Pueblos y Playas',
     heroSubtitle: 'Descubre los lugares más bonitos de la costa española',
     highlights: 'Destacados',
     bestFor: 'Ideal para',
@@ -2897,6 +2899,7 @@ const es: Dict = {
     search: 'Buscar...',
     filters: 'Filtros',
     interactiveMap: 'Mapa Interactivo',
+    mapSub: 'Haz clic en un marcador para descubrir más sobre el destino',
     noDestinations: 'No se encontraron destinos',
     topBeaches: 'Mejores playas',
     culinaryHighlights: 'Destacados culinarios',
