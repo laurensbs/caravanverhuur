@@ -115,7 +115,7 @@ export default function Footer() {
               alt="Caravanverhuur Costa Brava"
               width={240}
               height={70}
-              className="w-36 h-auto brightness-0 invert mb-3"
+              className="w-36 h-auto mb-3"
               sizes="144px"
             />
             <GoogleStars size={12} />
