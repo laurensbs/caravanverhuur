@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useMemo, useRef } from 'react';
+import { useState, useEffect, ReactNode, useMemo, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -36,11 +36,13 @@ import {
   ExternalLink,
   Search,
   History,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
 import AdminHelpGuide from '@/components/AdminHelpGuide';
-import { ToastProvider } from '@/components/AdminToast';
+import { ToastProvider, useToast } from '@/components/AdminToast';
 
 /* ── Credentials ─────────────────────────────────── */
 // Credentials are now server-side only (src/lib/admin-auth.ts)
@@ -591,6 +593,11 @@ function AdminLayoutInner({
   const [showHelp, setShowHelp] = useState(false);
   const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
   const [badges, setBadges] = useState<Record<string, number>>({});
+  const prevBadgesRef = useRef<Record<string, number>>({});
+  const initialBadgeLoadRef = useRef(true);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ bookings: Record<string, unknown>[]; contacts: Record<string, unknown>[]; customers: Record<string, unknown>[] } | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -598,6 +605,84 @@ function AdminLayoutInner({
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Notification sound via Web Audio API
+  const playNotificationSound = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587, ctx.currentTime); // D5
+      osc1.frequency.setValueAtTime(784, ctx.currentTime + 0.15); // G5
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(587 * 1.5, ctx.currentTime);
+      osc2.frequency.setValueAtTime(784 * 1.5, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.4);
+      osc2.stop(ctx.currentTime + 0.4);
+    } catch { /* audio not available */ }
+  }, []);
+
+  // Restore notification preference
+  useEffect(() => {
+    const saved = localStorage.getItem('admin_notif_enabled');
+    if (saved === 'true') setNotifEnabled(true);
+    if (typeof Notification !== 'undefined') {
+      setNotifPermission(Notification.permission);
+    }
+  }, []);
+
+  const toggleNotifications = useCallback(async () => {
+    if (!notifEnabled) {
+      // Enable: request permission if needed
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        const perm = await Notification.requestPermission();
+        setNotifPermission(perm);
+        if (perm !== 'granted') {
+          toast(t('common.notificationsDisabled'), 'warning');
+          return;
+        }
+      }
+      setNotifEnabled(true);
+      localStorage.setItem('admin_notif_enabled', 'true');
+      toast(t('common.notificationsEnabled'), 'success');
+    } else {
+      setNotifEnabled(false);
+      localStorage.setItem('admin_notif_enabled', 'false');
+      toast(t('common.notificationsDisabled'), 'info');
+    }
+  }, [notifEnabled, toast, t]);
+
+  // Send notification (sound + browser + toast)
+  const sendNotification = useCallback((title: string, body: string, href: string) => {
+    // Sound
+    playNotificationSound();
+
+    // Browser notification
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      const notif = new Notification(title, {
+        body,
+        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png',
+        tag: 'admin-notif-' + Date.now(),
+      });
+      notif.onclick = () => {
+        window.focus();
+        window.location.href = href;
+        notif.close();
+      };
+    }
+
+    // Toast
+    toast(`${title}: ${body}`, 'info');
+  }, [playNotificationSound, toast]);
 
   // Detect mobile (< lg breakpoint)
   useEffect(() => {
@@ -626,7 +711,7 @@ function AdminLayoutInner({
     localStorage.setItem('admin_sidebar_open', String(next));
   };
 
-  // Fetch badge counts periodically
+  // Fetch badge counts periodically & trigger notifications on changes
   useEffect(() => {
     const fetchBadges = () => {
       fetch('/api/admin/badges', { credentials: 'include' })
@@ -638,15 +723,42 @@ function AdminLayoutInner({
             if (data.contacts > 0) map['nav.messages'] = data.contacts;
             if (data.chats > 0) map['nav.chat'] = data.chats;
             if (data.payments > 0) map['nav.payments'] = data.payments;
+
+            // Detect increases and send notifications
+            if (notifEnabled && !initialBadgeLoadRef.current) {
+              const prev = prevBadgesRef.current;
+              const prevChats = prev['nav.chat'] || 0;
+              const prevContacts = prev['nav.messages'] || 0;
+              const newChats = map['nav.chat'] || 0;
+              const newContacts = map['nav.messages'] || 0;
+
+              if (newChats > prevChats && prevChats >= 0) {
+                sendNotification(
+                  t('common.newChat'),
+                  t('common.newChatDesc'),
+                  '/admin/chat'
+                );
+              }
+              if (newContacts > prevContacts && prevContacts >= 0) {
+                sendNotification(
+                  t('common.newContact'),
+                  t('common.newContactDesc'),
+                  '/admin/berichten'
+                );
+              }
+            }
+
+            prevBadgesRef.current = map;
             setBadges(map);
+            initialBadgeLoadRef.current = false;
           }
         })
         .catch(() => {});
     };
     fetchBadges();
-    const interval = setInterval(fetchBadges, 30000); // every 30s
+    const interval = setInterval(fetchBadges, 15000); // every 15s
     return () => clearInterval(interval);
-  }, []);
+  }, [notifEnabled, sendNotification, t]);
 
   // Global search debounced
   useEffect(() => {
@@ -1035,6 +1147,23 @@ function AdminLayoutInner({
             className="sm:hidden p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
           >
             <Search className="w-5 h-5" />
+          </button>
+
+          {/* Notification toggle */}
+          <button
+            onClick={toggleNotifications}
+            className={`relative p-2 rounded-lg transition-colors cursor-pointer ${
+              notifEnabled
+                ? 'text-primary hover:bg-primary/10'
+                : 'text-muted hover:bg-surface-alt hover:text-foreground'
+            }`}
+            aria-label={t('common.notifications')}
+            title={notifEnabled ? t('common.notificationsEnabled') : t('common.enableNotifications')}
+          >
+            {notifEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            {notifEnabled && (badges['nav.chat'] || badges['nav.messages']) ? (
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+            ) : null}
           </button>
 
           <button

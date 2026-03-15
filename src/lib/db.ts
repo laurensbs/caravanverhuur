@@ -1815,7 +1815,7 @@ export async function getBadgeCounts() {
   const [bookings, contacts, chats, payments] = await Promise.all([
     sql`SELECT COUNT(*) as count FROM bookings WHERE status = 'NIEUW'`,
     sql`SELECT COUNT(*) as count FROM contacts WHERE status = 'NIEUW'`,
-    sql`SELECT COUNT(*) as count FROM chat_conversations WHERE status = 'active' OR status = 'waiting'`.catch(() => ({ rows: [{ count: '0' }] })),
+    sql`SELECT COUNT(*) as count FROM chat_conversations WHERE (status IN ('ACTIVE', 'active', 'waiting') OR needs_human = true) AND status != 'CLOSED'`.catch(() => ({ rows: [{ count: '0' }] })),
     sql`SELECT COUNT(*) as count FROM payments WHERE status = 'OPENSTAAND'`,
   ]);
   return {
