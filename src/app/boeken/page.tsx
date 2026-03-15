@@ -23,6 +23,10 @@ import { useData } from '@/lib/data-context';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
+/** Format a Date as YYYY-MM-DD using *local* time (avoids UTC-shift from toISOString) */
+const fmtDate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 /* ------------------------------------------------------------------ */
 /*  Main                                                               */
 /* ------------------------------------------------------------------ */
@@ -349,7 +353,7 @@ function BoekenContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-surface via-white to-surface overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-surface via-white to-surface overflow-x-hidden overflow-clip">
       {/* ===== PROGRESS BAR ===== */}
       <div ref={contentRef} className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -426,13 +430,13 @@ function BoekenContent() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <section className="py-4 pb-24 lg:py-10 lg:pb-12">
+      <section className="py-4 pb-32 lg:py-10 lg:pb-12">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-10">
             {/* Left: Step content */}
             <div>
               <AnimatePresence mode="wait" custom={direction}>
-                <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: 'easeOut' }}>
+                <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: 'easeOut' }} className="overflow-x-hidden">
 
                   {/* ===== STEP 1: DATES ===== */}
                   {step === 1 && (
@@ -458,7 +462,15 @@ function BoekenContent() {
                               <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
                               {t('booking.arrivalLabel')}
                             </label>
-                            <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split('T')[0]}
+                            <input type="date" value={checkIn} onChange={e => {
+                              const ci = e.target.value;
+                              setCheckIn(ci);
+                              if (ci) {
+                                const minOut = new Date(new Date(ci + 'T00:00:00').getTime() + 7 * 86400000);
+                                const minOutStr = fmtDate(minOut);
+                                if (!checkOut || checkOut < minOutStr) setCheckOut(minOutStr);
+                              }
+                            }} min={fmtDate(new Date())}
                               className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm text-foreground font-medium" />
                           </div>
                           <div>
@@ -466,7 +478,7 @@ function BoekenContent() {
                               <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center"><CalendarDays size={14} className="text-primary" /></div>
                               {t('booking.departureLabel')}
                             </label>
-                            <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split('T')[0]}
+                            <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn ? fmtDate(new Date(new Date(checkIn + 'T00:00:00').getTime() + 7 * 86400000)) : fmtDate(new Date())}
                               className="w-full px-4 py-3 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm text-foreground font-medium" />
                           </div>
                         </div>
@@ -505,15 +517,16 @@ function BoekenContent() {
                           ].map(q => {
                             // Use the already-entered check-in date, or fall back to 4 months from now
                             const start = checkIn ? new Date(checkIn + 'T00:00:00') : (() => { const d = new Date(); d.setMonth(d.getMonth() + 4); d.setDate(1); return d; })();
-                            // Use UTC-based arithmetic to avoid DST issues
                             const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + q.days);
-                            const isActive = checkIn === start.toISOString().split('T')[0] && checkOut === end.toISOString().split('T')[0];
+                            const startStr = fmtDate(start);
+                            const endStr = fmtDate(end);
+                            const isActive = checkIn === startStr && checkOut === endStr;
                             return (
                               <button
                                 key={q.label}
                                 onClick={() => {
-                                  if (!checkIn) setCheckIn(start.toISOString().split('T')[0]);
-                                  setCheckOut(end.toISOString().split('T')[0]);
+                                  if (!checkIn) setCheckIn(startStr);
+                                  setCheckOut(endStr);
                                 }}
                                 className={`group relative rounded-xl overflow-hidden text-left transition-all cursor-pointer aspect-[4/3] ${
                                   isActive ? 'ring-2 ring-accent ring-offset-2 shadow-lg' : 'hover:shadow-lg hover:scale-[1.02]'
@@ -628,11 +641,11 @@ function BoekenContent() {
 
                       {/* Camping not listed */}
                       {!campingRequestSent ? (
-                        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+                        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 mb-4">
                           {!showCampingRequest ? (
                             <button
                               onClick={() => setShowCampingRequest(true)}
-                              className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors py-1"
+                              className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors py-2 bg-primary/5 rounded-xl"
                             >
                               <Info size={16} />
                               {t('booking.campingNotListed')}
@@ -860,7 +873,7 @@ function BoekenContent() {
                                         {/* Photo gallery */}
                                         <div>
                                           <p className="text-sm font-semibold text-foreground mb-3">{t('booking.photosLabel')}</p>
-                                          <div className="grid grid-cols-3 gap-2">
+                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                             {c.photos.map((photo, idx) => (
                                               <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
                                                 <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover transition-transform duration-300" />
@@ -876,10 +889,10 @@ function BoekenContent() {
                                         {/* All amenities */}
                                         <div>
                                           <p className="text-sm font-semibold text-foreground mb-2">{t('booking.amenitiesLabel')}</p>
-                                          <div className="flex flex-wrap gap-1.5">
+                                          <div className="flex flex-wrap gap-1.5 max-w-full">
                                             {c.amenities.map(a => (
-                                              <span key={a} className="text-xs font-medium bg-primary-50 text-primary-dark px-2.5 py-1 rounded-full flex items-center gap-1">
-                                                <Check size={10} className="text-primary" />{a}
+                                              <span key={a} className="text-xs font-medium bg-primary-50 text-primary-dark px-2.5 py-1 rounded-full flex items-center gap-1 break-words">
+                                                <Check size={10} className="text-primary shrink-0" />{a}
                                               </span>
                                             ))}
                                           </div>
@@ -887,9 +900,9 @@ function BoekenContent() {
                                         {/* Inventory */}
                                         <div>
                                           <p className="text-sm font-semibold text-foreground mb-2">{t('booking.inventoryLabel')}</p>
-                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-w-full">
                                             {c.inventory.map(item => (
-                                              <span key={item} className="text-xs text-muted bg-surface rounded-lg px-2.5 py-1.5">{item}</span>
+                                              <span key={item} className="text-xs text-muted bg-surface rounded-lg px-2.5 py-1.5 truncate">{item}</span>
                                             ))}
                                           </div>
                                         </div>

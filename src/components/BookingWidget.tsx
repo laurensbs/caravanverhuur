@@ -113,7 +113,8 @@ export default function BookingWidget() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setMounted(true);
-    setToday(new Date().toISOString().split('T')[0]);
+    const d = new Date();
+    setToday(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
     const check = () => setIsMobile(window.innerWidth < 1024);
     check();
     window.addEventListener('resize', check);
