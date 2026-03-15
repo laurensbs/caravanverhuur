@@ -15,7 +15,7 @@ import {
   Sun,
   Zap,
   Tag,
-  Info,
+  Pencil,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -40,28 +40,45 @@ const TYPE_CONFIG = {
   lastminute: { icon: Zap, color: 'text-red-600 bg-red-50', label_nl: 'Last Minute', label_en: 'Last Minute' },
 };
 
+/* ——— Presets: one-click rule templates ——— */
+const PRESETS_NL = [
+  { name: 'Hoogseizoen jul-aug', type: 'seizoen' as const, percentage: 20, startDate: '2026-07-01', endDate: '2026-08-31', minNights: 7 },
+  { name: 'Voorseizoen jun & sep', type: 'seizoen' as const, percentage: 10, startDate: '2026-06-01', endDate: '2026-06-30', minNights: 5 },
+  { name: 'Vroegboekkorting', type: 'vroegboek' as const, percentage: -10, daysBefore: 90, minNights: 7 },
+  { name: 'Last Minute deal', type: 'lastminute' as const, percentage: -15, daysBefore: 14, minNights: 3 },
+];
+const PRESETS_EN = [
+  { name: 'Peak season Jul-Aug', type: 'seizoen' as const, percentage: 20, startDate: '2026-07-01', endDate: '2026-08-31', minNights: 7 },
+  { name: 'Shoulder season Jun & Sep', type: 'seizoen' as const, percentage: 10, startDate: '2026-06-01', endDate: '2026-06-30', minNights: 5 },
+  { name: 'Early bird discount', type: 'vroegboek' as const, percentage: -10, daysBefore: 90, minNights: 7 },
+  { name: 'Last minute deal', type: 'lastminute' as const, percentage: -15, daysBefore: 14, minNights: 3 },
+];
+
 export default function PrijzenPage() {
   const { t, locale } = useAdmin();
   const { toast } = useToast();
   const [rules, setRules] = useState<PricingRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  // Create form
-  const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState<'seizoen' | 'vroegboek' | 'lastminute'>('seizoen');
-  const [newPercentage, setNewPercentage] = useState('');
-  const [newStartDate, setNewStartDate] = useState('');
-  const [newEndDate, setNewEndDate] = useState('');
-  const [newDaysBefore, setNewDaysBefore] = useState('');
-  const [newMinNights, setNewMinNights] = useState('7');
-  const [newPriority, setNewPriority] = useState('0');
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState('');
+  // Create/edit form
+  const [formName, setFormName] = useState('');
+  const [formType, setFormType] = useState<'seizoen' | 'vroegboek' | 'lastminute'>('seizoen');
+  const [formPercentage, setFormPercentage] = useState('');
+  const [formStartDate, setFormStartDate] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
+  const [formDaysBefore, setFormDaysBefore] = useState('');
+  const [formMinNights, setFormMinNights] = useState('7');
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
   // Delete
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const isNL = locale === 'nl';
+  const presets = isNL ? PRESETS_NL : PRESETS_EN;
 
   const fetchRules = useCallback(() => {
     fetch('/api/admin/pricing')
@@ -73,37 +90,85 @@ export default function PrijzenPage() {
 
   useEffect(() => { fetchRules(); }, [fetchRules]);
 
-  const handleCreate = async () => {
-    setCreateError('');
-    if (!newName.trim() || !newPercentage.trim()) {
-      setCreateError(locale === 'nl' ? 'Vul naam en percentage in' : 'Enter name and percentage');
+  const resetForm = () => {
+    setFormName(''); setFormType('seizoen'); setFormPercentage('');
+    setFormStartDate(''); setFormEndDate(''); setFormDaysBefore('');
+    setFormMinNights('7'); setFormError('');
+  };
+
+  const openCreate = (preset?: typeof PRESETS_NL[0]) => {
+    setEditId(null);
+    if (preset) {
+      setFormName(preset.name);
+      setFormType(preset.type);
+      setFormPercentage(String(preset.percentage));
+      setFormStartDate(preset.startDate || '');
+      setFormEndDate(preset.endDate || '');
+      setFormDaysBefore(preset.daysBefore ? String(preset.daysBefore) : '');
+      setFormMinNights(String(preset.minNights || 7));
+    } else {
+      resetForm();
+    }
+    setShowCreate(true);
+  };
+
+  const openEdit = (rule: PricingRule) => {
+    setEditId(rule.id);
+    setFormName(rule.name);
+    setFormType(rule.type);
+    setFormPercentage(rule.percentage);
+    setFormStartDate(rule.start_date?.split('T')[0] || '');
+    setFormEndDate(rule.end_date?.split('T')[0] || '');
+    setFormDaysBefore(rule.days_before_checkin != null ? String(rule.days_before_checkin) : '');
+    setFormMinNights(String(rule.min_nights));
+    setFormError('');
+    setShowCreate(true);
+  };
+
+  const handleSave = async () => {
+    setFormError('');
+    if (!formName.trim() || !formPercentage.trim()) {
+      setFormError(isNL ? 'Vul naam en percentage in' : 'Enter name and percentage');
       return;
     }
-    setCreating(true);
+    setSaving(true);
     try {
-      const res = await fetch('/api/admin/pricing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newName.trim(),
-          type: newType,
-          percentage: parseFloat(newPercentage),
-          startDate: newStartDate || undefined,
-          endDate: newEndDate || undefined,
-          daysBeforeCheckin: newDaysBefore ? parseInt(newDaysBefore) : undefined,
-          minNights: parseInt(newMinNights) || 1,
-          priority: parseInt(newPriority) || 0,
-        }),
-      });
-      if (!res.ok) throw new Error();
-      toast(locale === 'nl' ? 'Prijsregel aangemaakt' : 'Pricing rule created', 'success');
+      const payload = {
+        name: formName.trim(),
+        type: formType,
+        percentage: parseFloat(formPercentage),
+        startDate: formStartDate || undefined,
+        endDate: formEndDate || undefined,
+        daysBeforeCheckin: formDaysBefore ? parseInt(formDaysBefore) : undefined,
+        minNights: parseInt(formMinNights) || 1,
+        priority: 0,
+      };
+
+      if (editId) {
+        const res = await fetch('/api/admin/pricing', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editId, ...payload }),
+        });
+        if (!res.ok) throw new Error();
+        toast(isNL ? 'Prijsregel bijgewerkt' : 'Pricing rule updated', 'success');
+      } else {
+        const res = await fetch('/api/admin/pricing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error();
+        toast(isNL ? 'Prijsregel aangemaakt' : 'Pricing rule created', 'success');
+      }
       setShowCreate(false);
-      setNewName(''); setNewPercentage(''); setNewStartDate(''); setNewEndDate(''); setNewDaysBefore(''); setNewMinNights('7'); setNewPriority('0');
+      resetForm();
+      setEditId(null);
       fetchRules();
     } catch {
-      setCreateError(locale === 'nl' ? 'Fout bij aanmaken' : 'Failed to create');
+      setFormError(isNL ? 'Fout bij opslaan' : 'Failed to save');
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
   };
 
@@ -115,11 +180,11 @@ export default function PrijzenPage() {
         body: JSON.stringify({ id: rule.id, active: !rule.active }),
       });
       toast(rule.active
-        ? (locale === 'nl' ? 'Regel gedeactiveerd' : 'Rule deactivated')
-        : (locale === 'nl' ? 'Regel geactiveerd' : 'Rule activated'), 'success');
+        ? (isNL ? 'Regel gedeactiveerd' : 'Rule deactivated')
+        : (isNL ? 'Regel geactiveerd' : 'Rule activated'), 'success');
       fetchRules();
     } catch {
-      toast(locale === 'nl' ? 'Fout bij wijzigen' : 'Failed to update', 'error');
+      toast(isNL ? 'Fout bij wijzigen' : 'Failed to update', 'error');
     }
   };
 
@@ -128,168 +193,201 @@ export default function PrijzenPage() {
     setDeleting(true);
     try {
       await fetch(`/api/admin/pricing?id=${deleteId}`, { method: 'DELETE' });
-      toast(locale === 'nl' ? 'Regel verwijderd' : 'Rule deleted', 'success');
+      toast(isNL ? 'Regel verwijderd' : 'Rule deleted', 'success');
       setDeleteId(null);
       fetchRules();
     } catch {
-      toast(locale === 'nl' ? 'Fout bij verwijderen' : 'Failed to delete', 'error');
+      toast(isNL ? 'Fout bij verwijderen' : 'Failed to delete', 'error');
     } finally {
       setDeleting(false);
     }
   };
 
-  const formatDate = (d: string | null) => {
+  const fmtDate = (d: string | null) => {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(d).toLocaleDateString(isNL ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short' });
   };
 
-  const isNL = locale === 'nl';
+  const pctLabel = (p: string) => {
+    const n = parseFloat(p);
+    return n > 0 ? `+${n}%` : `${n}%`;
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <Tag size={22} className="text-primary" />
+          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+            <Tag size={20} className="text-primary" />
             {isNL ? 'Prijsregels' : 'Pricing Rules'}
           </h1>
-          <p className="text-sm text-muted mt-0.5">
-            {isNL ? 'Beheer seizoensprijzen, vroegboekkorting en last-minute deals' : 'Manage seasonal pricing, early bird discounts and last-minute deals'}
+          <p className="text-xs text-muted mt-0.5">
+            {isNL ? 'Seizoensprijzen, vroegboekkorting en last-minute deals' : 'Seasonal pricing, early bird & last-minute deals'}
           </p>
         </div>
-        <button onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer">
-          <Plus size={16} />
+        <button onClick={() => openCreate()}
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer">
+          <Plus size={14} />
           <span className="hidden sm:inline">{isNL ? 'Nieuwe regel' : 'New rule'}</span>
         </button>
       </div>
 
-      {/* Info banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2.5">
-        <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
-        <div className="text-xs text-blue-800 space-y-1">
-          <p className="font-semibold">{isNL ? 'Hoe werken prijsregels?' : 'How do pricing rules work?'}</p>
-          <p>{isNL
-            ? '• Seizoensprijs: Toeslag (+) of korting (-) op de basisprijs voor een bepaalde periode (bijv. +20% hoogseizoen juli-aug).'
-            : '• Seasonal price: Surcharge (+) or discount (-) on base price for a specific period (e.g. +20% peak season Jul-Aug).'}</p>
-          <p>{isNL
-            ? '• Vroegboekkorting: Korting als de klant ruim van tevoren boekt (bijv. -10% als > 90 dagen voor aankomst).'
-            : '• Early bird: Discount if customer books well in advance (e.g. -10% if > 90 days before arrival).'}</p>
-          <p>{isNL
-            ? '• Last minute: Korting als de aankomstdatum dichtbij is (bijv. -15% als < 14 dagen voor aankomst).'
-            : '• Last minute: Discount if arrival date is near (e.g. -15% if < 14 days before arrival).'}</p>
-          <p className="text-blue-600 font-medium">{isNL
-            ? 'Percentage: positief = toeslag, negatief = korting. Regels met hogere prioriteit worden eerst toegepast.'
-            : 'Percentage: positive = surcharge, negative = discount. Rules with higher priority are applied first.'}</p>
+      {/* Quick presets — only show when no rules exist or always as suggestions */}
+      {rules.length === 0 && !showCreate && (
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <p className="text-xs font-semibold text-foreground mb-3">
+            {isNL ? '⚡ Snel starten — klik om aan te maken:' : '⚡ Quick start — click to create:'}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {presets.map((p, i) => {
+              const cfg = TYPE_CONFIG[p.type];
+              const Icon = cfg.icon;
+              const isDiscount = p.percentage < 0;
+              return (
+                <button key={i} onClick={() => openCreate(p)}
+                  className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 text-left transition-all cursor-pointer group">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cfg.color}`}>
+                    <Icon size={14} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-foreground truncate">{p.name}</div>
+                    <div className={`text-xs font-bold ${isDiscount ? 'text-green-600' : 'text-amber-600'}`}>
+                      {isDiscount ? '' : '+'}{p.percentage}%
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Create form */}
+      {/* Create / Edit form */}
       {showCreate && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 space-y-4">
-          <h2 className="font-bold text-foreground">{isNL ? 'Nieuwe prijsregel' : 'New Pricing Rule'}</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-sm text-foreground">
+              {editId ? (isNL ? 'Regel bewerken' : 'Edit Rule') : (isNL ? 'Nieuwe prijsregel' : 'New Pricing Rule')}
+            </h2>
+            <button onClick={() => { setShowCreate(false); setEditId(null); resetForm(); }} className="text-muted cursor-pointer">
+              <X size={16} />
+            </button>
+          </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">{isNL ? 'Naam' : 'Name'}</label>
-              <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
-                placeholder={isNL ? 'Bijv. Hoogseizoen 2026' : 'E.g. Peak Season 2026'}
-                className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">Type</label>
-              <div className="flex gap-2">
-                {(['seizoen', 'vroegboek', 'lastminute'] as const).map(t => {
-                  const cfg = TYPE_CONFIG[t];
-                  return (
-                    <button key={t} onClick={() => setNewType(t)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${newType === t ? 'bg-primary text-white' : 'bg-surface text-foreground-light border border-border'}`}>
-                      {locale === 'nl' ? cfg.label_nl : cfg.label_en}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
-                {isNL ? 'Percentage (%)' : 'Percentage (%)'}
-              </label>
-              <div className="relative">
-                <input type="number" value={newPercentage} onChange={e => setNewPercentage(e.target.value)}
-                  placeholder={isNL ? 'Bijv. 20 of -10' : 'E.g. 20 or -10'}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none pr-8" />
-                <Percent size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
-                {isNL ? 'Prioriteit' : 'Priority'}
-              </label>
-              <input type="number" value={newPriority} onChange={e => setNewPriority(e.target.value)}
-                placeholder="0"
-                className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
+          {/* Type selector */}
+          <div>
+            <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1.5 block">Type</label>
+            <div className="flex gap-1.5">
+              {(['seizoen', 'vroegboek', 'lastminute'] as const).map(tp => {
+                const cfg = TYPE_CONFIG[tp];
+                const Icon = cfg.icon;
+                return (
+                  <button key={tp} onClick={() => setFormType(tp)}
+                    className={`flex items-center gap-1.5 flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      formType === tp ? 'bg-foreground text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    }`}>
+                    <Icon size={12} />
+                    {isNL ? cfg.label_nl : cfg.label_en}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Conditional fields based on type */}
-          {newType === 'seizoen' && (
-            <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-3">
+            {/* Name */}
+            <div>
+              <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 block">{isNL ? 'Naam' : 'Name'}</label>
+              <input type="text" value={formName} onChange={e => setFormName(e.target.value)}
+                placeholder={isNL ? 'Bijv. Hoogseizoen 2026' : 'E.g. Peak Season 2026'}
+                className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+            </div>
+
+            {/* Percentage */}
+            <div>
+              <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 block">
+                {isNL ? 'Percentage' : 'Percentage'}
+                <span className="normal-case text-gray-400 font-normal ml-1">
+                  ({isNL ? 'positief = toeslag, negatief = korting' : 'positive = surcharge, negative = discount'})
+                </span>
+              </label>
+              <div className="relative">
+                <input type="number" value={formPercentage} onChange={e => setFormPercentage(e.target.value)}
+                  placeholder={isNL ? 'Bijv. 20 of -10' : 'E.g. 20 or -10'}
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none pr-8" />
+                <Percent size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              </div>
+            </div>
+          </div>
+
+          {/* Conditional fields */}
+          {formType === 'seizoen' && (
+            <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
-                  <Calendar size={12} className="inline mr-1" />{isNL ? 'Startdatum' : 'Start date'}
+                <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Calendar size={10} />{isNL ? 'Van' : 'From'}
                 </label>
-                <input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
+                <input type="date" value={formStartDate} onChange={e => setFormStartDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
-                  <Calendar size={12} className="inline mr-1" />{isNL ? 'Einddatum' : 'End date'}
+                <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Calendar size={10} />{isNL ? 'Tot' : 'To'}
                 </label>
-                <input type="date" value={newEndDate} onChange={e => setNewEndDate(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
+                <input type="date" value={formEndDate} onChange={e => setFormEndDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
             </div>
           )}
 
-          {(newType === 'vroegboek' || newType === 'lastminute') && (
-            <div className="grid sm:grid-cols-2 gap-4">
+          {(formType === 'vroegboek' || formType === 'lastminute') && (
+            <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
-                  <Clock size={12} className="inline mr-1" />
-                  {newType === 'vroegboek'
-                    ? (isNL ? 'Min. dagen vóór aankomst' : 'Min. days before arrival')
-                    : (isNL ? 'Max. dagen vóór aankomst' : 'Max. days before arrival')}
+                <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Clock size={10} />
+                  {formType === 'vroegboek'
+                    ? (isNL ? 'Minimaal dagen vóór aankomst' : 'Min. days before arrival')
+                    : (isNL ? 'Maximaal dagen vóór aankomst' : 'Max. days before arrival')}
                 </label>
-                <input type="number" value={newDaysBefore} onChange={e => setNewDaysBefore(e.target.value)}
-                  placeholder={newType === 'vroegboek' ? '90' : '14'}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
+                <input type="number" value={formDaysBefore} onChange={e => setFormDaysBefore(e.target.value)}
+                  placeholder={formType === 'vroegboek' ? '90' : '14'}
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">
+                <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 block">
                   {isNL ? 'Min. nachten' : 'Min. nights'}
                 </label>
-                <input type="number" value={newMinNights} onChange={e => setNewMinNights(e.target.value)}
+                <input type="number" value={formMinNights} onChange={e => setFormMinNights(e.target.value)}
                   placeholder="7"
-                  className="w-full px-3 py-2.5 rounded-xl text-sm border border-border bg-surface focus:ring-2 focus:ring-primary/20 outline-none" />
+                  className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
             </div>
           )}
 
-          {createError && (
-            <p className="text-sm text-red-600 flex items-center gap-1"><X size={14} /> {createError}</p>
+          {formType === 'seizoen' && (
+            <div className="sm:w-1/2">
+              <label className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1 block">
+                {isNL ? 'Min. nachten' : 'Min. nights'}
+              </label>
+              <input type="number" value={formMinNights} onChange={e => setFormMinNights(e.target.value)}
+                placeholder="7"
+                className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:ring-2 focus:ring-primary/20 outline-none" />
+            </div>
           )}
 
-          <div className="flex justify-end gap-2">
-            <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm rounded-xl border border-border text-muted cursor-pointer">
+          {formError && (
+            <p className="text-xs text-red-600 flex items-center gap-1"><X size={12} /> {formError}</p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button onClick={() => { setShowCreate(false); setEditId(null); resetForm(); }}
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-muted cursor-pointer">
               {isNL ? 'Annuleren' : 'Cancel'}
             </button>
-            <button onClick={handleCreate} disabled={creating}
-              className="flex items-center gap-1.5 px-5 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50">
-              {creating ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            <button onClick={handleSave} disabled={saving}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50">
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               {isNL ? 'Opslaan' : 'Save'}
             </button>
           </div>
@@ -299,64 +397,58 @@ export default function PrijzenPage() {
       {/* Rules list */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-muted" /></div>
-      ) : rules.length === 0 ? (
-        <div className="text-center py-12 text-muted">
-          <Tag size={32} className="mx-auto mb-2 opacity-40" />
-          <p className="text-sm">{isNL ? 'Geen prijsregels. Maak er een aan om te beginnen.' : 'No pricing rules. Create one to get started.'}</p>
+      ) : rules.length === 0 && !showCreate ? (
+        <div className="text-center py-8 text-muted">
+          <Tag size={28} className="mx-auto mb-2 opacity-30" />
+          <p className="text-xs">{isNL ? 'Nog geen prijsregels. Gebruik bovenstaande presets of maak er zelf een.' : 'No pricing rules yet. Use the presets above or create your own.'}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {rules.map(rule => {
             const cfg = TYPE_CONFIG[rule.type as keyof typeof TYPE_CONFIG];
             const Icon = cfg?.icon || Tag;
             const pct = parseFloat(rule.percentage);
             const isDiscount = pct < 0;
             return (
-              <div key={rule.id} className={`bg-white rounded-xl border ${rule.active ? 'border-gray-200' : 'border-gray-100 opacity-60'} p-4 sm:p-5`}>
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${cfg?.color || 'text-gray-600 bg-gray-50'}`}>
-                    <Icon size={18} />
+              <div key={rule.id} className={`bg-white rounded-xl border ${rule.active ? 'border-gray-200' : 'border-gray-100 opacity-50'} p-3 sm:p-4`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cfg?.color || 'text-gray-600 bg-gray-50'}`}>
+                    <Icon size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-foreground text-sm">{rule.name}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-semibold text-foreground text-sm">{rule.name}</h3>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                         isDiscount ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
                       }`}>
-                        {isDiscount ? '' : '+'}{pct}%
-                      </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg?.color || 'bg-gray-50 text-gray-600'}`}>
-                        {locale === 'nl' ? cfg?.label_nl : cfg?.label_en}
+                        {pctLabel(rule.percentage)}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted">
+                    <div className="flex flex-wrap gap-x-3 mt-0.5 text-[11px] text-muted">
                       {rule.type === 'seizoen' && rule.start_date && (
-                        <span className="flex items-center gap-1">
-                          <Calendar size={11} /> {formatDate(rule.start_date)} — {formatDate(rule.end_date)}
-                        </span>
+                        <span>{fmtDate(rule.start_date)} — {fmtDate(rule.end_date)}</span>
                       )}
                       {(rule.type === 'vroegboek' || rule.type === 'lastminute') && rule.days_before_checkin != null && (
-                        <span className="flex items-center gap-1">
-                          <Clock size={11} />
-                          {rule.type === 'vroegboek'
-                            ? `≥ ${rule.days_before_checkin} ${isNL ? 'dagen vóór aankomst' : 'days before arrival'}`
-                            : `≤ ${rule.days_before_checkin} ${isNL ? 'dagen vóór aankomst' : 'days before arrival'}`}
+                        <span>
+                          {rule.type === 'vroegboek' ? '≥' : '≤'} {rule.days_before_checkin} {isNL ? 'dgn' : 'days'}
                         </span>
                       )}
                       {rule.min_nights > 1 && (
-                        <span>Min. {rule.min_nights} {isNL ? 'nachten' : 'nights'}</span>
+                        <span>≥ {rule.min_nights} {isNL ? 'n.' : 'n.'}</span>
                       )}
-                      <span>Prio: {rule.priority}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => openEdit(rule)} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer" title={isNL ? 'Bewerken' : 'Edit'}>
+                      <Pencil size={13} />
+                    </button>
                     <button onClick={() => handleToggle(rule)} className="cursor-pointer" title={rule.active ? 'Deactivate' : 'Activate'}>
                       {rule.active
-                        ? <ToggleRight size={24} className="text-primary" />
-                        : <ToggleLeft size={24} className="text-gray-300" />}
+                        ? <ToggleRight size={22} className="text-primary" />
+                        : <ToggleLeft size={22} className="text-gray-300" />}
                     </button>
-                    <button onClick={() => setDeleteId(rule.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors cursor-pointer">
-                      <Trash2 size={15} />
+                    <button onClick={() => setDeleteId(rule.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -366,19 +458,41 @@ export default function PrijzenPage() {
         </div>
       )}
 
+      {/* How it works — collapsible hint */}
+      <details className="group">
+        <summary className="text-[11px] text-muted cursor-pointer select-none flex items-center gap-1 hover:text-foreground transition-colors">
+          <span className="group-open:rotate-90 transition-transform">▸</span>
+          {isNL ? 'Hoe werken prijsregels?' : 'How do pricing rules work?'}
+        </summary>
+        <div className="mt-2 bg-gray-50 rounded-lg p-3 text-[11px] text-gray-500 space-y-1">
+          <p>{isNL
+            ? '• Seizoensprijs: toeslag (+) of korting (-) voor een periode, bijv. +20% in juli-augustus.'
+            : '• Seasonal: surcharge (+) or discount (-) for a date range, e.g. +20% in Jul-Aug.'}</p>
+          <p>{isNL
+            ? '• Vroegboekkorting: korting als de klant vroeg boekt, bijv. -10% als > 90 dagen vooruit.'
+            : '• Early bird: discount for booking in advance, e.g. -10% if > 90 days ahead.'}</p>
+          <p>{isNL
+            ? '• Last Minute: korting als de aankomstdatum dichtbij is, bijv. -15% als < 14 dagen.'
+            : '• Last minute: discount when arrival is near, e.g. -15% if < 14 days away.'}</p>
+          <p className="text-gray-400">{isNL
+            ? 'Alle actieve regels die matchen worden gestapeld op de basisprijs.'
+            : 'All matching active rules are stacked on the base price.'}</p>
+        </div>
+      </details>
+
       {/* Delete confirmation modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setDeleteId(null)}>
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-foreground mb-2">{isNL ? 'Regel verwijderen?' : 'Delete rule?'}</h3>
-            <p className="text-sm text-muted mb-5">{isNL ? 'Dit kan niet ongedaan worden gemaakt.' : 'This cannot be undone.'}</p>
+          <div className="bg-white rounded-xl p-5 max-w-xs w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-sm text-foreground mb-1">{isNL ? 'Regel verwijderen?' : 'Delete rule?'}</h3>
+            <p className="text-xs text-muted mb-4">{isNL ? 'Dit kan niet ongedaan worden gemaakt.' : 'This cannot be undone.'}</p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-sm rounded-xl border border-border text-muted cursor-pointer">
+              <button onClick={() => setDeleteId(null)} className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-muted cursor-pointer">
                 {isNL ? 'Annuleren' : 'Cancel'}
               </button>
               <button onClick={handleDelete} disabled={deleting}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 cursor-pointer disabled:opacity-50">
-                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 cursor-pointer disabled:opacity-50">
+                {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                 {isNL ? 'Verwijderen' : 'Delete'}
               </button>
             </div>

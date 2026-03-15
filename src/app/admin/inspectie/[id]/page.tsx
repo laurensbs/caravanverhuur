@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAdmin } from '@/i18n/admin-context';
@@ -23,10 +23,11 @@ import {
   Calendar,
   Car,
   Hash,
-  Sparkles,
   Check,
   X,
   MessageSquare,
+  Trash2,
+  ImageIcon,
 } from 'lucide-react';
 
 interface BorgItem {
@@ -34,6 +35,7 @@ interface BorgItem {
   item: string;
   status: 'nvt' | 'goed' | 'beschadigd' | 'ontbreekt';
   notes: string;
+  photos?: string[]; // base64 compressed images
 }
 
 interface BorgChecklist {
@@ -64,6 +66,35 @@ const statusConfig = {
   nvt: { icon: Minus, label: 'N.v.t.', color: 'bg-gray-400', activeColor: 'bg-gray-400 text-white ring-gray-400/30', emoji: '—' },
 };
 
+/** Compress image file to max 800px JPEG, returns base64 data URL */
+function compressImage(file: File, maxSize = 800, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > height) {
+          if (width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
+        } else {
+          if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas error')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function InspectiePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -80,6 +111,8 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
   const [activeNote, setActiveNote] = useState<number | null>(null);
   const [noteText, setNoteText] = useState('');
   const [completed, setCompleted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
 
   const fetchChecklist = useCallback(async () => {
     try {
@@ -163,6 +196,35 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       if (!prev) return prev;
       const newItems = [...prev.items];
       newItems[globalIndex] = { ...newItems[globalIndex], notes };
+      return { ...prev, items: newItems };
+    });
+  };
+
+  const addPhoto = async (globalIndex: number, file: File) => {
+    setPhotoProcessing(true);
+    try {
+      const base64 = await compressImage(file);
+      setChecklist(prev => {
+        if (!prev) return prev;
+        const newItems = [...prev.items];
+        const photos = [...(newItems[globalIndex].photos || []), base64];
+        newItems[globalIndex] = { ...newItems[globalIndex], photos };
+        return { ...prev, items: newItems };
+      });
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
+
+  const removePhoto = (globalIndex: number, photoIndex: number) => {
+    setChecklist(prev => {
+      if (!prev) return prev;
+      const newItems = [...prev.items];
+      const photos = [...(newItems[globalIndex].photos || [])];
+      photos.splice(photoIndex, 1);
+      newItems[globalIndex] = { ...newItems[globalIndex], photos };
       return { ...prev, items: newItems };
     });
   };
@@ -421,15 +483,75 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               </div>
 
               {/* Quick note toggle */}
-              <div className="mt-6">
-                {activeNote === currentItem.globalIndex ? (
-                  <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
+              <div className="mt-5 space-y-3">
+                {/* Photo capture */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && currentItem) addPhoto(currentItem.globalIndex, file);
+                    e.target.value = '';
+                  }}
+                />
+
+                {/* Photo thumbnails */}
+                {currentItem.item.photos && currentItem.item.photos.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {currentItem.item.photos.map((photo, pi) => (
+                      <div key={pi} className="relative w-16 h-16 rounded-lg overflow-hidden group">
+                        <img src={photo} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removePhoto(currentItem.globalIndex, pi)}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          <X size={10} className="text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action row: camera + note */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={photoProcessing}
+                    className="flex-1 py-3 bg-white rounded-xl text-sm text-gray-500 flex items-center justify-center gap-2 cursor-pointer hover:text-gray-700 hover:shadow-sm transition-all shadow-sm"
+                  >
+                    {photoProcessing ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                    {t('inspection.addPhoto') || 'Foto'}
+                    {currentItem.item.photos && currentItem.item.photos.length > 0 && (
+                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded-full">{currentItem.item.photos.length}</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (activeNote === currentItem.globalIndex) {
+                        setActiveNote(null);
+                      } else {
+                        setActiveNote(currentItem.globalIndex);
+                        setNoteText(currentItem.item.notes || '');
+                      }
+                    }}
+                    className="flex-1 py-3 bg-white rounded-xl text-sm text-gray-500 flex items-center justify-center gap-2 cursor-pointer hover:text-gray-700 hover:shadow-sm transition-all shadow-sm"
+                  >
+                    <StickyNote size={14} />
+                    {currentItem.item.notes ? t('inspection.editRemark') : t('inspection.addRemark')}
+                  </button>
+                </div>
+
+                {activeNote === currentItem.globalIndex && (
+                  <div className="bg-white rounded-xl p-3 shadow-sm">
+                    <div className="flex items-center justify-between mb-1.5">
                       <span className="text-xs font-semibold text-gray-500 flex items-center gap-1">
-                        <MessageSquare size={12} /> {t('inspection.remark')}
+                        <MessageSquare size={11} /> {t('inspection.remark')}
                       </span>
                       <button onClick={() => setActiveNote(null)} className="text-gray-400 cursor-pointer">
-                        <X size={16} />
+                        <X size={14} />
                       </button>
                     </div>
                     <textarea
@@ -438,20 +560,9 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                       placeholder={t("inspection.describeProblem")}
                       rows={2}
                       autoFocus
-                      className="w-full px-3 py-2 bg-[#FAFAF9] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                      className="w-full px-3 py-2 bg-[#FAFAF9] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                     />
                   </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setActiveNote(currentItem.globalIndex);
-                      setNoteText(currentItem.item.notes || '');
-                    }}
-                    className="w-full py-3 text-sm text-gray-400 flex items-center justify-center gap-2 cursor-pointer hover:text-gray-600 transition"
-                  >
-                    <StickyNote size={14} />
-                    {currentItem.item.notes ? t('inspection.editRemark') : t('inspection.addRemark')}
-                  </button>
                 )}
               </div>
             </motion.div>
@@ -530,10 +641,17 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                     ) : (
                       <XCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm text-gray-900 font-medium">{item.item}</div>
                       <div className="text-xs text-gray-400">{item.category}</div>
                       {item.notes && <div className="text-xs text-gray-500 mt-0.5">{item.notes}</div>}
+                      {item.photos && item.photos.length > 0 && (
+                        <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                          {item.photos.map((p, pi) => (
+                            <img key={pi} src={p} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
