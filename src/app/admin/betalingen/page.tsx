@@ -11,6 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import {
   getPaymentStatusColor,
   formatDateTime,
@@ -27,6 +28,7 @@ const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'HUU
 
 export default function BetalingenPage() {
   const { t, ts } = useAdmin();
+  const { toast } = useToast();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -64,8 +66,9 @@ export default function BetalingenPage() {
             : p
         )
       );
+      toast(t('common.saved'), 'success');
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
     setUpdatingId(null);
   };
@@ -86,9 +89,12 @@ export default function BetalingenPage() {
               : p
           )
         );
+        toast(t('payments.refunded'), 'success');
+      } else {
+        toast(t('common.actionFailed'), 'error');
       }
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
     setRefundingId(null);
     setRefundConfirm(null);

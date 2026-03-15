@@ -25,6 +25,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface Newsletter {
@@ -91,6 +92,7 @@ function formatDateTime(d: string | null, locale = 'nl-NL') {
 
 export default function AdminNieuwsbrieven() {
   const { t, ts, dateLocale } = useAdmin();
+  const { toast } = useToast();
   const CATEGORIES = [
     { value: 'algemeen', label: t('newsletters.generalNews'), emoji: '📣' },
     { value: 'activiteit', label: t('newsletters.activity'), emoji: '🎉' },
@@ -135,7 +137,7 @@ export default function AdminNieuwsbrieven() {
       const data = await res.json();
       setNewsletters(data.newsletters || []);
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -317,6 +319,7 @@ export default function AdminNieuwsbrieven() {
 
       setModal(null);
       fetchNewsletters();
+      toast(t('common.deleted'), 'success');
     } catch (err) {
       setError(String(err instanceof Error ? err.message : err));
     } finally {

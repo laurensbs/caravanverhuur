@@ -325,7 +325,7 @@ export default function AdminDashboard() {
               href={p('/berichten')}
               className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1"
             >
-              Alles <ArrowRight className="w-3 h-3" />
+              {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {recentContacts.length === 0 ? (

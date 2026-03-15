@@ -14,6 +14,7 @@ import {
   Send,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import {
   getContactStatusColor,
   formatDateTime,
@@ -31,6 +32,7 @@ function ContactDetail({
   onUpdate: (updated: ContactSubmission) => void;
 }) {
   const { t } = useAdmin();
+  const { toast } = useToast();
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
@@ -46,8 +48,9 @@ function ContactDetail({
       });
       onUpdate({ ...contact, status: 'BEANTWOORD', admin_reply: reply });
       setReply('');
+      toast(t('common.sent'), 'success');
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
     setSending(false);
   };
@@ -62,7 +65,7 @@ function ContactDetail({
       });
       onUpdate({ ...contact, status: 'GELEZEN' });
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
     setMarkingRead(false);
   };

@@ -32,9 +32,11 @@ interface DiscountCode {
 }
 
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 
 export default function KortingscodesPage() {
   const { t } = useAdmin();
+  const { toast } = useToast();
   const [codes, setCodes] = useState<DiscountCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -95,6 +97,7 @@ export default function KortingscodesPage() {
       setNewValidFrom(''); setNewValidUntil('');
       setShowCreate(false);
       fetchCodes();
+      toast(t('common.created'), 'success');
     } catch {
       setCreateError(t('common.error'));
     }
@@ -120,6 +123,7 @@ export default function KortingscodesPage() {
     setCodes(prev => prev.filter(c => c.id !== id));
     setDeleteId(null);
     setDeleting(false);
+    toast(t('common.deleted'), 'success');
   };
 
   if (loading) {

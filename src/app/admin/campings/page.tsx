@@ -20,6 +20,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 
 interface Camping {
   id: string;
@@ -136,6 +137,7 @@ function CampingReorderItem({
 
 export default function AdminCampingsPage() {
   const { t, locale } = useAdmin();
+  const { toast } = useToast();
   const isNl = locale === 'nl';
 
   const [campings, setCampings] = useState<Camping[]>([]);
@@ -222,8 +224,9 @@ export default function AdminCampingsPage() {
       resetForm();
       setShowForm(false);
       await fetchCampings();
+      toast(editingId ? t('common.updated') : t('common.created'), 'success');
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -235,8 +238,9 @@ export default function AdminCampingsPage() {
       await fetch(`/api/admin/campings?id=${id}`, { method: 'DELETE' });
       setDeleteConfirm(null);
       await fetchCampings();
+      toast(t('common.deleted'), 'success');
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -315,7 +319,7 @@ export default function AdminCampingsPage() {
         await fetchCampings();
       }
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setImportingStatic(false);
     }

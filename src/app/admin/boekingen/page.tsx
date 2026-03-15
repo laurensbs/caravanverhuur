@@ -27,6 +27,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -55,6 +56,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   onDelete: (id: string) => void;
 }) {
   const { t, ts, role } = useAdmin();
+  const { toast } = useToast();
   const caravan = getBookingCaravan(booking);
   const camping = getBookingCamping(booking);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -101,8 +103,9 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         });
         onNotesChange(booking.id, notes);
       }
+      toast(t('common.saved'), 'success');
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
     setSaving(false);
   };
@@ -511,11 +514,11 @@ export default function BookingenPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setCreateError(data.error || 'Fout bij aanmaken'); setCreating(false); return; }
+      if (!res.ok) { setCreateError(data.error || t('common.error')); setCreating(false); return; }
       setCreateSuccess({ reference: data.reference, paymentUrl: data.paymentUrl, isNewAccount: data.isNewAccount });
       fetchBookings();
     } catch {
-      setCreateError('Er ging iets mis');
+      setCreateError(t('common.error'));
     }
     setCreating(false);
   };

@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 
 /* ── Types ────────────────────────────────────── */
 interface ChatConversation {
@@ -51,6 +52,7 @@ interface ChatMessage {
 /* ── Component ────────────────────────────────── */
 export default function AdminChatPage() {
   const { t, locale } = useAdmin();
+  const { toast } = useToast();
   const isNl = locale === 'nl';
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
@@ -158,7 +160,9 @@ export default function AdminChatPage() {
       setReply('');
       fetchMessages(activeConv.id);
       fetchConversations();
-    } catch { /* silent */ }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
     setSending(false);
   };
 
@@ -183,7 +187,9 @@ export default function AdminChatPage() {
       });
       fetchConversations();
       if (activeConv?.id === convId) setActiveConv(null);
-    } catch { /* silent */ }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
   };
 
   /* ── Delete conversation ────────── */
@@ -205,8 +211,9 @@ export default function AdminChatPage() {
 
   const handleBulkDelete = async () => {
     for (const id of selectedIds) {
-      try { await fetch(`/api/admin/chat?id=${id}`, { method: 'DELETE' }); } catch { /* silent */ }
+      try { await fetch(`/api/admin/chat?id=${id}`, { method: 'DELETE' }); } catch { /* skip */ }
     }
+    toast(t('common.deleted'), 'success');
     setSelectedIds(new Set());
     setSelectMode(false);
     setDeleteConfirm(null);
@@ -238,7 +245,10 @@ export default function AdminChatPage() {
         setMessages([]);
       }
       setDeleteConfirm(null);
-    } catch { /* silent */ }
+      toast(t('common.deleted'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
   };
 
   const handleCleanup = async () => {

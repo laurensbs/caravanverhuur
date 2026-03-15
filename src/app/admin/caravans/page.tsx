@@ -8,6 +8,7 @@ import {
   AlertTriangle, RotateCcw, Video,
 } from "lucide-react";
 import { useAdmin } from "@/i18n/admin-context";
+import { useToast } from "@/components/AdminToast";
 import { type Caravan } from "@/data/caravans";
 import { formatCurrency, formatDate, getStatusColor, type Booking } from "@/data/admin";
 
@@ -327,6 +328,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
   onPhotosUpdate?: (photos: string[]) => void;
 }) {
   const { t, ts } = useAdmin();
+  const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -349,7 +351,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
       await fetch("/api/admin/caravan-settings", { method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ caravanId: caravan.id, available: newAvailable, status: newStatus }) });
       onSettingChange({ caravan_id: caravan.id, available: newAvailable, status: newStatus, admin_notes: setting?.admin_notes || null });
-    } catch { /* silent */ }
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setSaving(false);
   };
 
@@ -360,7 +362,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
       await fetch("/api/admin/caravans", { method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: caravan.id, photos: updatedPhotos, isStaticOverride: isStaticCaravan }) });
       if (onPhotosUpdate) onPhotosUpdate(updatedPhotos);
-    } catch { /* silent */ }
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setPhotoSaving(false);
   };
 
@@ -498,6 +500,7 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
 /* ── Main Page ── */
 export default function CaravansAdminPage() {
   const { t, ts } = useAdmin();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
@@ -533,7 +536,7 @@ export default function CaravansAdminPage() {
       const res = await fetch("/api/admin/caravans");
       const data = await res.json();
       setAllCaravans(data.caravans || []);
-    } catch { /* ignore */ }
+    } catch { toast(t('common.actionFailed'), 'error'); }
   }, []);
 
   useEffect(() => {
@@ -598,8 +601,8 @@ export default function CaravansAdminPage() {
           videoUrl: formData.videoUrl.trim() || undefined,
         }),
       });
-      if (res.ok) { fetchCaravans(); setShowNewModal(false); }
-    } catch { /* silent */ }
+      if (res.ok) { fetchCaravans(); setShowNewModal(false); toast(t('common.created'), 'success'); }
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setSaving(false);
   };
 
@@ -623,8 +626,8 @@ export default function CaravansAdminPage() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (res.ok) { fetchCaravans(); setEditingCaravan(null); }
-    } catch { /* silent */ }
+      if (res.ok) { fetchCaravans(); setEditingCaravan(null); toast(t('common.saved'), 'success'); }
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setSaving(false);
   };
 
@@ -636,8 +639,8 @@ export default function CaravansAdminPage() {
         method: "DELETE", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteCaravan.id }),
       });
-      fetchCaravans(); setDeleteCaravan(null);
-    } catch { /* silent */ }
+      fetchCaravans(); setDeleteCaravan(null); toast(t('common.deleted'), 'success');
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setDeleting(false);
   };
 
@@ -649,8 +652,8 @@ export default function CaravansAdminPage() {
         method: "DELETE", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: resetCaravan.id }),
       });
-      fetchCaravans(); setResetCaravan(null);
-    } catch { /* silent */ }
+      fetchCaravans(); setResetCaravan(null); toast(t('common.saved'), 'success');
+    } catch { toast(t('common.actionFailed'), 'error'); }
     setResetting(false);
   };
 

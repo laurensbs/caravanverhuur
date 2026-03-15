@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -410,6 +411,7 @@ function TaskDetail({
 
 export default function PlanningPage() {
   const { t, locale } = useAdmin();
+  const { toast } = useToast();
   const isNl = locale !== 'en';
 
   const [tasks, setTasks] = useState<BookingTask[]>([]);
@@ -455,6 +457,7 @@ export default function PlanningPage() {
         body: JSON.stringify({ taskId: task.id, status: task.status, completedBy: task.status === 'DONE' ? 'Staff' : undefined }),
       });
     } catch {
+      toast(t('common.actionFailed'), 'error');
       fetchTasks(); // Revert on error
     }
   };
@@ -468,8 +471,9 @@ export default function PlanningPage() {
       });
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assigned_to: updates.assignedTo, notes: updates.notes } : t));
       setSelectedTask(null);
+      toast(t('common.saved'), 'success');
     } catch {
-      // silent
+      toast(t('common.actionFailed'), 'error');
     }
   };
 

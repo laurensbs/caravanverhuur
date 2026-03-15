@@ -40,6 +40,7 @@ import {
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
 import AdminHelpGuide from '@/components/AdminHelpGuide';
+import { ToastProvider } from '@/components/AdminToast';
 
 /* ── Credentials ─────────────────────────────────── */
 // Credentials are now server-side only (src/lib/admin-auth.ts)
@@ -116,10 +117,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const savedRole = localStorage.getItem('admin_role');
     if (savedRole === 'admin' || savedRole === 'staff') setUsername(savedRole);
 
-    /* Restore saved password */
-    const savedPw = localStorage.getItem('admin_pw');
-    if (savedPw) setPassword(savedPw);
-
     /* Verify existing session with server */
     fetch('/api/admin/auth/me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
@@ -127,25 +124,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         if (data?.authenticated) {
           setAuthenticated(true);
           setRole(data.role);
-        } else {
-          /* Auto-login with saved credentials */
-          const autoRole = localStorage.getItem('admin_role');
-          const autoPw = localStorage.getItem('admin_pw');
-          if (autoRole && autoPw) {
-            try {
-              const res = await fetch('/api/admin/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ user: autoRole, password: autoPw }),
-              });
-              const loginData = await res.json();
-              if (res.ok && loginData.success) {
-                setRole(loginData.role);
-                setAuthenticated(true);
-              }
-            } catch {}
-          }
         }
       })
       .catch((e) => console.error('Fetch error:', e))
@@ -171,9 +149,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         setRole(data.role);
         setAuthenticated(true);
         setError('');
-        /* Remember credentials */
+        /* Remember role (not password!) */
         localStorage.setItem('admin_role', username);
-        localStorage.setItem('admin_pw', password);
       } else {
         setError(data.error || lt('auth.wrongCredentials'));
       }
@@ -189,7 +166,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       await fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {}
     localStorage.removeItem('admin_role');
-    localStorage.removeItem('admin_pw');
     setAuthenticated(false);
     setPassword('');
     setUsername('');
@@ -444,18 +420,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <AdminProvider role={role}>
-      <AdminLayoutInner
-        navSections={navSections}
-        allNavItems={allNavItems}
-        role={role}
-        pathname={pathname}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        mainSiteUrl={mainSiteUrl}
-        onLogout={handleLogout}
-      >
-        {children}
-      </AdminLayoutInner>
+      <ToastProvider>
+        <AdminLayoutInner
+          navSections={navSections}
+          allNavItems={allNavItems}
+          role={role}
+          pathname={pathname}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          mainSiteUrl={mainSiteUrl}
+          onLogout={handleLogout}
+        >
+          {children}
+        </AdminLayoutInner>
+      </ToastProvider>
     </AdminProvider>
   );
 }

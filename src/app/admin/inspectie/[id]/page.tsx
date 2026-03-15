@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -67,6 +68,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
   const { id } = use(params);
   const router = useRouter();
   const { t, ts } = useAdmin();
+  const { toast } = useToast();
   const [checklist, setChecklist] = useState<BorgChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,7 +90,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       setStaffName(data.staff_name || '');
       setGeneralNotes(data.general_notes || '');
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -206,7 +208,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         setStep('done');
       }
     } catch {
-      alert(t('inspection.saveFailed'));
+      toast(t('inspection.saveFailed'), 'error');
     } finally {
       setSaving(false);
     }

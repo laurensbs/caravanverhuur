@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 
 interface Customer {
   id: string;
@@ -51,6 +52,7 @@ type ModalType = 'create' | 'edit' | 'delete' | null;
 
 export default function AdminKlanten() {
   const { t, role, locale } = useAdmin();
+  const { toast } = useToast();
   const isNl = locale === 'nl';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,7 +103,7 @@ export default function AdminKlanten() {
       const data = await res.json();
       setCustomers(data.customers || []);
     } catch {
-      // ignore
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setLoading(false);
     }

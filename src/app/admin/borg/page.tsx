@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdmin } from '@/i18n/admin-context';
+import { useToast } from '@/components/AdminToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardCheck,
@@ -85,6 +86,7 @@ const itemStatusIcons: Record<string, React.ReactNode> = {
 
 export default function AdminBorgPage() {
   const { t, ts } = useAdmin();
+  const { toast } = useToast();
   const [checklists, setChecklists] = useState<BorgChecklist[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,9 +151,11 @@ export default function AdminBorgPage() {
         setNewBookingId('');
         setNewStaffName('');
         await fetchData();
+        toast(t('common.created'), 'success');
       }
     } catch (err) {
       console.error('Create error:', err);
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setCreating(false);
     }
@@ -181,8 +185,10 @@ export default function AdminBorgPage() {
         }),
       });
       await fetchData();
+      toast(t('common.saved'), 'success');
     } catch (err) {
       console.error('Save error:', err);
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -204,8 +210,10 @@ export default function AdminBorgPage() {
         }),
       });
       await fetchData();
+      toast(t('common.saved'), 'success');
     } catch (err) {
       console.error('Complete error:', err);
+      toast(t('common.actionFailed'), 'error');
     } finally {
       setSaving(false);
     }
