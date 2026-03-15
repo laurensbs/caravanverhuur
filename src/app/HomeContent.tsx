@@ -270,8 +270,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               className="grid grid-cols-5 gap-4 lg:gap-6"
             >
               {[
-                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={22} /> },
-                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={22} /> },
+                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Tent size={22} /> },
+                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <Heart size={22} /> },
                 { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={22} /> },
                 { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={22} /> },
                 { step: '5', title: t('home.step5'), desc: t('home.step5Desc'), icon: <Star size={22} /> },
@@ -294,8 +294,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           {/* Mobile: compact vertical list */}
           <div className="md:hidden space-y-3">
               {[
-                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Heart size={18} /> },
-                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <CalendarDays size={18} /> },
+                { step: '1', title: t('home.step1'), desc: t('home.step1Desc'), icon: <Tent size={18} /> },
+                { step: '2', title: t('home.step2'), desc: t('home.step2Desc'), icon: <Heart size={18} /> },
                 { step: '3', title: t('home.step3'), desc: t('home.step3Desc'), icon: <CreditCard size={18} /> },
                 { step: '4', title: t('home.step4'), desc: t('home.step4Desc'), icon: <LayoutDashboard size={18} /> },
                 { step: '5', title: t('home.step5'), desc: t('home.step5DescShort'), icon: <Star size={18} /> },

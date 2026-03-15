@@ -399,6 +399,15 @@ function BoekenContent() {
                         <p className="text-sm lg:text-base text-muted">{t('booking.s1Subtitle')}</p>
                       </div>
 
+                      {/* Camping-first tip */}
+                      <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5">
+                        <Tent size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs sm:text-sm text-amber-800 leading-snug">
+                          {t('booking.s1CampingTip')}{' '}
+                          <Link href="/bestemmingen" className="underline font-semibold text-amber-900 hover:text-amber-700">{t('booking.s1CampingTipLink')} →</Link>
+                        </p>
+                      </div>
+
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
                         <div className="grid sm:grid-cols-2 gap-4 lg:gap-6">
                           <div>

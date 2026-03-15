@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { Users, Filter, X, Search, Euro, ArrowUpDown, Check, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Users, Filter, X, Search, Euro, ArrowUpDown, Check, SlidersHorizontal, ChevronDown, Tent } from 'lucide-react';
 import { caravans as staticCaravans, CaravanType } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -227,7 +227,11 @@ export default function CaravansPage() {
     <>
       <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-background min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight mb-6">{t('caravans.heroTitle')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight mb-3">{t('caravans.heroTitle')}</h1>
+          <div className="flex items-center gap-2 mb-6 text-xs sm:text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <Tent size={14} className="shrink-0" />
+            <span>{t('caravans.campingFirstNote')}</span>
+          </div>
           {/* Mobile: filter toggle + sort bar */}
           <div className="lg:hidden flex items-center gap-3 mb-4">
             <button
