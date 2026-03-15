@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
 import { GOOGLE_REVIEW_URL } from '@/lib/constants';
@@ -70,142 +70,73 @@ export { GoogleStars, StarIcon, STAR_PATH };
 export default function Footer() {
   const { t } = useLanguage();
 
+  const links = [
+    { href: '/caravans', label: t('footer.ourCaravans') },
+    { href: '/bestemmingen', label: t('nav.destinations') },
+    { href: '/boeken', label: t('footer.directBooking') },
+    { href: '/over-ons', label: t('nav.about') },
+    { href: '/faq', label: t('nav.faq') },
+    { href: '/contact', label: t('nav.contact') },
+  ];
+
+  const legal = [
+    { href: '/voorwaarden', label: t('footer.terms') },
+    { href: '/privacy', label: t('footer.privacy') },
+    { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
+    { href: '/voorwaarden#borg', label: t('footer.deposit') },
+  ];
+
   return (
-    <footer className="bg-white">
-      {/* CTA strip */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/campings/cala_d_aiguablava__begur.jpg')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-foreground/85" />
-        <div className="relative max-w-7xl mx-auto px-4 py-10 sm:py-12 flex flex-col items-center text-center gap-5">
-          <p className="text-white font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl tracking-tight max-w-xl">
-            {t('footer.ctaText')}
-          </p>
-          <Link
-            href="/boeken"
-            className="flex items-center gap-2 px-7 py-3.5 bg-white text-foreground font-bold rounded-lg text-sm transition-all hover:bg-white/90 shrink-0"
-          >
-            {t('nav.bookNow')}
-            <ArrowRight size={14} />
-          </Link>
-        </div>
+    <footer className="bg-foreground text-white">
+      {/* CTA */}
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10 text-center">
+        <p className="font-heading font-extrabold text-lg sm:text-xl tracking-tight mb-4">
+          {t('footer.ctaText')}
+        </p>
+        <Link
+          href="/boeken"
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-foreground font-bold rounded-lg text-sm hover:bg-white/90 transition-colors"
+        >
+          {t('nav.bookNow')}
+          <ArrowRight size={14} />
+        </Link>
       </div>
 
-      {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-14">
-        {/* Mobile: logo centered + stacked columns */}
-        <div className="flex flex-col items-center text-center lg:hidden mb-6">
-          <Image
-            src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-            alt="Caravanverhuur Costa Brava"
-            width={240}
-            height={70}
-            className="w-40 sm:w-52 h-auto mb-2"
-            sizes="(max-width: 640px) 160px, 208px"
-          />
-          <GoogleStars size={13} />
-          <p className="text-muted text-sm leading-relaxed max-w-xs mt-2">
-            {t('footer.tagline')}
-          </p>
-        </div>
+      {/* Divider */}
+      <div className="max-w-7xl mx-auto px-4"><div className="border-t border-white/10" /></div>
 
-        {/* Mobile: 2-col grid for links + legal */}
-        <div className="grid grid-cols-2 gap-4 lg:hidden">
-          {/* Quick links */}
-          <div>
-            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
-            <ul className="space-y-0.5">
-              {[
-                { href: '/caravans', label: t('footer.ourCaravans') },
-                { href: '/bestemmingen', label: t('nav.destinations') },
-                { href: '/boeken', label: t('footer.directBooking') },
-                { href: '/over-ons', label: t('nav.about') },
-                { href: '/faq', label: t('nav.faq') },
-                { href: '/contact', label: t('nav.contact') },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-muted text-sm block py-1">{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal + Contact combined */}
-          <div>
-            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
-            <ul className="space-y-0.5 mb-4">
-              {[
-                { href: '/voorwaarden', label: t('footer.terms') },
-                { href: '/privacy', label: t('footer.privacy') },
-                { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-muted text-sm block py-1">{link.label}</Link>
-                </li>
-              ))}
-            </ul>
-            <h3 className="font-semibold text-sm mb-2 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
-            <ul className="space-y-0.5">
-              <li>
-                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted text-sm flex items-center gap-1.5 py-1">
-                  <Mail size={13} className="text-primary shrink-0" />
-                  <span className="truncate">info@caravanverhuurspanje.com</span>
-                </a>
-              </li>
-              <li>
-                <a href="tel:+34650036755" className="text-muted text-sm flex items-center gap-1.5 py-1">
-                  <Phone size={13} className="text-primary shrink-0" />
-                  +34 650 036 755
-                </a>
-              </li>
-              <li className="text-muted text-sm flex items-center gap-1.5 py-1">
-                <MapPin size={13} className="text-primary shrink-0" />
-                {t('footer.location')}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Desktop: 4-col grid */}
-        <div className="hidden lg:grid grid-cols-4 gap-12">
+      {/* Main grid */}
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand */}
-          <div className="space-y-3">
+          <div className="col-span-2 sm:col-span-1">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={240}
               height={70}
-              className="w-48 h-auto"
-              sizes="192px"
+              className="w-36 h-auto brightness-0 invert mb-3"
+              sizes="144px"
             />
-            <GoogleStars size={13} />
-            <p className="text-muted text-sm leading-relaxed">
-              {t('footer.taglineLong')}
+            <GoogleStars size={12} />
+            <p className="text-white/50 text-xs leading-relaxed mt-2 max-w-[220px]">
+              {t('footer.tagline')}
             </p>
-            <div className="text-muted text-xs">
+            <p className="text-white/30 text-[11px] mt-2">
               {t('footer.partOf')}{' '}
-              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
                 Caravanstalling-Spanje.com
               </a>
-            </div>
+            </p>
           </div>
 
-          {/* Quick links */}
+          {/* Links */}
           <div>
-            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.links')}</h3>
-            <ul className="space-y-2">
-              {[
-                { href: '/caravans', label: t('footer.ourCaravans') },
-                { href: '/bestemmingen', label: t('nav.destinations') },
-                { href: '/boeken', label: t('footer.directBooking') },
-                { href: '/over-ons', label: t('nav.about') },
-                { href: '/faq', label: t('nav.faq') },
-                { href: '/contact', label: t('nav.contact') },
-                { href: '/account', label: t('footer.myAccount') },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-muted transition-colors text-sm">
-                    {link.label}
-                  </Link>
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.links')}</h3>
+            <ul className="space-y-1.5">
+              {links.map(l => (
+                <li key={l.href}>
+                  <Link href={l.href} className="text-white/60 hover:text-white text-xs transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
@@ -213,18 +144,11 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.legal')}</h3>
-            <ul className="space-y-2">
-              {[
-                { href: '/voorwaarden', label: t('footer.terms') },
-                { href: '/privacy', label: t('footer.privacy') },
-                { href: '/voorwaarden#annulering', label: t('footer.cancellation') },
-                { href: '/voorwaarden#borg', label: t('footer.deposit') },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-muted transition-colors text-sm">
-                    {link.label}
-                  </Link>
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.legal')}</h3>
+            <ul className="space-y-1.5">
+              {legal.map(l => (
+                <li key={l.href}>
+                  <Link href={l.href} className="text-white/60 hover:text-white text-xs transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
@@ -232,56 +156,38 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold text-base mb-4 text-foreground uppercase tracking-wider">{t('footer.contactTitle')}</h3>
-            <ul className="space-y-2.5">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.contactTitle')}</h3>
+            <ul className="space-y-1.5">
               <li>
-                <a href="mailto:info@caravanverhuurspanje.com" className="text-muted transition-colors text-sm flex items-start gap-2">
-                  <Mail size={14} className="text-primary shrink-0 mt-0.5" />
-                  <span>info@caravanverhuurspanje.com</span>
+                <a href="mailto:info@caravanverhuurspanje.com" className="text-white/60 hover:text-white text-xs flex items-center gap-1.5 transition-colors">
+                  <Mail size={12} className="shrink-0 text-white/30" />
+                  info@caravanverhuurspanje.com
                 </a>
               </li>
               <li>
-                <a href="tel:+34650036755" className="text-muted transition-colors text-sm flex items-center gap-2">
-                  <Phone size={14} className="text-primary shrink-0" />
+                <a href="tel:+34650036755" className="text-white/60 hover:text-white text-xs flex items-center gap-1.5 transition-colors">
+                  <Phone size={12} className="shrink-0 text-white/30" />
                   +34 650 036 755
                 </a>
               </li>
-              <li className="text-muted text-sm flex items-center gap-2">
-                <MapPin size={14} className="text-primary shrink-0" />
+              <li className="text-white/60 text-xs flex items-center gap-1.5">
+                <MapPin size={12} className="shrink-0 text-white/30" />
                 {t('footer.location')}
-              </li>
-              <li>
-                <a href="https://caravanstalling-spanje.com" target="_blank" rel="noopener noreferrer" className="text-muted transition-colors text-sm flex items-center gap-2">
-                  <ExternalLink size={14} className="text-primary shrink-0" />
-                  Caravanstalling-Spanje
-                </a>
               </li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* Bottom bar + Kit Digital badges */}
-      <div className="border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">
-            <p>&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
-            <div className="flex gap-4">
-              <Link href="/voorwaarden" className="transition-colors">{t('footer.terms')}</Link>
-              <Link href="/privacy" className="transition-colors">{t('footer.privacy')}</Link>
-            </div>
-          </div>
-          {/* Kit Digital / EU funding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/5">
-            <p className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-wider leading-tight max-w-md">
-              Programa Kit Digital financiado por los fondos Next Generation del Mecanismo de Recuperación y Resiliencia
-            </p>
-            <div className="flex items-center gap-4 sm:gap-5 shrink-0">
-              <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-5 sm:h-6 object-contain" />
-              <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-5 sm:h-6 object-contain" />
-              <img src="/images/badges/red-es.svg" alt="Red.es" className="h-4 sm:h-5 object-contain" />
-              <img src="/images/badges/kit-digital.svg" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-5 sm:h-6 object-contain" />
-            </div>
+      {/* Bottom bar */}
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[11px] text-white/30">&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
+          <div className="flex items-center gap-4 sm:gap-5">
+            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-4 sm:h-5 object-contain opacity-50" />
+            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-4 sm:h-5 object-contain opacity-50" />
+            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-3.5 sm:h-4 object-contain opacity-50" />
+            <img src="/images/badges/kit-digital.svg" alt="Kit Digital" className="h-4 sm:h-5 object-contain opacity-50" />
           </div>
         </div>
       </div>
