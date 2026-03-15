@@ -9,7 +9,7 @@ import { destinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon, ExternalLink,
+  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -64,17 +64,17 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
   return (
     <Link
       href={`/bestemmingen/${camping.slug}`}
-      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50 flex flex-col"
+      className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col"
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-primary-50">
+      <div className="relative aspect-[16/10] overflow-hidden">
         {camping.photos?.[0] ? (
           camping.photos[0].startsWith('http') ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={camping.photos[0]}
               alt={`${camping.name} — ${camping.location}, Costa Brava`}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
           ) : (
@@ -82,46 +82,46 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
               src={camping.photos[0]}
               alt={`${camping.name} — ${camping.location}, Costa Brava`}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           )
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Tent size={40} className="text-primary/30" />
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <Tent size={32} className="text-gray-300" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
         {/* Region badge */}
-        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 bg-primary/90 backdrop-blur-sm rounded-full text-[10px] sm:text-[11px] font-semibold text-white shadow-sm">
-            <MapPin size={10} /> {camping.region}
+        <div className="absolute top-2.5 left-2.5">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-semibold text-foreground shadow-sm">
+            <MapPin size={9} className="text-primary" /> {camping.region}
           </span>
         </div>
 
         {/* Name overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-          <h3 className="text-base sm:text-xl font-bold text-white mb-0.5 drop-shadow-lg leading-tight">{camping.name}</h3>
-          <div className="flex items-center gap-1.5 text-white/80 text-[11px]">
-            <MapPin size={11} /> {camping.location}
-          </div>
+          <h3 className="text-sm sm:text-lg font-bold text-white leading-tight drop-shadow-sm">{camping.name}</h3>
+          <p className="text-[11px] text-white/70 flex items-center gap-1 mt-0.5">
+            <MapPin size={10} /> {camping.location}
+          </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-3.5 sm:p-4 flex flex-col flex-1">
-        <p className="text-[13px] sm:text-sm text-gray-600 line-clamp-2 mb-3">{camping.description}</p>
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <p className="text-xs sm:text-[13px] text-gray-500 line-clamp-2 mb-2.5">{camping.description}</p>
 
         {/* Facilities */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="flex flex-wrap gap-1 mb-2.5">
           {camping.facilities?.slice(0, 4).map(f => (
-            <span key={f} className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 rounded-full text-[11px] text-gray-600 border border-gray-100">
-              {facilityIcons[f] || <Tent size={10} />} {f}
+            <span key={f} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-50 rounded-md text-[10px] text-gray-500">
+              {facilityIcons[f] || <Tent size={9} />} {f}
             </span>
           ))}
           {(camping.facilities?.length || 0) > 4 && (
-            <span className="px-2 py-0.5 bg-gray-50 rounded-full text-[11px] text-gray-400 border border-gray-100">
+            <span className="px-1.5 py-0.5 bg-gray-50 rounded-md text-[10px] text-gray-400">
               +{(camping.facilities?.length || 0) - 4}
             </span>
           )}
@@ -129,13 +129,13 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
 
         {/* Nearby places */}
         {nearDests.length > 0 && (
-          <div className="mt-auto pt-3 border-t border-gray-100">
-            <p className="text-[11px] text-gray-400 uppercase tracking-wider font-semibold mb-1.5">{t('destinations.nearbyPlaces')}</p>
+          <div className="mt-auto pt-2.5 border-t border-gray-100">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">{t('destinations.nearbyPlaces')}</p>
             <div className="flex items-center gap-2">
               {nearDests.slice(0, 3).map(d => (
-                <span key={d.slug} className="inline-flex items-center gap-1 text-xs text-gray-500">
-                  <div className="w-5 h-5 rounded-full overflow-hidden relative bg-gray-100 shrink-0">
-                    <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="20px" />
+                <span key={d.slug} className="inline-flex items-center gap-1 text-[11px] text-gray-500">
+                  <div className="w-4 h-4 rounded-full overflow-hidden relative bg-gray-100 shrink-0">
+                    <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="16px" />
                   </div>
                   {d.name}
                 </span>
@@ -146,9 +146,9 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
       </div>
 
       {/* CTA */}
-      <div className="px-3.5 pb-3.5 sm:px-4 sm:pb-4">
-        <span className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary/5 text-primary font-semibold rounded-xl text-sm group-hover:bg-primary group-hover:text-white transition-colors">
-          {t('destinations.viewCamping')} <ArrowRight size={14} />
+      <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+        <span className="flex items-center justify-center gap-1.5 w-full py-2 bg-foreground/5 text-foreground font-semibold rounded-lg text-xs group-hover:bg-foreground group-hover:text-white transition-colors">
+          {t('destinations.viewCamping')} <ArrowRight size={12} />
         </span>
       </div>
     </Link>
@@ -244,37 +244,39 @@ export default function BestemmingenPage() {
   const hasMore = filteredCampings.length > 9 && !showAllCampings;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero — compact, camping-first messaging */}
-      <section className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden min-h-[40vh] sm:min-h-[35vh] flex flex-col justify-end">
-        <div className="absolute inset-0 bg-[url('/images/campings/els_masos_de_pals.jpg')] bg-cover bg-center opacity-25" />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
-        <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-8 sm:pt-16 sm:pb-10 w-full">
-          <nav className="flex items-center gap-1.5 text-white/50 text-xs mb-4 sm:mb-6">
-            <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero — clean, compact */}
+      <section className="relative bg-foreground overflow-hidden">
+        <div className="absolute inset-0">
+          <Image src="/images/campings/els_masos_de_pals.jpg" alt="Costa Brava" fill className="object-cover opacity-30" sizes="100vw" priority />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/70 to-foreground/40" />
+        <div className="relative max-w-7xl mx-auto px-4 pt-24 sm:pt-28 pb-10 sm:pb-14">
+          <nav className="flex items-center gap-1.5 text-white/40 text-xs mb-6">
+            <Link href="/" className="hover:text-white/60 transition-colors">Home</Link>
             <span>/</span>
-            <span className="text-white/80">{t('nav.destinations')}</span>
+            <span className="text-white/70">Costa Brava</span>
           </nav>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-4">
             {t('destinations.heroTitle')}
           </h1>
-          <p className="text-white/80 text-sm sm:text-lg max-w-2xl mb-6">
+          <p className="text-white/60 text-sm sm:text-base max-w-xl leading-relaxed">
             {t('destinations.heroSubtitle')}
           </p>
 
-          {/* Quick stats */}
-          <div className="flex flex-wrap gap-3 sm:gap-5">
+          {/* Stats row */}
+          <div className="flex items-center gap-6 sm:gap-8 mt-8">
             {[
-              { icon: <Tent size={15} />, value: totalCampings, label: 'Campings' },
-              { icon: <MapPin size={15} />, value: destinations.length, label: t('destinations.placesLabel') },
-              { icon: <Umbrella size={15} />, value: destinations.reduce((acc, d) => acc + d.beaches.length, 0), label: t('destinations.beaches') },
+              { icon: <Tent size={16} />, value: totalCampings, label: 'Campings' },
+              { icon: <MapPin size={16} />, value: destinations.length, label: t('destinations.placesLabel') },
+              { icon: <Umbrella size={16} />, value: destinations.reduce((acc, d) => acc + d.beaches.length, 0), label: t('destinations.beaches') },
             ].map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-white/90">
-                <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">{s.icon}</div>
+              <div key={i} className="flex items-center gap-2.5">
+                <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white/70">{s.icon}</div>
                 <div>
-                  <p className="text-lg font-bold leading-none">{s.value}</p>
-                  <p className="text-[10px] text-white/60">{s.label}</p>
+                  <p className="text-xl font-bold text-white leading-none">{s.value}</p>
+                  <p className="text-[11px] text-white/45 mt-0.5">{s.label}</p>
                 </div>
               </div>
             ))}
@@ -283,25 +285,23 @@ export default function BestemmingenPage() {
       </section>
 
       {/* Search + region filter bar (sticky) */}
-      <section className="sticky top-[80px] sm:top-[100px] z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex flex-col sm:flex-row gap-2.5 sm:items-center">
-            {/* Search */}
+      <section className="sticky top-[64px] sm:top-[72px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-200/80">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <div className="relative flex-1 min-w-0">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text" value={search} onChange={e => setSearch(e.target.value)}
                 placeholder={t('destinations.searchPlaceholder')}
-                className="w-full pl-9 pr-8 py-2.5 bg-gray-50 rounded-xl text-sm border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none"
+                className="w-full pl-10 pr-8 py-2 bg-gray-50 rounded-xl text-sm border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-colors"
               />
-              {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><X size={14} /></button>}
+              {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
             </div>
-            {/* Region pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-0.5 sm:pb-0">
               <button
                 onClick={() => setSelectedRegion(null)}
-                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
-                  !selectedRegion ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  !selectedRegion ? 'bg-foreground text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >
                 {t('destinations.allRegions')} ({totalCampings})
@@ -310,8 +310,8 @@ export default function BestemmingenPage() {
                 <button
                   key={r}
                   onClick={() => setSelectedRegion(selectedRegion === r ? null : r)}
-                  className={`px-3 py-1.5 rounded-full text-[12px] sm:text-sm font-medium whitespace-nowrap transition-colors ${
-                    selectedRegion === r ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                    selectedRegion === r ? 'bg-foreground text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
                   {r} ({allCampings.filter(c => c.region === r).length})
@@ -324,27 +324,25 @@ export default function BestemmingenPage() {
 
       {/* ===== REGION CARDS — visual selector (only when no search, no region filter) ===== */}
       {!search && !selectedRegion && (
-        <section className="max-w-7xl mx-auto px-4 pt-6 sm:pt-10 pb-2">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-1">{t('destinations.chooseRegion')}</h2>
-          <p className="text-sm text-gray-500 mb-4 sm:mb-6">{t('destinations.chooseRegionSub')}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <section className="max-w-7xl mx-auto px-4 pt-8 sm:pt-10 pb-2">
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 mb-0.5">{t('destinations.chooseRegion')}</h2>
+          <p className="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-5">{t('destinations.chooseRegionSub')}</p>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
             {regionOrder.map(region => {
               const count = allCampings.filter(c => c.region === region).length;
-              const desc = t(`destinations.region${region === 'Baix Empordà' ? 'BaixDesc' : region === 'Alt Empordà' ? 'AltDesc' : 'SelvaDesc'}`);
               return (
                 <button
                   key={region}
                   onClick={() => setSelectedRegion(region)}
-                  className="group relative rounded-2xl overflow-hidden aspect-[16/9] sm:aspect-[4/3] text-left"
+                  className="group relative rounded-xl sm:rounded-2xl overflow-hidden aspect-[3/4] sm:aspect-[4/3] text-left cursor-pointer"
                 >
-                  <Image src={regionImages[region]} alt={region} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 100vw, 33vw" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/85 transition-colors" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-0.5">{region}</h3>
-                    <p className="text-xs sm:text-[13px] text-white/70 line-clamp-2 mb-2">{desc}</p>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/90">
-                      <Tent size={12} /> {count} campings <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
+                  <Image src={regionImages[region]} alt={region} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 33vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/85 transition-colors" />
+                  <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-5">
+                    <h3 className="text-sm sm:text-xl font-bold text-white leading-tight">{region}</h3>
+                    <p className="text-[10px] sm:text-xs text-white/60 mt-0.5 flex items-center gap-1">
+                      <Tent size={10} className="shrink-0" /> {count} campings
+                    </p>
                   </div>
                 </button>
               );
@@ -354,19 +352,19 @@ export default function BestemmingenPage() {
       )}
 
       {/* ===== CAMPINGS GRID — main content ===== */}
-      <section id="campings" className="max-w-7xl mx-auto px-4 py-6 sm:py-8 scroll-mt-[120px]">
-        <div className="flex items-center justify-between mb-4">
+      <section id="campings" className="max-w-7xl mx-auto px-4 py-6 sm:py-10 scroll-mt-[120px]">
+        <div className="flex items-center justify-between mb-4 sm:mb-5">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Tent size={20} className="text-primary" />
+            <h2 className="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Tent size={18} className="text-primary" />
               {selectedRegion ? selectedRegion : t('destinations.campingsTitle').replace('{count}', String(totalCampings))}
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
               {filteredCampings.length} {t('destinations.campingsFound')}
             </p>
           </div>
           {selectedRegion && (
-            <button onClick={() => setSelectedRegion(null)} className="text-sm text-primary font-medium flex items-center gap-1">
+            <button onClick={() => setSelectedRegion(null)} className="text-xs sm:text-sm text-primary font-medium flex items-center gap-1 hover:text-primary-dark transition-colors">
               {t('destinations.allRegions')} <X size={14} />
             </button>
           )}
@@ -402,13 +400,13 @@ export default function BestemmingenPage() {
 
       {/* ===== INTERACTIVE MAP ===== */}
       {!search && (
-        <section className="bg-white py-8 sm:py-12 border-b border-gray-100">
+        <section className="bg-white py-8 sm:py-12 border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center gap-2 mb-1">
-              <MapIcon size={20} className="text-primary" />
-              <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{t('destinations.interactiveMap')}</h2>
+            <div className="flex items-center gap-2 mb-0.5">
+              <MapIcon size={18} className="text-primary" />
+              <h2 className="text-base sm:text-xl font-bold text-gray-900">{t('destinations.interactiveMap')}</h2>
             </div>
-            <p className="text-sm text-gray-500 mb-5">{t('destinations.mapSub')}</p>
+            <p className="text-xs sm:text-sm text-gray-400 mb-5">{t('destinations.mapSub')}</p>
             <CostaBravaMap destinations={destinations} campings={allCampings} />
           </div>
         </section>
@@ -416,47 +414,37 @@ export default function BestemmingenPage() {
 
       {/* ===== PLACES TO EXPLORE — destinations grid ===== */}
       {!search && (
-        <section id="plaatsen" className="bg-surface py-10 sm:py-14 scroll-mt-[120px]">
+        <section id="plaatsen" className="bg-gray-50 py-8 sm:py-12 scroll-mt-[120px]">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-end justify-between mb-5 gap-3">
+            <div className="flex items-end justify-between mb-4 sm:mb-5 gap-3">
               <div>
-                <h2 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <MapPin size={20} className="text-primary" /> {t('destinations.exploreTitle')}
+                <h2 className="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <MapPin size={18} className="text-primary" /> {t('destinations.exploreTitle')}
                 </h2>
-                <p className="text-sm text-gray-500 mt-0.5">{t('destinations.exploreSub')}</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-0.5">{t('destinations.exploreSub')}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {destinations.map(d => {
                 const nearbyCampings = allCampings.filter(c => c.nearestDestinations?.includes(d.slug));
-                const gmUrl = `https://www.google.com/maps/search/?api=1&query=${d.coordinates.lat},${d.coordinates.lng}`;
                 return (
-                  <div key={d.slug} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
-                    <Link href={`/bestemmingen/${d.slug}`}>
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, 25vw" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-3">
-                          <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{d.name}</h3>
-                          <p className="text-[10px] sm:text-[11px] text-white/70">{d.region}</p>
-                        </div>
-                      </div>
-                    </Link>
-                    <div className="p-2.5 sm:p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-gray-400">
-                          <span className="flex items-center gap-0.5"><Umbrella size={10} className="text-primary/50" /> {d.beaches.length}</span>
-                          <span className="flex items-center gap-0.5"><UtensilsCrossed size={10} className="text-primary/50" /> {d.restaurants.length}</span>
-                          {nearbyCampings.length > 0 && (
-                            <span className="flex items-center gap-0.5"><Tent size={10} className="text-primary/50" /> {nearbyCampings.length}</span>
-                          )}
-                        </div>
-                        <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-[11px] text-blue-400 hover:text-blue-600 font-medium inline-flex items-center gap-0.5 transition-colors">
-                          <ExternalLink size={9} /> Maps
-                        </a>
+                  <Link key={d.slug} href={`/bestemmingen/${d.slug}`} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, 25vw" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                        <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">{d.name}</h3>
+                        <p className="text-[9px] sm:text-[10px] text-white/60">{d.region}</p>
                       </div>
                     </div>
-                  </div>
+                    <div className="px-2.5 py-2 flex items-center gap-2 text-[10px] text-gray-400">
+                      <span className="flex items-center gap-0.5"><Umbrella size={9} className="text-primary/50" /> {d.beaches.length}</span>
+                      <span className="flex items-center gap-0.5"><UtensilsCrossed size={9} className="text-primary/50" /> {d.restaurants.length}</span>
+                      {nearbyCampings.length > 0 && (
+                        <span className="flex items-center gap-0.5"><Tent size={9} className="text-primary/50" /> {nearbyCampings.length}</span>
+                      )}
+                    </div>
+                  </Link>
                 );
               })}
             </div>
@@ -490,71 +478,47 @@ export default function BestemmingenPage() {
       {/* ===== HIGHLIGHTS — attractions grid ===== */}
       {!search && (
         <section id="bezienswaardigheden" className="max-w-7xl mx-auto px-4 py-8 sm:py-12 scroll-mt-[120px]">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 mb-1">
-            <Star size={20} className="text-primary" /> {t('destinations.highlightsTitle')}
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-2 mb-0.5">
+            <Star size={18} className="text-primary" /> {t('destinations.highlightsTitle')}
           </h2>
-          <p className="text-sm text-gray-500 mb-5">{t('destinations.highlightsSub')}</p>
+          <p className="text-xs sm:text-sm text-gray-400 mb-5">{t('destinations.highlightsSub')}</p>
 
           {/* Featured — first 2 cards large */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-            {attractionCards.slice(0, 2).map((a) => {
-              const dest = destinations.find(d => d.slug === a.slug);
-              const gmUrl = dest ? `https://www.google.com/maps/search/?api=1&query=${dest.coordinates.lat},${dest.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.name + ' ' + a.place + ' Costa Brava')}`;
-              return (
-                <div key={a.slug + a.name} className="group relative rounded-xl overflow-hidden aspect-[16/9] sm:aspect-[16/10]">
-                  <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 50vw" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <span className="text-2xl sm:text-3xl block mb-1">{a.icon}</span>
-                    <h3 className="text-base sm:text-xl font-bold text-white leading-tight">{a.name}</h3>
-                    <p className="text-xs text-white/70 flex items-center gap-1 mt-0.5 mb-2"><MapPin size={11} /> {a.place}</p>
-                    <p className="text-xs sm:text-sm text-white/80 line-clamp-2 mb-3">{a.desc}</p>
-                    <div className="flex items-center gap-2">
-                      <Link href={`/bestemmingen/${a.slug}`} className="px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-white/30 transition-colors">
-                        Ontdek →
-                      </Link>
-                      <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 bg-white/10 backdrop-blur-sm text-white/80 text-xs font-medium rounded-lg hover:bg-white/20 transition-colors inline-flex items-center gap-1">
-                        <ExternalLink size={10} /> Maps
-                      </a>
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 mb-2.5 sm:mb-4">
+            {attractionCards.slice(0, 2).map((a) => (
+              <Link key={a.slug + a.name} href={`/bestemmingen/${a.slug}`} className="group relative rounded-xl overflow-hidden aspect-[16/9] sm:aspect-[16/10]">
+                <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 50vw" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                  <span className="text-xl sm:text-2xl block mb-1">{a.icon}</span>
+                  <h3 className="text-sm sm:text-lg font-bold text-white leading-tight">{a.name}</h3>
+                  <p className="text-[10px] sm:text-xs text-white/60 flex items-center gap-1 mt-0.5"><MapPin size={10} /> {a.place}</p>
+                  <p className="text-[11px] sm:text-xs text-white/70 line-clamp-1 mt-1">{a.desc}</p>
                 </div>
-              );
-            })}
+              </Link>
+            ))}
           </div>
 
           {/* Remaining cards — compact grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-            {attractionCards.slice(2).map((a) => {
-              const dest = destinations.find(d => d.slug === a.slug);
-              const gmUrl = dest ? `https://www.google.com/maps/search/?api=1&query=${dest.coordinates.lat},${dest.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.name + ' ' + a.place + ' Costa Brava')}`;
-              return (
-                <div key={a.slug + a.name} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100/50 hover:shadow-lg transition-all">
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="text-lg">{a.icon}</span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-sm sm:text-base font-bold text-white leading-tight">{a.name}</h3>
-                      <p className="text-[10px] sm:text-[11px] text-white/70 flex items-center gap-1 mt-0.5"><MapPin size={9} /> {a.place}</p>
-                    </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {attractionCards.slice(2).map((a) => (
+              <Link key={a.slug + a.name} href={`/bestemmingen/${a.slug}`} className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image src={a.img} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-2 left-2">
+                    <span className="text-base">{a.icon}</span>
                   </div>
-                  <div className="p-3">
-                    <p className="text-xs text-gray-600 line-clamp-2 mb-3">{a.desc}</p>
-                    <div className="flex items-center gap-2">
-                      <Link href={`/bestemmingen/${a.slug}`} className="flex-1 text-center py-1.5 bg-primary/5 text-primary font-semibold rounded-lg text-xs hover:bg-primary hover:text-white transition-colors">
-                        Ontdek →
-                      </Link>
-                      <a href={gmUrl} target="_blank" rel="noopener noreferrer" className="py-1.5 px-2.5 bg-blue-50 text-blue-500 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors inline-flex items-center gap-1">
-                        <ExternalLink size={10} /> Maps
-                      </a>
-                    </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                    <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">{a.name}</h3>
+                    <p className="text-[9px] sm:text-[10px] text-white/60 flex items-center gap-0.5 mt-0.5"><MapPin size={8} /> {a.place}</p>
                   </div>
                 </div>
-              );
-            })}
+                <div className="p-2.5">
+                  <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-2">{a.desc}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
