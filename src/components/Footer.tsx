@@ -261,32 +261,27 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Kit Digital / EU funding badges */}
-      <div className="bg-[#1a2744]">
-        <div className="max-w-7xl mx-auto px-4 py-5 sm:py-6">
-          <p className="text-center text-[10px] sm:text-xs text-white/60 uppercase tracking-wider font-medium mb-3 sm:mb-4">
-            Programa Kit Digital financiado por los fondos Next Generation del Mecanismo de Recuperación y Resiliencia
-          </p>
-          <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap">
-            {/* EU flag */}
-            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-10 sm:h-12 object-contain" />
-            {/* Gobierno de España */}
-            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-10 sm:h-12 object-contain" />
-            {/* Red.es */}
-            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-8 sm:h-10 object-contain" />
-            {/* Kit Digital */}
-            <img src="/images/badges/kit-digital.svg" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-10 sm:h-12 object-contain" />
+      {/* Bottom bar + Kit Digital badges */}
+      <div className="border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">
+            <p>&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
+            <div className="flex gap-4">
+              <Link href="/voorwaarden" className="transition-colors">{t('footer.terms')}</Link>
+              <Link href="/privacy" className="transition-colors">{t('footer.privacy')}</Link>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">
-          <p>&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
-          <div className="flex gap-4">
-            <Link href="/voorwaarden" className="transition-colors">{t('footer.terms')}</Link>
-            <Link href="/privacy" className="transition-colors">{t('footer.privacy')}</Link>
+          {/* Kit Digital / EU funding */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/5">
+            <p className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-wider leading-tight max-w-md">
+              Programa Kit Digital financiado por los fondos Next Generation del Mecanismo de Recuperación y Resiliencia
+            </p>
+            <div className="flex items-center gap-4 sm:gap-5 shrink-0">
+              <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-5 sm:h-6 object-contain" />
+              <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-5 sm:h-6 object-contain" />
+              <img src="/images/badges/red-es.svg" alt="Red.es" className="h-4 sm:h-5 object-contain" />
+              <img src="/images/badges/kit-digital.svg" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-5 sm:h-6 object-contain" />
+            </div>
           </div>
         </div>
       </div>
