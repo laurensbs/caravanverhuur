@@ -38,6 +38,7 @@ import {
   History,
   Bell,
   BellOff,
+  Percent,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -85,6 +86,7 @@ const NAV_SECTIONS: NavSection[] = [
       { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
       { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
       { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
+      { sub: '/prijzen', key: 'nav.pricing', icon: Percent, roles: ['admin'] },
       { sub: '/activiteit', key: 'nav.activity', icon: History, roles: ['admin', 'staff'] },
     ],
   },
@@ -392,6 +394,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                       {badge.text}
                     </span>
                   ))}
+                </div>
+
+                {/* PWA install hint */}
+                <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
+                  <p className="font-semibold mb-1 flex items-center gap-1.5">💡 {lt('auth.pwaTip')}</p>
+                  <p className="text-blue-600 leading-relaxed">{lt('auth.pwaInstructions')}</p>
                 </div>
 
                 {/* Back to website */}

@@ -89,12 +89,17 @@ function BoekenContent() {
   const [campingRequestSent, setCampingRequestSent] = useState(false);
   const [showAllCampings, setShowAllCampings] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [pricingRules, setPricingRules] = useState<{ id: string; name: string; type: string; percentage: string; start_date: string | null; end_date: string | null; days_before_checkin: number | null; min_nights: number; priority: number }[]>([]);
 
   useEffect(() => {
     fetch('/api/admin/caravan-settings?unavailable=true')
       .then(res => res.json())
       .then(data => setUnavailableIds(data.unavailableIds || []))
       .catch((e) => console.error('Fetch error:', e));
+    fetch('/api/pricing')
+      .then(res => res.json())
+      .then(data => setPricingRules(data.rules || []))
+      .catch(() => {});
   }, []);
 
   const getCaravanById = (id: string) => caravans.find(c => c.id === id);
@@ -126,7 +131,45 @@ function BoekenContent() {
     return base;
   }, [chosenCaravan, nights]);
 
-  const discountedTotal = discountApplied ? Math.max(0, totalPrice - discountApplied.amount) : totalPrice;
+  // Calculate pricing adjustments from active rules
+  const pricingAdjustments = useMemo(() => {
+    if (!checkIn || nights <= 0 || totalPrice <= 0) return [];
+    const adjustments: { name: string; type: string; percentage: number; amount: number }[] = [];
+    const checkinDate = new Date(checkIn);
+    const now = new Date();
+    const daysBeforeArrival = Math.ceil((checkinDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    const sorted = [...pricingRules].sort((a, b) => b.priority - a.priority);
+    for (const rule of sorted) {
+      const pct = parseFloat(rule.percentage);
+      if (isNaN(pct) || pct === 0) continue;
+      if (rule.min_nights > nights) continue;
+
+      if (rule.type === 'seizoen' && rule.start_date && rule.end_date) {
+        const start = new Date(rule.start_date);
+        const end = new Date(rule.end_date);
+        if (checkinDate >= start && checkinDate <= end) {
+          adjustments.push({ name: rule.name, type: rule.type, percentage: pct, amount: Math.round(totalPrice * pct / 100) });
+        }
+      } else if (rule.type === 'vroegboek' && rule.days_before_checkin != null) {
+        if (daysBeforeArrival >= rule.days_before_checkin) {
+          adjustments.push({ name: rule.name, type: rule.type, percentage: pct, amount: Math.round(totalPrice * pct / 100) });
+        }
+      } else if (rule.type === 'lastminute' && rule.days_before_checkin != null) {
+        if (daysBeforeArrival <= rule.days_before_checkin) {
+          adjustments.push({ name: rule.name, type: rule.type, percentage: pct, amount: Math.round(totalPrice * pct / 100) });
+        }
+      }
+    }
+    return adjustments;
+  }, [checkIn, nights, totalPrice, pricingRules]);
+
+  const adjustedTotal = useMemo(() => {
+    const adj = pricingAdjustments.reduce((sum, a) => sum + a.amount, 0);
+    return Math.max(0, totalPrice + adj);
+  }, [totalPrice, pricingAdjustments]);
+
+  const discountedTotal = discountApplied ? Math.max(0, adjustedTotal - discountApplied.amount) : adjustedTotal;
 
   // Payment deadline: 30 days before check-in
   const daysUntilCheckIn = useMemo(() => {
@@ -989,7 +1032,19 @@ function BoekenContent() {
                           </div>
 
                           <div className="pt-4 space-y-2">
-                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${discountApplied ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
+                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${(pricingAdjustments.length > 0 || discountApplied) ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
+                            {pricingAdjustments.map((adj, i) => (
+                              <div key={i} className="flex justify-between text-sm">
+                                <span className={`font-medium flex items-center gap-1.5 ${adj.amount < 0 ? 'text-green-600' : 'text-amber-600'}`}>
+                                  {adj.type === 'seizoen' ? <Sun size={13} /> : adj.type === 'vroegboek' ? <Clock size={13} /> : <Sparkles size={13} />}
+                                  {adj.name} ({adj.percentage > 0 ? '+' : ''}{adj.percentage}%)
+                                </span>
+                                <span className={`font-medium ${adj.amount < 0 ? 'text-green-600' : 'text-amber-600'}`}>{adj.amount < 0 ? '' : '+'}€{Math.abs(adj.amount)}</span>
+                              </div>
+                            ))}
+                            {pricingAdjustments.length > 0 && !discountApplied && (
+                              <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{adjustedTotal}</span></div>
+                            )}
                             {discountApplied && (
                               <div className="flex justify-between items-center">
                                 <span className="text-primary font-medium flex items-center gap-1.5"><Tag size={14} /> {t('booking.discountLabel')} ({discountApplied.code})</span>

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { Users, Filter, X, Search, Euro, ArrowUpDown, Check, SlidersHorizontal, ChevronDown, Tent } from 'lucide-react';
+import { Users, Filter, X, Search, Euro, ArrowUpDown, Check, SlidersHorizontal, ChevronDown, Tent, CheckCircle, XCircle } from 'lucide-react';
 import { caravans as staticCaravans, CaravanType } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -21,12 +21,17 @@ export default function CaravansPage() {
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
   const [amenityFilters, setAmenityFilters] = useState<string[]>([]);
   const [manufacturerFilter, setManufacturerFilter] = useState<string>('ALL');
+  const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetch('/api/admin/caravans')
       .then(res => res.json())
       .then(data => setCustomCaravans(data.caravans || []))
       .catch((e) => console.error('Fetch error:', e));
+    fetch('/api/admin/caravan-settings?unavailable=true')
+      .then(res => res.json())
+      .then(data => setUnavailableIds(data.unavailableIds || []))
+      .catch(() => {});
   }, []);
 
   const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
@@ -333,6 +338,17 @@ export default function CaravansPage() {
                           );
                         })()}
                         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
+                        <div className="absolute top-3 left-3">
+                          {unavailableIds.includes(caravan.id) ? (
+                            <span className="flex items-center gap-1 bg-red-500/90 text-white px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm shadow-sm">
+                              <XCircle size={12} /> {t('caravans.unavailable')}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 bg-green-500/90 text-white px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm shadow-sm">
+                              <CheckCircle size={12} /> {t('caravans.available')}
+                            </span>
+                          )}
+                        </div>
                         <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                           <span className="text-sm font-bold text-foreground">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
                         </div>

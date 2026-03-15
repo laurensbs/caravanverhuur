@@ -391,6 +391,23 @@ export async function setupDatabase() {
     )
   `;
 
+  // Pricing rules table (seasonal pricing, early bird, last-minute)
+  await sql`
+    CREATE TABLE IF NOT EXISTS pricing_rules (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      percentage NUMERIC(5,2) NOT NULL DEFAULT 0,
+      start_date DATE,
+      end_date DATE,
+      days_before_checkin INTEGER,
+      min_nights INTEGER DEFAULT 1,
+      active BOOLEAN DEFAULT true,
+      priority INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -1880,4 +1897,65 @@ export async function getActivityLog(limit = 50, offset = 0) {
 export async function getActivityLogCount() {
   const result = await sql`SELECT COUNT(*) as count FROM activity_log`;
   return parseInt(result.rows[0].count as string) || 0;
+}
+
+// ===== PRICING RULES QUERIES =====
+
+export async function getAllPricingRules() {
+  const result = await sql`SELECT * FROM pricing_rules ORDER BY priority DESC, created_at DESC`;
+  return result.rows;
+}
+
+export async function getActivePricingRules() {
+  const result = await sql`SELECT * FROM pricing_rules WHERE active = true ORDER BY priority DESC`;
+  return result.rows;
+}
+
+export async function createPricingRule(data: {
+  name: string;
+  type: string;
+  percentage: number;
+  startDate?: string;
+  endDate?: string;
+  daysBeforeCheckin?: number;
+  minNights?: number;
+  active?: boolean;
+  priority?: number;
+}) {
+  const id = generateId('pr');
+  await sql`
+    INSERT INTO pricing_rules (id, name, type, percentage, start_date, end_date, days_before_checkin, min_nights, active, priority)
+    VALUES (${id}, ${data.name}, ${data.type}, ${data.percentage}, ${data.startDate || null}, ${data.endDate || null}, ${data.daysBeforeCheckin || null}, ${data.minNights || 1}, ${data.active !== false}, ${data.priority || 0})
+  `;
+  return id;
+}
+
+export async function updatePricingRule(id: string, data: {
+  name?: string;
+  type?: string;
+  percentage?: number;
+  startDate?: string;
+  endDate?: string;
+  daysBeforeCheckin?: number;
+  minNights?: number;
+  active?: boolean;
+  priority?: number;
+}) {
+  await sql`
+    UPDATE pricing_rules SET
+      name = COALESCE(${data.name ?? null}, name),
+      type = COALESCE(${data.type ?? null}, type),
+      percentage = COALESCE(${data.percentage ?? null}, percentage),
+      start_date = COALESCE(${data.startDate ?? null}, start_date),
+      end_date = COALESCE(${data.endDate ?? null}, end_date),
+      days_before_checkin = COALESCE(${data.daysBeforeCheckin ?? null}, days_before_checkin),
+      min_nights = COALESCE(${data.minNights ?? null}, min_nights),
+      active = COALESCE(${data.active ?? null}, active),
+      priority = COALESCE(${data.priority ?? null}, priority)
+    WHERE id = ${id}
+  `;
+}
+
+export async function deletePricingRule(id: string) {
+  await sql`DELETE FROM pricing_rules WHERE id = ${id}`;
 }

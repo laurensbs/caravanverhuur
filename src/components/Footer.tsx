@@ -261,6 +261,25 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Kit Digital / EU funding badges */}
+      <div className="bg-[#1a2744]">
+        <div className="max-w-7xl mx-auto px-4 py-5 sm:py-6">
+          <p className="text-center text-[10px] sm:text-xs text-white/60 uppercase tracking-wider font-medium mb-3 sm:mb-4">
+            Programa Kit Digital financiado por los fondos Next Generation del Mecanismo de Recuperación y Resiliencia
+          </p>
+          <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
+            {/* EU logo */}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-8 sm:h-10 object-contain" />
+            {/* Gobierno de España */}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Logotipo_del_Gobierno_de_Espa%C3%B1a.svg/200px-Logotipo_del_Gobierno_de_Espa%C3%B1a.svg.png" alt="Gobierno de España" className="h-8 sm:h-10 object-contain brightness-0 invert" />
+            {/* Red.es */}
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Red.es_logo.svg/120px-Red.es_logo.svg.png" alt="Red.es" className="h-6 sm:h-8 object-contain brightness-0 invert" />
+            {/* Plan de Recuperación */}
+            <img src="https://planderecuperacion.gob.es/sites/default/files/2022-12/Logo%20Kit%20Digital.png" alt="Kit Digital – Plan de Recuperación, Transformación y Resiliencia" className="h-8 sm:h-10 object-contain" />
+          </div>
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div className="">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted">

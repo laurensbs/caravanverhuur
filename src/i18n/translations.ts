@@ -256,6 +256,7 @@ const nl: Dict = {
     bookNow: 'Boek Nu',
     details: 'Details',
     available: 'Beschikbaar',
+    unavailable: 'Niet beschikbaar',
     // Detail page
     back: 'Terug',
     backToCaravans: 'Terug naar caravans',
@@ -1525,6 +1526,7 @@ const en: Dict = {
     bookNow: 'Book Now',
     details: 'Details',
     available: 'Available',
+    unavailable: 'Unavailable',
     back: 'Back',
     backToCaravans: 'Back to caravans',
     photos: 'photos',
@@ -2777,6 +2779,7 @@ const es: Dict = {
     bookNow: 'Reservar',
     details: 'Detalles',
     available: 'Disponible',
+    unavailable: 'No disponible',
     back: 'Volver',
     backToCaravans: 'Volver a caravanas',
     photos: 'fotos',

@@ -113,6 +113,8 @@ export const translations: Record<AdminLocale, Dict> = {
       featCustomers: 'Klantenoverzicht',
       trustSecure: 'Beveiligde toegang',
       trustEncrypted: 'Versleutelde verbinding',
+      pwaTip: 'Sla op als app!',
+      pwaInstructions: 'iPhone: Safari → Deel → Zet op beginscherm. Android: Chrome → ⋮ → Installeren. Zo heb je met 1 tik toegang!',
     },
 
     /* ── navigation ─────────────────────── */
@@ -128,6 +130,7 @@ export const translations: Record<AdminLocale, Dict> = {
       customers: 'Klanten',
       newsletters: 'Nieuwsbrieven',
       discountCodes: 'Kortingscodes',
+      pricing: 'Prijsregels',
       chat: 'Live Chat',
       activity: 'Activiteitenlog',
       viewWebsite: '← Website bekijken',
@@ -719,6 +722,8 @@ export const translations: Record<AdminLocale, Dict> = {
       featCustomers: 'Customer overview',
       trustSecure: 'Secure access',
       trustEncrypted: 'Encrypted connection',
+      pwaTip: 'Save as app!',
+      pwaInstructions: 'iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install. One tap access!',
     },
 
     nav: {
@@ -733,6 +738,7 @@ export const translations: Record<AdminLocale, Dict> = {
       customers: 'Customers',
       newsletters: 'Newsletters',
       discountCodes: 'Discount Codes',
+      pricing: 'Pricing Rules',
       chat: 'Live Chat',
       activity: 'Activity Log',
       viewWebsite: '← View website',
