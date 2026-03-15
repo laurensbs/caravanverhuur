@@ -228,6 +228,8 @@ export const translations: Record<AdminLocale, Dict> = {
     /* ── bookings page ──────────────────── */
     bookings: {
       searchPlaceholder: 'Zoek op naam, e-mail, referentie...',
+      dateFrom: 'Vanaf',
+      dateTo: 'Tot',
       bookingsFound: '{count} boeking{s} gevonden',
       noBookings: 'Geen boekingen gevonden',
       adjustSearch: 'Pas je zoekopdracht of filters aan',
@@ -313,6 +315,9 @@ export const translations: Record<AdminLocale, Dict> = {
       markPaid: 'Markeer betaald',
       noPayments: 'Geen betalingen gevonden',
       adjustFilters: 'Pas je filters aan',
+      dateFrom: 'Vanaf',
+      dateTo: 'Tot',
+      exportCsv: 'Exporteer CSV',
     },
 
     /* ── messages page ──────────────────── */
@@ -377,6 +382,9 @@ export const translations: Record<AdminLocale, Dict> = {
       inventoryComma: 'Inventaris (kommagescheiden)',
       photoUrls: "Foto URL's (één per regel)",
       photoUrlsHint: "Gebruik directe afbeeldings-URL's (één per regel). Foto's worden getoond op de website.",
+      moveLeft: 'Naar links',
+      moveRight: 'Naar rechts',
+      makeMainPhoto: 'Maak hoofdfoto',
       videoUrl: 'Video URL (YouTube)',
       videoUrlPlaceholder: 'https://youtu.be/...',
       addCaravanBtn: 'Caravan toevoegen',
@@ -579,6 +587,10 @@ export const translations: Record<AdminLocale, Dict> = {
       excludeBtn: 'Uitsluiten',
       excludeHint: 'Typ een e-mailadres en druk Enter om die klant uit te sluiten',
       yesSend: 'Ja, verzenden',
+      sendTestEmail: 'Test-mail versturen',
+      testEmailPlaceholder: 'jouw@email.com',
+      testEmailSent: 'Test-mail verstuurd naar {email}',
+      testEmailFailed: 'Test-mail versturen mislukt',
       sendingInProgress: 'Bezig met verzenden...',
       newsletterSent: 'Nieuwsbrief verzonden!',
       sentSuccessfully: 'Succesvol verzonden naar {sent} van {total} ontvangers',
@@ -834,6 +846,8 @@ export const translations: Record<AdminLocale, Dict> = {
 
     bookings: {
       searchPlaceholder: 'Search by name, email, reference...',
+      dateFrom: 'From',
+      dateTo: 'To',
       bookingsFound: '{count} booking{s} found',
       noBookings: 'No bookings found',
       adjustSearch: 'Adjust your search or filters',
@@ -918,6 +932,9 @@ export const translations: Record<AdminLocale, Dict> = {
       markPaid: 'Mark paid',
       noPayments: 'No payments found',
       adjustFilters: 'Adjust your filters',
+      dateFrom: 'From',
+      dateTo: 'To',
+      exportCsv: 'Export CSV',
     },
 
     messages: {
@@ -980,6 +997,9 @@ export const translations: Record<AdminLocale, Dict> = {
       inventoryComma: 'Inventory (comma-separated)',
       photoUrls: 'Photo URLs (one per line)',
       photoUrlsHint: 'Use direct image URLs (one per line). Photos will be displayed on the website.',
+      moveLeft: 'Move left',
+      moveRight: 'Move right',
+      makeMainPhoto: 'Make main photo',
       videoUrl: 'Video URL (YouTube)',
       videoUrlPlaceholder: 'https://youtu.be/...',
       addCaravanBtn: 'Add caravan',
@@ -1178,6 +1198,10 @@ export const translations: Record<AdminLocale, Dict> = {
       excludeBtn: 'Exclude',
       excludeHint: 'Type an email address and press Enter to exclude that customer',
       yesSend: 'Yes, send',
+      sendTestEmail: 'Send test email',
+      testEmailPlaceholder: 'your@email.com',
+      testEmailSent: 'Test email sent to {email}',
+      testEmailFailed: 'Failed to send test email',
       sendingInProgress: 'Sending...',
       newsletterSent: 'Newsletter sent!',
       sentSuccessfully: 'Successfully sent to {sent} of {total} recipients',

@@ -407,6 +407,8 @@ export default function BookingenPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALLE'>('ALLE');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
@@ -538,6 +540,8 @@ export default function BookingenPage() {
   const filtered = bookings
     .filter((b) => {
       if (statusFilter !== 'ALLE' && b.status !== statusFilter) return false;
+      if (dateFrom && new Date(b.check_in) < new Date(dateFrom)) return false;
+      if (dateTo && new Date(b.check_in) > new Date(dateTo)) return false;
       if (search) {
         const q = search.toLowerCase();
         const caravan = getBookingCaravan(b);
@@ -588,6 +592,22 @@ export default function BookingenPage() {
             ))}
           </select>
         </div>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          title={t('bookings.dateFrom')}
+          placeholder={t('bookings.dateFrom')}
+          className="px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          title={t('bookings.dateTo')}
+          placeholder={t('bookings.dateTo')}
+          className="px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
+        />
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors"

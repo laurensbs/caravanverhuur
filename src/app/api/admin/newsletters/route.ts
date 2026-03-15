@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     // Send existing newsletter
-    if (action === 'send') {
-      const { id, excludeEmails } = body;
+    if (action === 'send' || action === 'test') {
+      const { id, excludeEmails, testEmail } = body;
       if (!id) {
         return NextResponse.json({ error: 'Nieuwsbrief ID ontbreekt' }, { status: 400 });
       }
@@ -52,6 +52,43 @@ export async function POST(request: NextRequest) {
       const newsletter = await getNewsletterById(id);
       if (!newsletter) {
         return NextResponse.json({ error: 'Nieuwsbrief niet gevonden' }, { status: 404 });
+      }
+
+      // Format event date for display
+      let eventDateFormatted: string | null = null;
+      if (newsletter.event_date) {
+        const d = new Date(newsletter.event_date);
+        eventDateFormatted = d.toLocaleDateString('nl-NL', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+      }
+
+      // Parse photos
+      const photos: string[] = newsletter.photos ? (typeof newsletter.photos === 'string' ? JSON.parse(newsletter.photos) : newsletter.photos) : [];
+
+      // Test email — send to a single address
+      if (action === 'test' && testEmail) {
+        try {
+          const result = await sendNewsletterEmail({
+            to: testEmail,
+            title: `[TEST] ${newsletter.title}`,
+            content: newsletter.content,
+            category: newsletter.category,
+            eventDate: eventDateFormatted,
+            eventLocation: newsletter.event_location,
+            photos,
+            unsubscribeUrl: '#',
+          });
+          if (result.success) {
+            return NextResponse.json({ success: true });
+          }
+          return NextResponse.json({ error: result.error || 'Verzenden mislukt' }, { status: 500 });
+        } catch (err) {
+          return NextResponse.json({ error: String(err) }, { status: 500 });
+        }
       }
 
       if (newsletter.status === 'verzonden') {
@@ -70,21 +107,6 @@ export async function POST(request: NextRequest) {
       if (emails.length === 0) {
         return NextResponse.json({ error: 'Geen e-mailadressen gevonden' }, { status: 400 });
       }
-
-      // Format event date for display
-      let eventDateFormatted: string | null = null;
-      if (newsletter.event_date) {
-        const d = new Date(newsletter.event_date);
-        eventDateFormatted = d.toLocaleDateString('nl-NL', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
-      }
-
-      // Parse photos
-      const photos: string[] = newsletter.photos ? (typeof newsletter.photos === 'string' ? JSON.parse(newsletter.photos) : newsletter.photos) : [];
 
       // Send to all customers
       let sentCount = 0;

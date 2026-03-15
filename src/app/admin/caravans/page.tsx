@@ -5,7 +5,7 @@ import Image from "next/image";
 import {
   Search, Users, Calendar, CheckCircle2, Wrench, CalendarCheck, ChevronDown, ChevronUp,
   Loader2, XCircle, Power, Plus, Pencil, Trash2, X, Check, ImagePlus, Camera,
-  AlertTriangle, RotateCcw, Video,
+  AlertTriangle, RotateCcw, Video, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { useAdmin } from "@/i18n/admin-context";
 import { useToast } from "@/components/AdminToast";
@@ -374,6 +374,13 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
   const removePhoto = async (index: number) => {
     await savePhotos(caravan.photos.filter((_, i) => i !== index));
   };
+  const movePhoto = async (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= caravan.photos.length) return;
+    const photos = [...caravan.photos];
+    [photos[index], photos[newIndex]] = [photos[newIndex], photos[index]];
+    await savePhotos(photos);
+  };
 
   const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
 
@@ -419,8 +426,15 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
             {caravan.photos.map((photo, i) => (
               <div key={i} className="relative w-32 h-24 shrink-0 rounded-xl overflow-hidden group">
                 <Image src={photo} alt={`${caravan.name} foto ${i + 1}`} fill className="object-cover" sizes="128px" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
                 <button onClick={() => removePhoto(i)} className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title={t("common.delete")}><X size={10} /></button>
-                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">{i + 1}</span>
+                {i > 0 && (
+                  <button onClick={() => movePhoto(i, -1)} className="absolute left-1 top-1/2 -translate-y-1/2 p-0.5 bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title={t("caravans.moveLeft")}><ChevronLeft size={12} /></button>
+                )}
+                {i < caravan.photos.length - 1 && (
+                  <button onClick={() => movePhoto(i, 1)} className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title={t("caravans.moveRight")}><ChevronRight size={12} /></button>
+                )}
+                <span className={`absolute bottom-1 left-1 text-white text-[9px] px-1.5 py-0.5 rounded font-medium ${i === 0 ? 'bg-primary' : 'bg-black/60'}`}>{i === 0 ? '★' : i + 1}</span>
               </div>
             ))}
           </div>

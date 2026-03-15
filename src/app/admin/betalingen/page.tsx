@@ -9,6 +9,7 @@ import {
   RotateCcw,
   ArrowUpDown,
   Loader2,
+  Download,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -34,6 +35,8 @@ export default function BetalingenPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'ALLE'>('ALLE');
   const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
@@ -109,6 +112,8 @@ export default function BetalingenPage() {
     .filter((p) => {
       if (statusFilter !== 'ALLE' && p.status !== statusFilter) return false;
       if (typeFilter !== 'ALLE' && p.type !== typeFilter) return false;
+      if (dateFrom && new Date(p.created_at) < new Date(dateFrom)) return false;
+      if (dateTo && new Date(p.created_at) > new Date(dateTo + 'T23:59:59')) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -211,6 +216,44 @@ export default function BetalingenPage() {
             ))}
           </select>
         </div>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          title={t('payments.dateFrom')}
+          className="px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          title={t('payments.dateTo')}
+          className="px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
+        />
+        <button
+          onClick={() => {
+            const headers = ['Gast', 'Boeking', 'Type', 'Bedrag', 'Status', 'Methode', 'Datum'];
+            const rows = filtered.map(p => [
+              p.guest_name || '', p.booking_ref || '', ts(p.type),
+              Number(p.amount).toFixed(2), ts(p.status), p.method || '',
+              new Date(p.created_at).toLocaleDateString('nl-NL'),
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `betalingen-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
+        >
+          <Download size={14} />
+          {t('payments.exportCsv')}
+        </button>
       </div>
 
       <p className="text-xs text-muted">

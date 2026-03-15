@@ -130,6 +130,8 @@ export default function AdminNieuwsbrieven() {
   // Send modal: exclude emails
   const [excludeInput, setExcludeInput] = useState('');
   const [excludeEmails, setExcludeEmails] = useState<string[]>([]);
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
 
   const fetchNewsletters = useCallback(async () => {
     try {
@@ -304,6 +306,25 @@ export default function AdminNieuwsbrieven() {
       setError(String(err instanceof Error ? err.message : err));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestSend = async () => {
+    if (!selected || !testEmail.trim()) return;
+    setSendingTest(true);
+    try {
+      const res = await fetch('/api/admin/newsletters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test', id: selected.id, testEmail: testEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast(t('newsletters.testEmailSent', { email: testEmail.trim() }), 'success');
+    } catch {
+      toast(t('newsletters.testEmailFailed'), 'error');
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -1025,6 +1046,30 @@ export default function AdminNieuwsbrieven() {
                           {error}
                         </div>
                       )}
+
+                      {/* Test email */}
+                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <label className="block text-xs font-medium text-foreground mb-1.5">
+                          {t('newsletters.sendTestEmail')}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="email"
+                            value={testEmail}
+                            onChange={(e) => setTestEmail(e.target.value)}
+                            placeholder={t('newsletters.testEmailPlaceholder')}
+                            className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 border border-gray-200"
+                          />
+                          <button
+                            onClick={handleTestSend}
+                            disabled={!testEmail.trim() || sendingTest}
+                            className="px-3 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-dark disabled:opacity-50 cursor-pointer flex items-center gap-1 shrink-0"
+                          >
+                            {sendingTest ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                            Test
+                          </button>
+                        </div>
+                      </div>
 
                       <div className="flex gap-3">
                         <button

@@ -18,6 +18,7 @@ import {
   Link2,
   FileText,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -63,6 +64,21 @@ export default function AdminChatPage() {
   const [filter, setFilter] = useState<'all' | 'needs_human' | 'active' | 'closed'>('all');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showCanned, setShowCanned] = useState(false);
+
+  const cannedResponses = isNl ? [
+    { label: '👋 Begroeting', text: 'Hallo! Bedankt voor je bericht. Waarmee kan ik je helpen?' },
+    { label: '📅 Beschikbaarheid', text: 'Ik ga de beschikbaarheid voor je controleren. Welke periode had je in gedachten?' },
+    { label: '💰 Prijzen', text: 'Onze prijzen beginnen vanaf €45/nacht. Bekijk gerust onze website voor actuele tarieven: caravanverhuurspanje.com/caravans' },
+    { label: '📞 Contact', text: 'Je kunt ons ook bereiken via het contactformulier op onze website of per e-mail.' },
+    { label: '✅ Afsluiting', text: 'Graag gedaan! Als je nog vragen hebt, laat het gerust weten. Fijne dag!' },
+  ] : [
+    { label: '👋 Greeting', text: 'Hello! Thank you for your message. How can I help you?' },
+    { label: '📅 Availability', text: 'I will check the availability for you. Which period did you have in mind?' },
+    { label: '💰 Prices', text: 'Our prices start from €45/night. Feel free to check our website for current rates: caravanverhuurspanje.com/caravans' },
+    { label: '📞 Contact', text: 'You can also reach us via the contact form on our website or by email.' },
+    { label: '✅ Closing', text: 'You\'re welcome! If you have any more questions, feel free to ask. Have a great day!' },
+  ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -646,8 +662,29 @@ export default function AdminChatPage() {
 
             {/* Reply input */}
             {activeConv.status === 'ACTIVE' && (
-              <div className="border-t border-gray-200 bg-white px-3 py-2.5 flex items-center gap-2">
-                <input
+              <div className="border-t border-gray-200 bg-white">
+                {showCanned && (
+                  <div className="px-3 pt-2 flex gap-1.5 flex-wrap">
+                    {cannedResponses.map((cr, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setReply(cr.text); setShowCanned(false); }}
+                        className="text-[11px] px-2 py-1 bg-gray-100 hover:bg-primary/10 hover:text-primary rounded-full text-muted transition-colors cursor-pointer"
+                      >
+                        {cr.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="px-3 py-2.5 flex items-center gap-2">
+                  <button
+                    onClick={() => setShowCanned(!showCanned)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors cursor-pointer ${showCanned ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                    title={isNl ? 'Snelle antwoorden' : 'Quick replies'}
+                  >
+                    <Zap size={14} />
+                  </button>
+                  <input
                   type="text"
                   value={reply}
                   onChange={e => setReply(e.target.value)}
@@ -656,13 +693,14 @@ export default function AdminChatPage() {
                   className="flex-1 bg-gray-50 rounded-full px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-gray-200"
                   disabled={sending}
                 />
-                <button
-                  onClick={handleSend}
-                  disabled={!reply.trim() || sending}
-                  className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-95 cursor-pointer"
-                >
-                  {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                </button>
+                  <button
+                    onClick={handleSend}
+                    disabled={!reply.trim() || sending}
+                    className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-30 transition-opacity active:scale-95 cursor-pointer"
+                  >
+                    {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  </button>
+                </div>
               </div>
             )}
 
