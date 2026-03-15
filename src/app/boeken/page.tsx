@@ -505,8 +505,8 @@ function BoekenContent() {
                           ].map(q => {
                             // Use the already-entered check-in date, or fall back to 4 months from now
                             const start = checkIn ? new Date(checkIn + 'T00:00:00') : (() => { const d = new Date(); d.setMonth(d.getMonth() + 4); d.setDate(1); return d; })();
-                            const end = new Date(start);
-                            end.setDate(start.getDate() + q.days);
+                            // Use UTC-based arithmetic to avoid DST issues
+                            const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + q.days);
                             const isActive = checkIn === start.toISOString().split('T')[0] && checkOut === end.toISOString().split('T')[0];
                             return (
                               <button

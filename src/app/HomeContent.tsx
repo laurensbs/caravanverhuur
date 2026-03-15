@@ -343,12 +343,12 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
 
           {/* Mobile: horizontal scroll / Desktop: grid */}
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide touch-pan-y">
             {featuredCaravans.map((caravan, i) => (
               <motion.div
                 key={caravan.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
                 className="snap-center shrink-0 w-[72vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
@@ -439,7 +439,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
 
           {/* Region cards — 3 columns on desktop, scroll on mobile */}
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible scrollbar-hide">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible scrollbar-hide touch-pan-y">
             {[
               {
                 region: 'Baix Empordà',
@@ -461,8 +461,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               return (
                 <motion.div
                   key={item.region}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   className="snap-center shrink-0 w-[80vw] sm:w-auto"
@@ -489,12 +489,12 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
             </h3>
-            <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+            <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
               {destinations.slice(0, 8).map((d, i) => (
                 <motion.div
                   key={d.slug}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05, duration: 0.4 }}
                   className="snap-center shrink-0"
