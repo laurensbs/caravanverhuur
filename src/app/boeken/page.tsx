@@ -103,7 +103,7 @@ function BoekenContent() {
   const [pricingRules, setPricingRules] = useState<{ id: string; name: string; type: string; percentage: string; start_date: string | null; end_date: string | null; days_before_checkin: number | null; min_nights: number; priority: number }[]>([]);
 
   useEffect(() => {
-    fetch('/api/admin/caravan-settings?unavailable=true')
+    fetch('/api/caravans')
       .then(res => res.json())
       .then(data => setUnavailableIds(data.unavailableIds || []))
       .catch((e) => console.error('Fetch error:', e));

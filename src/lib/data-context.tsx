@@ -23,7 +23,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    fetch('/api/admin/caravans')
+    fetch('/api/caravans?all=true')
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
       .then(data => { if (data.caravans?.length) setCustomCaravans(data.caravans); })
       .catch(() => { /* Not authenticated or unavailable — use static data */ });

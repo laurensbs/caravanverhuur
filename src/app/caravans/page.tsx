@@ -24,17 +24,19 @@ export default function CaravansPage() {
   const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch('/api/admin/caravans')
+    fetch('/api/caravans?all=true')
       .then(res => res.json())
-      .then(data => setCustomCaravans(data.caravans || []))
+      .then(data => {
+        setCustomCaravans(data.caravans || []);
+        setUnavailableIds(data.unavailableIds || []);
+      })
       .catch((e) => console.error('Fetch error:', e));
-    fetch('/api/admin/caravan-settings?unavailable=true')
-      .then(res => res.json())
-      .then(data => setUnavailableIds(data.unavailableIds || []))
-      .catch(() => {});
   }, []);
 
-  const caravans: Caravan[] = useMemo(() => [...staticCaravans, ...customCaravans], [customCaravans]);
+  const caravans: Caravan[] = useMemo(() => {
+    if (customCaravans.length > 0) return customCaravans;
+    return staticCaravans;
+  }, [customCaravans]);
 
   // Get unique amenities and manufacturers from all caravans
   const allAmenities = useMemo(() => {

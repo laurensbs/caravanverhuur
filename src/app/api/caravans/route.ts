@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { getAllCustomCaravans, getAvailableCaravanIds } from '@/lib/db';
 
-// GET - Returns all caravans (static + custom, excluding unavailable)
-export async function GET() {
+// GET - Returns caravans (static + custom). ?all=true includes unavailable ones.
+export async function GET(request: NextRequest) {
   try {
+    const includeAll = request.nextUrl.searchParams.get('all') === 'true';
+
     // Get all DB caravans (custom + static overrides)
     let dbCaravans: ReturnType<typeof formatCustomCaravan>[] = [];
     const dbIdSet = new Set<string>();
@@ -19,24 +21,28 @@ export async function GET() {
     // Get unavailable caravan IDs (returns IDs with available=false)
     let unavailableIds: string[] = [];
     try {
-      unavailableIds = await getAvailableCaravanIds(); // misleading name – returns UNavailable IDs
+      unavailableIds = await getAvailableCaravanIds();
     } catch {
       // ignore
     }
 
     // Merge: static caravans (skip if DB override exists) + DB caravans
-    const allCaravans = [
+    let allCaravans = [
       ...staticCaravans
         .filter(c => !dbIdSet.has(c.id)) // skip static caravans that have DB overrides
         .map(c => ({ ...c, isCustom: false })),
       ...dbCaravans,
-    ].filter(c => !unavailableIds.includes(c.id));
+    ];
 
-    return NextResponse.json({ caravans: allCaravans });
+    if (!includeAll) {
+      allCaravans = allCaravans.filter(c => !unavailableIds.includes(c.id));
+    }
+
+    return NextResponse.json({ caravans: allCaravans, unavailableIds });
   } catch (error) {
     console.error('Error fetching caravans:', error);
     // Fallback to static caravans
-    return NextResponse.json({ caravans: staticCaravans.map(c => ({ ...c, isCustom: false })) });
+    return NextResponse.json({ caravans: staticCaravans.map(c => ({ ...c, isCustom: false })), unavailableIds: [] });
   }
 }
 

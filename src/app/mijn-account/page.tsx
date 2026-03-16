@@ -206,7 +206,7 @@ function MijnAccountContent() {
   const [campings, setCampings] = useState<Camping[]>(staticCampings);
   const redirectingRef = useRef(false);
   useEffect(() => {
-    fetch('/api/admin/caravans')
+    fetch('/api/caravans?all=true')
       .then(res => res.json())
       .then(data => setCustomCaravansData(data.caravans || []))
       .catch((e) => console.error('Fetch error:', e));
