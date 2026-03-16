@@ -52,6 +52,11 @@ function BoekenContent() {
   const { caravans, campings } = useData();
   const searchParams = useSearchParams();
   const preselectedCaravan = searchParams.get('caravan');
+  const preCheckIn = searchParams.get('checkIn') || '';
+  const preCheckOut = searchParams.get('checkOut') || '';
+  const preCamping = searchParams.get('camping') || '';
+  const preAdults = parseInt(searchParams.get('adults') || '') || 2;
+  const preChildren = parseInt(searchParams.get('children') || '') || 0;
 
   const stepConfig = [
     { label: t('booking.stepDate'), icon: CalendarDays, desc: t('booking.stepDateDesc') },
@@ -61,16 +66,18 @@ function BoekenContent() {
     { label: t('booking.stepConfirm'), icon: PartyPopper, desc: t('booking.stepConfirmDesc') },
   ];
 
-  const [step, setStep] = useState<Step>(1);
+  // Start at step 2 if dates were prefilled from the hero widget
+  const initialStep: Step = (preCheckIn && preCheckOut) ? 2 : 1;
+  const [step, setStep] = useState<Step>(initialStep);
   const [direction, setDirection] = useState(1);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [campingId, setCampingId] = useState('');
+  const [checkIn, setCheckIn] = useState(preCheckIn);
+  const [checkOut, setCheckOut] = useState(preCheckOut);
+  const [campingId, setCampingId] = useState(preCamping);
   const [campingSearch, setCampingSearch] = useState('');
   const [spotNumber, setSpotNumber] = useState('');
   const [locationFilter, setLocationFilter] = useState<string>('all');
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
+  const [adults, setAdults] = useState(preAdults);
+  const [children, setChildren] = useState(preChildren);
   const [selectedCaravan, setSelectedCaravan] = useState(preselectedCaravan || '');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
