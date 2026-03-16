@@ -275,9 +275,9 @@ function BoekenContent() {
   const goBack = () => { setDirection(-1); setStep(s => Math.max(s - 1, 1) as Step); };
 
   const slideVariants = {
-    enter: (d: number) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
+    enter: (d: number) => ({ x: d > 0 ? 30 : -30, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
+    exit: (d: number) => ({ x: d > 0 ? -30 : 30, opacity: 0 }),
   };
 
   /* ---- Success state ---- */
@@ -360,7 +360,7 @@ function BoekenContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-surface via-white to-surface overflow-x-hidden overflow-clip">
+    <div className="min-h-screen bg-gradient-to-b from-surface via-white to-surface overflow-x-hidden">
       {/* ===== PROGRESS BAR ===== */}
       <div ref={contentRef} className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -437,17 +437,17 @@ function BoekenContent() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      <section className="py-4 pb-32 lg:py-10 lg:pb-12">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+      <section className="py-4 pb-32 lg:py-10 lg:pb-12 overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 overflow-x-hidden">
           <div className="grid lg:grid-cols-[1fr_360px] gap-6 lg:gap-10">
             {/* Left: Step content */}
-            <div>
+            <div className="min-w-0">
               <AnimatePresence mode="wait" custom={direction}>
-                <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: 'easeOut' }} className="overflow-x-hidden">
+                <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: 'easeOut' }} className="min-w-0">
 
                   {/* ===== STEP 1: DATES ===== */}
                   {step === 1 && (
-                    <div className="space-y-5 lg:space-y-6">
+                    <div className="space-y-5 lg:space-y-6 min-w-0">
                       <div>
                         <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('booking.s1Title')}</h1>
                         <p className="text-sm lg:text-base text-muted">{t('booking.s1Subtitle')}</p>
@@ -555,13 +555,13 @@ function BoekenContent() {
 
                   {/* ===== STEP 2: DESTINATION ===== */}
                   {step === 2 && (
-                    <div className="space-y-5 lg:space-y-6">
+                    <div className="space-y-5 lg:space-y-6 min-w-0">
                       <div>
                         <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('booking.s2Title')}</h2>
                         <p className="text-sm lg:text-base text-muted">{t('booking.s2Subtitle')}</p>
                       </div>
 
-                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4 lg:p-6">
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4 lg:p-6 overflow-hidden">
                         <div className="relative mb-3">
                           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                           <input type="text" value={campingSearch} onChange={e => setCampingSearch(e.target.value)} placeholder={t('booking.searchCamping')}
@@ -738,7 +738,7 @@ function BoekenContent() {
 
                   {/* ===== STEP 3: TRAVELERS + CARAVAN ===== */}
                   {step === 3 && (
-                    <div className="space-y-5 lg:space-y-6">
+                    <div className="space-y-5 lg:space-y-6 min-w-0">
                       <div>
                         <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('booking.s3Title')}</h2>
                         <p className="text-sm lg:text-base text-muted">{t('booking.s3Subtitle')}</p>
@@ -939,7 +939,7 @@ function BoekenContent() {
 
                   {/* ===== STEP 4: CONTACT DETAILS ===== */}
                   {step === 4 && (
-                    <div className="space-y-5 lg:space-y-6">
+                    <div className="space-y-5 lg:space-y-6 min-w-0">
                       <div>
                         <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('booking.s4Title')}</h2>
                         <p className="text-sm lg:text-base text-muted">{t('booking.s4Subtitle')}</p>
@@ -996,7 +996,7 @@ function BoekenContent() {
 
                   {/* ===== STEP 5: CONFIRMATION ===== */}
                   {step === 5 && (
-                    <div className="space-y-5 lg:space-y-6">
+                    <div className="space-y-5 lg:space-y-6 min-w-0">
                       <div>
                         <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mb-1">{t('booking.s5Title')}</h2>
                         <p className="text-sm lg:text-base text-muted">{t('booking.s5Subtitle')}</p>
