@@ -136,6 +136,13 @@ function BoekenContent() {
   const totalPersons = adults + children;
   const availableCaravans = caravans.filter(c => c.maxPersons >= totalPersons && !unavailableIds.includes(c.id));
   const chosenCaravan = selectedCaravan ? getCaravanById(selectedCaravan) : null;
+
+  // Auto-assign first available caravan (user doesn't choose)
+  useEffect(() => {
+    if (availableCaravans.length > 0 && !availableCaravans.find(c => c.id === selectedCaravan)) {
+      setSelectedCaravan(availableCaravans[0].id);
+    }
+  }, [availableCaravans, selectedCaravan]);
   const chosenCamping = campingId ? campings.find(c => c.id === campingId) : null;
   const nights = useMemo(() => {
     if (!checkIn || !checkOut) return 0;
@@ -880,152 +887,40 @@ function BoekenContent() {
                         </div>
                       </div>
 
-                      {/* Caravan selection */}
+                      {/* Caravan info — assignment notice */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                        <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                        <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('booking.caravanAssignedInfo')}</p>
+                      </div>
+
+                      {/* Caravan photo gallery overview */}
                       <div>
-                        <h3 className="text-lg lg:text-xl font-bold text-foreground mb-1">{t('booking.chooseCaravan')}</h3>
-                        <p className="text-sm text-muted mb-4">{availableCaravans.length} {t('booking.availableFor')} {totalPersons} {t('booking.persons')}</p>
-
-                        <div className="space-y-4 lg:space-y-5">
-                          {availableCaravans.map(c => {
-                            const isSelected = selectedCaravan === c.id;
-                            const price = totalPrice;
-                            return (
-                              <motion.div
-                                key={c.id}
-                                layout
-                                className={`w-full text-left rounded-2xl overflow-hidden transition-all border-2 ${
-                                  isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-gray-100 bg-white shadow-sm hover:shadow-md hover:border-primary/30'
-                                }`}
-                              >
-                                <button
-                                  onClick={() => setSelectedCaravan(isSelected ? '' : c.id)}
-                                  className="w-full text-left cursor-pointer"
-                                >
-                                  <div className="flex flex-col sm:flex-row">
-                                    <div className="relative h-44 sm:h-auto sm:w-56 lg:w-64 shrink-0 overflow-hidden">
-                                      {(() => {
-                                        const gm = c.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
-                                        if (gm) return (
-                                          <>
-                                            <iframe
-                                              src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
-                                              title={c.name}
-                                              allow="autoplay"
-                                              loading="lazy"
-                                              className="absolute inset-0 w-full h-full border-0"
-                                              style={{ pointerEvents: 'none' }}
-                                            />
-                                            <div className="absolute inset-0 z-10" />
-                                          </>
-                                        );
-                                        return <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />;
-                                      })()}
-                                      <div className="absolute top-3 left-3 z-20">
-                                        <span className="text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md bg-primary">{c.manufacturer}</span>
-                                      </div>
-                                      {isSelected && (
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-md z-20">
-                                          <Check size={14} className="text-white" />
-                                        </motion.div>
-                                      )}
-                                    </div>
-                                    <div className="p-5 flex-1">
-                                      <h4 className="font-bold text-lg text-foreground mb-1">{c.name}</h4>
-                                      <p className="text-sm text-muted mb-3">{c.maxPersons} {t('booking.persons')} &bull; {c.manufacturer} &bull; {c.year}</p>
-                                      <div className="flex flex-wrap gap-1.5 mb-3">
-                                        {c.amenities.slice(0, 5).map(a => (
-                                          <span key={a} className="text-xs font-medium bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">{a}</span>
-                                        ))}
-                                        {c.amenities.length > 5 && (
-                                          <span className="text-xs font-medium bg-surface-alt text-muted px-2 py-0.5 rounded-full">+{c.amenities.length - 5}</span>
-                                        )}
-                                      </div>
-                                      <div className="flex items-end justify-between">
-                                        <div>
-                                          <p className="text-xs text-muted">{t('booking.from')}</p>
-                                          <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-bold text-primary">&euro;550</span>
-                                            <span className="text-sm text-muted">{t('booking.perWeek')}</span>
-                                          </div>
-                                        </div>
-                                        {nights > 0 && (
-                                          <div className="text-right">
-                                            <p className="text-xs text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
-                                            <p className="text-lg font-bold text-primary">&euro;{price}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </button>
-
-                                {/* Expanded photo gallery & details */}
-                                <AnimatePresence>
-                                  {isSelected && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: 'auto', opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                      className="overflow-hidden"
-                                    >
-                                      <div className="p-5 space-y-4">
-                                        {/* Photo gallery */}
-                                        <div>
-                                          <p className="text-sm font-semibold text-foreground mb-3">{t('booking.photosLabel')}</p>
-                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                            {c.photos.map((photo, idx) => (
-                                              <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
-                                                <Image src={photo} alt={`${c.name} foto ${idx + 1}`} fill className="object-cover transition-transform duration-300" />
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                        {/* Description */}
-                                        <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.descriptionLabel')}</p>
-                                          <p className="text-sm text-muted leading-relaxed">{c.description}</p>
-                                        </div>
-                                        {/* All amenities */}
-                                        <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.amenitiesLabel')}</p>
-                                          <div className="flex flex-wrap gap-1.5 max-w-full">
-                                            {c.amenities.map(a => (
-                                              <span key={a} className="text-xs font-medium bg-primary-50 text-primary-dark px-2.5 py-1 rounded-full flex items-center gap-1 break-words">
-                                                <Check size={10} className="text-primary shrink-0" />{a}
-                                              </span>
-                                            ))}
-                                          </div>
-                                        </div>
-                                        {/* Inventory */}
-                                        <div>
-                                          <p className="text-sm font-semibold text-foreground mb-2">{t('booking.inventoryLabel')}</p>
-                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-w-full">
-                                            {c.inventory.map(item => (
-                                              <span key={item} className="text-xs text-muted bg-surface rounded-lg px-2.5 py-1.5 truncate">{item}</span>
-                                            ))}
-                                          </div>
-                                        </div>
-                                        {/* Price breakdown */}
-                                        {nights > 0 && (
-                                          <div className="bg-primary-50 rounded-xl p-4">
-                                            <div className="flex items-center justify-between">
-                                              <div>
-                                                <p className="text-sm font-semibold text-foreground">{t('booking.totalPriceLabel')}</p>
-                                                <p className="text-xs text-muted">{nights} {t('booking.nightsBorg')} €{c.deposit}</p>
-                                              </div>
-                                              <p className="text-2xl font-bold text-primary">&euro;{price}</p>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </motion.div>
-                            );
-                          })}
+                        <h3 className="text-lg lg:text-xl font-bold text-foreground mb-3">{t('booking.chooseCaravan')}</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                          {availableCaravans.flatMap(c => c.photos).slice(0, 6).map((photo, idx) => (
+                            <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
+                              <Image src={photo} alt={`Caravan foto ${idx + 1}`} fill className="object-cover" />
+                            </div>
+                          ))}
                         </div>
+                        {/* Pricing info */}
+                        {nights > 0 && (
+                          <div className="bg-primary-50 rounded-xl p-4 mt-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs text-muted">{t('booking.from')}</p>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-2xl font-bold text-primary">&euro;550</span>
+                                  <span className="text-sm text-muted">{t('booking.perWeek')}</span>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
+                                <p className="text-2xl font-bold text-primary">&euro;{totalPrice}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

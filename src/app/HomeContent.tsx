@@ -59,7 +59,6 @@ const scaleIn = {
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
-  const featuredCaravans = caravans.filter(c => c.status === 'BESCHIKBAAR');
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -324,7 +323,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
         </div>
       </section>
 
-      {/* ===== FEATURED CARAVANS ===== */}
+      {/* ===== OUR CARAVANS — playful photo gallery ===== */}
       <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
@@ -342,66 +341,71 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             </motion.p>
           </motion.div>
 
-          {/* Mobile: horizontal scroll / Desktop: grid */}
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide touch-pan-y">
-            {featuredCaravans.map((caravan, i) => (
-              <motion.div
-                key={caravan.id}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="snap-center shrink-0 w-[72vw] sm:w-auto bg-white rounded-2xl overflow-hidden shadow-md flex flex-col"
-              >
-                <div className="relative h-40 sm:h-48 overflow-hidden">
-                  <Image
-                    src={caravan.photos[0]}
-                    alt={caravan.name}
-                    fill
-                    sizes="(max-width: 640px) 72vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-700 ease-out"
-                  />
-                  {/* Subtle gradient overlay at bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent" />
+          {/* Info notice */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 mb-8 max-w-2xl mx-auto"
+          >
+            <Users size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('home.caravanAssignedNote')}</p>
+          </motion.div>
 
-                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md">
-                    <span className="text-xs sm:text-sm font-bold text-primary">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">{t('home.perWeek')}</span></span>
-                  </div>
-                </div>
-                <div className="p-3 sm:p-4 flex flex-col flex-1">
-                  <h3 className="text-sm sm:text-lg font-bold text-foreground mb-1">{caravan.name}</h3>
-                  <div className="flex items-center gap-3 text-xs sm:text-sm text-muted mb-2">
-                    <span className="flex items-center gap-1"><Users size={12} className="text-primary" /> Max {caravan.maxPersons}</span>
-                    <span>{caravan.manufacturer}</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted mb-3 line-clamp-2 sm:min-h-[2.5rem]">{caravan.description}</p>
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {caravan.amenities.slice(0, 3).map(a => (
-                      <span key={a} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary-50 text-primary-dark rounded-md">{a}</span>
-                    ))}
-                    {caravan.amenities.length > 3 && (
-                      <span className="text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface rounded-md text-muted">+{caravan.amenities.length - 3}</span>
-                    )}
-                  </div>
-                  <div className="flex gap-2 sm:gap-3 mt-auto">
-                    <Link
-                      href={`/caravans/${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 border-2 border-primary text-primary font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm"
-                    >
-                      {t('caravans.details')}
-                    </Link>
-                    <Link
-                      href={`/boeken?caravan=${caravan.id}`}
-                      className="flex-1 text-center py-2 sm:py-2.5 bg-primary text-white font-semibold rounded-xl transition-all duration-200 text-xs sm:text-sm shadow-md"
-                    >
-                      {t('nav.bookNow')}
-                    </Link>
-                  </div>
-                  <p className="text-xs text-muted text-center mt-2">{t('caravans.orSimilar')}</p>
-                </div>
+          {/* Playful photo grid — masonry-like layout */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {caravans.flatMap(c => c.photos).slice(0, 8).map((photo, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.5 }}
+                className={`relative rounded-2xl overflow-hidden shadow-md ${
+                  i === 0 || i === 5 ? 'row-span-2 aspect-[3/4]' : 'aspect-[4/3]'
+                }`}
+              >
+                <Image
+                  src={photo}
+                  alt={`Caravan impressie ${i + 1}`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover"
+                />
               </motion.div>
             ))}
           </div>
+
+          {/* Video */}
+          {caravans.some(c => c.videoUrl?.includes('gumlet.tv')) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="mt-8 relative rounded-2xl overflow-hidden shadow-2xl aspect-video max-w-3xl mx-auto"
+            >
+              {(() => {
+                const videoCaravan = caravans.find(c => c.videoUrl?.includes('gumlet.tv'));
+                const gm = videoCaravan?.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
+                if (!gm) return null;
+                return (
+                  <>
+                    <iframe
+                      src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
+                      title="Caravan impressie video"
+                      allow="autoplay"
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full border-0"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    <div className="absolute inset-0 z-10" />
+                  </>
+                );
+              })()}
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -569,6 +573,36 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   </motion.div>
                 ))}
               </div>
+
+              {/* Extras for surcharge */}
+              <div className="mt-8 sm:mt-10">
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Star size={16} className="text-primary" /> {t('home.extrasTitle')}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                  {[
+                    { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), emoji: '🛏️' },
+                    { name: t('home.extraItemFietsen'), price: t('home.extraItemFietsenPrice'), emoji: '🚲' },
+                    { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), emoji: '🚵' },
+                    { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), emoji: '❄️' },
+                  ].map((extra, i) => (
+                    <motion.div
+                      key={extra.name}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08, duration: 0.4 }}
+                      className="bg-surface rounded-xl p-3 sm:p-4 text-center border border-gray-100"
+                    >
+                      <div className="text-2xl mb-1">{extra.emoji}</div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">{extra.name}</h4>
+                      <p className="text-xs font-bold text-primary">{extra.price}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
               <Link
                 href="/caravans"
                 className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
