@@ -356,59 +356,27 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('home.caravanAssignedNote')}</p>
           </motion.div>
 
-          {/* Playful photo grid — masonry-like layout */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Horizontal scroll carousel */}
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
             {caravans.flatMap(c => c.photos).slice(0, 8).map((photo, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.5 }}
-                className={`relative rounded-2xl overflow-hidden shadow-md ${
-                  i === 0 || i === 5 ? 'row-span-2 aspect-[3/4]' : 'aspect-[4/3]'
-                }`}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
+                className="snap-center shrink-0 w-[75vw] sm:w-[45vw] lg:w-[30vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]"
               >
                 <Image
                   src={photo}
                   alt={`Caravan impressie ${i + 1}`}
                   fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 75vw, (max-width: 1024px) 45vw, 30vw"
                   className="object-cover"
                 />
               </motion.div>
             ))}
           </div>
-
-          {/* Video */}
-          {caravans.some(c => c.videoUrl?.includes('gumlet.tv')) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="mt-8 relative rounded-2xl overflow-hidden shadow-2xl aspect-video max-w-3xl mx-auto"
-            >
-              {(() => {
-                const videoCaravan = caravans.find(c => c.videoUrl?.includes('gumlet.tv'));
-                const gm = videoCaravan?.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
-                if (!gm) return null;
-                return (
-                  <>
-                    <iframe
-                      src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
-                      title="Caravan impressie video"
-                      allow="autoplay"
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full border-0"
-                      style={{ pointerEvents: 'none' }}
-                    />
-                    <div className="absolute inset-0 z-10" />
-                  </>
-                );
-              })()}
-            </motion.div>
-          )}
 
           <motion.div
             initial={{ opacity: 0, y: 15 }}
