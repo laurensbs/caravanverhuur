@@ -3,28 +3,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import { campings as staticCampings, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, Landmark, UtensilsCrossed, Star, Map as MapIcon,
+  Dumbbell, Landmark, UtensilsCrossed, Star,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
-
-/* Dynamic map — Leaflet needs browser */
-const CostaBravaMap = dynamic(() => import('@/components/CostaBravaMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[350px] sm:h-[420px] md:h-[500px] lg:h-[560px] bg-gray-100 rounded-2xl flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-400 text-sm font-medium">Kaart laden...</p>
-      </div>
-    </div>
-  ),
-});
 
 /* ------------------------------------------------------------------ */
 /*  Facility icons                                                     */
@@ -181,7 +167,6 @@ export default function BestemmingenPage() {
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [allCampings, setAllCampings] = useState<Camping[]>(staticCampings);
-  const [showAllCampings, setShowAllCampings] = useState(false);
 
   // Fetch campings from API — only active campings are returned
   useEffect(() => {
@@ -240,8 +225,7 @@ export default function BestemmingenPage() {
   }, [search]);
 
   const totalCampings = allCampings.length;
-  const visibleCampings = showAllCampings ? filteredCampings : filteredCampings.slice(0, 9);
-  const hasMore = filteredCampings.length > 9 && !showAllCampings;
+  const visibleCampings = filteredCampings;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -384,33 +368,11 @@ export default function BestemmingenPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {visibleCampings.map(c => <CampingCard key={c.id} camping={c} t={t} />)}
             </div>
-            {hasMore && (
-              <div className="text-center mt-6">
-                <button
-                  onClick={() => setShowAllCampings(true)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl text-sm hover:bg-gray-200 transition-colors"
-                >
-                  {t('destinations.moreCampings')} ({filteredCampings.length - 9}) <ArrowRight size={14} />
-                </button>
-              </div>
-            )}
           </>
         )}
       </section>
 
-      {/* ===== INTERACTIVE MAP ===== */}
-      {!search && (
-        <section className="bg-white py-8 sm:py-12 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center gap-2 mb-0.5">
-              <MapIcon size={18} className="text-primary" />
-              <h2 className="text-base sm:text-xl font-bold text-gray-900">{t('destinations.interactiveMap')}</h2>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-400 mb-5">{t('destinations.mapSub')}</p>
-            <CostaBravaMap destinations={destinations} campings={allCampings} />
-          </div>
-        </section>
-      )}
+
 
       {/* ===== PLACES TO EXPLORE — destinations grid ===== */}
       {!search && (

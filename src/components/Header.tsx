@@ -50,7 +50,7 @@ export default function Header() {
   const [langDropdown, setLangDropdown] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
-  const { caravans: allCaravans, campings: allCampings } = useData();
+  const { campings: allCampings } = useData();
   const pathname = usePathname();
   const router = useRouter();
   const megaTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -59,7 +59,6 @@ export default function Header() {
   const accountTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, locale, setLocale } = useLanguage();
 
-  const featuredCaravan = allCaravans[0];
   const featuredCamping = allCampings.find(c => c.slug === 'cypsela-resort') || allCampings[0];
 
   // Check login status
@@ -145,12 +144,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center gap-0.5">
             <Link href="/" className={navCls('/')}>{t('nav.home')}</Link>
 
-            <div className="relative h-full flex items-center" onMouseEnter={() => openMega('caravans')} onMouseLeave={closeMega}>
-              <Link href="/caravans" className={`flex items-center gap-1 ${navCls('/caravans')}`}>
-                {t('nav.caravans')}
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'caravans' ? 'rotate-180' : ''}`} />
-              </Link>
-            </div>
+            <Link href="/caravans" className={navCls('/caravans')}>{t('nav.caravans')}</Link>
 
             <div className="relative h-full flex items-center" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
@@ -291,47 +285,6 @@ export default function Header() {
               onMouseEnter={keepMega}
               onMouseLeave={closeMega}
             >
-              {/* ---- CARAVANS ---- */}
-              {megaMenu === 'caravans' && (
-                <div className="max-w-6xl mx-auto px-8 py-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{t('nav.ourCaravans')}</h3>
-                    <Link href="/caravans" className="text-xs text-primary flex items-center gap-1 font-medium">
-                      {t('nav.viewAll')} <ArrowRight size={12} />
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-3 gap-8">
-                    <div className="col-span-2">
-                      <div className="grid grid-cols-2 gap-1">
-                        {allCaravans.map(c => (
-                          <Link key={c.id} href={`/caravans/${c.id}`} className="group flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div className="w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-gray-100">
-                              <Image src={c.photos[0]} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="48px" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm text-foreground-light truncate transition-colors">{c.name}</p>
-                              <p className="text-xs text-muted">{c.maxPersons} pers · €{c.pricePerWeek}/wk</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Featured */}
-                    <div className="relative rounded-xl overflow-hidden">
-                      <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" />
-                      <div className="absolute inset-0 bg-black/30" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{t('nav.featured')}</p>
-                        <p className="text-white font-bold text-sm mb-3">{featuredCaravan.name}</p>
-                        <Link href={`/caravans/${featuredCaravan.id}`} className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full text-xs font-semibold transition-colors">
-                          {t('nav.view')} <ArrowRight size={11} />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* ---- BESTEMMINGEN ---- */}
               {megaMenu === 'bestemmingen' && (
                 <div className="max-w-6xl mx-auto px-8 py-6">
@@ -466,42 +419,10 @@ export default function Header() {
                   <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
                 </motion.div>
 
-                {/* Caravans — link + expandable chevron */}
+                {/* Caravans — simple link */}
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 }}>
-                  <div className={`flex items-center justify-between px-4 py-3 rounded-xl text-[15px] font-semibold transition-all ${active('/caravans') ? 'text-primary bg-primary/5' : 'text-gray-800 active:bg-gray-50'}`}>
-                    <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex-1">
-                      {t('nav.caravans')}
-                    </Link>
-                    <button onClick={() => setMobileSubmenu(mobileSubmenu === 'caravans' ? null : 'caravans')} className="p-1.5 -mr-1 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors">
-                      <motion.div animate={{ rotate: mobileSubmenu === 'caravans' ? 180 : 0 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }}>
-                        <ChevronDown size={15} className="text-gray-400" />
-                      </motion.div>
-                    </button>
-                  </div>
+                  <MobLink href="/caravans" label={t('nav.caravans')} on={active('/caravans')} close={() => setMenuOpen(false)} />
                 </motion.div>
-                <AnimatePresence>
-                  {mobileSubmenu === 'caravans' && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
-                      <div className="pl-3 pr-2 pb-2 pt-1">
-                        <Link href="/caravans" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary bg-primary/5 rounded-lg mb-2 active:bg-primary/10 transition-colors">
-                          {t('home.allCaravans')} <ArrowRight size={12} />
-                        </Link>
-                        <div className="space-y-0.5">
-                          {allCaravans.map((c, i) => (
-                            <motion.div key={c.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
-                              <Link href={`/caravans/${c.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
-                                <div className="w-10 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">
-                                  <Image src={c.photos[0]} alt={c.name} fill className="object-cover" sizes="40px" />
-                                </div>
-                                <span className="truncate font-medium text-[13px]">{c.name}</span>
-                              </Link>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Bestemmingen — link + expandable chevron */}
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.11 }}>

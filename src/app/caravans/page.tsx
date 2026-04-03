@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { Users, CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator } from 'lucide-react';
+import { CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -91,11 +91,7 @@ export default function CaravansPage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                      <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1">
-                        <Users size={12} className="text-primary" /> Max {caravan.maxPersons} {t('caravans.persShort')}
-                      </span>
-                    </div>
+
                   </div>
                   <div className="p-3 sm:p-4">
                     <p className="text-xs text-muted text-center">{t('caravans.orSimilar')}</p>

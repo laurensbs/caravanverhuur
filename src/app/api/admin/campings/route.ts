@@ -46,8 +46,8 @@ export async function GET() {
         });
       }
       campings = await getAllCampings();
-    } else if (campings.length < staticCampings.length) {
-      // Sync missing static campings into DB
+    } else {
+      // Sync: add missing static campings and remove campings not in static list
       const existingSlugs = new Set(campings.map((c: Record<string, unknown>) => c.slug));
       const existingNames = new Set(campings.map((c: Record<string, unknown>) => (c.name as string).toLowerCase()));
 
@@ -70,6 +70,18 @@ export async function GET() {
           });
         }
       }
+
+      // Remove DB campings not present in static data (keep only the 51 approved campings)
+      const staticSlugs = new Set(staticCampings.map(sc => sc.slug));
+      const staticNames = new Set(staticCampings.map(sc => sc.name.toLowerCase()));
+      for (const c of campings) {
+        const slug = c.slug as string;
+        const name = ((c.name as string) || '').toLowerCase();
+        if (!staticSlugs.has(slug) && !staticNames.has(name)) {
+          await deleteCamping(c.id as string);
+        }
+      }
+
       campings = await getAllCampings();
     }
 
