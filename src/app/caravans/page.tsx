@@ -27,9 +27,9 @@ export default function CaravansPage() {
   }, [customCaravans]);
 
   // Get shared inventory from first caravan
-  const inventory = caravans[0]?.inventory || [];
-  // Get shared amenities from first caravan
-  const amenities = caravans[0]?.amenities || [];
+  // Use static data for shared inventory & amenities (always complete)
+  const inventory = staticCaravans[0]?.inventory || [];
+  const amenities = staticCaravans[0]?.amenities || [];
 
   // Collect all photos from all caravans
   const allPhotos = useMemo(() => caravans.flatMap(c => c.photos), [caravans]);
