@@ -24,6 +24,9 @@ import {
   MapPin,
   LayoutDashboard,
   Umbrella,
+  Bed,
+  Mountain,
+  Refrigerator,
 } from 'lucide-react';
 import type { Caravan } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
@@ -580,12 +583,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   <Star size={16} className="text-primary" /> {t('home.extrasTitle')}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                   {[
-                    { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), emoji: '🛏️' },
-                    { name: t('home.extraItemFietsen'), price: t('home.extraItemFietsenPrice'), emoji: '🚲' },
-                    { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), emoji: '🚵' },
-                    { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), emoji: '❄️' },
+                    { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={20} className="text-primary" /> },
+                    { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={20} className="text-primary" /> },
+                    { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={20} className="text-primary" /> },
                   ].map((extra, i) => (
                     <motion.div
                       key={extra.name}
@@ -593,11 +595,15 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: i * 0.08, duration: 0.4 }}
-                      className="bg-surface rounded-xl p-3 sm:p-4 text-center border border-gray-100"
+                      className="bg-surface rounded-xl p-3 sm:p-4 flex items-center gap-3 border border-gray-100"
                     >
-                      <div className="text-2xl mb-1">{extra.emoji}</div>
-                      <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">{extra.name}</h4>
-                      <p className="text-xs font-bold text-primary">{extra.price}</p>
+                      <div className="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center shrink-0">
+                        {extra.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs sm:text-sm font-semibold text-foreground leading-tight">{extra.name}</h4>
+                        <p className="text-xs font-bold text-primary">{extra.price}</p>
+                      </div>
                     </motion.div>
                   ))}
                 </div>

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { Users, CheckCircle, Tent, Package, Sparkles, ArrowRight, Info } from 'lucide-react';
+import { Users, CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -51,8 +51,33 @@ export default function CaravansPage() {
             <span>{t('caravans.campingFirstNote')}</span>
           </div>
 
-          {/* Photo & video gallery */}
-          <div className="mb-12">
+          {/* Extras for surcharge */}
+          <div className="mb-8">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+              <Sparkles size={18} className="text-primary" /> {t('home.extrasTitle')}
+            </h2>
+            <p className="text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={22} className="text-primary" /> },
+                { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={22} className="text-primary" /> },
+                { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={22} className="text-primary" /> },
+              ].map((extra) => (
+                <div key={extra.name} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center shrink-0">
+                    {extra.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground text-xs sm:text-sm leading-tight">{extra.name}</h3>
+                    <p className="text-xs font-bold text-primary">{extra.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Photo gallery */}
+          <div className="mb-10">
             <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Package size={18} className="text-primary" /> {t('home.featuredCaravansTitle')}
             </h2>
@@ -60,30 +85,12 @@ export default function CaravansPage() {
               {caravans.map((caravan) => (
                 <div key={caravan.id} className="bg-white rounded-2xl overflow-hidden shadow-sm flex flex-col">
                   <div className="relative h-40 sm:h-48 overflow-hidden">
-                    {(() => {
-                      const gm = caravan.videoUrl?.match(/gumlet\.tv\/watch\/([\w-]+)/);
-                      if (gm) return (
-                        <>
-                          <iframe
-                            src={`https://play.gumlet.io/embed/${gm[1]}?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p`}
-                            title={caravan.name}
-                            allow="autoplay"
-                            loading="lazy"
-                            className="absolute inset-0 w-full h-full border-0"
-                            style={{ pointerEvents: 'none' }}
-                          />
-                          <div className="absolute inset-0 z-10" />
-                        </>
-                      );
-                      return (
-                        <Image
-                          src={caravan.photos[0]}
-                          alt={`Caravan ${caravan.id}`}
-                          fill
-                          className="object-cover"
-                        />
-                      );
-                    })()}
+                    <Image
+                      src={caravan.photos[0]}
+                      alt={`Caravan ${caravan.id}`}
+                      fill
+                      className="object-cover"
+                    />
                     <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
                       <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1">
                         <Users size={12} className="text-primary" /> Max {caravan.maxPersons} {t('caravans.persShort')}
@@ -127,28 +134,6 @@ export default function CaravansPage() {
                   <span key={item} className="text-xs sm:text-sm text-foreground-light bg-surface rounded-lg px-3 py-2 truncate">{item}</span>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Extras for surcharge */}
-          <div className="mb-12">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <Sparkles size={18} className="text-primary" /> {t('home.extrasTitle')}
-            </h2>
-            <p className="text-sm text-muted mb-6">{t('home.extrasSubtitle')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {[
-                { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: '🛏️' },
-                { name: t('home.extraItemFietsen'), price: t('home.extraItemFietsenPrice'), icon: '🚲' },
-                { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: '🚵' },
-                { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: '❄️' },
-              ].map((extra) => (
-                <div key={extra.name} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 text-center">
-                  <div className="text-3xl mb-2">{extra.icon}</div>
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1">{extra.name}</h3>
-                  <p className="text-sm font-bold text-primary">{extra.price}</p>
-                </div>
-              ))}
             </div>
           </div>
 
