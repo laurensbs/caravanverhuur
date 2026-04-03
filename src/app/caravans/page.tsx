@@ -206,7 +206,7 @@ export default function CaravansPage() {
               <Sparkles size={18} className="text-primary" /> {t('home.extrasTitle')}
             </h2>
             <p className="text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={22} className="text-primary" /> },
                 { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={22} className="text-primary" /> },

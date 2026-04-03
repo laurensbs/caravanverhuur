@@ -8,7 +8,6 @@ import {
   Search,
   Trash2,
   ExternalLink,
-  MapPin,
   Loader2,
   X,
   GripVertical,
@@ -84,13 +83,8 @@ function CampingReorderItem({
             )}
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
-            <MapPin size={11} />
-            <span>{camping.location}</span>
             {camping.description && (
-              <>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline truncate max-w-[200px]">{camping.description}</span>
-              </>
+              <span className="truncate max-w-[300px]">{camping.description}</span>
             )}
           </div>
         </div>

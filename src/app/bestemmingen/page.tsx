@@ -89,9 +89,6 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
         {/* Name overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
           <h3 className="text-sm sm:text-lg font-bold text-white leading-tight drop-shadow-sm">{camping.name}</h3>
-          <p className="text-[11px] text-white/70 flex items-center gap-1 mt-0.5">
-            <MapPin size={10} /> {camping.location}
-          </p>
         </div>
       </div>
 
