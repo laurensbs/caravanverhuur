@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import {
   Shield,
   Truck,
@@ -27,6 +27,14 @@ import {
   Bed,
   Mountain,
   Refrigerator,
+  ChevronDown,
+  Armchair,
+  UtensilsCrossed,
+  Wine,
+  Utensils,
+  Scissors,
+  Trash2,
+  BedDouble,
 } from 'lucide-react';
 import type { Caravan } from '@/data/caravans';
 import { destinations } from '@/data/destinations';
@@ -58,6 +66,125 @@ const scaleIn = {
 };
 
 
+
+
+/* ------------------------------------------------------------------ */
+/*  Auto-sliding carousel — scrolls on mobile, pauses on touch        */
+/* ------------------------------------------------------------------ */
+function AutoSlideCarousel({ children, speed = 4000 }: { children: React.ReactNode; speed?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const touchRef = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Only auto-slide on mobile
+    const mq = window.matchMedia('(max-width: 640px)');
+    if (!mq.matches) return;
+
+    const iv = setInterval(() => {
+      if (touchRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+      el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.82, behavior: 'smooth' });
+    }, speed);
+
+    const onTouchStart = () => { touchRef.current = true; };
+    const onTouchEnd = () => { setTimeout(() => { touchRef.current = false; }, 3000); };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    return () => {
+      clearInterval(iv);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [speed]);
+
+  return (
+    <div ref={ref} className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Categorized inventory — borgchecker style, collapsible             */
+/* ------------------------------------------------------------------ */
+const inventoryCategories = [
+  {
+    label: 'Buiten',
+    icon: <Armchair size={16} />,
+    items: ['4 tuinstoelen', '1 tuintafel', '1 parasol'],
+  },
+  {
+    label: 'Keuken',
+    icon: <UtensilsCrossed size={16} />,
+    items: ['1 koffiezetapparaat (Senseo)', '1 waterkoker', '2 koekenpannen', '2 kookpannen', 'Snijplanken', '3 pannenonderzetters', '1 vergiet', '1 maatbeker', '1 rasp', '1 gasfles'],
+  },
+  {
+    label: 'Servies & glazen',
+    icon: <Wine size={16} />,
+    items: ['6 grote platte borden', '6 ontbijtborden', '6 soepkommen', '6 theeglazen', '6 koffiemokken', '6 longdrink glazen', '6 bierglazen', '6 wijnglazen'],
+  },
+  {
+    label: 'Bestek & keukengerief',
+    icon: <Utensils size={16} />,
+    items: ['6 lepels', '6 vorken', '6 messen', '6 theelepels', '2 schilmessen', '2 opscheplepels', '1 snijmes', '1 schaar', '1 flessenopener', '1 kaasschaaf', '1 blikopener'],
+  },
+  {
+    label: 'Schoonmaak',
+    icon: <Trash2 size={16} />,
+    items: ['1 pedaalemmer', '1 stoffer + blik', '1 afwasbak', '1 emmer', '1 vloerveger', '1 droogrek', 'Wasknijpers'],
+  },
+  {
+    label: 'Slaapkamers',
+    icon: <BedDouble size={16} />,
+    items: ['1 tweepersoonsbed', 'Dekbed (2x 1-persoons mogelijk)', '1 molton', '2 kussens', '10 kledinghangers', '2 eenpersoonsbedden', '2 moltons', '2 dekbedden', '2 kussens', '1 lampje'],
+  },
+];
+
+function InventoryCategories() {
+  const [openCat, setOpenCat] = useState<number | null>(null);
+
+  return (
+    <div className="bg-surface rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="px-4 py-3 bg-primary/5 border-b border-gray-100">
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <Package size={16} className="text-primary" /> Complete inventarislijst
+        </h3>
+        <p className="text-[11px] text-muted mt-0.5">{inventoryCategories.reduce((a, c) => a + c.items.length, 0)} items inbegrepen</p>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {inventoryCategories.map((cat, i) => {
+          const isOpen = openCat === i;
+          return (
+            <div key={cat.label}>
+              <button
+                onClick={() => setOpenCat(isOpen ? null : i)}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-primary">{cat.icon}</span>
+                <span className="flex-1 text-sm font-semibold text-foreground">{cat.label}</span>
+                <span className="text-[11px] text-muted mr-1">{cat.items.length}</span>
+                <ChevronDown size={14} className={`text-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-3 grid grid-cols-2 gap-1.5">
+                  {cat.items.map(item => (
+                    <span key={item} className="text-xs text-foreground-light bg-white rounded-lg px-2.5 py-1.5 flex items-center gap-1.5">
+                      <CheckCircle size={10} className="text-primary shrink-0" /> {item}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
@@ -356,8 +483,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('home.caravanAssignedNote')}</p>
           </motion.div>
 
-          {/* Horizontal scroll carousel */}
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
+          {/* Horizontal scroll carousel — auto-slides on mobile */}
+          <AutoSlideCarousel>
             {caravans.flatMap(c => c.photos).slice(0, 8).map((photo, i) => (
               <motion.div
                 key={i}
@@ -376,7 +503,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 />
               </motion.div>
             ))}
-          </div>
+          </AutoSlideCarousel>
 
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -464,7 +591,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
             </h3>
-            <div className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
+            <AutoSlideCarousel speed={5000}>
               {destinations.slice(0, 8).map((d, i) => (
                 <motion.div
                   key={d.slug}
@@ -484,7 +611,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   </Link>
                 </motion.div>
               ))}
-            </div>
+            </AutoSlideCarousel>
           </div>
 
           <motion.div
@@ -593,17 +720,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
-                <iframe
-                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p"
-                  title="Caravan interieur volledig ingericht"
-                  allow="autoplay"
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full border-0"
-                  style={{ pointerEvents: 'none' }}
-                />
-                <div className="absolute inset-0 z-10" />
-              </div>
+              {/* Categorized inventory — borgchecker style */}
+              <InventoryCategories />
             </motion.div>
           </div>
         </div>

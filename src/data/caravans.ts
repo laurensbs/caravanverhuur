@@ -41,7 +41,7 @@ const sharedInventory: string[] = [
 ];
 
 const sharedAmenities: string[] = [
-  'Verwarming', 'Koelkast', 'Kookplaat (3 pits)', 'Toilet', 'Luifel', 'Voortent', 'Grondzeil',
+  'Koelkast', 'Kookplaat (3 pits)', 'Toilet', 'Luifel',
 ];
 
 export const caravans: Caravan[] = [
@@ -52,13 +52,13 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'Knaus',
     year: 1997,
-    description: 'Nette en ruime caravan met rondzit, volledig uitgeruste keuken en toilet. Inclusief voortent, luifel en grondzeil. Opbouw: 5,10m.',
+    description: 'Nette en ruime caravan met volledig uitgeruste keuken en toilet. Inclusief luifel. Opbouw: 5,10m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/knaus-1997-1.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/knaus-1997-2.jpg',
     ],
     videoUrl: 'https://youtu.be/m0KMoDeh8Sk',
-    amenities: [...sharedAmenities, 'Rondzit'],
+    amenities: sharedAmenities,
     inventory: sharedInventory,
     pricePerDay: 79,
     pricePerWeek: 550,
@@ -72,13 +72,13 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'HomeCar',
     year: 2003,
-    description: 'Zeer nette caravan met dak-airco (Dometic 2200 FJ) voor heerlijk koele zomers. Voorzien van Frans bed, rondzit, voortent, luifel en grondzeil. Opbouw: 4,50m.',
+    description: 'Zeer nette caravan met dak-airco (Dometic 2200 FJ) voor heerlijk koele zomers. Voorzien van Frans bed en luifel. Opbouw: 4,50m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-1.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/homecar-450-2.jpg',
     ],
     videoUrl: 'https://youtu.be/--AEni2AQTQ',
-    amenities: [...sharedAmenities, 'Airco (Dometic 2200FJ)', 'Rondzit', 'Frans bed'],
+    amenities: [...sharedAmenities, 'Airco (Dometic 2200FJ)', 'Frans bed'],
     inventory: sharedInventory,
     pricePerDay: 79,
     pricePerWeek: 550,
@@ -92,12 +92,12 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'Hobby',
     year: 2002,
-    description: 'Extra ruime Hobby Prestige 650 met rondzit, treinzit en vast bed. Inclusief voortent, luifel en grondzeil. Opbouw: 6,50m.',
+    description: 'Extra ruime Hobby Prestige 650 met treinzit en vast bed. Inclusief luifel. Opbouw: 6,50m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/hobby-650.jpg',
     ],
     videoUrl: 'https://gumlet.tv/watch/69b48353bf83f6c336be24eb/',
-    amenities: [...sharedAmenities, 'Rondzit', 'Treinzit', 'Vast bed'],
+    amenities: [...sharedAmenities, 'Treinzit', 'Vast bed'],
     inventory: sharedInventory,
     pricePerDay: 79,
     pricePerWeek: 550,
@@ -111,7 +111,7 @@ export const caravans: Caravan[] = [
     maxPersons: 4,
     manufacturer: 'Adria',
     year: 2001,
-    description: 'Mooie en compacte Adria 430 Unica met luifel, treinzit, vast bed en grondzeil. Opbouw: 4,30m.',
+    description: 'Mooie en compacte Adria 430 Unica met luifel, treinzit en vast bed. Opbouw: 4,30m.',
     photos: [
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/adria4302.jpg',
       'https://caravanstalling-spanje.com/wp-content/uploads/2025/10/adria430-min.png',
