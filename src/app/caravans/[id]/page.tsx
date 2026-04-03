@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${caravan.name} huren | Caravanverhuur Costa Brava`;
-  const description = `Huur de ${caravan.name} (${caravan.type.toLowerCase()}, max ${caravan.maxPersons} pers.) op de Costa Brava. ${caravan.description.slice(0, 120)}… Vanaf €${caravan.pricePerDay}/dag.`;
+  const description = `Huur de ${caravan.name} (${caravan.manufacturer}, max ${caravan.maxPersons} pers.) op de Costa Brava. ${caravan.description.slice(0, 120)}… Vanaf €${caravan.pricePerDay}/dag.`;
 
   return {
     title,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, getCustomerByEmail } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, getCustomerByEmail, checkCaravanAvailability, updatePaymentStripeId } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
+import { getStripe } from '@/lib/stripe';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
@@ -34,11 +35,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber, discountCode, discountAmount } = body;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber, discountCode, discountAmount, depositAmount } = body;
 
     if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Check availability: prevent double-bookings for the same caravan
+    const available = await checkCaravanAvailability(caravanId, checkIn, checkOut);
+    if (!available) {
+      return NextResponse.json({ error: 'Deze caravan is al geboekt voor de geselecteerde periode. Kies andere data.' }, { status: 409 });
+    }
+
+    // Calculate 25% deposit amount
+    const deposit25 = depositAmount || Math.round(totalPrice * 0.25);
+    const remaining = totalPrice - deposit25;
 
     const result = await createBooking({
       guestName,
@@ -46,16 +57,16 @@ export async function POST(request: NextRequest) {
       guestPhone,
       adults: adults || 2,
       children: children || 0,
-      specialRequests,
+      specialRequests: specialRequests || undefined,
       caravanId,
       campingId,
       checkIn,
       checkOut,
       nights,
       totalPrice,
-      depositAmount: 0,
-      remainingAmount: totalPrice,
-      borgAmount,
+      depositAmount: deposit25,
+      remainingAmount: remaining,
+      borgAmount: borgAmount || 400,
       spotNumber,
     });
 
@@ -75,18 +86,48 @@ export async function POST(request: NextRequest) {
       } catch {}
       return staticCampings.find(c => c.id === campingId)?.name || campingId;
     })();
-    // Determine payment deadline: 30 days before check-in, or now if < 30 days
-    const checkInDate = new Date(checkIn);
-    const now = new Date();
-    const daysUntil = Math.ceil((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    const paymentDeadline = daysUntil > 30
-      ? new Date(checkInDate.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-      : 'nu';
-    const immediatePayment = daysUntil <= 30;
+    // Payment: 25% deposit due at booking (always immediate)
+    const immediatePayment = true;
+    const paymentDeadline = 'nu';
 
     // Look up customer locale
     const bookingCustomer = await getCustomerByEmail(guestEmail.toLowerCase().trim()).catch(() => null);
     const customerLocale = bookingCustomer?.locale || 'nl';
+
+    // Create Stripe checkout session for the 25% deposit
+    let paymentUrl: string | undefined;
+    try {
+      const stripe = getStripe();
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['ideal'],
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Aanbetaling — ${result.reference}`,
+              description: `Caravanverhuur Spanje — ${guestName}`,
+            },
+            unit_amount: Math.round(deposit25 * 100),
+          },
+          quantity: 1,
+        }],
+        customer_email: guestEmail,
+        metadata: {
+          paymentId: result.paymentId,
+          bookingId: result.id,
+          bookingRef: result.reference,
+          type: 'AANBETALING',
+        },
+        success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
+      });
+      paymentUrl = session.url ?? undefined;
+      await updatePaymentStripeId(result.paymentId, session.id);
+    } catch (err) {
+      console.error('Failed to create Stripe checkout session:', err);
+    }
 
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
@@ -102,6 +143,8 @@ export async function POST(request: NextRequest) {
       paymentDeadline,
       immediatePayment,
       spotNumber,
+      paymentUrl,
+      borgAmount: borgAmount || 400,
     }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
 
     // Auto-create borgchecklist for this booking (inchecken)
@@ -114,7 +157,7 @@ export async function POST(request: NextRequest) {
         .catch(err => console.error('Discount code usage increment failed:', err));
     }
 
-    return NextResponse.json({ ...result, paymentId: result.paymentId, immediatePayment }, { status: 201 });
+    return NextResponse.json({ ...result, paymentId: result.paymentId, paymentUrl, immediatePayment }, { status: 201 });
   } catch (error) {
     console.error('POST /api/bookings error:', error);
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });

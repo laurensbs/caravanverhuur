@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { sendPaymentReminderEmail } from '@/lib/email';
 import { createPool } from '@vercel/postgres';
 
-// Sends payment reminders for outstanding payments (HUUR or legacy RESTBETALING)
+// Sends payment reminders for outstanding payments (AANBETALING, HUUR, or legacy RESTBETALING)
 // Triggers at: 30 days, 14 days, and 7 days before check-in
 // POST /api/cron/payment-reminders
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       LEFT JOIN customers c ON LOWER(c.email) = LOWER(b.guest_email)
       WHERE b.status NOT IN ('GEANNULEERD')
         AND b.check_in > NOW()
-        AND p.type IN ('HUUR', 'RESTBETALING')
+        AND p.type IN ('AANBETALING', 'HUUR', 'RESTBETALING')
         AND p.status = 'OPENSTAAND'
     `;
 

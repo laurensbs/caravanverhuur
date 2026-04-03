@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, items, status, generalNotes, staffName, completedAt } = body;
+    const { id, items, status, generalNotes, staffName, completedAt, extraDamages, cleaningDeduction, totalDeduction } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'id is verplicht' }, { status: 400 });
@@ -79,6 +79,9 @@ export async function PUT(request: NextRequest) {
       generalNotes,
       staffName,
       completedAt,
+      extraDamages: extraDamages ? JSON.stringify(extraDamages) : undefined,
+      cleaningDeduction,
+      totalDeduction,
     });
 
     // Send email notification to customer when checklist is completed

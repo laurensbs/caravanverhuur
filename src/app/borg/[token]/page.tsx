@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   ThumbsUp,
   ThumbsDown,
+  Printer,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -27,6 +28,12 @@ interface BorgItem {
   status: 'nvt' | 'goed' | 'beschadigd' | 'ontbreekt';
   notes: string;
   photos?: string[];
+  damageAmount: number;
+}
+
+interface ExtraDamage {
+  description: string;
+  amount: number;
 }
 
 interface BorgChecklist {
@@ -50,6 +57,9 @@ interface BorgChecklist {
   check_out: string;
   borg_amount: string;
   guest_email: string;
+  extra_damages: ExtraDamage[] | null;
+  cleaning_deduction: string | null;
+  total_deduction: string | null;
 }
 
 const statusLabels: Record<string, string> = {
@@ -287,6 +297,9 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                   <div className="flex items-center gap-2">
                     <div className="shrink-0">{itemStatusIcons[item.status]}</div>
                     <span className="text-sm text-foreground flex-1">{item.item}</span>
+                    {(item.status === 'beschadigd' || item.status === 'ontbreekt') && item.damageAmount > 0 && (
+                      <span className="text-xs font-semibold text-red-600">€{item.damageAmount}</span>
+                    )}
                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                       item.status === 'goed' ? 'bg-emerald-50 text-emerald-700' :
                       item.status === 'beschadigd' ? 'bg-amber-50 text-amber-700' :
@@ -325,6 +338,64 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             <p className="text-sm text-muted">{checklist.general_notes}</p>
           </div>
         )}
+
+        {/* Deduction summary */}
+        {(() => {
+          const borgAmount = parseFloat(checklist.borg_amount) || 400;
+          const itemDamageTotal = (checklist.items || []).reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+          const extraDamages: ExtraDamage[] = checklist.extra_damages || [];
+          const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+          const cleaningDed = checklist.cleaning_deduction ? parseFloat(checklist.cleaning_deduction) : 0;
+          const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : (itemDamageTotal + extraDamageTotal + cleaningDed);
+          const refund = Math.max(0, borgAmount - totalDed);
+          const hasDeductions = totalDed > 0;
+
+          return (
+            <div className={`rounded-xl p-4 sm:p-5 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
+              <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted">Totale borg</span>
+                  <span className="font-semibold">€{borgAmount.toFixed(2)}</span>
+                </div>
+
+                {itemDamageTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-amber-700">Schade inventaris</span>
+                    <span className="font-semibold text-amber-700">-€{itemDamageTotal.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {extraDamages.length > 0 && extraDamages.map((d, i) => (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-amber-700">{d.description || 'Overige schade'}</span>
+                    <span className="font-semibold text-amber-700">-€{(d.amount || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+
+                {cleaningDed > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-amber-700">Schoonmaak</span>
+                    <span className="font-semibold text-amber-700">-€{cleaningDed.toFixed(2)}</span>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-2 mt-2 space-y-1">
+                  {totalDed > 0 && (
+                    <div className="flex justify-between">
+                      <span className="font-bold text-foreground">Totaal ingehouden</span>
+                      <span className="font-bold text-red-600">€{totalDed.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="font-bold text-foreground">Terug te storten</span>
+                    <span className="font-bold text-lg text-emerald-600">€{refund.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Customer response section */}
         {canRespond && (
@@ -393,14 +464,50 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             )}
             {checklist.customer_agreed && (
               <p className="text-sm text-emerald-700 mt-3">
-                {t('borgPage.borgReturnNote').replace('{amount}', parseFloat(checklist.borg_amount).toFixed(2))}
+                {(() => {
+                  const borgAmt = parseFloat(checklist.borg_amount) || 400;
+                  const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
+                  const refund = Math.max(0, borgAmt - totalDed);
+                  return t('borgPage.borgReturnNote').replace('{amount}', refund.toFixed(2));
+                })()}
               </p>
             )}
           </div>
         )}
 
+        {/* Print / PDF button */}
+        {checklist.status !== 'OPEN' && checklist.status !== 'IN_BEHANDELING' && (
+          <div className="text-center print:hidden">
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-foreground rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              <Printer size={16} />
+              Print / PDF
+            </button>
+          </div>
+        )}
+
+        {/* Signature areas (only visible in print) */}
+        <div className="hidden print:block bg-white rounded-xl p-6 mt-4">
+          <h3 className="font-bold text-sm mb-6">Handtekeningen</h3>
+          <div className="grid grid-cols-2 gap-8">
+            <div>
+              <p className="text-xs text-muted mb-12">Medewerker:</p>
+              <div className="border-b border-gray-300 mb-1" />
+              <p className="text-xs text-muted">{checklist.staff_name || 'Naam medewerker'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted mb-12">Klant:</p>
+              <div className="border-b border-gray-300 mb-1" />
+              <p className="text-xs text-muted">{checklist.guest_name}</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted mt-4">Datum: {new Date().toLocaleDateString('nl-NL')}</p>
+        </div>
+
         {/* Footer */}
-        <div className="text-center py-6">
+        <div className="text-center py-6 print:hidden">
           <Link href="/" className="text-sm text-primary">
             {t('borgPage.backToSite')}
           </Link>

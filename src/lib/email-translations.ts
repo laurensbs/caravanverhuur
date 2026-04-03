@@ -45,9 +45,12 @@ interface EmailTranslations {
   bookingChildren: string;
   bookingTotalPrice: string;
   bookingPayBefore: string;
+  bookingRestOnCamping: string;
+  bookingBorgOnCamping: string;
   bookingDirectPayment: string;
   bookingImmediateNote: (price: string, deadline: string) => string;
   bookingLaterNote: (price: string, deadline: string) => string;
+  bookingPayNow: (amount: string) => string;
   bookingButton: string;
 
   // Manual booking (phone)
@@ -80,6 +83,11 @@ interface EmailTranslations {
   paymentType: string;
   paymentAmount: string;
   paymentButton: string;
+  paymentBookingOverview: string;
+  paymentTotalPrice: string;
+  paymentDepositPaid: string;
+  paymentRestOnCamping: string;
+  paymentBorgOnCamping: string;
 
   // Contact acknowledgment
   contactBadge: string;
@@ -233,10 +241,13 @@ const nl: EmailTranslations = {
   bookingAdults: 'volw.',
   bookingChildren: 'kind.',
   bookingTotalPrice: 'Totaalprijs',
-  bookingPayBefore: '📅 Betalen vóór',
+  bookingPayBefore: '💳 Aanbetaling (25%)',
+  bookingRestOnCamping: '💰 Restbetaling (75%) — op de camping',
+  bookingBorgOnCamping: '🔒 Borg — €400 (na goedkeuring op camping)',
   bookingDirectPayment: 'Direct bij boeking',
-  bookingImmediateNote: (price, _) => `<strong>Let op:</strong> je vakantie begint binnen 30 dagen. Betaal ${price} nu via iDEAL/Wero in je account om de boeking definitief te maken.`,
-  bookingLaterNote: (price, deadline) => `<strong>Volgende stap:</strong> betaal ${price} vóór ${deadline} via iDEAL/Wero in je account. Je ontvangt automatisch een herinnering.`,
+  bookingImmediateNote: (price, _) => `<strong>Betalingsoverzicht:</strong> De aanbetaling van 25% dient nu voldaan te worden via iDEAL/Wero in je account. De borg (€400) wordt na goedkeuring op de camping geïnd. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).`,
+  bookingLaterNote: (price, deadline) => `<strong>Betalingsoverzicht:</strong> Betaal de aanbetaling van 25% vóór ${deadline} via iDEAL/Wero in je account. De borg (€400) wordt na goedkeuring op de camping geïnd. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).`,
+  bookingPayNow: (amount: string) => `Betaal aanbetaling ${amount} →`,
   bookingButton: 'Ga naar mijn account →',
 
   // Manual booking
@@ -245,8 +256,8 @@ const nl: EmailTranslations = {
   manualHeading: 'Je boeking is aangemaakt',
   manualSubtext: (name) => `Hoi ${name}! Naar aanleiding van ons telefoongesprek hebben wij een boeking voor je aangemaakt. Hieronder vind je alle gegevens en de betaallink.`,
   manualConfirmed: '✅ Bevestigd',
-  manualPayNote: '<strong>Betaal direct via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. Na betaling is je boeking definitief.',
-  manualPayButton: (price) => `Betaal ${price} via iDEAL →`,
+  manualPayNote: '<strong>Betaal de aanbetaling (25%) via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. De borg (€400) wordt op de camping geïnd na goedkeuring. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).',
+  manualPayButton: (price) => `Betaal ${price} aanbetaling via iDEAL →`,
   manualPayLater: 'Of betaal later via je persoonlijke dashboard',
   manualAccountTitle: '🔐 Jouw account',
   manualAccountDesc: 'Er is automatisch een account voor je aangemaakt zodat je je boeking kunt beheren, betalingen kunt doen en je borg kunt inzien.',
@@ -269,6 +280,11 @@ const nl: EmailTranslations = {
   paymentType: 'Type',
   paymentAmount: 'Bedrag',
   paymentButton: 'Bekijk mijn account →',
+  paymentBookingOverview: 'Overzicht boeking',
+  paymentTotalPrice: 'Totale huurprijs',
+  paymentDepositPaid: 'Aanbetaling voldaan',
+  paymentRestOnCamping: 'Restbetaling — op de camping',
+  paymentBorgOnCamping: 'Borg — op de camping',
 
   // Contact
   contactBadge: 'BERICHT ONTVANGEN',
@@ -422,10 +438,13 @@ const en: EmailTranslations = {
   bookingAdults: 'adults',
   bookingChildren: 'children',
   bookingTotalPrice: 'Total price',
-  bookingPayBefore: '📅 Pay before',
+  bookingPayBefore: '💳 Down payment (25%)',
+  bookingRestOnCamping: '💰 Remaining (75%) — at the camping',
+  bookingBorgOnCamping: '🔒 Deposit — €400 (after approval at camping)',
   bookingDirectPayment: 'Immediately upon booking',
-  bookingImmediateNote: (price, _) => `<strong>Please note:</strong> your holiday starts within 30 days. Pay ${price} now via iDEAL/Wero in your account to finalise the booking.`,
-  bookingLaterNote: (price, deadline) => `<strong>Next step:</strong> pay ${price} before ${deadline} via iDEAL/Wero in your account. You will receive an automatic reminder.`,
+  bookingImmediateNote: (price, _) => `<strong>Payment overview:</strong> The 25% down payment must be paid now via iDEAL/Wero in your account. The security deposit (€400) is collected after your approval at the campsite. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).`,
+  bookingLaterNote: (price, deadline) => `<strong>Payment overview:</strong> Pay the 25% down payment before ${deadline} via iDEAL/Wero in your account. The security deposit (€400) is collected after your approval at the campsite. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).`,
+  bookingPayNow: (amount: string) => `Pay deposit ${amount} →`,
   bookingButton: 'Go to my account →',
 
   // Manual booking
@@ -434,8 +453,8 @@ const en: EmailTranslations = {
   manualHeading: 'Your booking has been created',
   manualSubtext: (name) => `Hi ${name}! Following our phone call, we have created a booking for you. Below you will find all the details and the payment link.`,
   manualConfirmed: '✅ Confirmed',
-  manualPayNote: '<strong>Pay directly via the button below.</strong> You will be redirected to a secure iDEAL/Wero payment page. Once paid, your booking is confirmed.',
-  manualPayButton: (price) => `Pay ${price} via iDEAL →`,
+  manualPayNote: '<strong>Pay the down payment (25%) via the button below.</strong> You will be redirected to a secure iDEAL/Wero payment page. The security deposit (€400) is collected at the campsite after your approval. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).',
+  manualPayButton: (price) => `Pay ${price} deposit via iDEAL →`,
   manualPayLater: 'Or pay later via your personal dashboard',
   manualAccountTitle: '🔐 Your account',
   manualAccountDesc: 'An account has been automatically created for you so you can manage your booking, make payments and view your deposit status.',
@@ -458,6 +477,11 @@ const en: EmailTranslations = {
   paymentType: 'Type',
   paymentAmount: 'Amount',
   paymentButton: 'View my account →',
+  paymentBookingOverview: 'Booking overview',
+  paymentTotalPrice: 'Total rental price',
+  paymentDepositPaid: 'Deposit paid',
+  paymentRestOnCamping: 'Remaining — at the campsite',
+  paymentBorgOnCamping: 'Security deposit — at the campsite',
 
   // Contact
   contactBadge: 'MESSAGE RECEIVED',
@@ -611,10 +635,13 @@ const es: EmailTranslations = {
   bookingAdults: 'adultos',
   bookingChildren: 'niños',
   bookingTotalPrice: 'Precio total',
-  bookingPayBefore: '📅 Pagar antes del',
+  bookingPayBefore: '💳 Anticipo (25%)',
+  bookingRestOnCamping: '💰 Resto (75%) — en el camping',
+  bookingBorgOnCamping: '🔒 Fianza — €400 (tras aprobación en el camping)',
   bookingDirectPayment: 'Inmediatamente al reservar',
-  bookingImmediateNote: (price, _) => `<strong>Atención:</strong> tus vacaciones comienzan en menos de 30 días. Paga ${price} ahora vía iDEAL/Wero en tu cuenta para finalizar la reserva.`,
-  bookingLaterNote: (price, deadline) => `<strong>Siguiente paso:</strong> paga ${price} antes del ${deadline} vía iDEAL/Wero en tu cuenta. Recibirás un recordatorio automático.`,
+  bookingImmediateNote: (price, _) => `<strong>Resumen de pago:</strong> El anticipo del 25% debe pagarse ahora vía iDEAL/Wero en tu cuenta. La fianza (€400) se cobra tras tu aprobación en el camping. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).`,
+  bookingLaterNote: (price, deadline) => `<strong>Resumen de pago:</strong> Paga el anticipo del 25% antes del ${deadline} vía iDEAL/Wero en tu cuenta. La fianza (€400) se cobra tras tu aprobación en el camping. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).`,
+  bookingPayNow: (amount: string) => `Pagar anticipo ${amount} →`,
   bookingButton: 'Ir a mi cuenta →',
 
   // Manual booking
@@ -623,8 +650,8 @@ const es: EmailTranslations = {
   manualHeading: 'Tu reserva ha sido creada',
   manualSubtext: (name) => `¡Hola ${name}! Tras nuestra conversación telefónica, hemos creado una reserva para ti. A continuación encontrarás todos los datos y el enlace de pago.`,
   manualConfirmed: '✅ Confirmada',
-  manualPayNote: '<strong>Paga directamente a través del botón de abajo.</strong> Serás redirigido a una página de pago segura iDEAL/Wero. Una vez pagado, tu reserva queda confirmada.',
-  manualPayButton: (price) => `Pagar ${price} vía iDEAL →`,
+  manualPayNote: '<strong>Paga el anticipo (25%) a través del botón de abajo.</strong> Serás redirigido a una página de pago segura iDEAL/Wero. La fianza (€400) se cobra en el camping tras tu aprobación. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).',
+  manualPayButton: (price) => `Pagar ${price} anticipo vía iDEAL →`,
   manualPayLater: 'O paga más tarde a través de tu panel personal',
   manualAccountTitle: '🔐 Tu cuenta',
   manualAccountDesc: 'Se ha creado automáticamente una cuenta para que puedas gestionar tu reserva, realizar pagos y consultar tu fianza.',
@@ -647,6 +674,11 @@ const es: EmailTranslations = {
   paymentType: 'Tipo',
   paymentAmount: 'Importe',
   paymentButton: 'Ver mi cuenta →',
+  paymentBookingOverview: 'Resumen de la reserva',
+  paymentTotalPrice: 'Precio total del alquiler',
+  paymentDepositPaid: 'Anticipo pagado',
+  paymentRestOnCamping: 'Pago restante — en el camping',
+  paymentBorgOnCamping: 'Fianza — en el camping',
 
   // Contact
   contactBadge: 'MENSAJE RECIBIDO',

@@ -34,6 +34,12 @@ interface BorgItem {
   item: string;
   status: 'nvt' | 'goed' | 'beschadigd' | 'ontbreekt';
   notes: string;
+  damageAmount: number;
+}
+
+interface ExtraDamage {
+  description: string;
+  amount: number;
 }
 
 interface BorgChecklist {
@@ -55,6 +61,10 @@ interface BorgChecklist {
   caravan_id?: string;
   check_in?: string;
   check_out?: string;
+  borg_amount?: string;
+  extra_damages?: ExtraDamage[] | null;
+  cleaning_deduction?: string | null;
+  total_deduction?: string | null;
 }
 
 interface Booking {
@@ -242,7 +252,7 @@ export default function AdminBorgPage() {
     if (!newItemCategory.trim() || !newItemName.trim()) return;
     setChecklists(prev => prev.map(cl => {
       if (cl.id !== checklistId) return cl;
-      const newItems = [...cl.items, { category: newItemCategory.trim(), item: newItemName.trim(), status: 'nvt' as const, notes: '' }];
+      const newItems = [...cl.items, { category: newItemCategory.trim(), item: newItemName.trim(), status: 'nvt' as const, notes: '', damageAmount: 0 }];
       return { ...cl, items: newItems };
     }));
     setNewItemName('');
@@ -537,6 +547,9 @@ export default function AdminBorgPage() {
                         {damagedItems > 0 && (
                           <span className="text-danger font-medium">{damagedItems} {t('deposit.problems')}</span>
                         )}
+                        {checklist.total_deduction && parseFloat(checklist.total_deduction) > 0 && (
+                          <span className="text-amber-600 font-semibold">💳 -€{parseFloat(checklist.total_deduction).toFixed(0)}</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -725,6 +738,35 @@ export default function AdminBorgPage() {
                             disabled={checklist.status === 'AFGEROND' || checklist.status === 'KLANT_AKKOORD'}
                           />
                         </div>
+
+                        {/* Deduction summary (read-only in borg overview, editable in inspection page) */}
+                        {(() => {
+                          const borgAmount = checklist.borg_amount ? parseFloat(checklist.borg_amount) : 400;
+                          const itemDamageTotal = allItems.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+                          const extraDamages: ExtraDamage[] = checklist.extra_damages || [];
+                          const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+                          const cleaningDed = checklist.cleaning_deduction ? parseFloat(checklist.cleaning_deduction) : 0;
+                          const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : (itemDamageTotal + extraDamageTotal + cleaningDed);
+                          const refund = Math.max(0, borgAmount - totalDed);
+                          if (totalDed === 0 && checklist.status === 'OPEN') return null;
+                          return (
+                            <div className="bg-surface rounded-lg p-4 border border-gray-100">
+                              <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">💳 Borg-afrekening</h4>
+                              <div className="space-y-1 text-sm">
+                                <div className="flex justify-between"><span className="text-muted">Borg</span><span className="font-medium">€{borgAmount}</span></div>
+                                {itemDamageTotal > 0 && <div className="flex justify-between"><span className="text-amber-600">Schade inventaris</span><span className="font-medium text-amber-600">-€{itemDamageTotal}</span></div>}
+                                {extraDamages.map((d, i) => (
+                                  <div key={i} className="flex justify-between"><span className="text-amber-600">{d.description || 'Overige schade'}</span><span className="font-medium text-amber-600">-€{d.amount}</span></div>
+                                ))}
+                                {cleaningDed > 0 && <div className="flex justify-between"><span className="text-amber-600">Schoonmaak</span><span className="font-medium text-amber-600">-€{cleaningDed}</span></div>}
+                                <div className="border-t border-gray-200 pt-1 mt-1">
+                                  <div className="flex justify-between"><span className="font-bold">Ingehouden</span><span className={`font-bold ${totalDed > 0 ? 'text-red-600' : 'text-emerald-600'}`}>€{totalDed}</span></div>
+                                  <div className="flex justify-between"><span className="font-bold">Retour</span><span className="font-bold text-emerald-600">€{refund}</span></div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Customer response */}
                         {(checklist.customer_agreed || checklist.customer_notes) && (

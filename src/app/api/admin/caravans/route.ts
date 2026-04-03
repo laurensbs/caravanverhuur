@@ -145,7 +145,6 @@ export async function PATCH(request: NextRequest) {
 
       await upsertCaravan(id, staticCaravan.reference, {
         name: data.name ?? staticCaravan.name,
-        type: data.type ?? staticCaravan.type,
         maxPersons: data.maxPersons ?? staticCaravan.maxPersons,
         manufacturer: data.manufacturer ?? staticCaravan.manufacturer,
         year: data.year ?? staticCaravan.year,

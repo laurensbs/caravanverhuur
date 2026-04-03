@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getAllPayments, getCustomerByEmail } from '@/lib/db';
+import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getAllPayments, getCustomerByEmail, updateBookingStatus } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
             await updatePaymentStripeId(paymentId, String(session.payment_intent));
           }
 
+          // Update booking status to BEVESTIGD when deposit is paid
+          const paidPayment = await getPaymentById(paymentId);
+          if (paidPayment?.type === 'AANBETALING') {
+            await updateBookingStatus(paidPayment.booking_id, 'BEVESTIGD');
+          }
+
           // Send confirmation email
           try {
             const payment = await getPaymentById(paymentId);
@@ -58,6 +64,9 @@ export async function POST(request: NextRequest) {
                   type: payment.type,
                   amount: parseFloat(payment.amount),
                   paidAt,
+                  totalPrice: parseFloat(booking.total_price),
+                  remainingAmount: parseFloat(booking.remaining_amount),
+                  borgAmount: parseFloat(booking.borg_amount),
                 }, whCustomer?.locale);
               }
             }

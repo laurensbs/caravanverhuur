@@ -18,11 +18,6 @@ import { useData } from '@/lib/data-context';
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 
-const typeLabel: Record<string, { name: string; color: string }> = {
-  FAMILIE: { name: 'Familie', color: 'text-primary' },
-  COMPACT: { name: 'Compact', color: 'text-primary-dark' },
-};
-
 const campingsByRegion: Record<string, Camping[]> = {};
 staticCampingsData.forEach(c => {
   if (!campingsByRegion[c.region]) campingsByRegion[c.region] = [];
@@ -64,11 +59,7 @@ export default function Header() {
   const accountTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, locale, setLocale } = useLanguage();
 
-  const caravansByType = {
-    FAMILIE: allCaravans.filter(c => c.type === 'FAMILIE'),
-    COMPACT: allCaravans.filter(c => c.type === 'COMPACT'),
-  };
-  const featuredCaravan = caravansByType.FAMILIE[0] || allCaravans[0];
+  const featuredCaravan = allCaravans[0];
   const featuredCamping = allCampings.find(c => c.slug === 'cypsela-resort') || allCampings[0];
 
   // Check login status
@@ -310,26 +301,21 @@ export default function Header() {
                     </Link>
                   </div>
                   <div className="grid grid-cols-3 gap-8">
-                    {(['FAMILIE', 'COMPACT'] as const).map(type => (
-                      <div key={type}>
-                        <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${typeLabel[type].color}`}>
-                          {type === 'FAMILIE' ? t('nav.familie') : t('nav.compact')}
-                        </p>
-                        <div className="space-y-0.5">
-                          {caravansByType[type].map(c => (
-                            <Link key={c.id} href={`/caravans/${c.id}`} className="group flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
-                              <div className="w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-gray-100">
-                                <Image src={c.photos[0]} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="48px" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm text-foreground-light truncate transition-colors">{c.name}</p>
-                                <p className="text-xs text-muted">{c.maxPersons} pers · €{c.pricePerWeek}/wk</p>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
+                    <div className="col-span-2">
+                      <div className="grid grid-cols-2 gap-1">
+                        {allCaravans.map(c => (
+                          <Link key={c.id} href={`/caravans/${c.id}`} className="group flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-gray-100">
+                              <Image src={c.photos[0]} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="48px" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm text-foreground-light truncate transition-colors">{c.name}</p>
+                              <p className="text-xs text-muted">{c.maxPersons} pers · €{c.pricePerWeek}/wk</p>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                     {/* Featured */}
                     <div className="relative rounded-xl overflow-hidden">
                       <Image src={featuredCaravan.photos[0]} alt={featuredCaravan.name} fill className="object-cover" />

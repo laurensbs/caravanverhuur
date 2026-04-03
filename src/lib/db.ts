@@ -106,6 +106,15 @@ export async function setupDatabase() {
     )
   `;
 
+  // Migration: add borg_checklists new columns
+  try {
+    await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS extra_damages JSONB DEFAULT '[]'`;
+    await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS cleaning_deduction NUMERIC(10,2) DEFAULT 0`;
+    await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS total_deduction NUMERIC(10,2) DEFAULT 0`;
+  } catch {
+    // Columns may already exist
+  }
+
   // Customers table (login system)
   await sql`
     CREATE TABLE IF NOT EXISTS customers (
@@ -462,11 +471,11 @@ export async function createBooking(data: {
     VALUES (${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null})
   `;
 
-  // Create a single payment record for the full amount (HUUR)
+  // Create a payment record for the 25% deposit (AANBETALING)
   const paymentId = generateId('P');
   await sql`
     INSERT INTO payments (id, booking_id, type, amount, status, method)
-    VALUES (${paymentId}, ${id}, 'HUUR', ${data.totalPrice}, 'OPENSTAAND', 'ideal')
+    VALUES (${paymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'ideal')
   `;
 
   return { id, reference, paymentId };
@@ -496,6 +505,26 @@ export async function updateBookingNotes(id: string, notes: string) {
   await sql`
     UPDATE bookings SET admin_notes = ${notes} WHERE id = ${id}
   `;
+}
+
+export async function checkCaravanAvailability(caravanId: string, checkIn: string, checkOut: string, excludeBookingId?: string) {
+  // Check total active bookings across ALL caravans for the date range (max 5 caravans total)
+  const MAX_CARAVANS = 5;
+  const result = excludeBookingId
+    ? await sql`
+        SELECT COUNT(*)::int AS cnt FROM bookings
+        WHERE id != ${excludeBookingId}
+          AND status NOT IN ('GEANNULEERD')
+          AND check_in < ${checkOut}
+          AND check_out > ${checkIn}
+      `
+    : await sql`
+        SELECT COUNT(*)::int AS cnt FROM bookings
+        WHERE status NOT IN ('GEANNULEERD')
+          AND check_in < ${checkOut}
+          AND check_out > ${checkIn}
+      `;
+  return (result.rows[0]?.cnt || 0) < MAX_CARAVANS;
 }
 
 export async function deleteBookingById(id: string) {
@@ -716,32 +745,73 @@ export async function getAvailableCaravanIds() {
 // ===== BORG CHECKLIST QUERIES =====
 
 const BORG_CHECKLIST_ITEMS = [
-  { category: 'Exterieur', item: 'Carrosserie (deuken, krassen)', status: 'nvt', notes: '' },
-  { category: 'Exterieur', item: 'Wielen & banden', status: 'nvt', notes: '' },
-  { category: 'Exterieur', item: 'Ramen & deuren', status: 'nvt', notes: '' },
-  { category: 'Exterieur', item: 'Luifel / zonwering', status: 'nvt', notes: '' },
-  { category: 'Exterieur', item: 'Koppeling & steunpoten', status: 'nvt', notes: '' },
-  { category: 'Exterieur', item: 'Verlichting (achter, rem, richting)', status: 'nvt', notes: '' },
-  { category: 'Interieur', item: 'Vloer & tapijt', status: 'nvt', notes: '' },
-  { category: 'Interieur', item: 'Zitbanken & kussens', status: 'nvt', notes: '' },
-  { category: 'Interieur', item: 'Gordijnen & rolgordijnen', status: 'nvt', notes: '' },
-  { category: 'Interieur', item: 'Verlichting interieur', status: 'nvt', notes: '' },
-  { category: 'Interieur', item: 'Verwarming / airco', status: 'nvt', notes: '' },
-  { category: 'Keuken', item: 'Fornuis / gasvuur', status: 'nvt', notes: '' },
-  { category: 'Keuken', item: 'Koelkast', status: 'nvt', notes: '' },
-  { category: 'Keuken', item: 'Servies & bestek (compleet)', status: 'nvt', notes: '' },
-  { category: 'Keuken', item: 'Pannen & kookgerei', status: 'nvt', notes: '' },
-  { category: 'Sanitair', item: 'Toilet', status: 'nvt', notes: '' },
-  { category: 'Sanitair', item: 'Waterpompen', status: 'nvt', notes: '' },
-  { category: 'Sanitair', item: 'Waterreservoirs (schoon/vuil)', status: 'nvt', notes: '' },
-  { category: 'Slaapplaatsen', item: 'Matrassen', status: 'nvt', notes: '' },
-  { category: 'Slaapplaatsen', item: 'Beddengoed & kussens', status: 'nvt', notes: '' },
-  { category: 'Technisch', item: 'Gasinstallatie', status: 'nvt', notes: '' },
-  { category: 'Technisch', item: 'Elektra & accu / 230V', status: 'nvt', notes: '' },
-  { category: 'Technisch', item: 'Waterleidingen', status: 'nvt', notes: '' },
-  { category: 'Inventaris', item: 'Handdoeken', status: 'nvt', notes: '' },
-  { category: 'Inventaris', item: 'Schoonmaakmiddelen', status: 'nvt', notes: '' },
-  { category: 'Inventaris', item: 'Gereedschap / EHBO', status: 'nvt', notes: '' },
+  // Buiten
+  { category: 'Buiten', item: '4 tuinstoelen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Buiten', item: '1 tuintafel', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Buiten', item: '1 parasol', status: 'nvt', notes: '', damageAmount: 0 },
+  // Keuken
+  { category: 'Keuken', item: '1 koffiezetapparaat (Senseo)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '1 waterkoker', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '2 koekenpannen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '2 kookpannen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: 'Snijplanken', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '3 pannenonderzetters', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '1 vergiet', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '1 maatbeker', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '1 rasp', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: '1 gasfles', status: 'nvt', notes: '', damageAmount: 0 },
+  // Servies & glaswerk
+  { category: 'Servies & glaswerk', item: '6 grote platte borden', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 ontbijtborden', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 soepkommen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 theeglazen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 koffiemokken', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 longdrink glazen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 bierglazen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & glaswerk', item: '6 wijnglazen', status: 'nvt', notes: '', damageAmount: 0 },
+  // Bestek
+  { category: 'Bestek', item: '6 lepels', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Bestek', item: '6 vorken', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Bestek', item: '6 messen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Bestek', item: '6 theelepels', status: 'nvt', notes: '', damageAmount: 0 },
+  // Overig keuken
+  { category: 'Overig keuken', item: '2 schilmessen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '2 opscheplepels', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '1 snijmes', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '1 schaar', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '1 flessenopener', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '1 kaasschaaf', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig keuken', item: '1 blikopener', status: 'nvt', notes: '', damageAmount: 0 },
+  // Overig
+  { category: 'Overig', item: '1 pedaalemmer', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: '1 stoffer + blik', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: '1 afwasbak', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: '1 emmer', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: '1 vloerveger', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: '1 droogrek', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Overig', item: 'Wasknijpers', status: 'nvt', notes: '', damageAmount: 0 },
+  // Ouderslaapkamer
+  { category: 'Ouderslaapkamer', item: '1 tweepersoonsbed', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Ouderslaapkamer', item: 'Dekbed (2x 1-persoons mogelijk)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Ouderslaapkamer', item: '1 molton', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Ouderslaapkamer', item: '2 kussens', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Ouderslaapkamer', item: '10 kledinghangers', status: 'nvt', notes: '', damageAmount: 0 },
+  // Tweede slaapkamer
+  { category: 'Tweede slaapkamer', item: '2 eenpersoonsbedden', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Tweede slaapkamer', item: '2 moltons', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Tweede slaapkamer', item: '2 dekbedden', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Tweede slaapkamer', item: '2 kussens', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Tweede slaapkamer', item: '1 lampje', status: 'nvt', notes: '', damageAmount: 0 },
+  // Caravan exterieur & technisch
+  { category: 'Caravan', item: 'Carrosserie (deuken, krassen)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Ramen & deuren', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Luifel / zonwering', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Vloer & interieur', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Verlichting', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Koelkast', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Kookplaat (3 pits)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Toilet', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Verwarming', status: 'nvt', notes: '', damageAmount: 0 },
 ];
 
 export function getDefaultBorgItems() {
@@ -812,6 +882,9 @@ export async function updateBorgChecklist(id: string, data: {
   generalNotes?: string;
   staffName?: string;
   completedAt?: string;
+  extraDamages?: string;
+  cleaningDeduction?: number;
+  totalDeduction?: number;
 }) {
   if (data.items) {
     await sql`UPDATE borg_checklists SET items = ${data.items}::jsonb WHERE id = ${id}`;
@@ -827,6 +900,15 @@ export async function updateBorgChecklist(id: string, data: {
   }
   if (data.completedAt) {
     await sql`UPDATE borg_checklists SET completed_at = ${data.completedAt} WHERE id = ${id}`;
+  }
+  if (data.extraDamages !== undefined) {
+    await sql`UPDATE borg_checklists SET extra_damages = ${data.extraDamages}::jsonb WHERE id = ${id}`;
+  }
+  if (data.cleaningDeduction !== undefined) {
+    await sql`UPDATE borg_checklists SET cleaning_deduction = ${data.cleaningDeduction} WHERE id = ${id}`;
+  }
+  if (data.totalDeduction !== undefined) {
+    await sql`UPDATE borg_checklists SET total_deduction = ${data.totalDeduction} WHERE id = ${id}`;
   }
 }
 
@@ -1013,7 +1095,7 @@ export async function createCustomCaravan(data: {
 // Upsert a caravan — used when editing a static caravan (creates override in DB)
 export async function upsertCaravan(id: string, reference: string, data: {
   name: string;
-  type: string;
+  type?: string;
   maxPersons: number;
   manufacturer: string;
   year: number;
@@ -1033,13 +1115,14 @@ export async function upsertCaravan(id: string, reference: string, data: {
   const amenitiesJson = JSON.stringify(data.amenities);
   const inventoryJson = JSON.stringify(data.inventory);
   const status = data.status || 'BESCHIKBAAR';
+  const type = data.type || 'Caravan';
   const isStaticOverride = data.isStaticOverride ?? false;
 
   if (existing) {
     await sql`
       UPDATE custom_caravans SET
         name = ${data.name},
-        type = ${data.type},
+        type = ${type},
         max_persons = ${data.maxPersons},
         manufacturer = ${data.manufacturer},
         year = ${data.year},
@@ -1058,7 +1141,7 @@ export async function upsertCaravan(id: string, reference: string, data: {
   } else {
     await sql`
       INSERT INTO custom_caravans (id, reference, name, type, max_persons, manufacturer, year, description, photos, video_url, amenities, inventory, price_per_day, price_per_week, deposit, status, is_static_override)
-      VALUES (${id}, ${reference}, ${data.name}, ${data.type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${photosJson}, ${data.videoUrl || null}, ${amenitiesJson}, ${inventoryJson}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit}, ${status}, ${isStaticOverride})
+      VALUES (${id}, ${reference}, ${data.name}, ${type}, ${data.maxPersons}, ${data.manufacturer}, ${data.year}, ${data.description}, ${photosJson}, ${data.videoUrl || null}, ${amenitiesJson}, ${inventoryJson}, ${data.pricePerDay}, ${data.pricePerWeek}, ${data.deposit}, ${status}, ${isStaticOverride})
     `;
   }
   return { success: true };

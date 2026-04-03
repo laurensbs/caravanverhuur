@@ -75,6 +75,44 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   const [discountSaving, setDiscountSaving] = useState(false);
   const [discountError, setDiscountError] = useState('');
   const [discountSuccess, setDiscountSuccess] = useState(false);
+  const [depositConfirming, setDepositConfirming] = useState(false);
+
+  const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
+
+  const handleConfirmDeposit = async () => {
+    setDepositConfirming(true);
+    try {
+      // Create a paid payment record for the deposit
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          type: 'AANBETALING',
+          amount: Number(booking.deposit_amount),
+          status: 'BETAALD',
+          method: 'bank',
+        }),
+      });
+      if (!res.ok) { toast(t('bookings.depositFailed'), 'error'); setDepositConfirming(false); return; }
+      // Update booking status to AANBETAALD
+      await fetch('/api/bookings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: booking.id, status: 'AANBETAALD' }),
+      });
+      onStatusChange(booking.id, 'AANBETAALD');
+      setNewStatus('AANBETAALD');
+      // Refresh payments
+      const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
+      const pData = await pRes.json();
+      setPayments(pData.payments || []);
+      toast(t('bookings.depositConfirmed'), 'success');
+    } catch {
+      toast(t('bookings.depositFailed'), 'error');
+    }
+    setDepositConfirming(false);
+  };
 
   useEffect(() => {
     fetch(`/api/payments?bookingId=${booking.id}`)
@@ -196,6 +234,46 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             <span className="text-muted">{t('bookings.securityDeposit')}</span>
             <span className="text-foreground">{formatCurrency(Number(booking.borg_amount))}</span>
           </div>
+          {/* Borg payment status */}
+          {(() => {
+            const borgPaid = payments.find(p => p.type === 'BORG' && p.status === 'BETAALD');
+            const borgRetour = payments.find(p => p.type === 'BORG_RETOUR');
+            if (borgRetour) {
+              return (
+                <div className="flex justify-between text-sm">
+                  <span className="text-emerald-600 text-xs font-medium">✅ Borg teruggestort</span>
+                  <span className="text-emerald-600 text-xs font-semibold">€{Number(borgRetour.amount).toFixed(0)}</span>
+                </div>
+              );
+            }
+            if (borgPaid) {
+              return (
+                <div className="flex justify-between text-sm">
+                  <span className="text-amber-600 text-xs font-medium">⏳ Borg ontvangen, wacht op inspectie</span>
+                </div>
+              );
+            }
+            return null;
+          })()}
+        </div>
+        {/* Deposit confirmation */}
+        <div className="mt-3 p-3 bg-blue-50 rounded-xl space-y-2">
+          <p className="text-xs text-blue-700">{t('bookings.restOnCampingNote')}</p>
+          {depositAlreadyPaid ? (
+            <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
+              <CheckCircle2 className="w-4 h-4" />
+              {t('bookings.depositAlreadyPaid')}
+            </div>
+          ) : (
+            <button
+              onClick={handleConfirmDeposit}
+              disabled={depositConfirming}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {depositConfirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.confirmDepositReceived')}
+            </button>
+          )}
         </div>
       </div>
 

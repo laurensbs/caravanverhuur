@@ -7,6 +7,8 @@ import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Plus,
+  Trash2,
   Shield,
   CheckCircle2,
   AlertTriangle,
@@ -26,7 +28,6 @@ import {
   Check,
   X,
   MessageSquare,
-  Trash2,
   ImageIcon,
 } from 'lucide-react';
 
@@ -35,7 +36,13 @@ interface BorgItem {
   item: string;
   status: 'nvt' | 'goed' | 'beschadigd' | 'ontbreekt';
   notes: string;
+  damageAmount: number;
   photos?: string[]; // base64 compressed images
+}
+
+interface ExtraDamage {
+  description: string;
+  amount: number;
 }
 
 interface BorgChecklist {
@@ -55,6 +62,10 @@ interface BorgChecklist {
   caravan_id?: string;
   check_in?: string;
   check_out?: string;
+  borg_amount?: number;
+  extra_damages?: ExtraDamage[];
+  cleaning_deduction?: number;
+  total_deduction?: number;
 }
 
 type Step = 'intro' | 'inspect' | 'notes' | 'summary' | 'done';
@@ -111,6 +122,8 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
   const [activeNote, setActiveNote] = useState<number | null>(null);
   const [noteText, setNoteText] = useState('');
   const [completed, setCompleted] = useState(false);
+  const [extraDamages, setExtraDamages] = useState<ExtraDamage[]>([]);
+  const [cleaningDeduction, setCleaningDeduction] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoProcessing, setPhotoProcessing] = useState(false);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
@@ -143,6 +156,8 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       setChecklist(data);
       setStaffName(data.staff_name || '');
       setGeneralNotes(data.general_notes || '');
+      setExtraDamages(data.extra_damages ? (typeof data.extra_damages === 'string' ? JSON.parse(data.extra_damages) : data.extra_damages) : []);
+      setCleaningDeduction(data.cleaning_deduction ? Number(data.cleaning_deduction) : 0);
     } catch {
       toast(t('common.actionFailed'), 'error');
     } finally {
@@ -273,6 +288,10 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
 
   const handleSave = async (complete: boolean) => {
     setSaving(true);
+    // Calculate total deduction
+    const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+    const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDed = itemDamageTotal + extraDamageTotal + cleaningDeduction;
     try {
       await fetch('/api/borg', {
         method: 'PUT',
@@ -283,6 +302,9 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
           generalNotes,
           staffName: staffName || undefined,
           status: complete ? 'AFGEROND' : 'IN_BEHANDELING',
+          extraDamages,
+          cleaningDeduction,
+          totalDeduction: totalDed,
           ...(complete ? { completedAt: new Date().toISOString() } : {}),
         }),
       });
@@ -585,12 +607,39 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                     />
                   </div>
                 )}
+
+                {/* Damage amount input - when item is damaged or missing */}
+                {(currentItem.item.status === 'beschadigd' || currentItem.item.status === 'ontbreekt') && (
+                  <div className="bg-white rounded-xl p-3 shadow-sm">
+                    <label className="text-xs font-semibold text-gray-500 flex items-center gap-1 mb-1.5">
+                      💰 Schadebedrag
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-500">€</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={currentItem.item.damageAmount || ''}
+                        onChange={(e) => {
+                          const val = Math.max(0, Number(e.target.value) || 0);
+                          setChecklist(prev => {
+                            if (!prev) return prev;
+                            const newItems = [...prev.items];
+                            newItems[currentItem.globalIndex] = { ...newItems[currentItem.globalIndex], damageAmount: val };
+                            return { ...prev, items: newItems };
+                          });
+                        }}
+                        placeholder="0"
+                        className="flex-1 px-3 py-2 bg-[#FAFAF9] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
-
-        {/* Bottom: save progress button */}
         <div className="sticky bottom-0 bg-white/90 backdrop-blur-md px-5 py-3 max-w-lg mx-auto w-full">
           <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
             <span>{completedCount} / {totalItems} {t('inspection.assessed')}</span>
@@ -691,6 +740,117 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               className="w-full px-4 py-3 bg-[#FAFAF9] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             />
           </div>
+
+          {/* Cleaning deduction */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <label className="block text-sm font-bold text-gray-900 mb-2">🧹 Schoonmaak-inhouding</label>
+            <p className="text-xs text-gray-400 mb-3">Bij onvoldoende schoonmaak wordt €100 ingehouden van de borg.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCleaningDeduction(0)}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${cleaningDeduction === 0 ? 'bg-emerald-500 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+              >
+                ✅ Goed schoongemaakt
+              </button>
+              <button
+                onClick={() => setCleaningDeduction(100)}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${cleaningDeduction === 100 ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+              >
+                ❌ €100 inhouding
+              </button>
+            </div>
+          </div>
+
+          {/* Extra damages (beyond inventory) */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-bold text-gray-900">🔧 Overige schade</label>
+              <button
+                onClick={() => setExtraDamages([...extraDamages, { description: '', amount: 0 }])}
+                className="text-xs font-semibold text-primary flex items-center gap-1 cursor-pointer"
+              >
+                <Plus size={14} /> Toevoegen
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">Schade aan de caravan buiten de inventaris om.</p>
+            {extraDamages.length === 0 && (
+              <p className="text-xs text-gray-300 text-center py-3">Geen overige schade gemeld</p>
+            )}
+            <div className="space-y-2">
+              {extraDamages.map((d, i) => (
+                <div key={i} className="flex gap-2 items-start">
+                  <input
+                    type="text"
+                    value={d.description}
+                    onChange={(e) => {
+                      const next = [...extraDamages];
+                      next[i] = { ...next[i], description: e.target.value };
+                      setExtraDamages(next);
+                    }}
+                    placeholder="Omschrijving schade..."
+                    className="flex-1 px-3 py-2.5 bg-[#FAFAF9] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-gray-400">€</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={d.amount || ''}
+                      onChange={(e) => {
+                        const next = [...extraDamages];
+                        next[i] = { ...next[i], amount: Math.max(0, Number(e.target.value) || 0) };
+                        setExtraDamages(next);
+                      }}
+                      placeholder="0"
+                      className="w-20 px-3 py-2.5 bg-[#FAFAF9] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setExtraDamages(extraDamages.filter((_, j) => j !== i))}
+                    className="text-red-400 hover:text-red-600 p-2 cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Total deduction calculation */}
+          {(() => {
+            const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+            const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+            const totalDed = itemDamageTotal + extraDamageTotal + cleaningDeduction;
+            const borgAmount = checklist.borg_amount ? Number(checklist.borg_amount) : 400;
+            const refund = Math.max(0, borgAmount - totalDed);
+            return (
+              <div className="bg-white rounded-2xl p-5 shadow-sm border-2 border-primary/20">
+                <h3 className="text-sm font-bold text-gray-900 mb-3">💳 Borg-afrekening</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-500">Totale borg</span><span className="font-semibold">€{borgAmount}</span></div>
+                  {itemDamageTotal > 0 && (
+                    <div className="flex justify-between"><span className="text-amber-600">Schade inventaris</span><span className="font-semibold text-amber-600">-€{itemDamageTotal}</span></div>
+                  )}
+                  {extraDamageTotal > 0 && (
+                    <div className="flex justify-between"><span className="text-amber-600">Overige schade</span><span className="font-semibold text-amber-600">-€{extraDamageTotal}</span></div>
+                  )}
+                  {cleaningDeduction > 0 && (
+                    <div className="flex justify-between"><span className="text-amber-600">Schoonmaak</span><span className="font-semibold text-amber-600">-€{cleaningDeduction}</span></div>
+                  )}
+                  <div className="border-t border-gray-100 pt-2 mt-2">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-gray-900">Totaal ingehouden</span>
+                      <span className={`font-bold text-lg ${totalDed > 0 ? 'text-red-600' : 'text-emerald-600'}`}>€{totalDed}</span>
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="font-bold text-gray-900">Terug te storten</span>
+                      <span className="font-bold text-lg text-emerald-600">€{refund}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Actions */}
           <div className="space-y-3">

@@ -9,7 +9,7 @@ import {
   CalendarDays, MapPin, Users, CheckCircle, ArrowRight, ArrowLeft,
   CreditCard, User, Mail, Phone, MessageSquare, Search, Hash,
   Filter, Sparkles, Shield, Star, Clock, ChevronRight, Sun, Tent,
-  Heart, PartyPopper, Check, Info, Minus, Plus, Tag,
+  Heart, PartyPopper, Check, Info, Minus, Plus, Tag, AlertTriangle,
 } from 'lucide-react';
 import { caravans as staticCaravans, getCaravanById as getStaticCaravanById } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -98,7 +98,14 @@ function BoekenContent() {
   const [campingRequestLocation, setCampingRequestLocation] = useState('');
   const [campingRequestSending, setCampingRequestSending] = useState(false);
   const [campingRequestSent, setCampingRequestSent] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [extraBedlinnen, setExtraBedlinnen] = useState(false);
+  const [extraFridge, setExtraFridge] = useState(false);
+  const [extraBikes, setExtraBikes] = useState(0);
+  const [extraMountainbikes, setExtraMountainbikes] = useState(0);
   const [showAllCampings, setShowAllCampings] = useState(false);
+  const [paymentId, setPaymentId] = useState('');
+  const [redirectingToPayment, setRedirectingToPayment] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [pricingRules, setPricingRules] = useState<{ id: string; name: string; type: string; percentage: string; start_date: string | null; end_date: string | null; days_before_checkin: number | null; min_nights: number; priority: number }[]>([]);
 
@@ -136,11 +143,47 @@ function BoekenContent() {
     return diff > 0 ? diff : 0;
   }, [checkIn, checkOut]);
 
+  /* ---- Seasonal pricing helper ---- */
+  const getWeeklyRate = (date: Date): number => {
+    const month = date.getMonth(); // 0-indexed: 6 = July
+    if (month === 6) return 650; // High season: July 1 - July 31
+    return 550; // Pre-season & post-season
+  };
+
+  const getSeasonLabel = (date: Date): string => {
+    const month = date.getMonth();
+    if (month === 6) return t('booking.highSeasonShort');
+    if (month < 6) return t('booking.preSeasonShort');
+    return t('booking.postSeasonShort');
+  };
+
   const totalPrice = useMemo(() => {
-    if (!chosenCaravan || nights <= 0) return 0;
-    const base = Math.floor(nights / 7) * chosenCaravan.pricePerWeek + (nights % 7) * chosenCaravan.pricePerDay;
-    return base;
-  }, [chosenCaravan, nights]);
+    if (!checkIn || nights <= 0) return 0;
+    const start = new Date(checkIn);
+    let total = 0;
+    for (let i = 0; i < nights; i++) {
+      const day = new Date(start.getTime() + i * 86400000);
+      total += getWeeklyRate(day) / 7;
+    }
+    return Math.round(total);
+  }, [checkIn, nights]);
+
+  const extrasCost = useMemo(() => {
+    if (nights <= 0) return 0;
+    const weeks = Math.ceil(nights / 7);
+    let cost = 0;
+    if (extraBedlinnen) cost += weeks * 70;
+    if (extraFridge) cost += weeks * 40;
+    cost += extraBikes * weeks * 50;
+    cost += extraMountainbikes * weeks * 50;
+    return cost;
+  }, [extraBedlinnen, extraFridge, extraBikes, extraMountainbikes, nights]);
+
+  const extraBorgAmount = useMemo(() => {
+    return (extraBikes + extraMountainbikes) * 200;
+  }, [extraBikes, extraMountainbikes]);
+
+  const totalBorg = 400 + extraBorgAmount;
 
   // Calculate pricing adjustments from active rules
   const pricingAdjustments = useMemo(() => {
@@ -180,20 +223,15 @@ function BoekenContent() {
     return Math.max(0, totalPrice + adj);
   }, [totalPrice, pricingAdjustments]);
 
-  const discountedTotal = discountApplied ? Math.max(0, adjustedTotal - discountApplied.amount) : adjustedTotal;
+  const discountedTotal = (discountApplied ? Math.max(0, adjustedTotal - discountApplied.amount) : adjustedTotal) + extrasCost;
 
-  // Payment deadline: 30 days before check-in
-  const daysUntilCheckIn = useMemo(() => {
-    if (!checkIn) return 999;
-    return Math.ceil((new Date(checkIn).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  }, [checkIn]);
-  const immediatePayment = daysUntilCheckIn <= 30;
-  const paymentDeadline = useMemo(() => {
-    if (!checkIn) return '';
-    if (immediatePayment) return t('booking.payImmediately');
-    const d = new Date(new Date(checkIn).getTime() - 30 * 24 * 60 * 60 * 1000);
-    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-  }, [checkIn, immediatePayment]);
+  // 25% deposit calculation
+  const deposit25 = Math.round(discountedTotal * 0.25);
+  const restAmount = discountedTotal - deposit25;
+
+  // Payment: 25% deposit always due at booking
+  const immediatePayment = true;
+  const paymentDeadline = t('booking.payImmediately');
 
   const canNext = () => {
     switch (step) {
@@ -239,40 +277,59 @@ function BoekenContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           guestName: name, guestEmail: email, guestPhone: phone,
-          adults, children, specialRequests: specialRequests || undefined,
+          adults, children, specialRequests: [
+            specialRequests,
+            extraBedlinnen ? 'Bedlinnen (4 sets)' : '',
+            extraFridge ? 'Grote koelkast' : '',
+            extraBikes > 0 ? `${extraBikes}x Fiets` : '',
+            extraMountainbikes > 0 ? `${extraMountainbikes}x Mountainbike` : '',
+          ].filter(Boolean).join(' | ') || undefined,
           caravanId: selectedCaravan, campingId, spotNumber: spotNumber.trim(),
           checkIn, checkOut, nights, totalPrice: discountedTotal,
-          borgAmount: chosenCaravan?.deposit || 0,
+          borgAmount: totalBorg,
+          depositAmount: deposit25,
           discountCode: discountApplied?.code || undefined,
           discountAmount: discountApplied?.amount || 0,
         }),
       });
-      if (!res.ok) throw new Error('failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || 'failed');
+      }
       const data = await res.json();
       setBookingRef(data.reference);
-      // If immediate payment required, redirect to Stripe checkout
-      if (data.immediatePayment && data.paymentId) {
-        const checkoutRes = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId: data.paymentId }),
-        });
-        const checkoutData = await checkoutRes.json();
-        if (checkoutData.url) {
-          window.location.href = checkoutData.url;
-          return;
-        }
-      }
+      setPaymentId(data.paymentId);
       setSubmitted(true);
-    } catch {
-      setSubmitError(t('booking.errorSubmit'));
+
+      // Auto-redirect to Stripe checkout for the 25% deposit
+      if (data.paymentUrl) {
+        setRedirectingToPayment(true);
+        window.location.href = data.paymentUrl;
+        return;
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error && err.message !== 'failed' ? err.message : t('booking.errorSubmit'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const goNext = () => { setDirection(1); setStep(s => Math.min(s + 1, 5) as Step); contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  const goBack = () => { setDirection(-1); setStep(s => Math.max(s - 1, 1) as Step); };
+  const goNext = async () => {
+    // Check availability when moving past step 3 (caravan selected)
+    if (step === 3 && selectedCaravan && checkIn && checkOut) {
+      setAvailabilityError('');
+      try {
+        const res = await fetch(`/api/bookings/availability?caravanId=${selectedCaravan}&checkIn=${checkIn}&checkOut=${checkOut}`);
+        const data = await res.json();
+        if (!data.available) {
+          setAvailabilityError(t('booking.caravanUnavailable'));
+          return;
+        }
+      } catch { /* DB not available, proceed */ }
+    }
+    setDirection(1); setStep(s => Math.min(s + 1, 5) as Step); contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  const goBack = () => { setDirection(-1); setStep(s => Math.max(s - 1, 1) as Step); setAvailabilityError(''); };
 
   const slideVariants = {
     enter: (d: number) => ({ x: d > 0 ? 30 : -30, opacity: 0 }),
@@ -336,7 +393,15 @@ function BoekenContent() {
               </div>
               <div className="mt-4 pt-4 space-y-2">
                 <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{discountedTotal}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgLabel')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
+                <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
+                {extrasCost > 0 && (
+                  <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.extrasLabel')}</span><span className="font-medium">+&euro;{extrasCost}</span></div>
+                )}
+                {extraBorgAmount > 0 && (
+                  <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.extraBorgBikes')}</span><span className="font-medium">+&euro;{extraBorgAmount}</span></div>
+                )}
                 {discountApplied && (
                   <div className="flex justify-between text-sm"><span className="text-primary flex items-center gap-1"><Tag size={12} /> {t('booking.discountLabel')}</span><span className="font-medium text-primary">-&euro;{discountApplied.amount}</span></div>
                 )}
@@ -344,15 +409,46 @@ function BoekenContent() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
-              <strong>{t('booking.nextStep')}</strong> {immediatePayment
-                ? t('booking.redirectToPayment')
-                : `${t('booking.paymentDueBefore')} €${discountedTotal} ${paymentDeadline}.`
-              }
+              <strong>{t('booking.nextStep')}</strong> {t('booking.depositExplanation')}
             </motion.div>
 
-            <Link href="/" className="inline-flex items-center gap-2 text-primary font-semibold">
-              {t('booking.backToHome')} <ArrowRight size={16} />
-            </Link>
+            {/* Pay Now button — Stripe redirect */}
+            {paymentId && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+                <button
+                  onClick={async () => {
+                    setRedirectingToPayment(true);
+                    try {
+                      const res = await fetch('/api/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId }),
+                      });
+                      const data = await res.json();
+                      if (data.url) { window.location.href = data.url; return; }
+                    } catch {}
+                    setRedirectingToPayment(false);
+                  }}
+                  disabled={redirectingToPayment}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-3.5 rounded-xl font-bold text-base hover:bg-primary-dark transition-colors disabled:opacity-60 mb-4"
+                >
+                  {redirectingToPayment ? (
+                    <>{t('booking.redirectingToPayment')}</>
+                  ) : (
+                    <><CreditCard size={18} /> {t('booking.payDeposit')} &euro;{deposit25}</>
+                  )}
+                </button>
+              </motion.div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 items-center">
+              <Link href="/mijn-account" className="inline-flex items-center gap-2 text-primary font-semibold text-sm">
+                {t('booking.toMyAccount')} <ArrowRight size={16} />
+              </Link>
+              <Link href="/" className="inline-flex items-center gap-2 text-muted font-medium text-sm">
+                {t('booking.backToHome')}
+              </Link>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -792,7 +888,7 @@ function BoekenContent() {
                         <div className="space-y-4 lg:space-y-5">
                           {availableCaravans.map(c => {
                             const isSelected = selectedCaravan === c.id;
-                            const price = Math.floor(nights / 7) * c.pricePerWeek + (nights % 7) * c.pricePerDay;
+                            const price = totalPrice;
                             return (
                               <motion.div
                                 key={c.id}
@@ -825,10 +921,7 @@ function BoekenContent() {
                                         return <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />;
                                       })()}
                                       <div className="absolute top-3 left-3 z-20">
-                                        <span className={`text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md ${
-                                          c.type === 'FAMILIE' ? 'bg-primary' :
-                                          'bg-primary'
-                                        }`}>{c.type}</span>
+                                        <span className="text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md bg-primary">{c.manufacturer}</span>
                                       </div>
                                       {isSelected && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-md z-20">
@@ -851,7 +944,7 @@ function BoekenContent() {
                                         <div>
                                           <p className="text-xs text-muted">{t('booking.from')}</p>
                                           <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-bold text-primary">&euro;{c.pricePerWeek}</span>
+                                            <span className="text-2xl font-bold text-primary">&euro;550</span>
                                             <span className="text-sm text-muted">{t('booking.perWeek')}</span>
                                           </div>
                                         </div>
@@ -978,6 +1071,112 @@ function BoekenContent() {
                         </div>
                       </div>
 
+                      {/* Caravan disclaimer */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                        <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                        <p className="text-xs text-blue-800 leading-relaxed">{t('booking.caravanIndicative')}</p>
+                      </div>
+
+                      {/* Extras */}
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+                        <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <Sparkles size={16} className="text-primary" /> {t('booking.extrasTitle')}
+                        </h3>
+                        <div className="space-y-2">
+                          {/* Bedlinnen */}
+                          <label className="flex items-start gap-4 cursor-pointer p-3 rounded-xl hover:bg-surface transition-colors">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${extraBedlinnen ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                              {extraBedlinnen && <Check size={12} className="text-white" />}
+                            </div>
+                            <input type="checkbox" checked={extraBedlinnen} onChange={e => setExtraBedlinnen(e.target.checked)} className="sr-only" />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.extraBedlinnen')}</span>
+                                <span className="text-sm font-bold text-primary">{t('booking.extraBedlinnenPrice')}</span>
+                              </div>
+                              <p className="text-xs text-muted mt-0.5">{t('booking.extraBedlinnenDesc')}</p>
+                            </div>
+                          </label>
+
+                          {/* Grote koelkast */}
+                          <label className="flex items-start gap-4 cursor-pointer p-3 rounded-xl hover:bg-surface transition-colors">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${extraFridge ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                              {extraFridge && <Check size={12} className="text-white" />}
+                            </div>
+                            <input type="checkbox" checked={extraFridge} onChange={e => setExtraFridge(e.target.checked)} className="sr-only" />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.extraFridge')}</span>
+                                <span className="text-sm font-bold text-primary">{t('booking.extraFridgePrice')}</span>
+                              </div>
+                              <p className="text-xs text-muted mt-0.5">{t('booking.extraFridgeDesc')}</p>
+                            </div>
+                          </label>
+
+                          {/* Fietsen */}
+                          <div className="flex items-start gap-4 p-3 rounded-xl hover:bg-surface transition-colors">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.extraBikes')}</span>
+                                <span className="text-sm font-bold text-primary">{t('booking.extraBikesPrice')}</span>
+                              </div>
+                              <p className="text-xs text-muted mt-0.5">{t('booking.extraBikesDesc')}</p>
+                              <div className="flex items-center gap-3 mt-2">
+                                <button type="button" onClick={() => setExtraBikes(Math.max(0, extraBikes - 1))}
+                                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30" disabled={extraBikes === 0}>
+                                  <Minus size={14} />
+                                </button>
+                                <span className="text-sm font-bold w-6 text-center">{extraBikes}</span>
+                                <button type="button" onClick={() => setExtraBikes(Math.min(4, extraBikes + 1))}
+                                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30" disabled={extraBikes === 4}>
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Mountainbikes */}
+                          <div className="flex items-start gap-4 p-3 rounded-xl hover:bg-surface transition-colors">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.extraMountainbikes')}</span>
+                                <span className="text-sm font-bold text-primary">{t('booking.extraMountainbikesPrice')}</span>
+                              </div>
+                              <p className="text-xs text-muted mt-0.5">{t('booking.extraMountainbikesDesc')}</p>
+                              <div className="flex items-center gap-3 mt-2">
+                                <button type="button" onClick={() => setExtraMountainbikes(Math.max(0, extraMountainbikes - 1))}
+                                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30" disabled={extraMountainbikes === 0}>
+                                  <Minus size={14} />
+                                </button>
+                                <span className="text-sm font-bold w-6 text-center">{extraMountainbikes}</span>
+                                <button type="button" onClick={() => setExtraMountainbikes(Math.min(4, extraMountainbikes + 1))}
+                                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30" disabled={extraMountainbikes === 4}>
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Extra borg info for bikes */}
+                          {(extraBikes > 0 || extraMountainbikes > 0) && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5">
+                              <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                              <p className="text-xs text-amber-800 leading-relaxed">{t('booking.extraBorgPerBike')}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Payment info */}
+                      <div className="bg-primary-50 border-primary-light rounded-xl p-4 space-y-2">
+                        <p className="text-sm font-semibold text-foreground">{t('booking.depositExplanationShort')}</p>
+                        <p className="text-xs text-muted leading-relaxed">{t('booking.depositExplanation')}</p>
+                      </div>
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5">
+                        <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-800 leading-relaxed">{t('booking.paymentOnCampingWarning')}</p>
+                      </div>
+
                       {/* Terms */}
                       <label className="flex items-start gap-3 cursor-pointer bg-white rounded-xl p-4">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-gray-300'}`}>
@@ -988,7 +1187,7 @@ function BoekenContent() {
                           {t('booking.agreeTerms')}{' '}
                           <a href="/voorwaarden" target="_blank" className="text-primary underline font-medium">{t('booking.termsLink')}</a>{t('booking.andThe')}{' '}
                           <a href="/privacy" target="_blank" className="text-primary underline font-medium">{t('booking.privacyLink')}</a> {t('booking.andThe2')}{' '}
-                          <a href="/voorwaarden#annulering" target="_blank" className="text-primary underline font-medium">{t('booking.cancellationLink')}</a>.
+                          <a href="/voorwaarden#a9" target="_blank" className="text-primary underline font-medium">{t('booking.cancellationLink')}</a>.
                         </span>
                       </label>
                     </div>
@@ -1009,10 +1208,7 @@ function BoekenContent() {
                             <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
                             <div className="absolute inset-0 bg-black/40" />
                             <div className="absolute bottom-4 left-5 right-5">
-                              <span className={`inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 ${
-                                chosenCaravan.type === 'FAMILIE' ? 'bg-primary' :
-                                'bg-primary'
-                              }`}>{chosenCaravan.type}</span>
+                              <span className="inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 bg-primary">{chosenCaravan.manufacturer}</span>
                               <h3 className="text-white font-bold text-xl">{chosenCaravan.name}</h3>
                             </div>
                           </div>
@@ -1052,7 +1248,7 @@ function BoekenContent() {
                           </div>
 
                           <div className="pt-4 space-y-2">
-                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${(pricingAdjustments.length > 0 || discountApplied) ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
+                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${(pricingAdjustments.length > 0 || discountApplied || extrasCost > 0) ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
                             {pricingAdjustments.map((adj, i) => (
                               <div key={i} className="flex justify-between text-sm">
                                 <span className={`font-medium flex items-center gap-1.5 ${adj.amount < 0 ? 'text-green-600' : 'text-amber-600'}`}>
@@ -1062,22 +1258,31 @@ function BoekenContent() {
                                 <span className={`font-medium ${adj.amount < 0 ? 'text-green-600' : 'text-amber-600'}`}>{adj.amount < 0 ? '' : '+'}€{Math.abs(adj.amount)}</span>
                               </div>
                             ))}
-                            {pricingAdjustments.length > 0 && !discountApplied && (
-                              <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{adjustedTotal}</span></div>
-                            )}
-                            {discountApplied && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-primary font-medium flex items-center gap-1.5"><Tag size={14} /> {t('booking.discountLabel')} ({discountApplied.code})</span>
-                                <span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span>
+                            {extrasCost > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="font-medium text-foreground-light flex items-center gap-1.5"><Sparkles size={13} className="text-primary" /> {t('booking.extrasLabel')}</span>
+                                <span className="font-medium">+€{extrasCost}</span>
                               </div>
                             )}
-                            <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgReturn')}</span><span className="font-medium">&euro;{chosenCaravan?.deposit}</span></div>
-                            {immediatePayment && (
-                              <div className="flex justify-between text-sm"><span className="text-primary font-medium">💳 {t('booking.payNow')}</span><span className="font-bold text-primary">&euro;{discountedTotal}</span></div>
+                            {discountApplied && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-primary font-medium flex items-center gap-1.5"><Tag size={14} /> {t('booking.discountLabel')} ({discountApplied.code})</span>
+                                <span className="font-medium text-primary">-€{discountApplied.amount}</span>
+                              </div>
                             )}
-                            {!immediatePayment && (
-                              <div className="flex justify-between text-sm"><span className="text-muted">📅 {t('booking.payBefore')}</span><span className="font-medium">{paymentDeadline}</span></div>
+                            {(pricingAdjustments.length > 0 || discountApplied || extrasCost > 0) && (
+                              <div className="flex justify-between pt-1 border-t border-gray-100"><span className="font-semibold text-foreground">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span></div>
                             )}
+
+                            {/* Payment breakdown: 25% now + rest on camping */}
+                            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                              <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
+                              <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
+                              <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
+                              <div className="flex justify-between text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-1">
+                                <span>{t('booking.paymentMethodCamping')}</span>
+                              </div>
+                            </div>
                           </div>
 
                           {/* Discount code input */}
@@ -1126,6 +1331,11 @@ function BoekenContent() {
 
               {/* ===== DESKTOP NAVIGATION BUTTONS (sticky) ===== */}
               <div className="hidden lg:block sticky bottom-0 z-20 mt-6 -mx-1 px-1">
+                {availabilityError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-3 text-sm font-medium">
+                    {availabilityError}
+                  </div>
+                )}
                 <div className="bg-white/95 backdrop-blur-md border-t border-gray-100 pt-4 pb-2 flex items-center justify-between">
                   {step > 1 ? (
                     <button onClick={goBack} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-foreground-light font-medium transition-all hover:bg-surface-alt border border-gray-200 cursor-pointer">
@@ -1199,7 +1409,7 @@ function BoekenContent() {
                         </div>
                         <div>
                           <p className="font-medium text-foreground text-[13px]">{chosenCaravan.name}</p>
-                          <p className="text-xs text-muted">{chosenCaravan.type}</p>
+                          <p className="text-xs text-muted">{chosenCaravan.manufacturer}</p>
                         </div>
                       </div>
                     )}
@@ -1217,17 +1427,14 @@ function BoekenContent() {
                             <span className="text-primary font-medium">-&euro;{discountApplied.amount}</span>
                           </div>
                         )}
-                        {immediatePayment ? (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-primary font-medium">{t('booking.payNow')}</span>
-                            <span className="font-semibold text-primary">&euro;{discountedTotal}</span>
-                          </div>
-                        ) : paymentDeadline ? (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted">{t('booking.payBefore')}</span>
-                            <span className="font-medium text-foreground-light">{paymentDeadline}</span>
-                          </div>
-                        ) : null}
+                        <div className="flex justify-between text-xs">
+                          <span className="text-foreground font-medium">{t('booking.deposit25Label')}</span>
+                          <span className="font-semibold text-primary">&euro;{deposit25}</span>
+                        </div>
+                        <div className="flex justify-between text-xs mt-0.5">
+                          <span className="text-muted">{t('booking.restOnCamping')}</span>
+                          <span className="font-medium text-foreground-light">&euro;{restAmount}</span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1264,6 +1471,11 @@ function BoekenContent() {
 
       {/* ===== MOBILE FIXED BOTTOM NAV ===== */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100 safe-area-bottom-nav">
+        {availabilityError && (
+          <div className="bg-red-50 border-b border-red-200 text-red-700 px-4 py-2 text-xs font-medium">
+            {availabilityError}
+          </div>
+        )}
         <div className="px-4 py-3 flex items-center justify-between gap-3">
           {/* Left: Price summary or back button */}
           <div className="flex items-center gap-3 min-w-0 flex-shrink">

@@ -22,3 +22,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     animation: none !important;
   }
 }
+
+/* Print styles for borg report */
+@media print {
+  body { background: white !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}

@@ -47,18 +47,23 @@ export async function POST(
 
     await customerAgreeBorgChecklist(token, agreed, notes);
 
-    // Auto-create BORG_RETOUR payment when customer agrees (no damage)
+    // Auto-create BORG_RETOUR payment when customer agrees
     if (agreed && checklist.booking_id) {
       try {
         const booking = await getBookingById(checklist.booking_id);
         if (booking && booking.borg_amount) {
-          await createPayment({
-            bookingId: booking.id,
-            type: 'BORG_RETOUR',
-            amount: parseFloat(booking.borg_amount),
-            status: 'BETAALD',
-            method: 'bank',
-          });
+          const borgAmount = parseFloat(booking.borg_amount);
+          const totalDeduction = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
+          const refundAmount = Math.max(0, borgAmount - totalDeduction);
+          if (refundAmount > 0) {
+            await createPayment({
+              bookingId: booking.id,
+              type: 'BORG_RETOUR',
+              amount: refundAmount,
+              status: 'BETAALD',
+              method: 'bank',
+            });
+          }
         }
       } catch (refundErr) {
         console.error('Auto borg refund creation failed (non-fatal):', refundErr);

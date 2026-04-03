@@ -276,9 +276,12 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   paymentDeadline: string;
   immediatePayment: boolean;
   spotNumber?: string;
+  paymentUrl?: string;
+  borgAmount?: number;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
+  const deposit25 = Math.round(data.totalPrice * 0.25);
   const deadlineLabel = data.immediatePayment
     ? t.bookingDirectPayment
     : formatDateShort(data.paymentDeadline, locale);
@@ -323,7 +326,15 @@ export async function sendBookingConfirmationEmail(to: string, data: {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
-                  <td style="color:#0F172A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${deadlineLabel}</td>
+                  <td style="color:#0F172A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(deposit25)}</td>
+                </tr>
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingRestOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.totalPrice - deposit25)}</td>
+                </tr>
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingBorgOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">€${data.borgAmount || 400}</td>
                 </tr>
               </table>
             </div>
@@ -340,6 +351,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
         </p>
       `, true)}
 
+      ${data.paymentUrl ? button(t.bookingPayNow(formatPrice(deposit25)), data.paymentUrl) : ''}
       ${button(t.bookingButton, `${SITE_URL}/mijn-account`)}
     `, `${t.bookingSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
   });
@@ -362,9 +374,11 @@ export async function sendManualBookingEmail(to: string, data: {
   paymentUrl: string;
   isNewAccount: boolean;
   password?: string;
+  borgAmount?: number;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
+  const deposit25 = Math.round(data.totalPrice * 0.25);
 
   const accountSection = data.isNewAccount && data.password ? `
     ${divider()}
@@ -428,7 +442,15 @@ export async function sendManualBookingEmail(to: string, data: {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingPayBefore}</td>
-                  <td style="color:#0F172A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${data.paymentDeadline}</td>
+                  <td style="color:#0F172A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(deposit25)}</td>
+                </tr>
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingRestOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.totalPrice - deposit25)}</td>
+                </tr>
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.bookingBorgOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">€${data.borgAmount || 400}</td>
                 </tr>
               </table>
             </div>
@@ -442,7 +464,7 @@ export async function sendManualBookingEmail(to: string, data: {
         </p>
       `, true)}
 
-      ${button(t.manualPayButton(formatPrice(data.totalPrice)), data.paymentUrl)}
+      ${button(t.manualPayButton(formatPrice(deposit25)), data.paymentUrl)}
 
       <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">${t.manualPayLater}</p>
 
@@ -457,11 +479,47 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
   type: string;
   amount: number;
   paidAt: string;
+  totalPrice?: number;
+  remainingAmount?: number;
+  borgAmount?: number;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const typeLabel = getPaymentTypeLabel(data.type, locale);
   const firstName = data.guestName.split(' ')[0];
   const dateStr = formatDateShort(data.paidAt, locale);
+
+  const breakdownSection = data.totalPrice ? `
+      ${divider()}
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        <tr>
+          <td style="color:#0F172A;font-size:16px;font-weight:700;padding:8px 0;">${t.paymentBookingOverview}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0 0;">
+            <div style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:14px 18px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.paymentTotalPrice}</td>
+                  <td style="color:#0F172A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.totalPrice)}</td>
+                </tr>
+                <tr>
+                  <td style="color:#16A34A;font-size:13px;font-weight:600;padding:4px 0;">✓ ${t.paymentDepositPaid}</td>
+                  <td style="color:#16A34A;font-weight:700;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.amount)}</td>
+                </tr>
+                ${data.remainingAmount ? `<tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.paymentRestOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.remainingAmount)}</td>
+                </tr>` : ''}
+                ${data.borgAmount ? `<tr>
+                  <td style="color:#64748B;font-size:13px;padding:4px 0;">${t.paymentBorgOnCamping}</td>
+                  <td style="color:#64748B;font-weight:600;font-size:14px;text-align:right;padding:4px 0;">${formatPrice(data.borgAmount)}</td>
+                </tr>` : ''}
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+  ` : '';
 
   return sendEmail({
     to,
@@ -483,6 +541,8 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
         ${infoRow(t.paymentType, typeLabel)}
         ${infoRow(t.paymentAmount, formatPrice(data.amount))}
       </table>
+
+      ${breakdownSection}
 
       ${button(t.paymentButton, `${SITE_URL}/mijn-account`)}
     `, `${t.paymentSubject(data.reference)} — ${formatPrice(data.amount)}`, locale),

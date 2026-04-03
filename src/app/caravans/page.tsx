@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { Users, Filter, X, Search, Euro, ArrowUpDown, Check, SlidersHorizontal, ChevronDown, Tent, CheckCircle, XCircle } from 'lucide-react';
-import { caravans as staticCaravans, CaravanType } from '@/data/caravans';
+import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
 
@@ -12,7 +12,6 @@ type SortOption = 'default' | 'price-asc' | 'price-desc' | 'persons-desc';
 
 export default function CaravansPage() {
   const { t } = useLanguage();
-  const [typeFilter, setTypeFilter] = useState<CaravanType | 'ALL'>('ALL');
   const [personFilter, setPersonFilter] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [maxPrice, setMaxPrice] = useState<number>(0);
@@ -53,7 +52,6 @@ export default function CaravansPage() {
 
   const filtered = useMemo(() => {
     let result = caravans.filter(c => {
-      if (typeFilter !== 'ALL' && c.type !== typeFilter) return false;
       if (personFilter > 0 && c.maxPersons < personFilter) return false;
       if (maxPrice > 0 && c.pricePerWeek > maxPrice) return false;
       if (manufacturerFilter !== 'ALL' && c.manufacturer !== manufacturerFilter) return false;
@@ -70,9 +68,9 @@ export default function CaravansPage() {
       case 'persons-desc': result.sort((a, b) => b.maxPersons - a.maxPersons); break;
     }
     return result;
-  }, [typeFilter, personFilter, searchQuery, maxPrice, sortBy, manufacturerFilter, amenityFilters, caravans]);
+  }, [personFilter, searchQuery, maxPrice, sortBy, manufacturerFilter, amenityFilters, caravans]);
 
-  const activeFilterCount = (typeFilter !== 'ALL' ? 1 : 0) + (personFilter > 0 ? 1 : 0) + (maxPrice > 0 ? 1 : 0) + (searchQuery.trim() ? 1 : 0) + (manufacturerFilter !== 'ALL' ? 1 : 0) + amenityFilters.length;
+  const activeFilterCount = (personFilter > 0 ? 1 : 0) + (maxPrice > 0 ? 1 : 0) + (searchQuery.trim() ? 1 : 0) + (manufacturerFilter !== 'ALL' ? 1 : 0) + amenityFilters.length;
 
   const toggleAmenity = (amenity: string) => {
     setAmenityFilters(prev =>
@@ -81,7 +79,6 @@ export default function CaravansPage() {
   };
 
   const resetFilters = () => {
-    setTypeFilter('ALL');
     setPersonFilter(0);
     setMaxPrice(0);
     setSearchQuery('');
@@ -105,25 +102,6 @@ export default function CaravansPage() {
             placeholder={t('caravans.searchPlaceholder')}
             className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 outline-none bg-surface border border-border"
           />
-        </div>
-      </div>
-
-      {/* Type */}
-      <div>
-        <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-2 block">{t('caravans.filterType')}</label>
-        <div className="flex flex-wrap gap-2">
-          {(['ALL', 'FAMILIE', 'COMPACT'] as const).map(type => (
-            <button
-              key={type}
-              onClick={() => setTypeFilter(type)}
-              aria-pressed={typeFilter === type}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                typeFilter === type ? 'bg-foreground text-white' : 'bg-surface text-foreground-light hover:bg-surface-alt border border-border'
-              }`}
-            >
-              {type === 'ALL' ? t('caravans.filterAll') : type === 'FAMILIE' ? t('caravans.filterFamily') : t('caravans.filterCompact')}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -235,6 +213,10 @@ export default function CaravansPage() {
       <section className="pt-8 sm:pt-10 pb-8 sm:pb-12 bg-background min-h-[80vh]">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight mb-3">{t('caravans.heroTitle')}</h1>
+          <div className="flex items-start gap-3 mb-4 text-xs sm:text-sm text-blue-800 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span className="leading-relaxed">{t('termsPage.caravanDisclaimer')}</span>
+          </div>
           <div className="flex items-center gap-2 mb-6 text-xs sm:text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             <Tent size={14} className="shrink-0" />
             <span>{t('caravans.campingFirstNote')}</span>
@@ -333,7 +315,7 @@ export default function CaravansPage() {
                           return (
                             <Image
                               src={caravan.photos[0]}
-                              alt={`${caravan.name} — ${caravan.type} voor ${caravan.maxPersons} personen`}
+                              alt={`${caravan.name} — voor ${caravan.maxPersons} personen`}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -352,7 +334,7 @@ export default function CaravansPage() {
                           )}
                         </div>
                         <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                          <span className="text-sm font-bold text-foreground">&euro;{caravan.pricePerWeek}<span className="text-muted font-normal">/week</span></span>
+                          <span className="text-sm font-bold text-foreground">{t('caravans.fromPerWeek', { price: '550' })}</span>
                         </div>
                       </div>
                       <div className="p-4 sm:p-5 flex flex-col flex-1">

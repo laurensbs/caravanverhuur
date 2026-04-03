@@ -416,8 +416,8 @@ function smartMatch(
     if (ctx.lastTopic === 'pricing') {
       return {
         answer: isNl
-          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Betaling**: het volledige huurbedrag betaal je uiterlijk **30 dagen** voor aankomst\n📅 **Reserveer nu, betaal later** — pas 30 dagen voor vertrek\n🔒 **Borg**: €250-€500, retour na inspectie\n\nAlles gaat via **iDEAL/Wero** — veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
-          : `More payment info:\n\n💰 **Payment**: full amount due **30 days** before arrival\n📅 **Reserve now, pay later** — only 30 days before departure\n🔒 **Security**: €250-€500, refunded after inspection`,
+          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Aanbetaling**: 25% bij boeking via iDEAL/Wero\n🔒 **Borg**: €400 na goedkeuring op de camping\n💵 **Restbetaling**: direct na ontvangst borg (contant/overboeking)\n\nAlles gaat veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
+          : `More payment info:\n\n💰 **Down payment**: 25% at booking via iDEAL/Wero\n🔒 **Security deposit**: €400 after approval at campsite\n💵 **Remaining**: immediately after deposit receipt (cash/bank transfer)`,
         followUp: isNl ? ['Hoe boek ik?', 'Kan ik annuleren?'] : ['How to book?', 'Can I cancel?'],
         confidence: 0.9,
         topic: 'payment-details',
@@ -564,8 +564,8 @@ function smartMatch(
   if (caravanName) {
     const caravan = caravans.find(c => c.name === caravanName)!;
     const caravanAnswers = isNl ? [
-      `De **${caravan.name}** is een ${caravan.type === 'FAMILIE' ? 'ruime familie' : 'compacte'}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n💰 €${caravan.pricePerDay}/dag · €${caravan.pricePerWeek}/week\n🔒 Borg: €${caravan.deposit}\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
-      `Goede keuze${name}! De **${caravan.name}** is ${caravan.type === 'FAMILIE' ? 'onze ruimste familiecaravan' : 'een heerlijk compacte caravan'}! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n💰 Vanaf **€${caravan.pricePerDay}/dag** of **€${caravan.pricePerWeek}/week**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!' : ''}\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
+      `De **${caravan.name}** is een ${caravan.maxPersons >= 5 ? 'ruime ' : ''}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n💰 €${caravan.pricePerDay}/dag · €${caravan.pricePerWeek}/week\n🔒 Borg: €${caravan.deposit}\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
+      `Goede keuze${name}! De **${caravan.name}** is een van onze fijne caravans! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n💰 Vanaf **€${caravan.pricePerDay}/dag** of **€${caravan.pricePerWeek}/week**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!' : ''}\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
     ] : isEs ? [
       `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n💰 €${caravan.pricePerDay}/día · €${caravan.pricePerWeek}/semana\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`,
     ] : [
@@ -581,21 +581,14 @@ function smartMatch(
 
   // ===== PRICING =====
   if (/prijs|kosten|kost|tarief|goedkoop|duur|euro|bedrag|per dag|per week|price|cost|cheap|rate|precio|cuesta|tarifa|hoeveel|budget/.test(lower)) {
-    const cheapest = caravans.reduce((a, b) => a.pricePerWeek < b.pricePerWeek ? a : b);
     const pricingAnswers = isNl ? [
-      `Onze prijzen${name}:\n\n${caravans.map(c => {
-        const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' ❄️' : '';
-        return `🚐 **${c.name}**${airco}\n   €${c.pricePerDay}/dag · €${c.pricePerWeek}/week · max ${c.maxPersons} pers`;
-      }).join('\n\n')}\n\n💡 Tip: de **${cheapest.name}** is onze voordeligste optie!\n\nBij een weekboeking profiteer je van extra korting. Wil je meer weten over de betaling?`,
-      `Dit zijn onze tarieven${name}! 💰\n\n${caravans.map(c => {
-        const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' (met airco!)' : '';
-        return `🚐 **${c.name}**${airco} — €${c.pricePerDay}/dag of €${c.pricePerWeek}/week`;
-      }).join('\n')}\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\n\nDe prijzen zijn inclusief inventaris. Enige extra kosten: campingplaats (apart bij de camping).\n\nZal ik je helpen kiezen?`,
-      `Goed dat je het vraagt${name}! Hier zijn de prijzen:\n\n${caravans.map(c => `💶 **${c.name}** → €${c.pricePerDay}/dag · €${c.pricePerWeek}/week (max ${c.maxPersons} pers)`).join('\n')}\n\n🏷️ Tip: de **${cheapest.name}** start al vanaf €${cheapest.pricePerDay}/dag — ideaal voor budget-bewuste reizigers!\n\n👉 **[Bekijk alle caravans](/caravans)**`,
+      `Onze seizoensprijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\nWil je meer weten over de betaling?`,
+      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\n🔑 Geldt voor **alle ${caravans.length} caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nZal ik je helpen kiezen?`,
+      `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
     ] : isEs ? [
-      `Nuestros precios:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/día · €${c.pricePerWeek}/semana`).join('\n')}`,
+      `Nuestros precios por temporada (todas las caravanas):\n\n📅 Pretemporada (hasta 30 junio): **€550/semana**\n☀️ Temporada alta (1-31 julio): **€650/semana**\n🍂 Postemporada (desde 1 agosto): **€550/semana**`,
     ] : [
-      `Our prices:\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/day · €${c.pricePerWeek}/week`).join('\n')}`,
+      `Our seasonal prices (all caravans):\n\n📅 Pre-season (until June 30): **€550/week**\n☀️ High season (July 1-31): **€650/week**\n🍂 Post-season (from Aug 1): **€550/week**`,
     ];
     return {
       answer: pick(pricingAnswers, asked),
@@ -609,8 +602,8 @@ function smartMatch(
   if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren|huren|vastleggen|inschrijv|aanmelden|vastgelegd|kan ik.*huren|ik wil.*huren|wil graag|graag boeken|graag huren|boeking maken|hoe werkt.*boek|stappen|hoe gaat.*boek|hoe kan ik|boeking|booking|how does.*book|i want.*book|i.d like|make.*reservation/.test(lower)) {
     const bookingAnswers = isNl ? [
       `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Kies een caravan\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nJe kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
-      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en reserveert. Het volledige bedrag betaal je pas **30 dagen voor vertrek** — dus je kunt nu reserveren zonder direct te betalen!\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
-      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 30 dagen voor vertrek\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
+      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en reserveert met een **aanbetaling van 25%** via iDEAL/Wero.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
+      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 25% aanbetaling bij boeking\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
     ] : isEs ? [
       `¡Reservar es muy fácil! 🎉\n\n¡Puedo ayudarte directamente aquí en el chat!\n\n👉 Haz clic en **"¡Sí, ayúdame!"** abajo.`,
     ] : [
@@ -639,13 +632,24 @@ function smartMatch(
     };
   }
 
+  // ===== EXTRAS / ADD-ONS =====
+  if (/extra|add-?on|bedlinnen|bed ?linen|koelkast|fridge|fiets|bike|mountainbike|bicicleta|nevera|ropa de cama|huren|verhuur.*fiets/.test(lower)) {
+    return {
+      answer: isNl
+        ? `Bij het boeken kun je deze extra's toevoegen${name}! ✨\n\n🛏️ **Bedlinnen** — €70/week (4 complete sets, 140x200cm)\n🧊 **Grote koelkast** — €40/week\n🚲 **Fietsen** — €50/fiets/week (max 4, +€200 borg per fiets)\n🚵 **Mountainbikes** — €50/bike/week (max 4, +€200 borg per bike)\n\n⚠️ Geen fietspompen inbegrepen.\n\nDe extra's kun je toevoegen tijdens het boekingsproces!\n\n👉 **[Direct boeken](/boeken)**`
+        : `Available extras:\n\n🛏️ **Bed linen** — €70/week (4 sets)\n🧊 **Large fridge** — €40/week\n🚲 **Bicycles** — €50/bike/week (+€200 deposit each)\n🚵 **Mountain bikes** — €50/bike/week (+€200 deposit each)\n\n👉 **[Book now](/boeken)**`,
+      followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Welke caravans?'] : ['How to book?', 'Deposit info?'],
+      confidence: 0.85,
+      topic: 'extras',
+    };
+  }
+
   // ===== DEPOSIT/BORG =====
   if (/borg|waarborg|deposit|garantia|fianza|waarborgsom|borgsom|borggeld|borg terug|borg betalen|security deposit|garantie|cautie|schade|damage|kapot|beschadigd|iets stuk/.test(lower)) {
     const depositAnswers = isNl ? [
-      `De borg werkt zo${name}:\n\n🔒 Bij aankomst wordt **€250 – €500** gereserveerd via iDEAL/Wero (afhankelijk van de caravan)\n✅ Na inspectie bij vertrek zonder schade: terugstorting binnen **7 dagen**\n\nPer caravan:\n${caravans.map(c => `• **${c.name}** → €${c.deposit} borg`).join('\n')}\n\nDe borg is geen extra kosten, maar een waarborg die je gewoon terugkrijgt!\n\n❓ **Bij schade?**\nKleine slijtage is normaal en wordt niet verrekend. Bij echte schade wordt het schadebedrag van de borg afgetrokken en de rest teruggestort.`,
-      `Goede vraag${name}! De borg is een **tijdelijke reservering** — je krijgt het gewoon terug! 🔄\n\n${caravans.map(c => `🚐 **${c.name}** → €${c.deposit}`).join('\n')}\n\n✅ Je krijgt het binnen **7 werkdagen** terug na de inspectie.\n⚡ Betaling via **iDEAL/Wero** — snel en veilig.\n\n💡 **Tips om je borg 100% terug te krijgen:**\n🧹 Caravan bezemschoon achterlaten\n🗑️ Vuilnis meenemen naar container\n🧊 Koelkast leegmaken\n🍽️ Afwas doen\n\nBij overmatige schade of vermissing van inventaris kan een deel worden ingehouden, maar dat komt zelden voor!`,
-      `De borg regeling in het kort${name}:\n\n💰 **Bedrag**: €250-€500 (afhankelijk van caravan)\n💳 **Betaling**: via iDEAL/Wero bij aankomst op de camping\n🔄 **Terugbetaling**: binnen 7 werkdagen na inspectie\n\n✅ **Geen schade** → volledige borg terug\n⚠️ **Kleine schade** → schadebedrag wordt ingehouden, rest terug\n❌ **Grote schade** → borg (deels) ingehouden + eventueel extra kosten\n\nMaak je niet te druk — normale slijtage telt niet! De meeste gasten krijgen hun borg **volledig** terug. 😊`,
-    ] : ['A deposit of **€250 – €500** is reserved upon arrival. Refunded within **7 days** if no damage.'];
+      `De borg werkt zo${name}:\n\n🔒 De borg is **€400** (standaard voor alle caravans).\n💳 Betaling na goedkeuring op de camping (contant of overboeking).\n🔄 Terugstorting binnen **7 werkdagen** na inspectie.\n\n🧹 **Schoonmaak**: bij onvoldoende schoonmaak wordt **€100** ingehouden.\n🔧 **Schade**: wordt apart beoordeeld en verrekend.\n🚲 **Fietsen/mountainbikes**: +€200 extra borg per fiets.\n\nDe meeste gasten krijgen hun borg volledig terug! 😊`,
+      `Goede vraag${name}! De borg regeling:\n\n💰 **€400 borg** — standaard voor alle caravans\n🚲 **+€200 per fiets/mountainbike** (als je fietsen huurt)\n\n📍 Betaling: na goedkeuring op de camping (contant/overboeking)\n✅ Terugbetaling: binnen **7 werkdagen** na inspectie\n\n🧹 **€100 inhouding** bij onvoldoende schoonmaak\n🔧 Schade wordt apart beoordeeld\n\n💡 **Tips voor 100% borg terug:**\n🧹 Caravan bezemschoon achterlaten\n🗑️ Vuilnis meenemen\n🧊 Koelkast leegmaken\n🍽️ Afwas doen`,
+    ] : ['A deposit of **€400** is collected at the campsite. **€100 deduction** for poor cleaning, damage assessed separately. **+€200 per bike** if rented. Refunded within **7 days** after inspection.'];
     return {
       answer: pick(depositAnswers, asked),
       followUp: isNl ? ['Kan ik annuleren?', 'Wat zit erin?', 'Hoe boek ik?'] : ['Can I cancel?', "What's included?"],
@@ -657,9 +661,9 @@ function smartMatch(
   // ===== PAYMENT =====
   if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen|hoe betaal|wanneer betalen|hoeveel betalen|overmaken|overboeking|factuur|rekening|contant|cash|bancontact|visa|mastercard|tikkie/.test(lower)) {
     const paymentAnswers = isNl ? [
-      `Alle betalingen verlopen veilig via **iDEAL/Wero**${name}:\n\n1️⃣ **Huurbedrag**: het volledige bedrag betaal je uiterlijk **30 dagen** voor aankomst\n2️⃣ **Borg**: €250-€500, reservering bij aankomst op de camping\n\n📅 Reserveer nu, betaal pas later!\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling ontvang je direct een bevestigingsmail met alle details.`,
-      `We werken met **iDEAL en Wero**${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: Reserveer je caravan en camping\n💳 **Stap 2**: Betaal het volledige huurbedrag uiterlijk **30 dagen** voor vertrek\n🔒 **Stap 3**: Borg (€250-€500) bij aankomst\n\nGeen creditcard nodig! Na betaling krijg je een bevestiging per e-mail.`,
-    ] : ['Payments via **iDEAL/Wero**:\n\n1. **Rental**: full amount due **30 days** before arrival\n2. **Security deposit**: €250-€500 reserved on arrival'];
+      `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Aanbetaling (25%)**: bij boeking via iDEAL/Wero\n2️⃣ **Borg (€400)**: na goedkeuring op de camping bij de caravanplaats\n3️⃣ **Restbetaling (75%)**: direct na ontvangst van de borg (contant of overboeking)\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling van de aanbetaling ontvang je direct een bevestigingsmail met alle details.`,
+      `We werken met **iDEAL en Wero** voor de aanbetaling${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: Reserveer je caravan en camping\n💳 **Stap 2**: Betaal 25% aanbetaling bij boeking via iDEAL/Wero\n🔒 **Stap 3**: Borg (€400) na goedkeuring op de camping\n💰 **Stap 4**: Restbetaling direct na borg (contant of overboeking)\n\nGeen creditcard nodig! Na betaling krijg je een bevestiging per e-mail.`,
+    ] : ['Payments:\n\n1. **Down payment (25%)**: at booking via iDEAL/Wero\n2. **Security deposit (€400)**: after approval at the campsite\n3. **Remaining (75%)**: immediately after deposit receipt (cash or bank transfer)'];
     return {
       answer: pick(paymentAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Kan ik annuleren?'] : ['How to book?', 'Deposit info?'],
@@ -691,11 +695,11 @@ function smartMatch(
         if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
         if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
         if (c.amenities.some(a => a.toLowerCase().includes('voortent'))) highlights.push('⛺ Voortent');
-        return `🚐 **${c.name}** (${c.type === 'FAMILIE' ? 'Familie' : 'Compact'})\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week\n   ${highlights.join(' · ')}`;
+        return `🚐 **${c.name}** (${c.manufacturer})\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week\n   ${highlights.join(' · ')}`;
       }).join('\n\n')}\n\n👉 [Bekijk alle caravans](/caravans)\n\nWil je meer weten over een specifieke caravan?`,
       `Hier is ons aanbod${name}! 🚐\n\n${caravans.map(c => {
-        const typeLabel = c.type === 'FAMILIE' ? '👨‍👩‍👧‍👦 Familie' : '💑 Compact';
-        return `**${c.name}** — ${typeLabel}\n   ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 3).join(', ')}`;
+        
+        return `**${c.name}** — ${c.manufacturer}\n   ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 3).join(', ')}`;
       }).join('\n\n')}\n\nElke caravan is **compleet uitgerust** met beddengoed, servies, kookgerei en meer!\n\n👉 [Alle details & foto's](/caravans)`,
     ] : isEs ? [`Tenemos **${caravans.length} caravanas**:\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers · €${c.pricePerDay}/día`).join('\n\n')}\n\n👉 [Ver caravanas](/caravans)`]
     : [`We have **${caravans.length} caravans**:\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people · €${c.pricePerDay}/day`).join('\n\n')}\n\n👉 [View caravans](/caravans)`];
@@ -743,9 +747,9 @@ function smartMatch(
   // ===== CHECK-IN/CHECK-OUT =====
   if (/klaar|opbouw|plaatsen|inchecken|check.?in|check.?out|uitchecken|aankomst|arrival|ready|setup|hoe laat|wat tijd|ophalen|afhalen/.test(lower)) {
     const checkinAnswers = isNl ? [
-      `Het mooie van ons concept${name}: de caravan staat **al op de camping**! 🎉\n\nSchoongemaakt, ingericht en klaar om in te checken.\n\n⏰ **Check-in**: vanaf **15:00 uur**\n⏰ **Check-out**: voor **11:00 uur**\n\nAfwijkende check-in/out tijden zijn in overleg vaak mogelijk. Heb je een vroege of late aankomst?`,
-      `Geen gedoe met opbouwen${name}! De caravan is **startklaar** als je aankomt. 🏕️\n\n📍 Je rijdt naar de camping, meldt je aan bij de receptie, en loopt naar je caravan.\n⏰ Check-in vanaf **15:00**, check-out vóór **11:00**.\n\nAlles is schoongemaakt, opgemaakt en voorzien van inventaris. Uitstappen en genieten!\n\n💡 Vroege aankomst of laat vertrek? Overleg is vaak mogelijk!`,
-    ] : ['The caravan is **already on the camping**, cleaned and set up! 🎉\n\n⏰ **Check-in** from 15:00\n⏰ **Check-out** before 11:00'];
+      `Het mooie van ons concept${name}: de caravan staat **al op de camping**! 🎉\n\nSchoongemaakt, ingericht en klaar om in te checken.\n\n⏰ **Check-in**: vanaf **15:00 uur**\n⏰ **Check-out**: vóór **10:00 uur**\n\nAfwijkende check-in/out tijden zijn in overleg vaak mogelijk. Heb je een vroege of late aankomst?`,
+      `Geen gedoe met opbouwen${name}! De caravan is **startklaar** als je aankomt. 🏕️\n\n📍 Je rijdt naar de camping, meldt je aan bij de receptie, en loopt naar je caravan.\n⏰ Check-in vanaf **15:00**, check-out vóór **10:00**.\n\nAlles is schoongemaakt, opgemaakt en voorzien van inventaris. Uitstappen en genieten!\n\n💡 Vroege aankomst of laat vertrek? Overleg is vaak mogelijk!`,
+    ] : ['The caravan is **already on the camping**, cleaned and set up! 🎉\n\n⏰ **Check-in** from 15:00\n⏰ **Check-out** before 10:00'];
     return {
       answer: pick(checkinAnswers, asked),
       followUp: isNl ? ['Wat zit erin?', 'Hoe werkt vertrek?', 'Welke campings?'] : ["What's included?", 'Which campings?'],
@@ -814,7 +818,7 @@ function smartMatch(
   // ===== VACATION / HOLIDAY =====
   if (/vakantie|holiday|vacation|op reis|reizen|travel|viaje|vacaciones|weekendje|uitje/.test(lower)) {
     const vacationAnswers = isNl ? [
-      `Droom je van een heerlijke vakantie aan de Costa Brava${name}? ☀️🏖️\n\nWij maken het je makkelijk:\n✅ Caravan staat al klaar op de camping\n✅ Volledig ingericht met inventaris\n✅ 30+ campings om uit te kiezen\n✅ Vanaf €${Math.min(...caravans.map(c => c.pricePerWeek))}/week\n\nVertel me meer! Hoeveel personen zijn jullie, welke periode, en heb je een voorkeur voor een locatie?`,
+      `Droom je van een heerlijke vakantie aan de Costa Brava${name}? ☀️🏖️\n\nWij maken het je makkelijk:\n✅ Caravan staat al klaar op de camping\n✅ Volledig ingericht met inventaris\n✅ 30+ campings om uit te kiezen\n✅ Vanaf €550/week (hoogseizoen €650/week)\n\nVertel me meer! Hoeveel personen zijn jullie, welke periode, en heb je een voorkeur voor een locatie?`,
       `Een caravanvakantie aan de Costa Brava is onvergetelijk${name}! 🌅\n\n🏖️ Prachtige stranden en verborgen baaien\n🍽️ Heerlijk eten en lokale wijnen\n☀️ 300 dagen zon per jaar\n🚐 Caravan staat klaar — gewoon instappen!\n\nVan gezinnen tot koppels, van rustzoekers tot avonturiers — er is voor ieder wat.\n\nVertel: met hoeveel personen ga je? En heb je al een voorkeur voor een plek?`,
     ] : ['Dreaming of a Costa Brava holiday? ☀️🏖️\n\nTell me more: how many people, when, any preference?'];
     return {
@@ -842,9 +846,9 @@ function smartMatch(
   // ===== COUPLE / ROMANTIC =====
   if (/koppel|stelletje|samen|romantisch|twee personen|couple|romantic|pareja|romantico/.test(lower)) {
     const coupleAnswers = isNl ? [
-      `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze compacte caravans zijn perfect voor koppels:\n\n🚐 **Knaus 1997** — €329/week, gezellige rondzit\n🚐 **Adria 430 Unica** — €329/week, compact en knus\n\nTips voor koppels:\n🌅 Begur & Pals — prachtige dorpjes en verborgen stranden\n🍷 L'Escala — Griekse ruines en heerlijke vis\n🏖️ Cadaques — kunstenaarsdorp met charme\n\nZal ik een optie voor jullie samenstellen?`,
-      `Costa Brava is dé plek voor een romantische vakantie${name}! 💕\n\nVoor koppels raden we aan:\n\n🚐 **Compacte caravans** — knus, betaalbaar, alles wat je nodig hebt\n📍 **Begur** — verborgen baaien, charmante straatjes\n📍 **Cadaqués** — artistiek, romantisch, prachtige zonsondergangen\n📍 **Pals** — middeleeuws dorp, heerlijke rijstgerechten\n\nVanaf slechts **€${Math.min(...caravans.map(c => c.pricePerWeek))}/week** — inclusief alles!\n\nWil je dat ik een romantisch pakketje voor jullie samenstel?`,
-    ] : ['Our compact caravans are perfect for couples! Starting from €329/week.'];
+      `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze compacte caravans zijn perfect voor koppels:\n\n🚐 **Knaus 1997** — vanaf €550/week, gezellige rondzit\n🚐 **Adria 430 Unica** — vanaf €550/week, compact en knus\n\nTips voor koppels:\n🌅 Begur & Pals — prachtige dorpjes en verborgen stranden\n🍷 L'Escala — Griekse ruines en heerlijke vis\n🏖️ Cadaques — kunstenaarsdorp met charme\n\nZal ik een optie voor jullie samenstellen?`,
+      `Costa Brava is dé plek voor een romantische vakantie${name}! 💕\n\nVoor koppels raden we aan:\n\n🚐 **Compacte caravans** — knus, betaalbaar, alles wat je nodig hebt\n📍 **Begur** — verborgen baaien, charmante straatjes\n📍 **Cadaqués** — artistiek, romantisch, prachtige zonsondergangen\n📍 **Pals** — middeleeuws dorp, heerlijke rijstgerechten\n\nVanaf slechts **€550/week** — inclusief alles!\n\nWil je dat ik een romantisch pakketje voor jullie samenstel?`,
+    ] : ['Our compact caravans are perfect for couples! Starting from €550/week.'];
     return {
       answer: pick(coupleAnswers, asked),
       followUp: isNl ? ['Ja, stel iets samen!', 'Wat kost het?', 'Welke campings?'] : ['Yes!', 'Cost?'],
@@ -899,7 +903,7 @@ function smartMatch(
   if (/veilig|verzekering|insurance|safe|diefstal|theft|segur/.test(lower)) {
     return {
       answer: isNl
-        ? `Veiligheid is belangrijk${name}! 🔒\n\n✅ Campings hebben 24/7 bewaking en receptie\n✅ Je bezittingen zijn veilig in de afgesloten caravan\n✅ Onze caravans worden elk seizoen grondig gecontroleerd\n\n💡 We raden een **reis- en annuleringsverzekering** aan voor extra zekerheid.\n\nDe borgregeling:\n🔒 €250-€500 via iDEAL/Wero bij aankomst\n✅ Retour binnen 7 dagen bij geen schade`
+        ? `Veiligheid is belangrijk${name}! 🔒\n\n✅ Campings hebben 24/7 bewaking en receptie\n✅ Je bezittingen zijn veilig in de afgesloten caravan\n✅ Onze caravans worden elk seizoen grondig gecontroleerd\n\n💡 We raden een **reis- en annuleringsverzekering** aan voor extra zekerheid.\n\nDe borgregeling:\n🔒 €400 borg na goedkeuring op de camping (contant/overboeking)\n✅ Retour binnen 7 dagen bij geen schade`
         : 'Safety is important! Campings have 24/7 security. We recommend travel insurance.',
       followUp: isNl ? ['Hoe werkt de borg?', 'Kan ik annuleren?'] : ['Deposit info?', 'Cancel?'],
       confidence: 0.8,
@@ -911,7 +915,7 @@ function smartMatch(
   if (/voorwaarden|terms|regels|rules|conditi|terms and conditions|terminos/.test(lower)) {
     return {
       answer: isNl
-        ? `Je kunt al onze voorwaarden vinden op onze website${name}:\n\n📋 **[Algemene Voorwaarden](/voorwaarden)**\n🔒 **[Privacybeleid](/privacy)**\n\nBelangrijkste punten:\n• Volledige betaling uiterlijk 30 dagen voor aankomst\n• Reserveer nu, betaal later\n• Gratis annuleren tot 30 dagen voor aankomst\n• Borg: €250-€500 (retour na inspectie)\n\nHeb je specifieke vragen over de voorwaarden?`
+        ? `Je kunt al onze voorwaarden vinden op onze website${name}:\n\n📋 **[Algemene Voorwaarden](/voorwaarden)**\n🔒 **[Privacybeleid](/privacy)**\n\nBelangrijkste punten:\n• 25% aanbetaling bij boeking via iDEAL/Wero\n• Borg €400 na goedkeuring op de camping\n• Restbetaling direct na borg (contant/overboeking)\n• Gratis annuleren zolang niet betaald\n\nHeb je specifieke vragen over de voorwaarden?`
         : 'Find our terms at [Terms & Conditions](/voorwaarden) and [Privacy Policy](/privacy).',
       followUp: isNl ? ['Kan ik annuleren?', 'Hoe werkt de borg?', 'Hoe boek ik?'] : ['Cancel?', 'Deposit?'],
       confidence: 0.8,
@@ -949,8 +953,8 @@ function smartMatch(
   // ===== RECOMMENDATIONS =====
   if (/tip|aanrader|recommend|advies|advice|welke.*beste|which.*best|favoriet|anraden|suggestie/.test(lower)) {
     const recoAnswers = isNl ? [
-      `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n🚐 Hobby Prestige 650 (5 pers) + Cypsela Resort (Pals)\n\n**Voor koppels:**\n🚐 Knaus 1997 (4 pers, gezellig) + Camping Begur\n\n**Met airco (aanrader bij zomerhitte!):**\n🚐 HomeCar 450 Racer + La Ballena Alegre\n\n**Budget-optie:**\n🚐 Knaus 1997 of Adria 430 — vanaf €329/week!\n\nWil je dat ik iets specifieks voor je uitzoek?`,
-      `Graag${name}! Hier mijn persoonlijke aanbevelingen: ✨\n\n🏆 **Beste camping** → Cypsela Resort (Pals) — luxe, direct aan het strand\n🚐 **Beste familiecaravan** → Hobby Prestige 650 — ruimst, comfortabel\n❄️ **Beste voor de zomer** → HomeCar 450 Racer — mét airco!\n💰 **Beste budget-optie** → Knaus 1997 — vanaf €329/week\n🌅 **Mooiste bestemming** → Begur — verborgen baaien + charme\n🤿 **Meeste activiteiten** → Estartit — duiken bij Medes Eilanden\n\nVertel me wat jij belangrijk vindt, en ik geef persoonlijk advies!`,
+      `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n🚐 Hobby Prestige 650 (5 pers) + Cypsela Resort (Pals)\n\n**Voor koppels:**\n🚐 Knaus 1997 (4 pers, gezellig) + Camping Begur\n\n**Met airco (aanrader bij zomerhitte!):**\n🚐 HomeCar 450 Racer + La Ballena Alegre\n\nAlle caravans vanaf **€550/week** (hoogseizoen €650/week).\n\nWil je dat ik iets specifieks voor je uitzoek?`,
+      `Graag${name}! Hier mijn persoonlijke aanbevelingen: ✨\n\n🏆 **Beste camping** → Cypsela Resort (Pals) — luxe, direct aan het strand\n🚐 **Beste familiecaravan** → Hobby Prestige 650 — ruimst, comfortabel\n❄️ **Beste voor de zomer** → HomeCar 450 Racer — mét airco!\n💰 **Prijzen** → Vanaf €550/week (hoogseizoen €650/week)\n🌅 **Mooiste bestemming** → Begur — verborgen baaien + charme\n🤿 **Meeste activiteiten** → Estartit — duiken bij Medes Eilanden\n\nVertel me wat jij belangrijk vindt, en ik geef persoonlijk advies!`,
     ] : ['My recommendations: Hobby Prestige for families, Knaus for couples, HomeCar for AC!'];
     return {
       answer: pick(recoAnswers, asked),
@@ -993,7 +997,7 @@ function smartMatch(
   if (/wanneer|hoe lang|hoelang|how long|duration|duur|minimaal|minimum/.test(lower)) {
     return {
       answer: isNl
-        ? `Er is geen minimale huurduur${name}! Je kunt vanaf 1 dag boeken. 📅\n\nPrijzen:\n• Per dag: vanaf €${Math.min(...caravans.map(c => c.pricePerDay))}\n• Per week: vanaf €${Math.min(...caravans.map(c => c.pricePerWeek))} (voordeliger!)\n\nHet seizoen loopt van mei t/m september 2026.\n\n👉 **[Bekijk beschikbaarheid](/boeken)**`
+        ? `Er is geen minimale huurduur${name}! Je kunt vanaf 1 dag boeken. 📅\n\nSeizoensprijzen (alle caravans):\n📅 Voorseizoen (t/m 30 juni): €550/week\n☀️ Hoogseizoen (1-31 juli): €650/week\n🍂 Naseizoen (vanaf 1 aug): €550/week\n\nHet seizoen loopt van mei t/m september 2026.\n\n👉 **[Bekijk beschikbaarheid](/boeken)**`
         : 'No minimum rental! From 1 day. Season: May-September.',
       followUp: isNl ? ['Wat kost het?', 'Hoe boek ik?', 'Welke caravans?'] : ['Cost?', 'How to book?'],
       confidence: 0.8,
@@ -1027,7 +1031,7 @@ function smartMatch(
   if (/hoe werkt|hoe gaat|concept|wat doen jullie|wat bieden|wat is|uitleg|explain|how does it work|how it works|como funciona|wat houd.*in/.test(lower)) {
     return {
       answer: isNl
-        ? `Ons concept is heel simpel${name}! 🚐✨\n\n**Wij regelen alles — jij geniet!**\n\n1️⃣ **Kies** je camping, caravan en periode\n2️⃣ **Reserveer** online — betaal pas 30 dagen voor vertrek via iDEAL\n3️⃣ **Wij plaatsen** de caravan op de camping\n4️⃣ **Jij rijdt** naar de camping en checkt in\n5️⃣ **Geniet** van je vakantie!\n\nDe caravan staat **al klaar** met beddengoed, kookgerei, servies en meer.\n\nBij vertrek laat je de caravan bezemschoon achter en wij doen de rest!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} caravans, volledig uitgerust\n✅ Nederlandse service\n\nWat wil je nog meer weten?`
+        ? `Ons concept is heel simpel${name}! 🚐✨\n\n**Wij regelen alles — jij geniet!**\n\n1️⃣ **Kies** je camping, caravan en periode\n2️⃣ **Reserveer** online — betaal 25% aanbetaling bij boeking via iDEAL/Wero\n3️⃣ **Wij plaatsen** de caravan op de camping\n4️⃣ **Jij rijdt** naar de camping en checkt in\n5️⃣ **Geniet** van je vakantie!\n\nDe caravan staat **al klaar** met beddengoed, kookgerei, servies en meer.\n\nBij vertrek laat je de caravan bezemschoon achter en wij doen de rest!\n\n✅ 30+ campings aan de Costa Brava\n✅ ${caravans.length} caravans, volledig uitgerust\n✅ Nederlandse service\n\nWat wil je nog meer weten?`
         : 'Our concept is simple: we place a fully equipped caravan on your chosen camping. You just enjoy! 🚐✨',
       followUp: isNl ? ['Wat kost het?', 'Welke caravans?', 'Welke campings?', 'Hoe boek ik?'] : ['Cost?', 'Which caravans?', 'How to book?'],
       confidence: 0.85,
@@ -1077,7 +1081,7 @@ function smartMatch(
     const compAnswers = isNl ? [
       `Goed dat je vergelijkt${name}! Hier is een overzicht:\n\n${sorted.map(c => {
         const highlights: string[] = [];
-        if (c.type === 'FAMILIE') highlights.push('👨‍👩‍👧‍👦 Familie');
+        if (c.maxPersons >= 4) highlights.push('👨‍👩‍👧‍👦 Ruim');
         else highlights.push('💑 Compact');
         if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
         if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
@@ -1145,8 +1149,8 @@ function smartMatch(
   if (/vroeg|laat|eerder|later|vroege aankomst|late aankomst|early|late.*check|early.*check|vroeger|later inchecken|later vertrekken|eerder vertrekken|aankomst.*tijd|vertrek.*tijd|flexibel|flexible/.test(lower)) {
     return {
       answer: isNl
-        ? `Standaard zijn de tijden${name}:\n\n⏰ **Check-in**: vanaf 15:00 uur\n⏰ **Check-out**: vóór 11:00 uur\n\nMaar er is flexibiliteit mogelijk! 🙌\n\n✅ **Vroege aankomst**: in overleg vaak mogelijk als de caravan vrij is\n✅ **Laat vertrek**: soms mogelijk, overleg met de camping\n\n💡 Tip: laat het ons weten bij je boeking en we proberen het te regelen!\n\nOverleg is altijd mogelijk — we denken graag met je mee. 😊`
-        : 'Standard: check-in from 15:00, check-out before 11:00. Flexible timing is often possible — just let us know!',
+        ? `Standaard zijn de tijden${name}:\n\n⏰ **Check-in**: vanaf 15:00 uur\n⏰ **Check-out**: vóór 10:00 uur\n\nMaar er is flexibiliteit mogelijk! 🙌\n\n✅ **Vroege aankomst**: in overleg vaak mogelijk als de caravan vrij is\n✅ **Laat vertrek**: soms mogelijk, overleg met de camping\n\n💡 Tip: laat het ons weten bij je boeking en we proberen het te regelen!\n\nOverleg is altijd mogelijk — we denken graag met je mee. 😊`
+        : 'Standard: check-in from 15:00, check-out before 10:00. Flexible timing is often possible — just let us know!',
       followUp: isNl ? ['Hoe boek ik?', 'Wat zit erin?', 'Welke campings?'] : ['How to book?', 'Which campings?'],
       confidence: 0.85,
       topic: 'flexible-checkin',
@@ -1349,11 +1353,10 @@ function smartMatch(
 
   // ===== SMARTER FUZZY: catch phrases that probably mean pricing =====
   if (/hoeveel|how much|cuanto|wat.*per.*week|wat.*per.*dag|prijs.*caravan|caravan.*prijs/.test(lower)) {
-    const cheapest = caravans.reduce((a, b) => a.pricePerWeek < b.pricePerWeek ? a : b);
     return {
       answer: isNl
-        ? `Onze prijzen starten al vanaf **€${cheapest.pricePerDay}/dag** of **€${cheapest.pricePerWeek}/week**${name}! 💰\n\n${caravans.map(c => `🚐 **${c.name}** — €${c.pricePerDay}/dag · €${c.pricePerWeek}/week (max ${c.maxPersons} pers)`).join('\n')}\n\nAlles is **inclusief** inventaris (beddengoed, kookgerei, servies).\nDe campingplaats betaal je apart bij de camping.\n\n👉 **[Bekijk alle caravans](/caravans)** of **[Boek direct](/boeken)**`
-        : `Prices from €${cheapest.pricePerDay}/day or €${cheapest.pricePerWeek}/week! Everything included. 💰`,
+        ? `Onze prijzen zijn seizoensgebonden en gelden voor **alle caravans**${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\nAlles is **inclusief** inventaris (beddengoed, kookgerei, servies).\nDe campingplaats betaal je apart bij de camping.\n\n👉 **[Bekijk alle caravans](/caravans)** of **[Boek direct](/boeken)**`
+        : `Seasonal pricing for all caravans:\n\n📅 Pre-season (until June 30): €550/week\n☀️ High season (July 1-31): €650/week\n🍂 Post-season (from Aug 1): €550/week\n\nBased on 2 adults + 2 children, incl. 10% VAT. 💰`,
       followUp: isNl ? ['Hoe boek ik?', 'Welke caravans?', 'Hoe werkt betalen?'] : ['How to book?', 'Payment info?'],
       confidence: 0.85,
       topic: 'pricing',
@@ -1526,7 +1529,7 @@ function smartMatch(
   if (/eerste keer|nooit eerder|never been|first time|primera vez|beginner|geen ervaring|nieuw|nog nooit|niet eerder|hoe begin|waar begin|tip voor begin|hoe start/.test(lower)) {
     return {
       answer: isNl
-        ? `Eerste keer met ons op vakantie? Welkom${name}! 🎉\n\nHet is heel makkelijk — wij regelen alles:\n\n1️⃣ **Kies** je periode, camping en caravan op [onze website](/boeken)\n2️⃣ **Reserveer** online in 5 minuten — betaal pas 30 dagen voor vertrek\n3️⃣ **Wij plaatsen** de caravan volledig ingericht op de camping\n4️⃣ **Jij rijdt/vliegt** naar de camping en checkt in\n5️⃣ **Geniet!** Alles staat klaar — je kunt meteen genieten\n\n✅ **Geen gedoe met:**\n• Caravan slepen — die staat er al!\n• Inventaris regelen — beddengoed, servies, alles erbij\n• Campingplaats zoeken — dat doen wij\n\n💡 **Tip voor beginners:**\nBegin met een camping als **Cypsela Resort** (Pals) of **Cala Gogo** (Calonge) — veel faciliteiten, perfect voor eerste keer!\n\nZet je eerste stap en je wilt nooit meer anders! 😊`
+        ? `Eerste keer met ons op vakantie? Welkom${name}! 🎉\n\nHet is heel makkelijk — wij regelen alles:\n\n1️⃣ **Kies** je periode, camping en caravan op [onze website](/boeken)\n2️⃣ **Reserveer** online in 5 minuten — betaal 25% aanbetaling bij boeking\n3️⃣ **Wij plaatsen** de caravan volledig ingericht op de camping\n4️⃣ **Jij rijdt/vliegt** naar de camping en checkt in\n5️⃣ **Geniet!** Alles staat klaar — je kunt meteen genieten\n\n✅ **Geen gedoe met:**\n• Caravan slepen — die staat er al!\n• Inventaris regelen — beddengoed, servies, alles erbij\n• Campingplaats zoeken — dat doen wij\n\n💡 **Tip voor beginners:**\nBegin met een camping als **Cypsela Resort** (Pals) of **Cala Gogo** (Calonge) — veel faciliteiten, perfect voor eerste keer!\n\nZet je eerste stap en je wilt nooit meer anders! 😊`
         : 'First time? We make it easy! Choose dates, book online, and we handle everything. The caravan is ready when you arrive! 🎉',
       followUp: isNl ? ['Hoe boek ik?', 'Welke campings?', 'Wat kost het?', 'Welke caravans?'] : ['How to book?', 'Cost?', 'Campings?'],
       confidence: 0.88,
@@ -1598,8 +1601,8 @@ function smartMatch(
   if (/aanbetal|aanbetaling|30.*procent|30%|rest.*betalen|restbetaling|wanneer.*betalen|betalings.*termijn|payment.*schedule|when.*pay|segundo.*pago|tweede.*betaling/.test(lower)) {
     return {
       answer: isNl
-        ? `Zo werkt de betaling${name}! 💳\n\nJe betaalt het **volledige huurbedrag** uiterlijk **30 dagen** voor aankomst via iDEAL of Wero.\n\n✅ Reserveer nu, betaal later\n✅ Je ontvangt automatisch een betaalherinnering\n✅ Alles via je account op onze website\n✅ Veilig betalen via iDEAL of Wero\n\n💡 **Voorbeeld:**\nCaravan van €500/week boeken:\n• Reserveer nu — geen directe betaling\n• Betaal €500 uiterlijk 30 dagen voor vertrek\n\n📌 De **campingplaats** betaal je apart, rechtstreeks aan de camping.\n\n👉 Alle details staan in je account na het boeken.`
-        : 'Full payment due 30 days before arrival via iDEAL or Wero. Reserve now, pay later! 💳',
+        ? `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Aanbetaling (25%)**: bij boeking via iDEAL/Wero\n2️⃣ **Borg (€400)**: na goedkeuring op de camping bij de caravanplaats\n3️⃣ **Restbetaling (75%)**: direct na ontvangst van de borg (contant of overboeking)\n\n💡 **Voorbeeld:**\nVoorseizoen €550/week boeken:\n• Aanbetaling: €137,50 bij boeking\n• Borg: €400 op de camping\n• Restbetaling: €412,50 direct na borg\n\n📌 De **campingplaats** betaal je apart, rechtstreeks aan de camping.\n\n👉 Alle details staan in je account na het boeken.`
+        : 'Payment: 25% deposit at booking via iDEAL/Wero. Security deposit (€400) after approval at campsite. Remaining 75% immediately after deposit receipt (cash or bank transfer). 💳',
       followUp: isNl ? ['Hoe boek ik?', 'Annuleringsbeleid?', 'Wat kost het?'] : ['How to book?', 'Cancellation?', 'Cost?'],
       confidence: 0.87,
       topic: 'payment-schedule',
@@ -1858,6 +1861,23 @@ function renderMarkdown(text: string): React.ReactNode {
     });
     return <span key={i}>{processed}{i < lines.length - 1 && <br />}</span>;
   });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Seasonal pricing helper                                            */
+/* ------------------------------------------------------------------ */
+function getSeasonalWeeklyRate(date: Date): number {
+  return date.getMonth() === 6 ? 650 : 550; // July = 650, rest = 550
+}
+
+function calculateSeasonalPrice(checkInStr: string, nights: number): number {
+  let total = 0;
+  const start = new Date(checkInStr);
+  for (let i = 0; i < nights; i++) {
+    const day = new Date(start.getTime() + i * 86400000);
+    total += getSeasonalWeeklyRate(day) / 7;
+  }
+  return Math.round(total);
 }
 
 /* ------------------------------------------------------------------ */
@@ -2201,7 +2221,7 @@ export default function ChatBot() {
 
   const handleBookingCaravanSelect = useCallback((caravan: typeof caravans[0]) => {
     const nights = bookingFlow.nights;
-    const price = Math.floor(nights / 7) * caravan.pricePerWeek + (nights % 7) * caravan.pricePerDay;
+    const price = calculateSeasonalPrice(bookingFlow.checkIn, nights);
     setBookingFlow(prev => ({ ...prev, caravanId: caravan.id, caravanName: caravan.name, totalPrice: price }));
     const userText = `🚐 ${caravan.name} — €${price} (${nights} ${isNl ? 'nachten' : 'nights'})`;
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
@@ -2266,26 +2286,27 @@ export default function ChatBot() {
         const checkoutData = await checkoutRes.json();
         if (checkoutData.url) {
           setBookingFlow(prev => ({ ...prev, step: 'complete', paymentUrl: checkoutData.url }));
+          const deposit25 = Math.round(bookingFlow.totalPrice * 0.25);
           const msg = isNl
-            ? `Je boeking is geplaatst! 🎉\n\n📋 Referentie: **${data.reference}**\n\nJe aankomst is binnen 30 dagen, dus directe betaling is vereist.\n\n💳 Klik op de knop hieronder om veilig te betalen via iDEAL/Wero.`
+            ? `Je boeking is geplaatst! 🎉\n\n📋 Referentie: **${data.reference}**\n\n💳 Betaal nu de aanbetaling van €${deposit25} (25%) via iDEAL/Wero.\nKlik op de knop hieronder om veilig te betalen.`
             : isEs
-            ? `¡Tu reserva está hecha! 🎉\n\nReferencia: **${data.reference}**\n\nPago inmediato requerido. Haz clic abajo.`
-            : `Your booking is placed! 🎉\n\nReference: **${data.reference}**\n\nImmediate payment required. Click below to pay securely.`;
+            ? `¡Tu reserva está hecha! 🎉\n\nReferencia: **${data.reference}**\n\nPaga el anticipo de €${deposit25} (25%). Haz clic abajo.`
+            : `Your booking is placed! 🎉\n\nReference: **${data.reference}**\n\nPay your €${deposit25} deposit (25%) below.`;
           setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date() }]);
           saveMessage('bot', msg);
           return;
         }
       }
 
-      // Deferred payment
-      const deadline = new Date(new Date(bookingFlow.checkIn).getTime() - 30 * 24 * 60 * 60 * 1000);
-      const deadlineStr = deadline.toLocaleDateString(isNl ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      // Deposit payment (25% at booking)
+      const deposit25 = Math.round(bookingFlow.totalPrice * 0.25);
+      const remaining75 = bookingFlow.totalPrice - deposit25;
       setBookingFlow(prev => ({ ...prev, step: 'complete' }));
       const msg = isNl
-        ? `Je boeking is bevestigd! 🎉🥳\n\n📋 Referentie: **${data.reference}**\n\n📧 Je ontvangt een bevestiging per e-mail op ${bookingFlow.email}.\n\n💰 Betaling van **€${bookingFlow.totalPrice}** is verschuldigd voor **${deadlineStr}**.\nJe ontvangt tijdig een betaallink per e-mail.\n\n🔒 Borg: €${caravan?.deposit || 0} bij aankomst op de camping.\n\nBedankt en tot ziens aan de Costa Brava! ☀️🏖️`
+        ? `Je boeking is bevestigd! 🎉🥳\n\n📋 Referentie: **${data.reference}**\n\n📧 Je ontvangt een bevestiging per e-mail op ${bookingFlow.email}.\n\n💰 **Aanbetaling (25%)**: €${deposit25} — je ontvangt een betaallink per e-mail.\n🔒 **Borg**: €${caravan?.deposit || 400} — na goedkeuring op de camping.\n💵 **Restbetaling**: €${remaining75} — direct na ontvangst borg (contant/overboeking).\n\nBedankt en tot ziens aan de Costa Brava! ☀️🏖️`
         : isEs
-        ? `¡Tu reserva está confirmada! 🎉\n\nReferencia: **${data.reference}**\nPago de €${bookingFlow.totalPrice} antes del ${deadlineStr}.\n\n¡Gracias y nos vemos en la Costa Brava! ☀️`
-        : `Your booking is confirmed! 🎉\n\nReference: **${data.reference}**\nPayment of €${bookingFlow.totalPrice} due before ${deadlineStr}.\n\nSee you at the Costa Brava! ☀️`;
+        ? `¡Tu reserva está confirmada! 🎉\n\nReferencia: **${data.reference}**\nAnticipo (25%): €${deposit25} — recibirás un enlace de pago.\nFianza: €${caravan?.deposit || 400} en el camping.\nResto: €${remaining75} después de la fianza.\n\n¡Gracias y nos vemos en la Costa Brava! ☀️`
+        : `Your booking is confirmed! 🎉\n\nReference: **${data.reference}**\nDown payment (25%): €${deposit25} — you'll receive a payment link.\nDeposit: €${caravan?.deposit || 400} at the campsite.\nRemaining: €${remaining75} after deposit receipt.\n\nSee you at the Costa Brava! ☀️`;
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date() }]);
       saveMessage('bot', msg);
     } catch {
@@ -2669,7 +2690,7 @@ export default function ChatBot() {
                             <p className="text-[11px] font-semibold text-gray-500 mb-1.5">{isNl ? 'Kies een caravan' : isEs ? 'Elige una caravana' : 'Choose a caravan'} ({availableCaravans.length})</p>
                             <div className="space-y-2 max-h-[200px] overflow-y-auto">
                               {availableCaravans.map(c => {
-                                const price = Math.floor(bookingFlow.nights / 7) * c.pricePerWeek + (bookingFlow.nights % 7) * c.pricePerDay;
+                                const price = calculateSeasonalPrice(bookingFlow.checkIn, bookingFlow.nights);
                                 return (
                                   <button key={c.id} onClick={() => handleBookingCaravanSelect(c)}
                                     className={`w-full text-left rounded-lg overflow-hidden border transition-all active:scale-[0.98] ${
@@ -2681,7 +2702,7 @@ export default function ChatBot() {
                                       </div>
                                       <div className="py-1.5 pr-2 flex-1 min-w-0">
                                         <p className="text-[13px] font-bold text-gray-800 truncate">{c.name}</p>
-                                        <p className="text-[11px] text-gray-500">{c.maxPersons} pers · {c.type}</p>
+                                        <p className="text-[11px] text-gray-500">{c.maxPersons} pers · {c.manufacturer}</p>
                                         <div className="flex items-baseline gap-1 mt-0.5">
                                           <span className="text-[13px] font-bold text-primary">€{price}</span>
                                           <span className="text-[10px] text-gray-400">{bookingFlow.nights} {isNl ? 'nachten' : 'nights'}</span>

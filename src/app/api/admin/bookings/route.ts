@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Create booking (status BEVESTIGD since staff created it)
+    const deposit25 = Math.round(totalPrice * 0.25);
+    const remaining = totalPrice - deposit25;
     const result = await createBooking({
       guestName: guestName.trim(),
       guestEmail: email,
@@ -49,9 +51,9 @@ export async function POST(request: NextRequest) {
       checkOut,
       nights,
       totalPrice,
-      depositAmount: 0,
-      remainingAmount: totalPrice,
-      borgAmount: borgAmount || 0,
+      depositAmount: deposit25,
+      remainingAmount: remaining,
+      borgAmount: borgAmount || 400,
       spotNumber: spotNumber || undefined,
     });
 
@@ -87,10 +89,10 @@ export async function POST(request: NextRequest) {
         price_data: {
           currency: 'eur',
           product_data: {
-            name: `Huurbedrag — ${result.reference}`,
+            name: `Aanbetaling (25%) — ${result.reference}`,
             description: `Caravanverhuur Spanje — ${guestName}`,
           },
-          unit_amount: Math.round(totalPrice * 100),
+          unit_amount: Math.round(deposit25 * 100),
         },
         quantity: 1,
       }],
@@ -99,7 +101,7 @@ export async function POST(request: NextRequest) {
         paymentId: result.paymentId,
         bookingId: result.id,
         bookingRef: result.reference,
-        type: 'HUUR',
+        type: 'AANBETALING',
       },
       success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
@@ -109,14 +111,9 @@ export async function POST(request: NextRequest) {
     const { updatePaymentStripeId } = await import('@/lib/db');
     await updatePaymentStripeId(result.paymentId, session.id);
 
-    // 5. Determine payment deadline
-    const checkInDate = new Date(checkIn);
-    const now = new Date();
-    const daysUntil = Math.ceil((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    const immediatePayment = daysUntil <= 30;
-    const paymentDeadline = daysUntil > 30
-      ? new Date(checkInDate.getTime() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
-      : 'Direct';
+    // 5. Payment is always 25% deposit due now
+    const immediatePayment = true;
+    const paymentDeadline = 'nu';
 
     // 6. Send email to customer with booking details + payment link + (optional) account credentials
     const manualCustomer = existing || await getCustomerByEmail(email).catch(() => null);

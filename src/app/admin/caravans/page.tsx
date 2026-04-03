@@ -43,7 +43,6 @@ interface CaravanFormData {
   name: string;
   manufacturer: string;
   year: number;
-  type: string;
   maxPersons: number;
   description: string;
   pricePerDay: number;
@@ -79,7 +78,7 @@ function getCaravanStatusIcon(status: string) {
 
 function emptyFormData(): CaravanFormData {
   return {
-    name: "", manufacturer: "", year: new Date().getFullYear(), type: "FAMILIE",
+    name: "", manufacturer: "", year: new Date().getFullYear(),
     maxPersons: 4, description: "", pricePerDay: 0, pricePerWeek: 0, deposit: 0,
     amenities: [], inventory: [], photos: "", videoUrl: "",
     customAmenity: "", customInventory: "",
@@ -88,7 +87,7 @@ function emptyFormData(): CaravanFormData {
 
 function caravanToFormData(c: AdminCaravan): CaravanFormData {
   return {
-    name: c.name, manufacturer: c.manufacturer, year: c.year, type: c.type,
+    name: c.name, manufacturer: c.manufacturer, year: c.year,
     maxPersons: c.maxPersons, description: c.description,
     pricePerDay: c.pricePerDay, pricePerWeek: c.pricePerWeek, deposit: c.deposit,
     amenities: [...c.amenities], inventory: [...(c.inventory || [])],
@@ -211,15 +210,7 @@ function CaravanFormModal({ isOpen, onClose, onSave, initialData, isEdit, saving
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1">{t("caravans.type")}</label>
-                <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white border border-gray-200">
-                  <option value="FAMILIE">{t("caravans.family")}</option>
-                  <option value="COMPACT">{t("caravans.compact")}</option>
-                </select>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1">{t("caravans.buildYear")}</label>
                 <input type="number" value={form.year} onChange={e => setForm(p => ({ ...p, year: parseInt(e.target.value) || 2020 }))}
@@ -466,7 +457,6 @@ function CaravanDetail({ caravan, setting, onSettingChange, onEdit, onPhotosUpda
           <div className="bg-white rounded-xl p-3 space-y-1.5 text-sm">
             <div className="flex justify-between"><span className="text-muted">{t("caravans.manufacturer")}</span><span className="text-foreground font-medium">{caravan.manufacturer}</span></div>
             <div className="flex justify-between"><span className="text-muted">{t("caravans.buildYear")}</span><span className="text-foreground font-medium">{caravan.year}</span></div>
-            <div className="flex justify-between"><span className="text-muted">{t("caravans.type")}</span><span className="text-foreground font-medium">{caravan.type}</span></div>
             <div className="flex justify-between"><span className="text-muted">{t("caravans.maxPersons")}</span><span className="text-foreground font-medium">{caravan.maxPersons}</span></div>
             {caravan.videoUrl && (
               <div className="flex justify-between"><span className="text-muted">Video</span>
@@ -592,7 +582,7 @@ export default function CaravansAdminPage() {
     if (!search) return true;
     const q = search.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.reference.toLowerCase().includes(q) ||
-      c.manufacturer.toLowerCase().includes(q) || c.type.toLowerCase().includes(q);
+      c.manufacturer.toLowerCase().includes(q);
   });
 
   const totalCaravans = allCaravans.length;
@@ -607,7 +597,7 @@ export default function CaravansAdminPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name.trim(), manufacturer: formData.manufacturer.trim(),
-          year: formData.year, type: formData.type, maxPersons: formData.maxPersons,
+          year: formData.year, maxPersons: formData.maxPersons,
           description: formData.description.trim(),
           pricePerDay: formData.pricePerDay, pricePerWeek: formData.pricePerWeek, deposit: formData.deposit,
           amenities: formData.amenities, inventory: formData.inventory,
@@ -628,7 +618,7 @@ export default function CaravansAdminPage() {
       const body: Record<string, unknown> = {
         id: editingCaravan.id,
         name: formData.name.trim(), manufacturer: formData.manufacturer.trim(),
-        year: formData.year, type: formData.type, maxPersons: formData.maxPersons,
+        year: formData.year, maxPersons: formData.maxPersons,
         description: formData.description.trim(),
         pricePerDay: formData.pricePerDay, pricePerWeek: formData.pricePerWeek, deposit: formData.deposit,
         amenities: formData.amenities, inventory: formData.inventory,
@@ -730,7 +720,6 @@ export default function CaravansAdminPage() {
                   </div>
                   <div className="flex items-center gap-3 mt-0.5 text-xs text-muted">
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {caravan.maxPersons}p</span>
-                    <span>{caravan.type}</span>
                     <span>{caravan.manufacturer} {caravan.year}</span>
                     {bookingCount > 0 && (
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {bookingCount} boeking{bookingCount !== 1 ? "en" : ""}</span>
