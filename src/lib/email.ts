@@ -258,6 +258,8 @@ export async function sendWelcomeEmail(to: string, name: string, locale?: string
       ${button(t.welcomeButton, `${SITE_URL}/caravans`)}
 
       ${verifySection}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, t.welcomePreheader, locale),
   });
 }
@@ -353,6 +355,8 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${data.paymentUrl ? button(t.bookingPayNow(formatPrice(deposit25)), data.paymentUrl) : ''}
       ${button(t.bookingButton, `${SITE_URL}/mijn-account`)}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, `${t.bookingSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
   });
 }
@@ -469,6 +473,8 @@ export async function sendManualBookingEmail(to: string, data: {
       <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">${t.manualPayLater}</p>
 
       ${accountSection}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, `${t.manualSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
   });
 }
@@ -963,6 +969,8 @@ export async function sendVerificationEmail(to: string, name: string, verifyUrl:
       <p style="margin:0;color:#94A3B8;font-size:13px;line-height:1.6;">
         ${t.verifyExpiry}
       </p>
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, t.verifySubject, locale),
   });
 }

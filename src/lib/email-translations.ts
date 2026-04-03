@@ -11,6 +11,7 @@ interface EmailTranslations {
   footerPrivacy: string;
   footerTerms: string;
   footerCopyright: string;
+  spamNotice: string;
 
   // Date formatting
   dateLocale: string;
@@ -210,6 +211,7 @@ const nl: EmailTranslations = {
   footerPrivacy: 'Privacy',
   footerTerms: 'Voorwaarden',
   footerCopyright: 'Alle rechten voorbehouden.',
+  spamNotice: '📬 Geen e-mail ontvangen? Controleer je spam- of ongewenste-e-mailmap en voeg <strong>info@caravanverhuurspanje.com</strong> toe aan je contacten.',
   dateLocale: 'nl-NL',
 
   // Welcome
@@ -407,6 +409,7 @@ const en: EmailTranslations = {
   footerPrivacy: 'Privacy',
   footerTerms: 'Terms',
   footerCopyright: 'All rights reserved.',
+  spamNotice: '📬 Didn\'t receive an email? Check your spam or junk folder and add <strong>info@caravanverhuurspanje.com</strong> to your contacts.',
   dateLocale: 'en-GB',
 
   // Welcome
@@ -604,6 +607,7 @@ const es: EmailTranslations = {
   footerPrivacy: 'Privacidad',
   footerTerms: 'Condiciones',
   footerCopyright: 'Todos los derechos reservados.',
+  spamNotice: '📬 ¿No has recibido un correo? Revisa tu carpeta de spam o correo no deseado y añade <strong>info@caravanverhuurspanje.com</strong> a tus contactos.',
   dateLocale: 'es-ES',
 
   // Welcome
