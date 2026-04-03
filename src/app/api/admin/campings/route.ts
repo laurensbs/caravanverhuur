@@ -21,7 +21,7 @@ const NO_CACHE_HEADERS = {
   'Pragma': 'no-cache',
 };
 
-// GET - List all campings (auto-seeds from static data if DB is empty)
+// GET - List all campings (auto-seeds from static data if DB is empty, syncs missing ones)
 export async function GET() {
   try {
     let campings = await getAllCampings();
@@ -44,6 +44,31 @@ export async function GET() {
           latitude: sc.coordinates?.lat,
           longitude: sc.coordinates?.lng,
         });
+      }
+      campings = await getAllCampings();
+    } else if (campings.length < staticCampings.length) {
+      // Sync missing static campings into DB
+      const existingSlugs = new Set(campings.map((c: Record<string, unknown>) => c.slug));
+      const existingNames = new Set(campings.map((c: Record<string, unknown>) => (c.name as string).toLowerCase()));
+
+      for (const sc of staticCampings) {
+        if (!existingSlugs.has(sc.slug) && !existingNames.has(sc.name.toLowerCase())) {
+          await createCamping({
+            name: sc.name,
+            slug: sc.slug,
+            location: sc.location,
+            region: sc.region,
+            description: sc.description,
+            long_description: sc.longDescription || '',
+            website: sc.website || '',
+            photos: sc.photos || [],
+            facilities: sc.facilities || [],
+            best_for: sc.bestFor || [],
+            nearest_destinations: sc.nearestDestinations || [],
+            latitude: sc.coordinates?.lat,
+            longitude: sc.coordinates?.lng,
+          });
+        }
       }
       campings = await getAllCampings();
     }
