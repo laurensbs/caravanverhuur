@@ -24,9 +24,6 @@ import {
   MapPin,
   LayoutDashboard,
   Umbrella,
-  Bed,
-  Mountain,
-  Refrigerator,
   ChevronDown,
   Armchair,
   UtensilsCrossed,
@@ -634,93 +631,56 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       {/* ===== INVENTORY SECTION ===== */}
       <section className="py-14 sm:py-24 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8 sm:mb-12"
+          >
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
+              {t('home.inventoryTitle')}
+            </h2>
+            <p className="text-muted text-sm sm:text-lg mt-3 sm:mt-4 max-w-2xl mx-auto leading-relaxed">
+              {t('home.inventorySubtitle')}
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            {/* Caravan video */}
             <motion.div
-              initial={{ opacity: 0, x: -40 }}
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7 }}
             >
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-4 sm:mb-6 tracking-tight">
-                {t('home.inventoryTitle')}
-              </h2>
-              <p className="text-muted text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed">
-                {t('home.inventorySubtitle')}
-              </p>
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
-                {[
-                  t('home.inventoryItem1'),
-                  t('home.inventoryItem2'),
-                  t('home.inventoryItem3'),
-                  t('home.inventoryItem4'),
-                  t('home.inventoryItem5'),
-                  t('home.inventoryItem6'),
-                  t('home.inventoryItem7'),
-                  t('home.inventoryItem8'),
-                ].map((item, i) => (
-                  <motion.div
-                    key={item}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05, duration: 0.3 }}
-                    className="flex items-center gap-1.5 sm:gap-2"
-                  >
-                    <CheckCircle size={14} className="text-primary shrink-0 sm:w-[18px] sm:h-[18px]" />
-                    <span className="text-xs sm:text-sm text-foreground">{item}</span>
-                  </motion.div>
-                ))}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video">
+                <iframe
+                  src="https://play.gumlet.io/embed/69b48353bf83f6c336be24eb?background=true&disable_player_controls=true&preload=true&subtitles=off&resolution=1080p"
+                  title="Caravan interieur volledig ingericht"
+                  allow="autoplay"
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full border-0"
+                  style={{ pointerEvents: 'none' }}
+                />
+                <div className="absolute inset-0 z-10" />
               </div>
-
-              {/* Extras for surcharge */}
-              <div className="mt-8 sm:mt-10">
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Star size={16} className="text-primary" /> {t('home.extrasTitle')}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
-                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-                  {[
-                    { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={20} className="text-primary" /> },
-                    { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={20} className="text-primary" /> },
-                    { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={20} className="text-primary" /> },
-                  ].map((extra, i) => (
-                    <motion.div
-                      key={extra.name}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.08, duration: 0.4 }}
-                      className="bg-surface rounded-xl p-3 sm:p-4 flex items-center gap-3 border border-gray-100"
-                    >
-                      <div className="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center shrink-0">
-                        {extra.icon}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-semibold text-foreground leading-tight">{extra.name}</h4>
-                        <p className="text-xs font-bold text-primary">{extra.price}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
               <Link
                 href="/caravans"
-                className="inline-flex items-center gap-2 mt-6 sm:mt-8 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
+                className="inline-flex items-center gap-2 mt-6 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
               >
                 {t('home.inventoryViewCaravans')}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
 
+            {/* Categorized inventory list */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative"
             >
-              {/* Categorized inventory — borgchecker style */}
               <InventoryCategories />
             </motion.div>
           </div>
