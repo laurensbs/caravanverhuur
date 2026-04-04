@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Verplichte velden ontbreken' }, { status: 400 });
     }
 
+    // Enforce minimum 7 nights
+    if (nights < 7) {
+      return NextResponse.json({ error: 'Minimaal 7 nachten vereist.' }, { status: 400 });
+    }
+
     // 1. Check if customer account exists, otherwise create one
     let isNewAccount = false;
     let plainPassword = '';

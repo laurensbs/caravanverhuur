@@ -242,7 +242,7 @@ function BoekenContent() {
 
   const canNext = () => {
     switch (step) {
-      case 1: return checkIn && checkOut && nights > 0;
+      case 1: return checkIn && checkOut && nights >= 7;
       case 2: return campingId !== '' && spotNumber.trim() !== '';
       case 3: return adults >= 1 && selectedCaravan !== '';
       case 4: return name && email && phone && termsAccepted;
@@ -609,7 +609,7 @@ function BoekenContent() {
                         )}
 
                         {nights > 0 && nights < 7 && (
-                          <div className="mt-2.5 flex items-start gap-2 text-primary text-xs bg-primary-50 rounded-lg p-2.5">
+                          <div className="mt-2.5 flex items-start gap-2 text-red-600 text-xs bg-red-50 rounded-lg p-2.5">
                             <Info size={13} className="shrink-0 mt-0.5" />
                             {t('booking.minAdvice')}
                           </div>

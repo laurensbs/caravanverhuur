@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Enforce minimum 7 nights
+    const diffMs = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    const calcNights = Math.round(diffMs / 86400000);
+    if (calcNights < 7) {
+      return NextResponse.json({ error: 'Minimaal 7 nachten vereist.' }, { status: 400 });
+    }
+
     // Check availability: prevent double-bookings for the same caravan
     const available = await checkCaravanAvailability(caravanId, checkIn, checkOut);
     if (!available) {
