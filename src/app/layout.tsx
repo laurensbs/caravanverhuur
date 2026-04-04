@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Caravanverhuur Spanje | Caravan Huren Costa Brava — Volledig Uitgerust",
   description:
-    "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava. Beddengoed, kookgerei & inventaris inbegrepen. Vanaf €50/dag. Boek seizoen 2026!",
+    "Huur een volledig uitgeruste caravan op de mooiste campings van de Costa Brava. Kookgerei, servies & handdoeken inbegrepen. Beddengoed optioneel te huur. Vanaf €550/week. Boek seizoen 2026!",
   keywords: [
     "caravan huren",
     "Costa Brava",
