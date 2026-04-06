@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays, MapPin, Users, CheckCircle, ArrowRight, ArrowLeft,
-  CreditCard, User, Mail, Phone, MessageSquare, Search, Hash,
+  CreditCard, User, Mail, Phone, Search, Hash,
   Filter, Sparkles, Shield, Star, Clock, ChevronRight, Sun, Tent,
   Heart, PartyPopper, Check, Info, Minus, Plus, Tag, AlertTriangle,
 } from 'lucide-react';
@@ -82,7 +82,7 @@ function BoekenContent() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [specialRequests, setSpecialRequests] = useState('');
+
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -103,6 +103,7 @@ function BoekenContent() {
   const [extraFridge, setExtraFridge] = useState(false);
   const [extraBikes, setExtraBikes] = useState(0);
   const [extraMountainbikes, setExtraMountainbikes] = useState(0);
+  const [extraAirco, setExtraAirco] = useState(false);
   const [showAllCampings, setShowAllCampings] = useState(false);
   const [paymentId, setPaymentId] = useState('');
   const [redirectingToPayment, setRedirectingToPayment] = useState(false);
@@ -181,10 +182,11 @@ function BoekenContent() {
     let cost = 0;
     if (extraBedlinnen) cost += weeks * 70;
     if (extraFridge) cost += weeks * 40;
+    if (extraAirco) cost += weeks * 50;
     cost += extraBikes * weeks * 50;
     cost += extraMountainbikes * weeks * 50;
     return cost;
-  }, [extraBedlinnen, extraFridge, extraBikes, extraMountainbikes, nights]);
+  }, [extraBedlinnen, extraFridge, extraAirco, extraBikes, extraMountainbikes, nights]);
 
   const extraBorgAmount = useMemo(() => {
     return (extraBikes + extraMountainbikes) * 200;
@@ -285,9 +287,9 @@ function BoekenContent() {
         body: JSON.stringify({
           guestName: name, guestEmail: email, guestPhone: phone,
           adults, children, specialRequests: [
-            specialRequests,
             extraBedlinnen ? 'Bedlinnen (4 sets)' : '',
             extraFridge ? 'Grote koelkast' : '',
+            extraAirco ? 'Mobiele airco' : '',
             extraBikes > 0 ? `${extraBikes}x Fiets` : '',
             extraMountainbikes > 0 ? `${extraMountainbikes}x Mountainbike` : '',
           ].filter(Boolean).join(' | ') || undefined,
@@ -371,7 +373,7 @@ function BoekenContent() {
 
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t('booking.successTitle')}</h1>
             <p className="text-muted text-lg mb-2">
-              {t('booking.successThank')} <span className="font-semibold text-foreground-light">{name}</span>! {t('booking.successText')}
+              {t('booking.successThank')} <span className="font-semibold text-foreground-light">{name}</span>! {paymentId ? t('booking.successText') : t('booking.successTextNoPay')}
             </p>
             {bookingRef && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full font-semibold mb-8">
@@ -381,16 +383,8 @@ function BoekenContent() {
 
             {/* Summary card */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white rounded-2xl p-6 shadow-lg text-left mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                {chosenCaravan && (
-                  <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0">
-                    <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-bold text-foreground">{chosenCaravan?.name}</h3>
-                  <p className="text-sm text-muted">{chosenCamping?.name}, {chosenCamping?.location}</p>
-                </div>
+              <div className="mb-4">
+                <p className="text-sm text-muted">{chosenCamping?.name}, {chosenCamping?.location}</p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-surface rounded-xl p-3"><p className="text-muted text-xs mb-0.5">{t('booking.arrival')}</p><p className="font-semibold">{checkIn}</p></div>
@@ -416,8 +410,17 @@ function BoekenContent() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
-              <strong>{t('booking.nextStep')}</strong> {t('booking.depositExplanation')}
+              <strong>{t('booking.nextStep')}</strong> {paymentId ? t('booking.nextStepText') : t('booking.nextStepTextNoPay')}
             </motion.div>
+
+            {!extraBedlinnen && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-foreground mb-6 flex items-start gap-3">
+                <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong>{t('booking.beddingReminderTitle')}</strong> {t('booking.beddingReminderText')}
+                </div>
+              </motion.div>
+            )}
 
             {/* Pay Now button — Stripe redirect */}
             {paymentId && (
@@ -893,35 +896,29 @@ function BoekenContent() {
                         <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('booking.caravanAssignedInfo')}</p>
                       </div>
 
-                      {/* Caravan photo gallery overview */}
-                      <div>
-                        <h3 className="text-lg lg:text-xl font-bold text-foreground mb-3">{t('booking.chooseCaravan')}</h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                          {availableCaravans.flatMap(c => c.photos).slice(0, 6).map((photo, idx) => (
-                            <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
-                              <Image src={photo} alt={`Caravan foto ${idx + 1}`} fill className="object-cover" />
-                            </div>
-                          ))}
-                        </div>
-                        {/* Pricing info */}
-                        {nights > 0 && (
-                          <div className="bg-primary-50 rounded-xl p-4 mt-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs text-muted">{t('booking.from')}</p>
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-2xl font-bold text-primary">&euro;550</span>
-                                  <span className="text-sm text-muted">{t('booking.perWeek')}</span>
-                                </div>
+                      {/* Caravan photo gallery */}
+                      {availableCaravans.flatMap(c => c.photos).length > 0 && (
+                        <div>
+                          <h3 className="text-lg lg:text-xl font-bold text-foreground mb-3">{t('booking.chooseCaravan')}</h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                            {availableCaravans.flatMap(c => c.photos).slice(0, 6).map((photo, idx) => (
+                              <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
+                                <Image src={photo} alt={`Caravan foto ${idx + 1}`} fill className="object-cover" />
                               </div>
-                              <div className="text-right">
-                                <p className="text-xs text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
-                                <p className="text-2xl font-bold text-primary">&euro;{totalPrice}</p>
-                              </div>
-                            </div>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
+
+                      {/* Pricing info */}
+                      {nights > 0 && (
+                        <div className="bg-primary-50 rounded-xl p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted">{t('booking.totalFor')} {nights} {t('booking.nightPlural')}</p>
+                            <p className="text-2xl font-bold text-primary">&euro;{totalPrice}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -956,13 +953,6 @@ function BoekenContent() {
                             <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('contact.placeholderPhone')}
                               className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
                           </div>
-                        </div>
-                        <div>
-                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
-                            <MessageSquare size={14} className="text-primary" /> {t('booking.specialRequestsLabel')} <span className="text-muted font-normal">{t('booking.optional')}</span>
-                          </label>
-                          <textarea value={specialRequests} onChange={e => setSpecialRequests(e.target.value)} placeholder={t('booking.specialPlaceholder')}
-                            rows={3} className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all resize-none text-sm" />
                         </div>
                       </div>
 
@@ -1005,6 +995,21 @@ function BoekenContent() {
                                 <span className="text-sm font-bold text-primary">{t('booking.extraFridgePrice')}</span>
                               </div>
                               <p className="text-xs text-muted mt-0.5">{t('booking.extraFridgeDesc')}</p>
+                            </div>
+                          </label>
+
+                          {/* Mobiele airco */}
+                          <label className="flex items-start gap-4 cursor-pointer p-3 rounded-xl hover:bg-surface transition-colors">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${extraAirco ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                              {extraAirco && <Check size={12} className="text-white" />}
+                            </div>
+                            <input type="checkbox" checked={extraAirco} onChange={e => setExtraAirco(e.target.checked)} className="sr-only" />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.extraAirco')}</span>
+                                <span className="text-sm font-bold text-primary">{t('booking.extraAircoPrice')}</span>
+                              </div>
+                              <p className="text-xs text-muted mt-0.5">{t('booking.extraAircoDesc')}</p>
                             </div>
                           </label>
 
@@ -1097,18 +1102,6 @@ function BoekenContent() {
                       </div>
 
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        {/* Caravan strip */}
-                        {chosenCaravan && (
-                          <div className="relative h-40 sm:h-48">
-                            <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
-                            <div className="absolute inset-0 bg-black/40" />
-                            <div className="absolute bottom-4 left-5 right-5">
-                              <span className="inline-flex text-xs px-2.5 py-1 rounded-full font-bold text-white shadow-md mb-1 bg-primary">{chosenCaravan.manufacturer}</span>
-                              <h3 className="text-white font-bold text-xl">{chosenCaravan.name}</h3>
-                            </div>
-                          </div>
-                        )}
-
                         <div className="p-6 space-y-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div className="bg-surface rounded-xl p-3">
@@ -1170,12 +1163,16 @@ function BoekenContent() {
                             )}
 
                             {/* Payment breakdown: 25% now + rest on camping */}
-                            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                              <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
-                              <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
-                              <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
-                              <div className="flex justify-between text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-1">
-                                <span>{t('booking.paymentMethodCamping')}</span>
+                            <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
+                              <div className="bg-primary/5 rounded-xl p-3 space-y-1">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-primary">{t('booking.payNowLabel')}</p>
+                                <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
+                              </div>
+                              <div className="bg-amber-50 rounded-xl p-3 space-y-1">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">{t('booking.payOnCampingLabel')}</p>
+                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
+                                <p className="text-[11px] text-amber-600 mt-1">{t('booking.paymentMethodCamping')}</p>
                               </div>
                             </div>
                           </div>
@@ -1296,19 +1293,6 @@ function BoekenContent() {
                       <p className="font-semibold text-foreground text-[13px] mt-1.5">{totalPersons} {t('booking.persons')} ({adults} {t('booking.personsAdults')}{children > 0 ? `, ${children} ${t('booking.child')}` : ''})</p>
                     </div>
 
-                    {/* Caravan */}
-                    {chosenCaravan && (
-                      <div className="flex items-start gap-2.5">
-                        <div className="w-9 h-6 rounded overflow-hidden relative shrink-0 mt-0.5">
-                          <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground text-[13px]">{chosenCaravan.name}</p>
-                          <p className="text-xs text-muted">{chosenCaravan.manufacturer}</p>
-                        </div>
-                      </div>
-                    )}
-
                     {/* Price */}
                     {totalPrice > 0 && (
                       <div className="pt-2.5 mt-1 border-t border-gray-100">
@@ -1329,6 +1313,10 @@ function BoekenContent() {
                         <div className="flex justify-between text-xs mt-0.5">
                           <span className="text-muted">{t('booking.restOnCamping')}</span>
                           <span className="font-medium text-foreground-light">&euro;{restAmount}</span>
+                        </div>
+                        <div className="flex justify-between text-xs mt-0.5">
+                          <span className="text-muted">{t('booking.borgOnCamping')}</span>
+                          <span className="font-medium text-foreground-light">&euro;{totalBorg}</span>
                         </div>
                       </div>
                     )}
@@ -1378,15 +1366,10 @@ function BoekenContent() {
               <button onClick={goBack} className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-full text-foreground-light font-medium text-sm transition-all active:bg-surface shrink-0">
                 <ArrowLeft size={16} /> {t('booking.previous')}
               </button>
-            ) : discountedTotal > 0 && chosenCaravan ? (
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-6 rounded overflow-hidden relative shrink-0">
-                  <Image src={chosenCaravan.photos[0]} alt={chosenCaravan.name} fill className="object-cover" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-muted leading-tight">{t('booking.totalPriceLabel')}</p>
-                  <p className="text-sm font-bold text-primary">&euro;{discountedTotal}</p>
-                </div>
+            ) : discountedTotal > 0 ? (
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted leading-tight">{t('booking.totalPriceLabel')}</p>
+                <p className="text-sm font-bold text-primary">&euro;{discountedTotal}</p>
               </div>
             ) : <div />}
           </div>

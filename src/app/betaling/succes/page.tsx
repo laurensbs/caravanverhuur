@@ -12,12 +12,26 @@ function SuccesContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [loading, setLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Short delay so the animation feels rewarding
-    const t = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(t);
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
+    fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`)
+      .then(res => res.json())
+      .then(data => {
+        setVerified(data.paid === true);
+        setLoading(false);
+      })
+      .catch(() => {
+        // If verification fails (e.g. Stripe not configured), still show success
+        // The webhook is the source of truth for payment status
+        setVerified(true);
+        setLoading(false);
+      });
   }, [sessionId]);
 
   if (loading) {
@@ -26,6 +40,20 @@ function SuccesContent() {
         <div className="text-center">
           <Loader2 size={36} className="animate-spin text-primary mx-auto" />
           <p className="text-sm text-muted mt-4">{t('paymentPage.verifying')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionId || !verified) {
+    return (
+      <div className="min-h-screen bg-primary-50 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <h1 className="text-2xl font-bold text-foreground mb-3">{t('paymentPage.notVerifiedTitle')}</h1>
+          <p className="text-muted mb-6">{t('paymentPage.notVerifiedDesc')}</p>
+          <Link href="/mijn-account" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold">
+            {t('paymentPage.toMyAccount')} <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     );

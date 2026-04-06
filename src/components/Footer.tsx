@@ -71,7 +71,6 @@ export default function Footer() {
   const { t } = useLanguage();
 
   const links = [
-    { href: '/caravans', label: t('footer.ourCaravans') },
     { href: '/bestemmingen', label: t('nav.destinations') },
     { href: '/boeken', label: t('footer.directBooking') },
     { href: '/over-ons', label: t('nav.about') },

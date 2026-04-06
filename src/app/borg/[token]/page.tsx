@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   Shield,
   CheckCircle2,
@@ -19,8 +20,15 @@ import {
   ThumbsUp,
   ThumbsDown,
   Printer,
+  Banknote,
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  PenTool,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+
+const SignatureCanvas = dynamic(() => import('@/components/SignatureCanvas'), { ssr: false });
 
 interface BorgItem {
   category: string;
@@ -60,15 +68,9 @@ interface BorgChecklist {
   extra_damages: ExtraDamage[] | null;
   cleaning_deduction: string | null;
   total_deduction: string | null;
+  borg_return_method: string | null;
+  customer_signature: string | null;
 }
-
-const statusLabels: Record<string, string> = {
-  'OPEN': 'In voorbereiding',
-  'IN_BEHANDELING': 'Wordt ingevuld',
-  'AFGEROND': 'Klaar voor uw beoordeling',
-  'KLANT_AKKOORD': 'U bent akkoord',
-  'KLANT_BEZWAAR': 'Bezwaar ingediend',
-};
 
 const itemStatusIcons: Record<string, React.ReactNode> = {
   'nvt': <Minus size={16} className="text-muted" />,
@@ -76,6 +78,8 @@ const itemStatusIcons: Record<string, React.ReactNode> = {
   'beschadigd': <AlertTriangle size={16} className="text-primary" />,
   'ontbreekt': <XCircle size={16} className="text-danger" />,
 };
+
+type CustomerStep = 'review' | 'confirm';
 
 export default function CustomerBorgPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
@@ -86,6 +90,12 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
   const [customerNotes, setCustomerNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [borgReturnMethod, setBorgReturnMethod] = useState<'contant' | 'bank' | ''>('');
+  const [signature, setSignature] = useState<string | null>(null);
+  const [customerStep, setCustomerStep] = useState<CustomerStep>('review');
+  const [agreedChoice, setAgreedChoice] = useState<boolean | null>(null);
+  const [validationError, setValidationError] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     async function fetchChecklist() {
@@ -107,21 +117,49 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
     fetchChecklist();
   }, [token]);
 
-  const handleSubmit = async (agreed: boolean) => {
+  const handleProceedToConfirm = (agreed: boolean) => {
+    setAgreedChoice(agreed);
+    setCustomerStep('confirm');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async () => {
+    if (!agreedChoice && agreedChoice !== false) return;
+    setValidationError('');
+
+    // Only require signature and return method when agreeing
+    if (agreedChoice) {
+      if (!borgReturnMethod) {
+        setValidationError(t('borgPage.borgReturnMethodRequired'));
+        return;
+      }
+      if (!signature) {
+        setValidationError(t('borgPage.signatureRequired'));
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch(`/api/borg/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agreed, notes: customerNotes || undefined }),
+        body: JSON.stringify({
+          agreed: agreedChoice,
+          notes: customerNotes || undefined,
+          borgReturnMethod: borgReturnMethod || undefined,
+          signature: signature || undefined,
+        }),
       });
       if (res.ok) {
         setSubmitted(true);
         setChecklist(prev => prev ? {
           ...prev,
-          customer_agreed: agreed,
+          customer_agreed: agreedChoice!,
           customer_notes: customerNotes,
-          status: agreed ? 'KLANT_AKKOORD' : 'KLANT_BEZWAAR',
+          status: agreedChoice ? 'KLANT_AKKOORD' : 'KLANT_BEZWAAR',
+          borg_return_method: borgReturnMethod || null,
+          customer_signature: signature,
         } : null);
       }
     } catch {
@@ -129,6 +167,10 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const toggleCategory = (cat: string) => {
+    setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
   };
 
   // Group items by category
@@ -175,6 +217,158 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
   const ontbreektItems = allItems.filter(i => i.status === 'ontbreekt').length;
   const hasIssues = beschadigdItems > 0 || ontbreektItems > 0;
   const canRespond = checklist.status === 'AFGEROND' && !checklist.customer_agreed && !submitted;
+
+  const borgAmount = parseFloat(checklist.borg_amount) || 400;
+  const itemDamageTotal = allItems.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+  const extraDamages: ExtraDamage[] = checklist.extra_damages || [];
+  const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const cleaningDed = checklist.cleaning_deduction ? parseFloat(checklist.cleaning_deduction) : 0;
+  const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : (itemDamageTotal + extraDamageTotal + cleaningDed);
+  const refund = Math.max(0, borgAmount - totalDed);
+  const hasDeductions = totalDed > 0;
+
+  // CONFIRM STEP - Review + signature + borg return method
+  if (customerStep === 'confirm' && canRespond && agreedChoice !== null) {
+    return (
+      <div className="min-h-screen bg-surface">
+        {/* Header */}
+        <div className="bg-primary-dark-light text-white">
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            <button
+              onClick={() => { setCustomerStep('review'); setValidationError(''); }}
+              className="flex items-center gap-1 text-white/70 text-sm mb-4 hover:text-white transition cursor-pointer"
+            >
+              <ArrowLeft size={16} /> {t('borgPage.backToSite').replace('← ', '')}
+            </button>
+            <div className="flex items-center gap-2 mb-1">
+              <PenTool size={20} />
+              <span className="text-white/80 text-sm font-medium">{t('borgPage.confirmTitle')}</span>
+            </div>
+            <h1 className="text-xl font-bold">
+              {agreedChoice ? t('borgPage.agreeBtn').split('—')[0].trim() : t('borgPage.objectBtn')}
+            </h1>
+          </div>
+        </div>
+
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+          <p className="text-sm text-muted">{t('borgPage.confirmDesc')}</p>
+
+          {/* Summary of deductions */}
+          <div className={`rounded-xl p-4 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
+            <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">Totale borg</span>
+                <span className="font-semibold">€{borgAmount.toFixed(2)}</span>
+              </div>
+              {totalDed > 0 && (
+                <div className="flex justify-between">
+                  <span className="font-bold text-foreground">Totaal ingehouden</span>
+                  <span className="font-bold text-red-600">€{totalDed.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-gray-200 pt-2">
+                <span className="font-bold text-foreground">Terug te ontvangen</span>
+                <span className="font-bold text-lg text-emerald-600">€{refund.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Comments */}
+          <div className="bg-white rounded-xl p-4">
+            <label className="block text-xs font-medium text-foreground mb-1">
+              {t('borgPage.commentsOptional')}
+            </label>
+            <textarea
+              value={customerNotes}
+              onChange={(e) => setCustomerNotes(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none"
+              placeholder={t('borgPage.commentsPlaceholder')}
+            />
+          </div>
+
+          {/* Borg return method - only for agree */}
+          {agreedChoice && (
+            <div className="bg-white rounded-xl p-4">
+              <h3 className="font-bold text-sm text-foreground mb-3">{t('borgPage.borgReturnMethodTitle')}</h3>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => { setBorgReturnMethod('contant'); setValidationError(''); }}
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                    borgReturnMethod === 'contant' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${borgReturnMethod === 'contant' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                    <Banknote size={20} />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm text-foreground">{t('borgPage.borgReturnCash')}</div>
+                    <div className="text-xs text-muted">{t('borgPage.borgReturnCashDesc')}</div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${borgReturnMethod === 'contant' ? 'border-primary' : 'border-gray-300'}`}>
+                    {borgReturnMethod === 'contant' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBorgReturnMethod('bank'); setValidationError(''); }}
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                    borgReturnMethod === 'bank' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${borgReturnMethod === 'bank' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                    <Building2 size={20} />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm text-foreground">{t('borgPage.borgReturnBank')}</div>
+                    <div className="text-xs text-muted">{t('borgPage.borgReturnBankDesc')}</div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${borgReturnMethod === 'bank' ? 'border-primary' : 'border-gray-300'}`}>
+                    {borgReturnMethod === 'bank' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Signature */}
+          <div className="bg-white rounded-xl p-4">
+            <SignatureCanvas
+              onSignature={setSignature}
+              label={t('borgPage.signatureTitle')}
+              clearLabel={t('borgPage.signatureClear')}
+            />
+            <p className="text-[10px] text-muted mt-2">
+              {checklist.guest_name} — {new Date().toLocaleDateString('nl-NL')}
+            </p>
+          </div>
+
+          {/* Validation error */}
+          {validationError && (
+            <div className="bg-red-50 text-red-600 text-sm font-medium rounded-xl p-3 text-center">
+              {validationError}
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className={`w-full flex items-center justify-center gap-2 px-4 py-4 ${
+              agreedChoice ? 'bg-emerald-600' : 'bg-red-500'
+            } text-white rounded-xl font-bold transition-colors cursor-pointer disabled:opacity-50 text-base shadow-lg`}
+          >
+            {submitting ? <Loader2 size={18} className="animate-spin" /> : agreedChoice ? <ThumbsUp size={18} /> : <ThumbsDown size={18} />}
+            {t('borgPage.confirmAndSign')}
+          </button>
+
+          <div className="h-6" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -285,51 +479,66 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           </div>
         </div>
 
-        {/* Checklist items by category */}
-        {Object.entries(categories).map(([category, items], catIdx) => (
-          <div key={category} className="bg-white rounded-xl overflow-hidden">
-            <div className="bg-gray-50 px-4 py-2">
-              <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider">{category}</h3>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {items.map(item => (
-                <div key={item.item} className="px-4 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="shrink-0">{itemStatusIcons[item.status]}</div>
-                    <span className="text-sm text-foreground flex-1">{item.item}</span>
-                    {(item.status === 'beschadigd' || item.status === 'ontbreekt') && item.damageAmount > 0 && (
-                      <span className="text-xs font-semibold text-red-600">€{item.damageAmount}</span>
-                    )}
-                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                      item.status === 'goed' ? 'bg-emerald-50 text-emerald-700' :
-                      item.status === 'beschadigd' ? 'bg-amber-50 text-amber-700' :
-                      item.status === 'ontbreekt' ? 'bg-red-50 text-red-600' :
-                      'bg-gray-50 text-muted'
-                    }`}>
-                      {item.status === 'nvt' ? t('borgPage.notAssessed') :
-                       item.status === 'goed' ? t('borgPage.inOrder') :
-                       item.status === 'beschadigd' ? t('borgPage.damagedLabel') :
-                       t('borgPage.missingLabel')}
-                    </span>
-                  </div>
-                  {item.notes && (
-                    <p className="text-xs text-muted mt-1 ml-6 flex items-start gap-1">
-                      <MessageSquare size={10} className="mt-0.5 shrink-0" />
-                      {item.notes}
-                    </p>
-                  )}
-                  {item.photos && item.photos.length > 0 && (
-                    <div className="flex gap-1.5 mt-1.5 ml-6 flex-wrap">
-                      {item.photos.map((p, pi) => (
-                        <img key={pi} src={p} alt="" className="w-14 h-14 rounded-lg object-cover" />
-                      ))}
-                    </div>
+        {/* Checklist items by category - collapsible on mobile */}
+        {Object.entries(categories).map(([category, items]) => {
+          const categoryIssues = items.filter(i => i.status === 'beschadigd' || i.status === 'ontbreekt').length;
+          const isExpanded = expandedCategories[category] ?? categoryIssues > 0;
+          return (
+            <div key={category} className="bg-white rounded-xl overflow-hidden">
+              <button
+                onClick={() => toggleCategory(category)}
+                className="w-full bg-gray-50 px-4 py-2.5 flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider">{category}</h3>
+                  {categoryIssues > 0 && (
+                    <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">{categoryIssues} ⚠</span>
                   )}
                 </div>
-              ))}
+                {isExpanded ? <ChevronUp size={14} className="text-muted" /> : <ChevronDown size={14} className="text-muted" />}
+              </button>
+              {isExpanded && (
+                <div className="divide-y divide-gray-50">
+                  {items.map(item => (
+                    <div key={item.item} className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="shrink-0">{itemStatusIcons[item.status]}</div>
+                        <span className="text-sm text-foreground flex-1">{item.item}</span>
+                        {(item.status === 'beschadigd' || item.status === 'ontbreekt') && item.damageAmount > 0 && (
+                          <span className="text-xs font-semibold text-red-600">€{item.damageAmount}</span>
+                        )}
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                          item.status === 'goed' ? 'bg-emerald-50 text-emerald-700' :
+                          item.status === 'beschadigd' ? 'bg-amber-50 text-amber-700' :
+                          item.status === 'ontbreekt' ? 'bg-red-50 text-red-600' :
+                          'bg-gray-50 text-muted'
+                        }`}>
+                          {item.status === 'nvt' ? t('borgPage.notAssessed') :
+                           item.status === 'goed' ? t('borgPage.inOrder') :
+                           item.status === 'beschadigd' ? t('borgPage.damagedLabel') :
+                           t('borgPage.missingLabel')}
+                        </span>
+                      </div>
+                      {item.notes && (
+                        <p className="text-xs text-muted mt-1 ml-6 flex items-start gap-1">
+                          <MessageSquare size={10} className="mt-0.5 shrink-0" />
+                          {item.notes}
+                        </p>
+                      )}
+                      {item.photos && item.photos.length > 0 && (
+                        <div className="flex gap-1.5 mt-1.5 ml-6 flex-wrap">
+                          {item.photos.map((p, pi) => (
+                            <img key={pi} src={p} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* General notes from staff */}
         {checklist.general_notes && (
@@ -340,62 +549,49 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
         )}
 
         {/* Deduction summary */}
-        {(() => {
-          const borgAmount = parseFloat(checklist.borg_amount) || 400;
-          const itemDamageTotal = (checklist.items || []).reduce((sum, item) => sum + (item.damageAmount || 0), 0);
-          const extraDamages: ExtraDamage[] = checklist.extra_damages || [];
-          const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
-          const cleaningDed = checklist.cleaning_deduction ? parseFloat(checklist.cleaning_deduction) : 0;
-          const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : (itemDamageTotal + extraDamageTotal + cleaningDed);
-          const refund = Math.max(0, borgAmount - totalDed);
-          const hasDeductions = totalDed > 0;
+        <div className={`rounded-xl p-4 sm:p-5 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
+          <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted">Totale borg</span>
+              <span className="font-semibold">€{borgAmount.toFixed(2)}</span>
+            </div>
 
-          return (
-            <div className={`rounded-xl p-4 sm:p-5 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
-              <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
-              <div className="space-y-2 text-sm">
+            {itemDamageTotal > 0 && (
+              <div className="flex justify-between">
+                <span className="text-amber-700">Schade inventaris</span>
+                <span className="font-semibold text-amber-700">-€{itemDamageTotal.toFixed(2)}</span>
+              </div>
+            )}
+
+            {extraDamages.length > 0 && extraDamages.map((d, i) => (
+              <div key={i} className="flex justify-between">
+                <span className="text-amber-700">{d.description || 'Overige schade'}</span>
+                <span className="font-semibold text-amber-700">-€{(d.amount || 0).toFixed(2)}</span>
+              </div>
+            ))}
+
+            {cleaningDed > 0 && (
+              <div className="flex justify-between">
+                <span className="text-amber-700">Schoonmaak</span>
+                <span className="font-semibold text-amber-700">-€{cleaningDed.toFixed(2)}</span>
+              </div>
+            )}
+
+            <div className="border-t border-gray-200 pt-2 mt-2 space-y-1">
+              {totalDed > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted">Totale borg</span>
-                  <span className="font-semibold">€{borgAmount.toFixed(2)}</span>
+                  <span className="font-bold text-foreground">Totaal ingehouden</span>
+                  <span className="font-bold text-red-600">€{totalDed.toFixed(2)}</span>
                 </div>
-
-                {itemDamageTotal > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-amber-700">Schade inventaris</span>
-                    <span className="font-semibold text-amber-700">-€{itemDamageTotal.toFixed(2)}</span>
-                  </div>
-                )}
-
-                {extraDamages.length > 0 && extraDamages.map((d, i) => (
-                  <div key={i} className="flex justify-between">
-                    <span className="text-amber-700">{d.description || 'Overige schade'}</span>
-                    <span className="font-semibold text-amber-700">-€{(d.amount || 0).toFixed(2)}</span>
-                  </div>
-                ))}
-
-                {cleaningDed > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-amber-700">Schoonmaak</span>
-                    <span className="font-semibold text-amber-700">-€{cleaningDed.toFixed(2)}</span>
-                  </div>
-                )}
-
-                <div className="border-t border-gray-200 pt-2 mt-2 space-y-1">
-                  {totalDed > 0 && (
-                    <div className="flex justify-between">
-                      <span className="font-bold text-foreground">Totaal ingehouden</span>
-                      <span className="font-bold text-red-600">€{totalDed.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="font-bold text-foreground">Terug te storten</span>
-                    <span className="font-bold text-lg text-emerald-600">€{refund.toFixed(2)}</span>
-                  </div>
-                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="font-bold text-foreground">Terug te ontvangen</span>
+                <span className="font-bold text-lg text-emerald-600">€{refund.toFixed(2)}</span>
               </div>
             </div>
-          );
-        })()}
+          </div>
+        </div>
 
         {/* Customer response section */}
         {canRespond && (
@@ -404,33 +600,19 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             <p className="text-xs text-muted mb-4">
               {hasIssues ? t('borgPage.assessmentIssues') : t('borgPage.assessmentOk')}
             </p>
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-foreground mb-1">
-                {t('borgPage.commentsOptional')}
-              </label>
-              <textarea
-                value={customerNotes}
-                onChange={(e) => setCustomerNotes(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none"
-                placeholder={t('borgPage.commentsPlaceholder')}
-              />
-            </div>
             <div className="flex gap-2">
               <button
-                onClick={() => handleSubmit(true)}
-                disabled={submitting}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-50 text-sm"
+                onClick={() => handleProceedToConfirm(true)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
               >
-                {submitting ? <Loader2 size={14} className="animate-spin" /> : <ThumbsUp size={14} />}
+                <ThumbsUp size={14} />
                 {t('borgPage.agreeBtn')}
               </button>
               <button
-                onClick={() => handleSubmit(false)}
-                disabled={submitting}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-50 text-sm"
+                onClick={() => handleProceedToConfirm(false)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
               >
-                {submitting ? <Loader2 size={14} className="animate-spin" /> : <ThumbsDown size={14} />}
+                <ThumbsDown size={14} />
                 {t('borgPage.objectBtn')}
               </button>
             </div>
@@ -462,14 +644,21 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
                 {checklist.customer_notes}
               </p>
             )}
+            {checklist.borg_return_method && (
+              <div className="flex items-center gap-2 mt-2 text-sm">
+                {checklist.borg_return_method === 'contant' ? <Banknote size={14} className="text-emerald-600" /> : <Building2 size={14} className="text-blue-600" />}
+                <span className="font-medium">{t('borgPage.borgReturnMethodLabel')}: {checklist.borg_return_method === 'contant' ? t('borgPage.borgReturnCash') : t('borgPage.borgReturnBank')}</span>
+              </div>
+            )}
+            {checklist.customer_signature && (
+              <div className="mt-3 bg-white/50 rounded-lg p-2">
+                <p className="text-[10px] text-muted mb-1">{t('borgPage.signatureTitle')}</p>
+                <img src={checklist.customer_signature} alt="Signature" className="h-16 object-contain" />
+              </div>
+            )}
             {checklist.customer_agreed && (
               <p className="text-sm text-emerald-700 mt-3">
-                {(() => {
-                  const borgAmt = parseFloat(checklist.borg_amount) || 400;
-                  const totalDed = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
-                  const refund = Math.max(0, borgAmt - totalDed);
-                  return t('borgPage.borgReturnNote').replace('{amount}', refund.toFixed(2));
-                })()}
+                {t('borgPage.borgReturnNote').replace('{amount}', refund.toFixed(2))}
               </p>
             )}
           </div>
@@ -493,13 +682,18 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           <h3 className="font-bold text-sm mb-6">Handtekeningen</h3>
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <p className="text-xs text-muted mb-12">Medewerker:</p>
-              <div className="border-b border-gray-300 mb-1" />
-              <p className="text-xs text-muted">{checklist.staff_name || 'Naam medewerker'}</p>
+              <p className="text-xs text-muted mb-2">Medewerker:</p>
+              {checklist.staff_name && <p className="text-xs text-muted">{checklist.staff_name}</p>}
             </div>
             <div>
-              <p className="text-xs text-muted mb-12">Klant:</p>
-              <div className="border-b border-gray-300 mb-1" />
+              <p className="text-xs text-muted mb-2">Klant:</p>
+              {checklist.customer_signature ? (
+                <img src={checklist.customer_signature} alt="Signature" className="h-16 object-contain" />
+              ) : (
+                <>
+                  <div className="border-b border-gray-300 mb-1 mt-10" />
+                </>
+              )}
               <p className="text-xs text-muted">{checklist.guest_name}</p>
             </div>
           </div>

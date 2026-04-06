@@ -111,6 +111,8 @@ export async function setupDatabase() {
     await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS extra_damages JSONB DEFAULT '[]'`;
     await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS cleaning_deduction NUMERIC(10,2) DEFAULT 0`;
     await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS total_deduction NUMERIC(10,2) DEFAULT 0`;
+    await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS borg_return_method TEXT`;
+    await sql`ALTER TABLE borg_checklists ADD COLUMN IF NOT EXISTS customer_signature TEXT`;
   } catch {
     // Columns may already exist
   }
@@ -417,6 +419,24 @@ export async function setupDatabase() {
     )
   `;
 
+  // Performance indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_checkin ON bookings(check_in)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_checkout ON bookings(check_out)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_guest_email ON bookings(guest_email)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_caravan_id ON bookings(caravan_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payments(booking_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_payments_stripe_id ON payments(stripe_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_customer_sessions_token ON customer_sessions(token)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_borg_booking_id ON borg_checklists(booking_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_borg_token ON borg_checklists(token)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_activity_log_created ON activity_log(created_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_chat_conv_customer ON chat_conversations(customer_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_chat_msgs_conv ON chat_messages(conversation_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_booking_tasks_booking ON booking_tasks(booking_id)`;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -481,6 +501,56 @@ export async function createBooking(data: {
   return { id, reference, paymentId };
 }
 
+// Atomic check-and-insert: prevents race condition where two simultaneous requests
+// both pass the availability check and create overlapping bookings.
+export async function createBookingAtomic(data: {
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  adults: number;
+  children: number;
+  specialRequests?: string;
+  caravanId: string;
+  campingId: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  totalPrice: number;
+  depositAmount: number;
+  remainingAmount: number;
+  borgAmount: number;
+  spotNumber?: string;
+}): Promise<{ id: string; reference: string; paymentId: string } | null> {
+  const MAX_CARAVANS = 5;
+  const id = generateId('B');
+  const reference = await generateBookingReference();
+  const paymentId = generateId('P');
+
+  // Single atomic INSERT ... WHERE availability check passes
+  const result = await sql`
+    INSERT INTO bookings (id, reference, status, guest_name, guest_email, guest_phone, adults, children, special_requests, caravan_id, camping_id, check_in, check_out, nights, total_price, deposit_amount, remaining_amount, borg_amount, spot_number)
+    SELECT ${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null}
+    WHERE (
+      SELECT COUNT(*)::int FROM bookings
+      WHERE status NOT IN ('GEANNULEERD')
+        AND check_in < ${data.checkOut}
+        AND check_out > ${data.checkIn}
+    ) < ${MAX_CARAVANS}
+  `;
+
+  if (result.rowCount === 0) {
+    return null; // Availability check failed
+  }
+
+  // Create payment record for the 25% deposit
+  await sql`
+    INSERT INTO payments (id, booking_id, type, amount, status, method)
+    VALUES (${paymentId}, ${id}, 'AANBETALING', ${data.depositAmount}, 'OPENSTAAND', 'ideal')
+  `;
+
+  return { id, reference, paymentId };
+}
+
 export async function getAllBookings() {
   const result = await sql`
     SELECT * FROM bookings ORDER BY created_at DESC
@@ -504,6 +574,12 @@ export async function updateBookingStatus(id: string, status: string) {
 export async function updateBookingNotes(id: string, notes: string) {
   await sql`
     UPDATE bookings SET admin_notes = ${notes} WHERE id = ${id}
+  `;
+}
+
+export async function updateBookingCaravan(id: string, caravanId: string | null) {
+  await sql`
+    UPDATE bookings SET caravan_id = ${caravanId} WHERE id = ${id}
   `;
 }
 
@@ -551,6 +627,13 @@ export async function getAllPayments() {
     ORDER BY p.created_at DESC
   `;
   return result.rows;
+}
+
+export async function getPaymentByStripeId(stripeId: string) {
+  const result = await sql`
+    SELECT * FROM payments WHERE stripe_id = ${stripeId} LIMIT 1
+  `;
+  return result.rows[0] || null;
 }
 
 export async function updatePaymentStatus(id: string, status: string, paidAt?: string) {
@@ -643,7 +726,7 @@ export async function getDashboardStats() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
-  const [bookingsResult, paymentsResult, contactsResult, monthlyResult] = await Promise.all([
+  const [bookingsResult, paymentsResult, contactsResult, monthlyResult, borgResult, occupancyResult] = await Promise.all([
     sql`SELECT 
       COUNT(*) as total,
       COUNT(*) FILTER (WHERE status NOT IN ('GEANNULEERD', 'AFGEROND')) as active,
@@ -664,6 +747,13 @@ export async function getDashboardStats() {
       COALESCE(SUM(total_price), 0) as revenue_this_month
     FROM bookings
     WHERE created_at >= ${monthStart} AND created_at <= ${monthEnd}`,
+    sql`SELECT
+      COUNT(*) FILTER (WHERE status = 'OPEN') as pending,
+      COUNT(*) FILTER (WHERE status = 'AFGEROND' AND customer_agreed = false) as awaiting_customer
+    FROM borg_checklists`,
+    sql`SELECT COUNT(*) as booked_this_month FROM bookings
+    WHERE status NOT IN ('GEANNULEERD')
+      AND check_in <= ${monthEnd} AND check_out >= ${monthStart}`,
   ]);
 
   return {
@@ -671,6 +761,8 @@ export async function getDashboardStats() {
     payments: paymentsResult.rows[0],
     contacts: contactsResult.rows[0],
     monthly: monthlyResult.rows[0],
+    borg: borgResult.rows[0],
+    occupancy: occupancyResult.rows[0],
   };
 }
 
@@ -746,62 +838,32 @@ export async function getAvailableCaravanIds() {
 
 const BORG_CHECKLIST_ITEMS = [
   // Buiten
-  { category: 'Buiten', item: '4 tuinstoelen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Buiten', item: '1 tuintafel', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Buiten', item: '1 parasol', status: 'nvt', notes: '', damageAmount: 0 },
-  // Keuken
-  { category: 'Keuken', item: '1 koffiezetapparaat (Senseo)', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '1 waterkoker', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '2 koekenpannen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '2 kookpannen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: 'Snijplanken', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '3 pannenonderzetters', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '1 vergiet', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '1 maatbeker', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '1 rasp', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Keuken', item: '1 gasfles', status: 'nvt', notes: '', damageAmount: 0 },
-  // Servies & glaswerk
-  { category: 'Servies & glaswerk', item: '6 grote platte borden', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 ontbijtborden', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 soepkommen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 theeglazen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 koffiemokken', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 longdrink glazen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 bierglazen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Servies & glaswerk', item: '6 wijnglazen', status: 'nvt', notes: '', damageAmount: 0 },
-  // Bestek
-  { category: 'Bestek', item: '6 lepels', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Bestek', item: '6 vorken', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Bestek', item: '6 messen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Bestek', item: '6 theelepels', status: 'nvt', notes: '', damageAmount: 0 },
-  // Overig keuken
-  { category: 'Overig keuken', item: '2 schilmessen', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '2 opscheplepels', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '1 snijmes', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '1 schaar', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '1 flessenopener', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '1 kaasschaaf', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig keuken', item: '1 blikopener', status: 'nvt', notes: '', damageAmount: 0 },
-  // Overig
-  { category: 'Overig', item: '1 pedaalemmer', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: '1 stoffer + blik', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: '1 afwasbak', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: '1 emmer', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: '1 vloerveger', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: '1 droogrek', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Overig', item: 'Wasknijpers', status: 'nvt', notes: '', damageAmount: 0 },
-  // Ouderslaapkamer
-  { category: 'Ouderslaapkamer', item: '1 tweepersoonsbed', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Ouderslaapkamer', item: 'Dekbed (2x 1-persoons mogelijk)', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Ouderslaapkamer', item: '1 molton', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Ouderslaapkamer', item: '2 kussens', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Ouderslaapkamer', item: '10 kledinghangers', status: 'nvt', notes: '', damageAmount: 0 },
-  // Tweede slaapkamer
-  { category: 'Tweede slaapkamer', item: '2 eenpersoonsbedden', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Tweede slaapkamer', item: '2 moltons', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Tweede slaapkamer', item: '2 dekbedden', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Tweede slaapkamer', item: '2 kussens', status: 'nvt', notes: '', damageAmount: 0 },
-  { category: 'Tweede slaapkamer', item: '1 lampje', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Buiten', item: 'Tuinmeubilair (4 stoelen + tafel)', status: 'nvt', notes: '', damageAmount: 0 },
+  // Keuken — apparatuur
+  { category: 'Keuken', item: 'Koffiezetapparaat (Senseo)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: 'Waterkoker', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: 'Pannen & koekenpannen (4 stuks)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keuken', item: 'Gasfles', status: 'nvt', notes: '', damageAmount: 0 },
+  // Servies & bestek
+  { category: 'Servies & bestek', item: 'Borden compleet (plat, ontbijt, soep)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & bestek', item: 'Glazen compleet (thee, longdrink, bier, wijn)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & bestek', item: 'Koffiemokken', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Servies & bestek', item: 'Bestek compleet (messen, vorken, lepels)', status: 'nvt', notes: '', damageAmount: 0 },
+  // Keukengerief
+  { category: 'Keukengerief', item: 'Snijplanken & messen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keukengerief', item: 'Keukengerei (opscheplepels, vergiet, rasp, schaar)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keukengerief', item: 'Openers (fles, blik, kaasschaaf)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Keukengerief', item: 'Pannenonderzetters', status: 'nvt', notes: '', damageAmount: 0 },
+  // Schoonmaak & overig
+  { category: 'Schoonmaak & overig', item: 'Schoonmaakset (stoffer, blik, vloerveger, emmer)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Schoonmaak & overig', item: 'Afwasbak & droogrek', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Schoonmaak & overig', item: 'Pedaalemmer', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Schoonmaak & overig', item: 'Wasknijpers & waslijn', status: 'nvt', notes: '', damageAmount: 0 },
+  // Slaapkamers
+  { category: 'Slaapkamers', item: '4 slaapplekken (2 slaapkamers)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Slaapkamers', item: 'Matrassen', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Slaapkamers', item: 'Kledinghangers', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Slaapkamers', item: 'Lampje', status: 'nvt', notes: '', damageAmount: 0 },
   // Caravan exterieur & technisch
   { category: 'Caravan', item: 'Carrosserie (deuken, krassen)', status: 'nvt', notes: '', damageAmount: 0 },
   { category: 'Caravan', item: 'Ramen & deuren', status: 'nvt', notes: '', damageAmount: 0 },
@@ -810,6 +872,7 @@ const BORG_CHECKLIST_ITEMS = [
   { category: 'Caravan', item: 'Verlichting', status: 'nvt', notes: '', damageAmount: 0 },
   { category: 'Caravan', item: 'Koelkast', status: 'nvt', notes: '', damageAmount: 0 },
   { category: 'Caravan', item: 'Kookplaat (3 pits)', status: 'nvt', notes: '', damageAmount: 0 },
+  { category: 'Caravan', item: 'Gasfles & aansluiting', status: 'nvt', notes: '', damageAmount: 0 },
   { category: 'Caravan', item: 'Toilet', status: 'nvt', notes: '', damageAmount: 0 },
   { category: 'Caravan', item: 'Verwarming', status: 'nvt', notes: '', damageAmount: 0 },
 ];
@@ -912,13 +975,15 @@ export async function updateBorgChecklist(id: string, data: {
   }
 }
 
-export async function customerAgreeBorgChecklist(token: string, agreed: boolean, notes?: string) {
+export async function customerAgreeBorgChecklist(token: string, agreed: boolean, notes?: string, borgReturnMethod?: string, customerSignature?: string) {
   await sql`
     UPDATE borg_checklists SET 
       customer_agreed = ${agreed},
       customer_agreed_at = NOW(),
       customer_notes = ${notes || null},
-      status = CASE WHEN ${agreed} THEN 'KLANT_AKKOORD' ELSE 'KLANT_BEZWAAR' END
+      status = CASE WHEN ${agreed} THEN 'KLANT_AKKOORD' ELSE 'KLANT_BEZWAAR' END,
+      borg_return_method = COALESCE(${borgReturnMethod || null}, borg_return_method),
+      customer_signature = COALESCE(${customerSignature || null}, customer_signature)
     WHERE token = ${token}
   `;
 }
@@ -1335,6 +1400,20 @@ export async function getSubscribedCustomerEmails() {
   return result.rows.map(r => r.email as string);
 }
 
+export async function getSubscribedCustomersWithNames() {
+  const result = await sql`
+    SELECT DISTINCT ON (LOWER(email)) email, name FROM (
+      SELECT email, name FROM customers WHERE newsletter_unsubscribed = false OR newsletter_unsubscribed IS NULL
+      UNION ALL
+      SELECT guest_email AS email, guest_name AS name FROM bookings
+      WHERE guest_email NOT IN (SELECT email FROM customers WHERE newsletter_unsubscribed = true)
+    ) AS all_subscribers
+    WHERE email IS NOT NULL AND email != ''
+    ORDER BY LOWER(email), name
+  `;
+  return result.rows as { email: string; name: string }[];
+}
+
 export async function setNewsletterSubscription(email: string, unsubscribed: boolean) {
   try {
     await sql`
@@ -1538,7 +1617,7 @@ export async function applyBookingDiscount(bookingId: string, discountCode: stri
 
 // ===== BOOKING TASKS (PLANNING) =====
 
-const TASK_TYPES = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'CLEANING', 'INSPECTION'] as const;
+const TASK_TYPES = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'INSPECTION'] as const;
 
 export async function getTasksForBooking(bookingId: string) {
   const result = await sql`
@@ -1575,7 +1654,6 @@ export async function ensureTasksForBooking(bookingId: string, checkIn: string, 
     CHECKIN: checkInDate,
     CHECKOUT: checkOutDate,
     PICKUP: new Date(checkOutDate.getTime() + 86400000),
-    CLEANING: new Date(checkOutDate.getTime() + 2 * 86400000),
     INSPECTION: new Date(checkOutDate.getTime() + 2 * 86400000),
   };
 

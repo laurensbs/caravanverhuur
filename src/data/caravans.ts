@@ -21,7 +21,7 @@ export interface Caravan {
 /* ------------------------------------------------------------------ */
 const sharedInventory: string[] = [
   /* Buiten */
-  '4 tuinstoelen', '1 tuintafel', '1 parasol',
+  '4 tuinstoelen', '1 tuintafel',
   /* Keuken */
   '1 koffiezetapparaat (Senseo)', '1 waterkoker', '2 koekenpannen', '2 kookpannen',
   'Snijplanken', '3 pannenonderzetters', '1 vergiet', '1 maatbeker', '1 rasp', '1 gasfles',
@@ -35,9 +35,9 @@ const sharedInventory: string[] = [
   /* Overig */
   '1 pedaalemmer', '1 stoffer + blik', '1 afwasbak', '1 emmer', '1 vloerveger', '1 droogrek', 'Wasknijpers',
   /* Ouderslaapkamer */
-  '1 tweepersoonsbed', 'Dekbed (2x 1-persoons mogelijk)', '1 molton', '2 kussens', '10 kledinghangers',
+  '4 slaapplekken (2 slaapkamers)', '10 kledinghangers',
   /* Tweede slaapkamer */
-  '2 eenpersoonsbedden', '2 moltons', '2 dekbedden', '2 kussens', '1 lampje',
+  '1 lampje',
 ];
 
 const sharedAmenities: string[] = [

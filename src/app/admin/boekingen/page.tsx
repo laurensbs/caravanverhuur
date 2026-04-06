@@ -49,11 +49,13 @@ const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
 ];
 
-function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
+function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCaravans, onCaravanChange }: {
   booking: Booking;
   onStatusChange: (id: string, status: BookingStatus) => void;
   onNotesChange: (id: string, notes: string) => void;
   onDelete: (id: string) => void;
+  allCaravans: Caravan[];
+  onCaravanChange: (id: string, caravanId: string | null) => void;
 }) {
   const { t, ts, role } = useAdmin();
   const { toast } = useToast();
@@ -76,6 +78,11 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
   const [discountError, setDiscountError] = useState('');
   const [discountSuccess, setDiscountSuccess] = useState(false);
   const [depositConfirming, setDepositConfirming] = useState(false);
+  const [selectedCaravanId, setSelectedCaravanId] = useState<string>(booking.caravan_id || '');
+  const [caravanSaving, setCaravanSaving] = useState(false);
+  const [borgReturnMethod, setBorgReturnMethod] = useState<string | null>(null);
+  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
 
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
 
@@ -114,12 +121,41 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
     setDepositConfirming(false);
   };
 
+  const handleSendPaymentLink = async () => {
+    setSendingPaymentLink(true);
+    try {
+      const res = await fetch('/api/admin/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send-payment-link', bookingId: booking.id }),
+      });
+      const data = await res.json();
+      if (data.success && data.paymentUrl) {
+        setPaymentLinkUrl(data.paymentUrl);
+        toast(t('bookings.paymentLinkSent'), 'success');
+      } else {
+        toast(data.error || t('bookings.paymentLinkFailed'), 'error');
+      }
+    } catch {
+      toast(t('bookings.paymentLinkFailed'), 'error');
+    }
+    setSendingPaymentLink(false);
+  };
+
   useEffect(() => {
     fetch(`/api/payments?bookingId=${booking.id}`)
       .then(res => res.json())
       .then(data => setPayments(data.payments || []))
       .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingPayments(false));
+    fetch(`/api/borg?booking_id=${booking.id}`)
+      .then(res => res.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.checklists || []);
+        const uitcheck = list.find((c: { type: string }) => c.type === 'UITCHECKEN');
+        if (uitcheck?.borg_return_method) setBorgReturnMethod(uitcheck.borg_return_method);
+      })
+      .catch(() => {});
   }, [booking.id]);
 
   const handleSave = async () => {
@@ -187,9 +223,45 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex items-start gap-2">
             <CarFront className="w-4 h-4 text-muted mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-foreground">{caravan?.name || booking.caravan_id}</p>
-              <p className="text-xs text-muted">{caravan?.reference}</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={selectedCaravanId}
+                  onChange={(e) => setSelectedCaravanId(e.target.value)}
+                  className="text-sm font-medium text-foreground bg-white rounded-lg px-2 py-1 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 max-w-[200px]"
+                >
+                  <option value="">— Geen caravan —</option>
+                  {allCaravans.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.reference || c.id})</option>
+                  ))}
+                </select>
+                {selectedCaravanId !== (booking.caravan_id || '') && (
+                  <button
+                    onClick={async () => {
+                      setCaravanSaving(true);
+                      try {
+                        const res = await fetch('/api/bookings', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id: booking.id, caravanId: selectedCaravanId || null }),
+                        });
+                        if (!res.ok) { toast(t('common.actionFailed'), 'error'); setCaravanSaving(false); return; }
+                        onCaravanChange(booking.id, selectedCaravanId || null);
+                        toast(t('common.saved'), 'success');
+                      } catch {
+                        toast(t('common.actionFailed'), 'error');
+                      }
+                      setCaravanSaving(false);
+                    }}
+                    disabled={caravanSaving}
+                    className="flex items-center gap-1 px-2 py-1 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {caravanSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                    Opslaan
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-muted mt-0.5">{caravan?.reference}</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
@@ -217,6 +289,36 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
           <CreditCard className="w-4 h-4" /> {t('bookings.financial')}
         </h4>
+        {/* Payment progress tracker */}
+        {!loadingPayments && (() => {
+          const depositDone = depositAlreadyPaid || ['AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND'].includes(booking.status);
+          const restDone = ['VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND'].includes(booking.status);
+          const borgDone = payments.some(p => p.type === 'BORG' && p.status === 'BETAALD');
+          const borgRetourDone = payments.some(p => p.type === 'BORG_RETOUR');
+          const steps = [
+            { label: t('bookings.deposit30'), done: depositDone },
+            { label: t('bookings.remainingAmount'), done: restDone },
+            { label: t('bookings.securityDeposit'), done: borgDone },
+            { label: t('bookings.borgReturnLabel'), done: borgRetourDone },
+          ];
+          return (
+            <div className="flex items-center gap-0 mb-2 bg-white rounded-xl p-3 overflow-x-auto">
+              {steps.map((step, i) => (
+                <div key={i} className="flex items-center flex-1 min-w-0">
+                  <div className="flex flex-col items-center min-w-[56px]">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${step.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                      {step.done ? '✓' : (i + 1)}
+                    </div>
+                    <span className={`text-[10px] sm:text-xs mt-1 text-center leading-tight ${step.done ? 'text-green-600 font-medium' : 'text-muted'}`}>{step.label}</span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div className={`flex-1 h-0.5 -mt-4 ${step.done ? 'bg-green-400' : 'bg-gray-200'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
         <div className="bg-white rounded-xl p-3 sm:p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted">{t('bookings.totalPrice')}</span>
@@ -240,9 +342,19 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
             const borgRetour = payments.find(p => p.type === 'BORG_RETOUR');
             if (borgRetour) {
               return (
-                <div className="flex justify-between text-sm">
-                  <span className="text-emerald-600 text-xs font-medium">✅ Borg teruggestort</span>
-                  <span className="text-emerald-600 text-xs font-semibold">€{Number(borgRetour.amount).toFixed(0)}</span>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-emerald-600 text-xs font-medium">✅ Borg terug te ontvangen</span>
+                    <span className="text-emerald-600 text-xs font-semibold">€{Number(borgRetour.amount).toFixed(0)}</span>
+                  </div>
+                  {borgReturnMethod && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 text-xs">Terugbetaling via</span>
+                      <span className={`text-xs font-medium ${borgReturnMethod === 'contant' ? 'text-orange-600' : 'text-blue-600'}`}>
+                        {borgReturnMethod === 'contant' ? '💵 Contant' : '🏦 Bank'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             }
@@ -273,6 +385,35 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete }: {
               {depositConfirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.confirmDepositReceived')}
             </button>
+          )}
+          {/* Send payment link button */}
+          {!depositAlreadyPaid && (
+            <div className="space-y-2">
+              {paymentLinkUrl ? (
+                <div className="flex items-center gap-2">
+                  <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border rounded-lg px-3 py-2 truncate" />
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }}
+                    className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
+                    title="Kopiëren"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-blue-100 text-blue-600" title="Openen">
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              ) : (
+                <button
+                  onClick={handleSendPaymentLink}
+                  disabled={sendingPaymentLink}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {sendingPaymentLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+                  {sendingPaymentLink ? t('bookings.sendingPaymentLink') : t('bookings.sendPaymentLink')}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -636,6 +777,15 @@ export default function BookingenPage() {
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  const ITEMS_PER_PAGE = 25;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [statusFilter, search, dateFrom, dateTo]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -910,7 +1060,7 @@ export default function BookingenPage() {
       </p>
 
       <div className="space-y-1.5 sm:space-y-2">
-        {filtered.map((booking) => {
+        {paginated.map((booking) => {
           const caravan = getBookingCaravan(booking);
           const camping = getBookingCamping(booking);
           const isExpanded = expandedId === booking.id;
@@ -964,6 +1114,10 @@ export default function BookingenPage() {
                     onStatusChange={handleStatusChange}
                     onNotesChange={handleNotesChange}
                     onDelete={handleDelete}
+                    allCaravans={allCaravans}
+                    onCaravanChange={(id, caravanId) => {
+                      setBookings(prev => prev.map(b => b.id === id ? { ...b, caravan_id: caravanId || '' } : b));
+                    }}
                   />
                 </div>
               )}
@@ -978,6 +1132,30 @@ export default function BookingenPage() {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
+          <button onClick={() => setCurrentPage(1)} disabled={safePage <= 1} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">«</button>
+          <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safePage <= 1} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">‹</button>
+          {(() => {
+            const pages: number[] = [];
+            const start = Math.max(1, safePage - 2);
+            const end = Math.min(totalPages, safePage + 2);
+            if (start > 1) pages.push(1);
+            if (start > 2) pages.push(-1);
+            for (let i = start; i <= end; i++) pages.push(i);
+            if (end < totalPages - 1) pages.push(-2);
+            if (end < totalPages) pages.push(totalPages);
+            return pages.map((p, i) =>
+              p < 0 ? <span key={`e${i}`} className="px-1 text-sm text-muted">…</span> : (
+                <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 text-sm rounded-lg transition-colors cursor-pointer ${safePage === p ? 'bg-primary text-white font-bold' : 'bg-white text-foreground hover:bg-surface'}`}>{p}</button>
+              )
+            );
+          })()}
+          <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safePage >= totalPages} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">›</button>
+          <button onClick={() => setCurrentPage(totalPages)} disabled={safePage >= totalPages} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">»</button>
+        </div>
+      )}
     </div>
   );
 }

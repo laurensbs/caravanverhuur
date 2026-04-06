@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Loader2,
   Download,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import {
@@ -35,6 +36,8 @@ interface DashboardData {
     payments: { total_paid: string; paid_count: string; total_open: string; open_count: string };
     contacts: { total: string; new: string };
     monthly: { bookings_this_month: string; revenue_this_month: string };
+    borg?: { pending: string; awaiting_customer: string };
+    occupancy?: { booked_this_month: string };
   };
   recentBookings: Booking[];
   recentContacts: ContactSubmission[];
@@ -138,6 +141,9 @@ export default function AdminDashboard() {
   const newMessages = parseInt(stats.contacts.new);
   const bookingsThisMonth = parseInt(stats.monthly?.bookings_this_month || '0');
   const revenueThisMonth = parseFloat(stats.monthly?.revenue_this_month || '0');
+  const borgPending = parseInt(stats.borg?.pending || '0');
+  const borgAwaitingCustomer = parseInt(stats.borg?.awaiting_customer || '0');
+  const occupancyThisMonth = parseInt(stats.occupancy?.booked_this_month || '0');
 
   const monthName = new Date().toLocaleDateString(dateLocale, { month: 'long' });
 
@@ -186,6 +192,10 @@ export default function AdminDashboard() {
             <p className="text-xl sm:text-3xl font-bold">{formatCurrency(totalOpen)}</p>
             <p className="text-xs sm:text-sm text-white/60">{t('dashboard.outstanding')}</p>
           </div>
+          <div>
+            <p className="text-xl sm:text-3xl font-bold">{occupancyThisMonth}</p>
+            <p className="text-xs sm:text-sm text-white/60">{t('dashboard.occupancy')}</p>
+          </div>
         </div>
       </motion.div>
 
@@ -230,7 +240,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Action items */}
-      {(newBookings > 0 || openCount > 0 || newMessages > 0) && (
+      {(newBookings > 0 || openCount > 0 || newMessages > 0 || borgPending > 0 || borgAwaitingCustomer > 0) && (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -259,6 +269,20 @@ export default function AdminDashboard() {
               <Link href={p('/berichten')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark">
                 <Mail className="w-4 h-4 shrink-0" />
                 <span>{t('dashboard.unreadMessages', { count: String(newMessages) })}</span>
+                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
+              </Link>
+            )}
+            {borgPending > 0 && (
+              <Link href={p('/borg')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary">
+                <ClipboardCheck className="w-4 h-4 shrink-0" />
+                <span>{t('dashboard.borgPending', { count: String(borgPending) })}</span>
+                <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
+              </Link>
+            )}
+            {borgAwaitingCustomer > 0 && (
+              <Link href={p('/borg')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary">
+                <ClipboardCheck className="w-4 h-4 shrink-0" />
+                <span>{t('dashboard.borgAwaitingCustomer', { count: String(borgAwaitingCustomer) })}</span>
                 <ArrowRight className="w-4 h-4 ml-auto shrink-0" />
               </Link>
             )}

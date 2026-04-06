@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity } from '@/lib/db';
+import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity, getBookingById, getPaymentById, updatePaymentStripeId } from '@/lib/db';
 import { getStripe } from '@/lib/stripe';
-import { sendManualBookingEmail } from '@/lib/email';
+import { sendManualBookingEmail, sendPaymentLinkEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 import { caravans as staticCaravans } from '@/data/caravans';
@@ -66,19 +66,71 @@ export async function POST(request: NextRequest) {
     const { sql } = await import('@vercel/postgres');
     await sql`UPDATE bookings SET status = 'BEVESTIGD' WHERE id = ${result.id}`;
 
-    // 4. Generate Stripe payment link
-    const stripe = getStripe();
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+    // 4. Generate Stripe payment link (if Stripe is available)
+    let paymentUrl: string | undefined;
+    try {
+      const stripe = getStripe();
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
 
-    // Resolve caravan/camping names
-    let caravanName = staticCaravans.find(c => c.id === caravanId)?.name || '';
-    if (!caravanName) {
+      // Resolve caravan/camping names
+      let caravanName = staticCaravans.find(c => c.id === caravanId)?.name || '';
+      if (!caravanName) {
+        try {
+          const custom = await getAllCustomCaravans();
+          caravanName = custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string || caravanId;
+        } catch { caravanName = caravanId; }
+      }
+      const campingName = await (async () => {
+        try {
+          const dbCampings = await getAllCampings();
+          const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
+          if (found) return found.name as string;
+        } catch {}
+        return staticCampings.find(c => c.id === campingId)?.name || campingId;
+      })();
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['ideal'],
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Aanbetaling (25%) — ${result.reference}`,
+              description: `Caravanverhuur Spanje — ${guestName}`,
+            },
+            unit_amount: Math.round(deposit25 * 100),
+          },
+          quantity: 1,
+        }],
+        customer_email: email,
+        metadata: {
+          paymentId: result.paymentId,
+          bookingId: result.id,
+          bookingRef: result.reference,
+          type: 'AANBETALING',
+        },
+        success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
+      });
+
+      paymentUrl = session.url ?? undefined;
+
+      // Store stripe session ID on payment
+      await updatePaymentStripeId(result.paymentId, session.id);
+    } catch (err) {
+      console.error('Failed to create Stripe checkout session for manual booking:', err);
+    }
+
+    // Resolve names for email (if not resolved in Stripe block)
+    let caravanNameForEmail = staticCaravans.find(c => c.id === caravanId)?.name || '';
+    if (!caravanNameForEmail) {
       try {
         const custom = await getAllCustomCaravans();
-        caravanName = custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string || caravanId;
-      } catch { caravanName = caravanId; }
+        caravanNameForEmail = custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string || caravanId;
+      } catch { caravanNameForEmail = caravanId; }
     }
-    const campingName = await (async () => {
+    const campingNameForEmail = await (async () => {
       try {
         const dbCampings = await getAllCampings();
         const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
@@ -86,35 +138,6 @@ export async function POST(request: NextRequest) {
       } catch {}
       return staticCampings.find(c => c.id === campingId)?.name || campingId;
     })();
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['ideal'],
-      mode: 'payment',
-      line_items: [{
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: `Aanbetaling (25%) — ${result.reference}`,
-            description: `Caravanverhuur Spanje — ${guestName}`,
-          },
-          unit_amount: Math.round(deposit25 * 100),
-        },
-        quantity: 1,
-      }],
-      customer_email: email,
-      metadata: {
-        paymentId: result.paymentId,
-        bookingId: result.id,
-        bookingRef: result.reference,
-        type: 'AANBETALING',
-      },
-      success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
-    });
-
-    // Store stripe session ID on payment
-    const { updatePaymentStripeId } = await import('@/lib/db');
-    await updatePaymentStripeId(result.paymentId, session.id);
 
     // 5. Payment is always 25% deposit due now
     const immediatePayment = true;
@@ -125,8 +148,8 @@ export async function POST(request: NextRequest) {
     sendManualBookingEmail(email, {
       guestName: guestName.trim(),
       reference: result.reference,
-      caravanName,
-      campingName,
+      caravanName: caravanNameForEmail,
+      campingName: campingNameForEmail,
       checkIn,
       checkOut,
       nights,
@@ -136,7 +159,7 @@ export async function POST(request: NextRequest) {
       paymentDeadline,
       immediatePayment,
       spotNumber,
-      paymentUrl: session.url || `${baseUrl}/mijn-account`,
+      paymentUrl: paymentUrl || `${process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com'}/mijn-account`,
       isNewAccount,
       password: isNewAccount ? plainPassword : undefined,
     }, manualCustomer?.locale).catch(err => console.error('Manual booking email failed:', err));
@@ -146,18 +169,116 @@ export async function POST(request: NextRequest) {
       .catch(err => console.error('Auto borg checklist creation failed:', err));
 
     // Log activity
-    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'booking_created', entityType: 'booking', entityId: result.id, entityLabel: result.reference, details: `${guestName} — ${caravanName} → ${campingName}` }).catch(() => {});
+    logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'booking_created', entityType: 'booking', entityId: result.id, entityLabel: result.reference, details: `${guestName} — ${caravanNameForEmail} → ${campingNameForEmail}` }).catch(() => {});
 
     return NextResponse.json({
       success: true,
       id: result.id,
       reference: result.reference,
       paymentId: result.paymentId,
-      paymentUrl: session.url,
+      paymentUrl: paymentUrl,
       isNewAccount,
     }, { status: 201 });
   } catch (error) {
     console.error('POST /api/admin/bookings error:', error);
     return NextResponse.json({ error: 'Er ging iets mis bij het aanmaken van de boeking' }, { status: 500 });
+  }
+}
+
+// PUT: Send payment link for an existing booking
+export async function PUT(request: NextRequest) {
+  try {
+    const session = getSessionFromHeaders(request);
+    if (!session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { action, bookingId } = body;
+
+    if (action !== 'send-payment-link' || !bookingId) {
+      return NextResponse.json({ error: 'Invalid action or missing bookingId' }, { status: 400 });
+    }
+
+    // Get booking
+    const booking = await getBookingById(bookingId);
+    if (!booking) {
+      return NextResponse.json({ error: 'Boeking niet gevonden' }, { status: 404 });
+    }
+
+    // Find OPENSTAAND deposit payment
+    const { sql } = await import('@vercel/postgres');
+    const paymentsResult = await sql`
+      SELECT * FROM payments WHERE booking_id = ${bookingId} AND type = 'AANBETALING' AND status = 'OPENSTAAND' LIMIT 1
+    `;
+    const payment = paymentsResult.rows[0];
+    if (!payment) {
+      return NextResponse.json({ error: 'Geen openstaande aanbetaling gevonden' }, { status: 400 });
+    }
+
+    // Create Stripe checkout session
+    const stripe = getStripe();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+    const deposit25 = Number(payment.amount);
+
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ['ideal'],
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: `Aanbetaling (25%) — ${booking.reference}`,
+            description: `Caravanverhuur Spanje — ${booking.guest_name}`,
+          },
+          unit_amount: Math.round(deposit25 * 100),
+        },
+        quantity: 1,
+      }],
+      customer_email: booking.guest_email,
+      metadata: {
+        paymentId: payment.id,
+        bookingId: booking.id,
+        bookingRef: booking.reference,
+        type: 'AANBETALING',
+      },
+      success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${payment.id}`,
+    });
+
+    // Store stripe session ID on payment
+    await updatePaymentStripeId(payment.id, stripeSession.id);
+
+    const paymentUrl = stripeSession.url;
+
+    // Look up customer locale
+    const customer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+
+    // Send payment link email to customer
+    await sendPaymentLinkEmail(booking.guest_email, {
+      guestName: booking.guest_name,
+      reference: booking.reference,
+      depositAmount: deposit25,
+      paymentUrl: paymentUrl!,
+    }, customer?.locale);
+
+    // Log activity
+    logActivity({
+      actor: session.user,
+      role: session.role,
+      action: 'payment_link_sent',
+      entityType: 'booking',
+      entityId: booking.id,
+      entityLabel: booking.reference,
+      details: `Betaallink verstuurd naar ${booking.guest_email}`,
+    }).catch(() => {});
+
+    return NextResponse.json({
+      success: true,
+      paymentUrl,
+    });
+  } catch (error) {
+    console.error('PUT /api/admin/bookings error:', error);
+    return NextResponse.json({ error: 'Er ging iets mis bij het aanmaken van de betaallink' }, { status: 500 });
   }
 }

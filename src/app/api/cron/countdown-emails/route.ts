@@ -9,10 +9,10 @@ import { createPool } from '@vercel/postgres';
 const COUNTDOWN_DAYS = [30, 14, 7, 3, 1];
 
 export async function POST(request: Request) {
-  // Verify cron secret (optional security)
+  // Verify cron secret
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     // Get all active bookings with future check-in dates
     const result = await pool.sql`
       SELECT b.id, b.reference, b.guest_name, b.guest_email, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status,
+             b.special_requests,
              c.locale
       FROM bookings b
       LEFT JOIN customers c ON LOWER(c.email) = LOWER(b.guest_email)
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
             checkIn: booking.check_in,
             checkOut: booking.check_out,
             daysUntil,
+            hasBedlinnen: !!(booking.special_requests && booking.special_requests.toLowerCase().includes('bedlinnen')),
           }, booking.locale);
 
           if (emailResult.success) {

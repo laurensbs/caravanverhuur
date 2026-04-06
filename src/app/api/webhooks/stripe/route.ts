@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getAllPayments, getCustomerByEmail, updateBookingStatus } from '@/lib/db';
+import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -35,6 +35,13 @@ export async function POST(request: NextRequest) {
         const paymentId = session.metadata?.paymentId;
 
         if (paymentId) {
+          // Idempotency: skip if already processed
+          const existingPayment = await getPaymentById(paymentId);
+          if (existingPayment?.status === 'BETAALD') {
+            console.log(`Payment ${paymentId} already BETAALD, skipping`);
+            break;
+          }
+
           const paidAt = new Date().toISOString();
 
           // Update payment status to BETAALD
@@ -85,10 +92,8 @@ export async function POST(request: NextRequest) {
 
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object;
-        // Try to find the associated payment
-        const payments = await getAllPayments();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const match = payments.find((p: any) => p.stripe_id === paymentIntent.id);
+        // Find payment by Stripe ID (indexed lookup, no full table scan)
+        const match = await getPaymentByStripeId(paymentIntent.id);
         if (match) {
           await updatePaymentStatus(match.id, 'MISLUKT');
         }

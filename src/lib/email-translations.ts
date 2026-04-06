@@ -35,6 +35,7 @@ interface EmailTranslations {
   bookingSubtext: (name: string) => string;
   bookingRefLabel: string;
   bookingAwaitConfirm: string;
+  bookingAwaitPaymentLink: string;
   bookingCaravan: string;
   bookingCamping: string;
   bookingSpot: string;
@@ -50,9 +51,17 @@ interface EmailTranslations {
   bookingBorgOnCamping: string;
   bookingDirectPayment: string;
   bookingImmediateNote: (price: string, deadline: string) => string;
+  bookingPendingPaymentNote: (price: string, deadline: string) => string;
   bookingLaterNote: (price: string, deadline: string) => string;
   bookingPayNow: (amount: string) => string;
   bookingButton: string;
+  bookingBeddingReminder: string;
+  // Payment link email
+  paymentLinkSubject: (ref: string) => string;
+  paymentLinkHeading: string;
+  paymentLinkText: (name: string, ref: string, amount: string) => string;
+  paymentLinkButton: (amount: string) => string;
+  countdownBeddingReminder: string;
 
   // Manual booking (phone)
   manualBadge: string;
@@ -118,6 +127,15 @@ interface EmailTranslations {
   borgNote: string;
   borgButton: string;
   borgDashboardLink: string;
+  borgConfirmSubject: (ref: string) => string;
+  borgConfirmHeading: string;
+  borgConfirmSubtext: (name: string) => string;
+  borgReturnMethodLabel: string;
+  borgReturnCash: string;
+  borgReturnBank: string;
+  borgRefundAmount: string;
+  borgConfirmNote: string;
+  borgConfirmDashboardLink: string;
 
   // Delete confirmation
   deleteBadge: string;
@@ -230,9 +248,10 @@ const nl: EmailTranslations = {
   bookingBadge: 'NIEUWE BOEKING',
   bookingSubject: (ref) => `Boeking ${ref} bevestigd ✅`,
   bookingHeading: 'Boeking ontvangen',
-  bookingSubtext: (name) => `Bedankt ${name}! We hebben je boeking ontvangen en gaan deze zo snel mogelijk bevestigen.`,
+  bookingSubtext: (name) => `Bedankt ${name}! Betaal de aanbetaling (25%) om je boeking definitief te maken.`,
   bookingRefLabel: 'Referentienummer',
-  bookingAwaitConfirm: '⏳ Wacht op bevestiging',
+  bookingAwaitConfirm: '💳 Betaal om te bevestigen',
+  bookingAwaitPaymentLink: '⏳ Betaallink volgt per e-mail',
   bookingCaravan: 'Caravan',
   bookingCamping: 'Camping',
   bookingSpot: 'Plek',
@@ -244,13 +263,21 @@ const nl: EmailTranslations = {
   bookingChildren: 'kind.',
   bookingTotalPrice: 'Totaalprijs',
   bookingPayBefore: '💳 Aanbetaling (25%)',
-  bookingRestOnCamping: '💰 Restbetaling (75%) — op de camping',
-  bookingBorgOnCamping: '🔒 Borg — €400 (na goedkeuring op camping)',
+  bookingRestOnCamping: '💰 Restbetaling (75%) — op de camping (contant of pin)',
+  bookingBorgOnCamping: '🔒 Borg — op de camping (contant of pin)',
   bookingDirectPayment: 'Direct bij boeking',
-  bookingImmediateNote: (price, _) => `<strong>Betalingsoverzicht:</strong> De aanbetaling van 25% dient nu voldaan te worden via iDEAL/Wero in je account. De borg (€400) wordt na goedkeuring op de camping geïnd. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).`,
-  bookingLaterNote: (price, deadline) => `<strong>Betalingsoverzicht:</strong> Betaal de aanbetaling van 25% vóór ${deadline} via iDEAL/Wero in je account. De borg (€400) wordt na goedkeuring op de camping geïnd. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).`,
+  bookingImmediateNote: (price, _) => `<strong>Betalingsoverzicht:</strong> De aanbetaling van 25% dient nu voldaan te worden via iDEAL/Wero in je account. Het restbedrag en de borg betaal je op de camping (contant of pin).`,
+  bookingPendingPaymentNote: (price, _) => `<strong>Betalingsoverzicht:</strong> Je ontvangt binnenkort een betaallink per e-mail om de aanbetaling van 25% te voldoen via iDEAL/Wero. Het restbedrag en de borg betaal je op de camping (contant of pin).`,
+  bookingLaterNote: (price, deadline) => `<strong>Betalingsoverzicht:</strong> Betaal de aanbetaling van 25% vóór ${deadline} via iDEAL/Wero in je account. Het restbedrag en de borg betaal je op de camping (contant of pin).`,
   bookingPayNow: (amount: string) => `Betaal aanbetaling ${amount} →`,
   bookingButton: 'Ga naar mijn account →',
+  bookingBeddingReminder: '🛏️ <strong>LET OP:</strong> Je hebt geen beddengoed bijgeboekt. Vergeet niet om zelf dekbedden, kussens en hoeslakens mee te nemen! Alsnog bijboeken? Neem contact met ons op.',
+  // Payment link email
+  paymentLinkSubject: (ref) => `Betaallink voor boeking ${ref} 💳`,
+  paymentLinkHeading: 'Betaallink beschikbaar',
+  paymentLinkText: (name, ref, amount) => `Hoi ${name}! De betaallink voor je boeking <strong>${ref}</strong> is nu beschikbaar. Betaal de aanbetaling van <strong>${amount}</strong> via de knop hieronder.`,
+  paymentLinkButton: (amount) => `Betaal ${amount} aanbetaling →`,
+  countdownBeddingReminder: '🛏️ <strong>Beddengoed:</strong> Je hebt geen beddengoed bijgeboekt. Vergeet niet om zelf dekbedden, kussens en hoeslakens mee te nemen!',
 
   // Manual booking
   manualBadge: 'TELEFONISCHE BOEKING',
@@ -258,7 +285,7 @@ const nl: EmailTranslations = {
   manualHeading: 'Je boeking is aangemaakt',
   manualSubtext: (name) => `Hoi ${name}! Naar aanleiding van ons telefoongesprek hebben wij een boeking voor je aangemaakt. Hieronder vind je alle gegevens en de betaallink.`,
   manualConfirmed: '✅ Bevestigd',
-  manualPayNote: '<strong>Betaal de aanbetaling (25%) via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. De borg (€400) wordt op de camping geïnd na goedkeuring. De restbetaling is verschuldigd direct na ontvangst van de borg (contant of via overboeking).',
+  manualPayNote: '<strong>Betaal de aanbetaling (25%) via de knop hieronder.</strong> Je wordt doorgestuurd naar een beveiligde iDEAL/Wero betaalpagina. Het restbedrag en de borg betaal je op de camping (contant of pin).',
   manualPayButton: (price) => `Betaal ${price} aanbetaling via iDEAL →`,
   manualPayLater: 'Of betaal later via je persoonlijke dashboard',
   manualAccountTitle: '🔐 Jouw account',
@@ -285,8 +312,8 @@ const nl: EmailTranslations = {
   paymentBookingOverview: 'Overzicht boeking',
   paymentTotalPrice: 'Totale huurprijs',
   paymentDepositPaid: 'Aanbetaling voldaan',
-  paymentRestOnCamping: 'Restbetaling — op de camping',
-  paymentBorgOnCamping: 'Borg — op de camping',
+  paymentRestOnCamping: 'Restbetaling — op de camping (contant of pin)',
+  paymentBorgOnCamping: 'Borg — op de camping (contant of pin)',
 
   // Contact
   contactBadge: 'BERICHT ONTVANGEN',
@@ -316,6 +343,15 @@ const nl: EmailTranslations = {
   borgNote: 'Bekijk de checklist en geef je akkoord of dien eventueel bezwaar in. Dit kan via onderstaande link of via je account.',
   borgButton: 'Bekijk checklist & reageer →',
   borgDashboardLink: 'Of bekijk via je account →',
+  borgConfirmSubject: (ref) => `Borg bevestiging — ${ref}`,
+  borgConfirmHeading: 'Borg-inspectie akkoord',
+  borgConfirmSubtext: (name) => `Hallo ${name}, bedankt voor je akkoord op de borg-inspectie. Hieronder vind je een overzicht van de terugbetaling.`,
+  borgReturnMethodLabel: 'Terugbetaling via',
+  borgReturnCash: '💵 Contant (op de camping)',
+  borgReturnBank: '🏦 Bankovermaking (1-5 werkdagen)',
+  borgRefundAmount: 'Terug te ontvangen',
+  borgConfirmNote: 'Je borg wordt terugbetaald volgens de gekozen methode. Bij bankoverschrijving kan het 1-5 werkdagen duren.',
+  borgConfirmDashboardLink: 'Bekijk status in je account →',
 
   // Delete
   deleteBadge: 'ACCOUNT VERWIJDEREN',
@@ -428,9 +464,10 @@ const en: EmailTranslations = {
   bookingBadge: 'NEW BOOKING',
   bookingSubject: (ref) => `Booking ${ref} confirmed ✅`,
   bookingHeading: 'Booking received',
-  bookingSubtext: (name) => `Thank you ${name}! We have received your booking and will confirm it as soon as possible.`,
+  bookingSubtext: (name) => `Thank you ${name}! Pay the deposit (25%) to confirm your booking.`,
   bookingRefLabel: 'Reference number',
-  bookingAwaitConfirm: '⏳ Awaiting confirmation',
+  bookingAwaitConfirm: '💳 Pay to confirm',
+  bookingAwaitPaymentLink: '⏳ Payment link coming soon',
   bookingCaravan: 'Caravan',
   bookingCamping: 'Campsite',
   bookingSpot: 'Pitch',
@@ -442,13 +479,21 @@ const en: EmailTranslations = {
   bookingChildren: 'children',
   bookingTotalPrice: 'Total price',
   bookingPayBefore: '💳 Down payment (25%)',
-  bookingRestOnCamping: '💰 Remaining (75%) — at the camping',
-  bookingBorgOnCamping: '🔒 Deposit — €400 (after approval at camping)',
+  bookingRestOnCamping: '💰 Remaining (75%) — at the campsite (cash or card/PIN)',
+  bookingBorgOnCamping: '🔒 Deposit — at the campsite (cash or card/PIN)',
   bookingDirectPayment: 'Immediately upon booking',
-  bookingImmediateNote: (price, _) => `<strong>Payment overview:</strong> The 25% down payment must be paid now via iDEAL/Wero in your account. The security deposit (€400) is collected after your approval at the campsite. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).`,
-  bookingLaterNote: (price, deadline) => `<strong>Payment overview:</strong> Pay the 25% down payment before ${deadline} via iDEAL/Wero in your account. The security deposit (€400) is collected after your approval at the campsite. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).`,
+  bookingImmediateNote: (price, _) => `<strong>Payment overview:</strong> The 25% down payment must be paid now via iDEAL/Wero in your account. The remaining amount and deposit are paid at the campsite (cash or card/PIN).`,
+  bookingPendingPaymentNote: (price, _) => `<strong>Payment overview:</strong> You will receive a payment link by email shortly to pay the 25% down payment via iDEAL/Wero. The remaining amount and deposit are paid at the campsite (cash or card/PIN).`,
+  bookingLaterNote: (price, deadline) => `<strong>Payment overview:</strong> Pay the 25% down payment before ${deadline} via iDEAL/Wero in your account. The remaining amount and deposit are paid at the campsite (cash or card/PIN).`,
   bookingPayNow: (amount: string) => `Pay deposit ${amount} →`,
   bookingButton: 'Go to my account →',
+  bookingBeddingReminder: '🛏️ <strong>NOTE:</strong> You have not booked bed linen. Don\'t forget to bring your own duvets, pillows and fitted sheets! Want to add bed linen? Contact us.',
+  // Payment link email
+  paymentLinkSubject: (ref) => `Payment link for booking ${ref} 💳`,
+  paymentLinkHeading: 'Payment link available',
+  paymentLinkText: (name, ref, amount) => `Hi ${name}! The payment link for your booking <strong>${ref}</strong> is now available. Pay the deposit of <strong>${amount}</strong> via the button below.`,
+  paymentLinkButton: (amount) => `Pay ${amount} deposit →`,
+  countdownBeddingReminder: '🛏️ <strong>Bed linen:</strong> You have not booked bed linen. Don\'t forget to bring your own duvets, pillows and fitted sheets!',
 
   // Manual booking
   manualBadge: 'PHONE BOOKING',
@@ -456,7 +501,7 @@ const en: EmailTranslations = {
   manualHeading: 'Your booking has been created',
   manualSubtext: (name) => `Hi ${name}! Following our phone call, we have created a booking for you. Below you will find all the details and the payment link.`,
   manualConfirmed: '✅ Confirmed',
-  manualPayNote: '<strong>Pay the down payment (25%) via the button below.</strong> You will be redirected to a secure iDEAL/Wero payment page. The security deposit (€400) is collected at the campsite after your approval. The remaining amount is due immediately after receipt of the deposit (cash or bank transfer).',
+  manualPayNote: '<strong>Pay the down payment (25%) via the button below.</strong> You will be redirected to a secure iDEAL/Wero payment page. The remaining amount and deposit are paid at the campsite (cash or card/PIN).',
   manualPayButton: (price) => `Pay ${price} deposit via iDEAL →`,
   manualPayLater: 'Or pay later via your personal dashboard',
   manualAccountTitle: '🔐 Your account',
@@ -483,8 +528,8 @@ const en: EmailTranslations = {
   paymentBookingOverview: 'Booking overview',
   paymentTotalPrice: 'Total rental price',
   paymentDepositPaid: 'Deposit paid',
-  paymentRestOnCamping: 'Remaining — at the campsite',
-  paymentBorgOnCamping: 'Security deposit — at the campsite',
+  paymentRestOnCamping: 'Remaining — at the campsite (cash or card/PIN)',
+  paymentBorgOnCamping: 'Deposit — at the campsite (cash or card/PIN)',
 
   // Contact
   contactBadge: 'MESSAGE RECEIVED',
@@ -514,6 +559,15 @@ const en: EmailTranslations = {
   borgNote: 'Review the checklist and give your approval or file an objection. You can do this via the link below or via your account.',
   borgButton: 'View checklist & respond →',
   borgDashboardLink: 'Or view via your account →',
+  borgConfirmSubject: (ref) => `Deposit confirmation — ${ref}`,
+  borgConfirmHeading: 'Deposit inspection agreed',
+  borgConfirmSubtext: (name) => `Hello ${name}, thank you for your approval of the deposit inspection. Below is an overview of your refund.`,
+  borgReturnMethodLabel: 'Refund via',
+  borgReturnCash: '💵 Cash (at the camping)',
+  borgReturnBank: '🏦 Bank transfer (1-5 business days)',
+  borgRefundAmount: 'Amount to receive',
+  borgConfirmNote: 'Your deposit will be refunded according to the chosen method. Bank transfers may take 1-5 business days.',
+  borgConfirmDashboardLink: 'View status in your account →',
 
   // Delete
   deleteBadge: 'DELETE ACCOUNT',
@@ -626,9 +680,10 @@ const es: EmailTranslations = {
   bookingBadge: 'NUEVA RESERVA',
   bookingSubject: (ref) => `Reserva ${ref} confirmada ✅`,
   bookingHeading: 'Reserva recibida',
-  bookingSubtext: (name) => `¡Gracias ${name}! Hemos recibido tu reserva y la confirmaremos lo antes posible.`,
+  bookingSubtext: (name) => `¡Gracias ${name}! Paga el anticipo (25%) para confirmar tu reserva.`,
   bookingRefLabel: 'Número de referencia',
-  bookingAwaitConfirm: '⏳ Esperando confirmación',
+  bookingAwaitConfirm: '💳 Paga para confirmar',
+  bookingAwaitPaymentLink: '⏳ Enlace de pago próximamente',
   bookingCaravan: 'Caravana',
   bookingCamping: 'Camping',
   bookingSpot: 'Parcela',
@@ -640,13 +695,21 @@ const es: EmailTranslations = {
   bookingChildren: 'niños',
   bookingTotalPrice: 'Precio total',
   bookingPayBefore: '💳 Anticipo (25%)',
-  bookingRestOnCamping: '💰 Resto (75%) — en el camping',
-  bookingBorgOnCamping: '🔒 Fianza — €400 (tras aprobación en el camping)',
+  bookingRestOnCamping: '💰 Resto (75%) — en el camping (efectivo o tarjeta/PIN)',
+  bookingBorgOnCamping: '🔒 Fianza — en el camping (efectivo o tarjeta/PIN)',
   bookingDirectPayment: 'Inmediatamente al reservar',
-  bookingImmediateNote: (price, _) => `<strong>Resumen de pago:</strong> El anticipo del 25% debe pagarse ahora vía iDEAL/Wero en tu cuenta. La fianza (€400) se cobra tras tu aprobación en el camping. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).`,
-  bookingLaterNote: (price, deadline) => `<strong>Resumen de pago:</strong> Paga el anticipo del 25% antes del ${deadline} vía iDEAL/Wero en tu cuenta. La fianza (€400) se cobra tras tu aprobación en el camping. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).`,
+  bookingImmediateNote: (price, _) => `<strong>Resumen de pago:</strong> El anticipo del 25% debe pagarse ahora vía iDEAL/Wero en tu cuenta. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).`,
+  bookingPendingPaymentNote: (price, _) => `<strong>Resumen de pago:</strong> Recibirás un enlace de pago por correo electrónico en breve para pagar el anticipo del 25% vía iDEAL/Wero. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).`,
+  bookingLaterNote: (price, deadline) => `<strong>Resumen de pago:</strong> Paga el anticipo del 25% antes del ${deadline} vía iDEAL/Wero en tu cuenta. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).`,
   bookingPayNow: (amount: string) => `Pagar anticipo ${amount} →`,
   bookingButton: 'Ir a mi cuenta →',
+  bookingBeddingReminder: '🛏️ <strong>ATENCIÓN:</strong> No has reservado ropa de cama. ¡No olvides traer tus propios edredones, almohadas y sábanas bajeras! ¿Quieres añadir ropa de cama? Contáctanos.',
+  // Payment link email
+  paymentLinkSubject: (ref) => `Enlace de pago para reserva ${ref} 💳`,
+  paymentLinkHeading: 'Enlace de pago disponible',
+  paymentLinkText: (name, ref, amount) => `¡Hola ${name}! El enlace de pago para tu reserva <strong>${ref}</strong> ya está disponible. Paga el anticipo de <strong>${amount}</strong> a través del botón de abajo.`,
+  paymentLinkButton: (amount) => `Pagar ${amount} anticipo →`,
+  countdownBeddingReminder: '🛏️ <strong>Ropa de cama:</strong> No has reservado ropa de cama. ¡No olvides traer tus propios edredones, almohadas y sábanas bajeras!',
 
   // Manual booking
   manualBadge: 'RESERVA TELEFÓNICA',
@@ -654,7 +717,7 @@ const es: EmailTranslations = {
   manualHeading: 'Tu reserva ha sido creada',
   manualSubtext: (name) => `¡Hola ${name}! Tras nuestra conversación telefónica, hemos creado una reserva para ti. A continuación encontrarás todos los datos y el enlace de pago.`,
   manualConfirmed: '✅ Confirmada',
-  manualPayNote: '<strong>Paga el anticipo (25%) a través del botón de abajo.</strong> Serás redirigido a una página de pago segura iDEAL/Wero. La fianza (€400) se cobra en el camping tras tu aprobación. El resto se debe pagar inmediatamente después de recibir la fianza (en efectivo o transferencia bancaria).',
+  manualPayNote: '<strong>Paga el anticipo (25%) a través del botón de abajo.</strong> Serás redirigido a una página de pago segura iDEAL/Wero. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).',
   manualPayButton: (price) => `Pagar ${price} anticipo vía iDEAL →`,
   manualPayLater: 'O paga más tarde a través de tu panel personal',
   manualAccountTitle: '🔐 Tu cuenta',
@@ -681,8 +744,8 @@ const es: EmailTranslations = {
   paymentBookingOverview: 'Resumen de la reserva',
   paymentTotalPrice: 'Precio total del alquiler',
   paymentDepositPaid: 'Anticipo pagado',
-  paymentRestOnCamping: 'Pago restante — en el camping',
-  paymentBorgOnCamping: 'Fianza — en el camping',
+  paymentRestOnCamping: 'Pago restante — en el camping (efectivo o tarjeta/PIN)',
+  paymentBorgOnCamping: 'Fianza — en el camping (efectivo o tarjeta/PIN)',
 
   // Contact
   contactBadge: 'MENSAJE RECIBIDO',
@@ -712,6 +775,15 @@ const es: EmailTranslations = {
   borgNote: 'Revisa la checklist y da tu aprobación o presenta una objeción. Puedes hacerlo a través del enlace de abajo o desde tu cuenta.',
   borgButton: 'Ver checklist y responder →',
   borgDashboardLink: 'O ver desde tu cuenta →',
+  borgConfirmSubject: (ref) => `Confirmación de fianza — ${ref}`,
+  borgConfirmHeading: 'Inspección de fianza aceptada',
+  borgConfirmSubtext: (name) => `Hola ${name}, gracias por tu aprobación de la inspección de fianza. A continuación encontrarás un resumen del reembolso.`,
+  borgReturnMethodLabel: 'Reembolso vía',
+  borgReturnCash: '💵 Efectivo (en el camping)',
+  borgReturnBank: '🏦 Transferencia bancaria (1-5 días hábiles)',
+  borgRefundAmount: 'Importe a recibir',
+  borgConfirmNote: 'Tu fianza será reembolsada según el método elegido. Las transferencias bancarias pueden tardar 1-5 días hábiles.',
+  borgConfirmDashboardLink: 'Ver estado en tu cuenta →',
 
   // Delete
   deleteBadge: 'ELIMINAR CUENTA',

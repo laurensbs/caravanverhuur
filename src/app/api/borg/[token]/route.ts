@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBorgChecklistByToken, customerAgreeBorgChecklist, createPayment, getBookingById } from '@/lib/db';
+import { getBorgChecklistByToken, customerAgreeBorgChecklist, createPayment, getBookingById, getCustomerByEmail } from '@/lib/db';
+import { sendBorgConfirmationEmail } from '@/lib/email';
 import { borgLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(
@@ -34,7 +35,7 @@ export async function POST(
   try {
     const { token } = await params;
     const body = await request.json();
-    const { agreed, notes } = body;
+    const { agreed, notes, borgReturnMethod, signature } = body;
 
     const checklist = await getBorgChecklistByToken(token);
     if (!checklist) {
@@ -45,12 +46,18 @@ export async function POST(
       return NextResponse.json({ error: 'Checklist is nog niet afgerond door staff' }, { status: 400 });
     }
 
-    await customerAgreeBorgChecklist(token, agreed, notes);
+    // Validate borgReturnMethod if provided
+    if (borgReturnMethod && !['contant', 'bank'].includes(borgReturnMethod)) {
+      return NextResponse.json({ error: 'Ongeldige borg terugbetaling methode' }, { status: 400 });
+    }
+
+    await customerAgreeBorgChecklist(token, agreed, notes, borgReturnMethod, signature);
 
     // Auto-create BORG_RETOUR payment when customer agrees
     if (agreed && checklist.booking_id) {
+      const booking = await getBookingById(checklist.booking_id).catch(() => null);
+
       try {
-        const booking = await getBookingById(checklist.booking_id);
         if (booking && booking.borg_amount) {
           const borgAmount = parseFloat(booking.borg_amount);
           const totalDeduction = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
@@ -61,12 +68,29 @@ export async function POST(
               type: 'BORG_RETOUR',
               amount: refundAmount,
               status: 'BETAALD',
-              method: 'bank',
+              method: borgReturnMethod === 'contant' ? 'cash' : 'bank',
             });
           }
         }
       } catch (refundErr) {
         console.error('Auto borg refund creation failed (non-fatal):', refundErr);
+      }
+
+      // Send confirmation email to customer
+      try {
+        const borgAmount = booking?.borg_amount ? parseFloat(booking.borg_amount) : 0;
+        const totalDeduction = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
+        const refundAmount = Math.max(0, borgAmount - totalDeduction);
+        const borgCustomer = await getCustomerByEmail(checklist.guest_email).catch(() => null);
+        await sendBorgConfirmationEmail({
+          to: checklist.guest_email,
+          guestName: checklist.guest_name || 'Klant',
+          reference: checklist.booking_ref || '',
+          borgReturnMethod: (borgReturnMethod as 'contant' | 'bank') || 'bank',
+          refundAmount,
+        }, borgCustomer?.locale);
+      } catch (emailErr) {
+        console.error('Borg confirmation email failed (non-fatal):', emailErr);
       }
     }
 

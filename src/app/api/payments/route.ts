@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail } from '@/lib/db';
+import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
@@ -13,6 +13,19 @@ export async function GET(request: NextRequest) {
       if (!cookie && !customerSession) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
+
+      // If customer (not admin), verify the booking belongs to them
+      if (!cookie && customerSession) {
+        const customer = await getCustomerBySessionToken(customerSession);
+        if (!customer) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const booking = await getBookingById(bookingId);
+        if (!booking || booking.guest_email.toLowerCase() !== customer.email.toLowerCase()) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+      }
+
       const payments = await getPaymentsByBookingId(bookingId);
       return NextResponse.json({ payments });
     }

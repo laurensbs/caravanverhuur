@@ -633,11 +633,11 @@ function smartMatch(
   }
 
   // ===== EXTRAS / ADD-ONS =====
-  if (/extra|add-?on|bedlinnen|bed ?linen|koelkast|fridge|fiets|bike|mountainbike|bicicleta|nevera|ropa de cama|huren|verhuur.*fiets/.test(lower)) {
+  if (/extra|add-?on|bedlinnen|bed ?linen|koelkast|fridge|fiets|bike|mountainbike|bicicleta|nevera|ropa de cama|huren|verhuur.*fiets|airco|air.?conditioning/.test(lower)) {
     return {
       answer: isNl
-        ? `Bij het boeken kun je deze extra's toevoegen${name}! ✨\n\n🛏️ **Bedlinnen** — €70/week (4 complete sets, 140x200cm)\n🧊 **Grote koelkast** — €40/week\n🚲 **Fietsen** — €50/fiets/week (max 4, +€200 borg per fiets)\n🚵 **Mountainbikes** — €50/bike/week (max 4, +€200 borg per bike)\n\n⚠️ Geen fietspompen inbegrepen.\n\nDe extra's kun je toevoegen tijdens het boekingsproces!\n\n👉 **[Direct boeken](/boeken)**`
-        : `Available extras:\n\n🛏️ **Bed linen** — €70/week (4 sets)\n🧊 **Large fridge** — €40/week\n🚲 **Bicycles** — €50/bike/week (+€200 deposit each)\n🚵 **Mountain bikes** — €50/bike/week (+€200 deposit each)\n\n👉 **[Book now](/boeken)**`,
+        ? `Bij het boeken kun je deze extra's toevoegen${name}! ✨\n\n🛏️ **Bedlinnen** — €70/week (4 complete sets, 140x200cm)\n🧊 **Grote koelkast** — €40/week\n❄️ **Mobiele airco** — €50/week\n🚲 **Fietsen** — €50/fiets/week (max 4, +€200 borg per fiets)\n🚵 **Mountainbikes** — €50/bike/week (max 4, +€200 borg per bike)\n\n⚠️ Geen fietspompen inbegrepen.\n\nDe extra's kun je toevoegen tijdens het boekingsproces!\n\n👉 **[Direct boeken](/boeken)**`
+        : `Available extras:\n\n🛏️ **Bed linen** — €70/week (4 sets)\n🧊 **Large fridge** — €40/week\n❄️ **Mobile AC** — €50/week\n🚲 **Bicycles** — €50/bike/week (+€200 deposit each)\n🚵 **Mountain bikes** — €50/bike/week (+€200 deposit each)\n\n👉 **[Book now](/boeken)**`,
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Welke caravans?'] : ['How to book?', 'Deposit info?'],
       confidence: 0.85,
       topic: 'extras',
@@ -832,8 +832,8 @@ function smartMatch(
   // ===== FAMILY / KIDS =====
   if (/gezin|kinderen|kind|baby|familie|peuter|family|children|kids|baby|ninos|familia/.test(lower)) {
     const familyAnswers = isNl ? [
-      `We zijn heel geschikt voor gezinnen met kinderen${name}! 👨‍👩‍👧‍👦\n\n🏖️ Veel campings hebben **zwembaden, speeltuinen en animatie**\n🚐 Onze familiecaravans bieden tot 5 slaapplaatsen\n🛏️ Dekbedden en kussens aanwezig\n⛺ Voortent als extra leefruimte\n\nAanraders voor gezinnen:\n⛺ **Cypsela Resort** (Pals) — zwembadcomplex\n⛺ **Cala Gogo** (Calonge) — animatieprogramma\n⛺ **Tucan** (Lloret) — waterpark!\n\nWil je dat ik een geschikte caravan voor je gezin zoek?`,
-      `Perfect voor gezinnen${name}! 👨‍👩‍👧‍👦\n\nOnze caravans zijn ideaal voor kids:\n🛏️ Ruime slaapplaatsen (tot 5 personen)\n🍳 Eigen kookgelegenheid — scheelt enorm in kosten!\n⛺ Voortent als speelruimte\n\nDe campings bieden ook:\n🏊 Zwembaden & waterglijbanen\n🎪 Animatieprogramma's\n🎮 Speeltuinen & sportfaciliteiten\n🛒 Supermarkt op het terrein\n\nFavoriete kindercampings:\n⛺ **Tucan** (Lloret) — waterpark met glijbanen!\n⛺ **Cypsela** (Pals) — groot zwembad + strand\n⛺ **Cala Gogo** (Calonge) — animatie hele dag`,
+      `We zijn heel geschikt voor gezinnen met kinderen${name}! 👨‍👩‍👧‍👦\n\n🏖️ Veel campings hebben **zwembaden, speeltuinen en animatie**\n🚐 Onze familiecaravans bieden 4 slaapplekken\n🛏️ Dekbedden & kussens optioneel bij te boeken (€70/week)\n⛺ Voortent als extra leefruimte\n\nAanraders voor gezinnen:\n⛺ **Cypsela Resort** (Pals) — zwembadcomplex\n⛺ **Cala Gogo** (Calonge) — animatieprogramma\n⛺ **Tucan** (Lloret) — waterpark!\n\nWil je dat ik een geschikte caravan voor je gezin zoek?`,
+      `Perfect voor gezinnen${name}! 👨‍👩‍👧‍👦\n\nOnze caravans zijn ideaal voor kids:\n🛏️ 4 slaapplekken (2 slaapkamers)\n🍳 Eigen kookgelegenheid — scheelt enorm in kosten!\n⛺ Voortent als speelruimte\n\nDe campings bieden ook:\n🏊 Zwembaden & waterglijbanen\n🎪 Animatieprogramma's\n🎮 Speeltuinen & sportfaciliteiten\n🛒 Supermarkt op het terrein\n\nFavoriete kindercampings:\n⛺ **Tucan** (Lloret) — waterpark met glijbanen!\n⛺ **Cypsela** (Pals) — groot zwembad + strand\n⛺ **Cala Gogo** (Calonge) — animatie hele dag`,
     ] : ['We are very family-friendly! Many campings have pools, playgrounds and activities for children.'];
     return {
       answer: pick(familyAnswers, asked),
@@ -1101,8 +1101,8 @@ function smartMatch(
   if (/slaap|bed|matras|slapen|slaapconfigur|slaapruimte|eenpersoons|tweepersoons|stapelbed|bedden|sleeping|sleep|bed config|double bed|single bed|litera|cama/.test(lower)) {
     return {
       answer: isNl
-        ? `Goede vraag over de slaapplaatsen${name}! 🛏️\n\n${caravans.map(c => `🚐 **${c.name}** — Max ${c.maxPersons} personen\n   ${c.amenities.filter(a => /bed|slaap|matras/i.test(a)).join(', ') || 'Comfortabele slaapplaatsen'}`).join('\n\n')}\n\nAlle caravans hebben:\n✅ Dekbedden & kussens (inbegrepen!)\n✅ Hoeslakens & kussenslopen\n✅ Genoeg slaapplaatsen voor het maximaal aantal personen\n\n💡 Tip: de familiecaravans hebben vaak een aparte kinderslaaphoek!`
-        : `All caravans sleep their max capacity with duvets, pillows, and sheets included! 🛏️`,
+        ? `Goede vraag over de slaapplaatsen${name}! 🛏️\n\n${caravans.map(c => `🚐 **${c.name}** — Max ${c.maxPersons} personen\n   4 slaapplekken (2 slaapkamers)`).join('\n\n')}\n\nAlle caravans hebben:\n✅ 4 slaapplekken verdeeld over 2 slaapkamers\n✅ Matrassen inbegrepen\n🛒 Dekbedden & kussens optioneel bijboeken (€70/week) of zelf meenemen\n\n💡 Tip: de familiecaravans hebben vaak een aparte kinderslaaphoek!`
+        : `All caravans have 4 sleeping spots across 2 bedrooms. Mattresses included! Duvets & pillows can be booked as an extra (€70/week) or bring your own. 🛏️`,
       followUp: isNl ? ['Wat zit er nog meer in?', 'Welke caravans?', 'Hoe boek ik?'] : ["What's included?", 'How to book?'],
       confidence: 0.85,
       topic: 'sleeping',

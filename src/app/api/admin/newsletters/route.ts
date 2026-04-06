@@ -7,6 +7,7 @@ import {
   getNewsletterById,
   markNewsletterSent,
   getSubscribedCustomerEmails,
+  getSubscribedCustomersWithNames,
   setupDatabase,
   logActivity,
 } from '@/lib/db';
@@ -14,9 +15,16 @@ import { sendNewsletterEmail } from '@/lib/email';
 import { generateUnsubscribeToken } from '@/app/api/newsletter/unsubscribe/route';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 
-// GET - List all newsletters
-export async function GET() {
+// GET - List all newsletters (or subscribers list)
+export async function GET(request: NextRequest) {
   try {
+    const action = request.nextUrl.searchParams.get('action');
+
+    if (action === 'subscribers') {
+      const subscribers = await getSubscribedCustomersWithNames();
+      return NextResponse.json({ subscribers });
+    }
+
     const newsletters = await getAllNewsletters();
     return NextResponse.json({ newsletters });
   } catch (error: unknown) {

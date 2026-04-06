@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   Plus,
   Trash2,
@@ -29,7 +30,12 @@ import {
   X,
   MessageSquare,
   ImageIcon,
+  Banknote,
+  Building2,
+  PenTool,
 } from 'lucide-react';
+
+const SignatureCanvas = dynamic(() => import('@/components/SignatureCanvas'), { ssr: false });
 
 interface BorgItem {
   category: string;
@@ -68,7 +74,7 @@ interface BorgChecklist {
   total_deduction?: number;
 }
 
-type Step = 'intro' | 'inspect' | 'notes' | 'summary' | 'done';
+type Step = 'intro' | 'inspect' | 'notes' | 'confirm' | 'summary' | 'done';
 
 const statusConfig = {
   goed: { icon: CheckCircle2, label: 'Goed', color: 'bg-emerald-500', activeColor: 'bg-emerald-500 text-white ring-emerald-500/30', emoji: '✓' },
@@ -127,6 +133,9 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoProcessing, setPhotoProcessing] = useState(false);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
+  const [customerBorgReturn, setCustomerBorgReturn] = useState<'contant' | 'bank' | ''>('');
+  const [customerSignature, setCustomerSignature] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState('');
 
   // Auto-save progress every 30 seconds when inspecting
   useEffect(() => {
@@ -286,7 +295,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handleSave = async (complete: boolean) => {
+  const handleSave = async (complete: boolean, customerConfirm?: { borgReturnMethod: string; customerSignature: string }) => {
     setSaving(true);
     // Calculate total deduction
     const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
@@ -306,6 +315,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
           cleaningDeduction,
           totalDeduction: totalDed,
           ...(complete ? { completedAt: new Date().toISOString() } : {}),
+          ...(customerConfirm ? { customerConfirm } : {}),
         }),
       });
       if (complete) {
@@ -761,10 +771,69 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
+          {/* Predefined deductions */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <label className="block text-sm font-bold text-gray-900 mb-2">⚡ Veelvoorkomende inhoudingen</label>
+            <p className="text-xs text-gray-400 mb-3">Klik om toe te voegen of te verwijderen. Wordt opgeteld bij de borg-afrekening.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: 'Fiets schade/vermist', amount: 200, icon: '🚲' },
+                { label: 'Mountainbike schade/vermist', amount: 200, icon: '🚵' },
+                { label: 'Luifel schade', amount: 150, icon: '⛺' },
+                { label: 'Beddengoed beschadigd', amount: 75, icon: '🛏️' },
+                { label: 'Sleutel kwijt', amount: 50, icon: '🔑' },
+                { label: 'Gasfles niet ingeleverd', amount: 50, icon: '🔥' },
+                { label: 'Gebroken servies/glazen', amount: 25, icon: '🍽️' },
+                { label: 'Raam/deur schade', amount: 200, icon: '🪟' },
+              ].map((preset) => {
+                const isActive = extraDamages.some(d => d.description === preset.label);
+                const count = extraDamages.filter(d => d.description === preset.label).length;
+                return (
+                  <div key={preset.label} className="flex flex-col gap-1">
+                    <button
+                      onClick={() => {
+                        if (isActive) {
+                          // Remove last occurrence
+                          const idx = extraDamages.map(d => d.description).lastIndexOf(preset.label);
+                          if (idx >= 0) setExtraDamages(extraDamages.filter((_, i) => i !== idx));
+                        } else {
+                          setExtraDamages([...extraDamages, { description: preset.label, amount: preset.amount }]);
+                        }
+                      }}
+                      className={`py-3 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${isActive ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      <span className="block">{preset.icon} {preset.label}</span>
+                      <span className="block text-[10px] mt-0.5 opacity-75">€{preset.amount} per stuk</span>
+                    </button>
+                    {isActive && (
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              const idx = extraDamages.map(d => d.description).lastIndexOf(preset.label);
+                              if (idx >= 0) setExtraDamages(extraDamages.filter((_, i) => i !== idx));
+                            }}
+                            className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm cursor-pointer hover:bg-gray-200"
+                          >−</button>
+                          <span className="text-sm font-bold text-gray-700 w-4 text-center">{count}</span>
+                          <button
+                            onClick={() => setExtraDamages([...extraDamages, { description: preset.label, amount: preset.amount }])}
+                            className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm cursor-pointer hover:bg-gray-200"
+                          >+</button>
+                        </div>
+                        <span className="text-xs font-semibold text-amber-600">€{count * preset.amount}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Extra damages (beyond inventory) */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-bold text-gray-900">🔧 Overige schade</label>
+              <label className="text-sm font-bold text-gray-900">🔧 Overige schade (handmatig)</label>
               <button
                 onClick={() => setExtraDamages([...extraDamages, { description: '', amount: 0 }])}
                 className="text-xs font-semibold text-primary flex items-center gap-1 cursor-pointer"
@@ -772,7 +841,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                 <Plus size={14} /> Toevoegen
               </button>
             </div>
-            <p className="text-xs text-gray-400 mb-3">Schade aan de caravan buiten de inventaris om.</p>
+            <p className="text-xs text-gray-400 mb-3">Extra schade die niet in bovenstaande categorieën valt.</p>
             {extraDamages.length === 0 && (
               <p className="text-xs text-gray-300 text-center py-3">Geen overige schade gemeld</p>
             )}
@@ -831,9 +900,9 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   {itemDamageTotal > 0 && (
                     <div className="flex justify-between"><span className="text-amber-600">Schade inventaris</span><span className="font-semibold text-amber-600">-€{itemDamageTotal}</span></div>
                   )}
-                  {extraDamageTotal > 0 && (
-                    <div className="flex justify-between"><span className="text-amber-600">Overige schade</span><span className="font-semibold text-amber-600">-€{extraDamageTotal}</span></div>
-                  )}
+                  {extraDamages.map((d, i) => (
+                    <div key={i} className="flex justify-between"><span className="text-amber-600">{d.description || 'Overige schade'}</span><span className="font-semibold text-amber-600">-€{d.amount}</span></div>
+                  ))}
                   {cleaningDeduction > 0 && (
                     <div className="flex justify-between"><span className="text-amber-600">Schoonmaak</span><span className="font-semibold text-amber-600">-€{cleaningDeduction}</span></div>
                   )}
@@ -843,7 +912,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                       <span className={`font-bold text-lg ${totalDed > 0 ? 'text-red-600' : 'text-emerald-600'}`}>€{totalDed}</span>
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="font-bold text-gray-900">Terug te storten</span>
+                      <span className="font-bold text-gray-900">Terug te ontvangen</span>
                       <span className="font-bold text-lg text-emerald-600">€{refund}</span>
                     </div>
                   </div>
@@ -855,11 +924,11 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
           {/* Actions */}
           <div className="space-y-3">
             <button
-              onClick={() => handleSave(true)}
+              onClick={() => setStep('confirm')}
               disabled={saving}
               className={`w-full py-4 ${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white rounded-2xl text-base font-bold shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2`}
             >
-              {saving ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              <Send size={18} />
               {t('inspection.completeAndSend')}
             </button>
             <button
@@ -868,6 +937,158 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               className="w-full py-3 text-sm text-gray-500 font-medium cursor-pointer hover:text-gray-700 transition"
             >
               {t('inspection.saveAsDraft')}
+            </button>
+          </div>
+          <div className="h-4" />
+        </div>
+      </div>
+    );
+  }
+
+  // STEP: CONFIRM - Customer confirmation on admin's device
+  if (step === 'confirm') {
+    const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+    const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDed = itemDamageTotal + extraDamageTotal + cleaningDeduction;
+    const borgAmount = checklist.borg_amount ? Number(checklist.borg_amount) : 400;
+    const confirmRefund = Math.max(0, borgAmount - totalDed);
+
+    const handleCustomerConfirm = async () => {
+      setConfirmError('');
+      if (!customerBorgReturn) {
+        setConfirmError(t('inspection.borgReturnRequired'));
+        return;
+      }
+      if (!customerSignature) {
+        setConfirmError(t('inspection.signatureRequired'));
+        return;
+      }
+      await handleSave(true, { borgReturnMethod: customerBorgReturn, customerSignature });
+    };
+
+    return (
+      <div className="fixed inset-0 z-[100] overflow-auto bg-[#FAFAF9]">
+        <div className={`${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white`}>
+          <div className="max-w-lg mx-auto px-5 py-6">
+            <button onClick={() => setStep('notes')} className="flex items-center gap-1 text-white/70 text-sm mb-4 hover:text-white transition cursor-pointer">
+              <ArrowLeft size={16} /> {t('common.back')}
+            </button>
+            <div className="flex items-center gap-2 mb-1">
+              <PenTool size={20} />
+              <span className="text-white/80 text-sm font-medium">{t('inspection.customerConfirm')}</span>
+            </div>
+            <h1 className="text-xl font-bold">{checklist.guest_name || t('inspection.guest')}</h1>
+          </div>
+        </div>
+
+        <div className="max-w-lg mx-auto px-5 py-5 space-y-4">
+          <p className="text-sm text-gray-500">{t('inspection.customerConfirmDesc')}</p>
+
+          {/* Summary cards */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-emerald-50 rounded-xl p-3 text-center">
+              <div className="text-lg font-bold text-emerald-600">{goedCount}</div>
+              <div className="text-[10px] text-emerald-600">{t('deposit.good')}</div>
+            </div>
+            <div className="bg-amber-50 rounded-xl p-3 text-center">
+              <div className="text-lg font-bold text-amber-600">{beschadigdCount}</div>
+              <div className="text-[10px] text-amber-600">{t('deposit.damaged')}</div>
+            </div>
+            <div className="bg-red-50 rounded-xl p-3 text-center">
+              <div className="text-lg font-bold text-red-600">{ontbreektCount}</div>
+              <div className="text-[10px] text-red-600">{t('deposit.missing')}</div>
+            </div>
+          </div>
+
+          {/* Borg calculation */}
+          <div className={`bg-white rounded-2xl p-5 shadow-sm border-2 ${totalDed > 0 ? 'border-amber-200' : 'border-emerald-200'}`}>
+            <h3 className="text-sm font-bold text-gray-900 mb-3">💳 Borg-afrekening</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Totale borg</span><span className="font-semibold">€{borgAmount}</span></div>
+              {totalDed > 0 && <div className="flex justify-between"><span className="text-amber-600">Totaal ingehouden</span><span className="font-semibold text-amber-600">-€{totalDed}</span></div>}
+              <div className="border-t border-gray-100 pt-2">
+                <div className="flex justify-between"><span className="font-bold text-gray-900">Terug te ontvangen</span><span className="font-bold text-lg text-emerald-600">€{confirmRefund}</span></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Borg return method */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">{t('inspection.borgReturnMethod')}</h3>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => { setCustomerBorgReturn('contant'); setConfirmError(''); }}
+                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                  customerBorgReturn === 'contant' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${customerBorgReturn === 'contant' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                  <Banknote size={20} />
+                </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-sm text-gray-900">{t('inspection.borgReturnCash')}</div>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${customerBorgReturn === 'contant' ? 'border-primary' : 'border-gray-300'}`}>
+                  {customerBorgReturn === 'contant' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setCustomerBorgReturn('bank'); setConfirmError(''); }}
+                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                  customerBorgReturn === 'bank' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${customerBorgReturn === 'bank' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                  <Building2 size={20} />
+                </div>
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-sm text-gray-900">{t('inspection.borgReturnBank')}</div>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${customerBorgReturn === 'bank' ? 'border-primary' : 'border-gray-300'}`}>
+                  {customerBorgReturn === 'bank' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Signature */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <SignatureCanvas
+              onSignature={setCustomerSignature}
+              label={t('inspection.signature')}
+              clearLabel={t('inspection.clearSignature')}
+              height={180}
+            />
+            <p className="text-[10px] text-gray-400 mt-2">
+              {checklist.guest_name || ''} — {new Date().toLocaleDateString('nl-NL')}
+            </p>
+          </div>
+
+          {/* Validation error */}
+          {confirmError && (
+            <div className="bg-red-50 text-red-600 text-sm font-medium rounded-xl p-3 text-center">
+              {confirmError}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="space-y-3">
+            <button
+              onClick={handleCustomerConfirm}
+              disabled={saving}
+              className={`w-full py-4 ${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white rounded-2xl text-base font-bold shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2`}
+            >
+              {saving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+              {t('inspection.customerConfirmBtn')}
+            </button>
+            <button
+              onClick={() => handleSave(true)}
+              disabled={saving}
+              className="w-full py-3 text-sm text-gray-500 font-medium cursor-pointer hover:text-gray-700 transition"
+            >
+              {t('inspection.skipCustomerConfirm')}
             </button>
           </div>
           <div className="h-4" />

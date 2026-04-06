@@ -112,7 +112,7 @@ const inventoryCategories = [
   {
     label: 'Buiten',
     icon: <Armchair size={16} />,
-    items: ['4 tuinstoelen', '1 tuintafel', '1 parasol'],
+    items: ['4 tuinstoelen', '1 tuintafel'],
   },
   {
     label: 'Keuken',
@@ -137,7 +137,7 @@ const inventoryCategories = [
   {
     label: 'Slaapkamers',
     icon: <BedDouble size={16} />,
-    items: ['1 tweepersoonsbed', 'Dekbed (2x 1-persoons mogelijk)', '1 molton', '2 kussens', '10 kledinghangers', '2 eenpersoonsbedden', '2 moltons', '2 dekbedden', '2 kussens', '1 lampje'],
+    items: ['4 slaapplekken (2 slaapkamers)', '10 kledinghangers', '1 lampje'],
   },
 ];
 
@@ -273,7 +273,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             className="flex items-center gap-5 sm:gap-6 mt-5"
           >
             {[
-              { value: '4', label: t('home.statCaravans') },
+              { value: '30+', label: t('home.statCampings') },
               { value: '100%', label: t('home.statRelaxed') },
             ].map((stat, si) => (
               <div key={si} className="flex items-baseline gap-1.5">
@@ -510,10 +510,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             className="text-center mt-8 sm:mt-12"
           >
             <Link
-              href="/caravans"
+              href="/boeken"
               className="inline-flex items-center px-6 sm:px-8 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm hover:bg-primary-dark"
             >
-              {t('home.allCaravans')}
+              {t('nav.bookNow')}
             </Link>
           </motion.div>
         </div>
@@ -666,10 +666,10 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                 <div className="absolute inset-0 z-10" />
               </div>
               <Link
-                href="/caravans"
+                href="/boeken"
                 className="inline-flex items-center gap-2 mt-6 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
               >
-                {t('home.inventoryViewCaravans')}
+                {t('nav.bookNow')}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>

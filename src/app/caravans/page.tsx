@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble } from 'lucide-react';
+import { CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -92,7 +92,7 @@ const invCategories = [
   {
     label: 'Slaapkamers',
     icon: <BedDouble size={16} />,
-    items: ['1 tweepersoonsbed', 'Dekbed (2x 1-persoons mogelijk)', '1 molton', '2 kussens', '10 kledinghangers', '2 eenpersoonsbedden', '2 moltons', '2 dekbedden', '2 kussens', '1 lampje'],
+    items: ['4 slaapplekken (2 slaapkamers)', '10 kledinghangers', '1 lampje'],
   },
 ];
 
@@ -200,17 +200,39 @@ export default function CaravansPage() {
             <span>{t('caravans.campingFirstNote')}</span>
           </div>
 
+          {/* Inbegrepen service */}
+          <div className="mb-8 bg-primary-50 border border-primary-light rounded-2xl p-5 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 flex items-center gap-2">
+              <Truck size={18} className="text-primary" /> {t('caravans.serviceIncluded')}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              {[
+                t('caravans.serviceSetup'),
+                t('caravans.serviceAwningUp'),
+                t('caravans.servicePickup'),
+                t('caravans.serviceAwningDown'),
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2.5">
+                  <CheckCircle size={14} className="text-primary shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-foreground">{item}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs sm:text-sm text-primary font-semibold">{t('caravans.serviceNote')}</p>
+          </div>
+
           {/* Extras for surcharge */}
           <div className="mb-8">
             <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2 flex items-center gap-2">
               <Sparkles size={18} className="text-primary" /> {t('home.extrasTitle')}
             </h2>
             <p className="text-sm text-muted mb-4">{t('home.extrasSubtitle')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
                 { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={22} className="text-primary" /> },
                 { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={22} className="text-primary" /> },
                 { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={22} className="text-primary" /> },
+                { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={22} className="text-primary" /> },
               ].map((extra) => (
                 <div key={extra.name} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center shrink-0">

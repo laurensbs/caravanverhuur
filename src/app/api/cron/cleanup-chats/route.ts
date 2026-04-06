@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const adminSession = cookieStore.get('admin_session')?.value;
 
-  const isCron = !cronSecret || authHeader === `Bearer ${cronSecret}`;
+  const isCron = !!cronSecret && authHeader === `Bearer ${cronSecret}`;
   const isAdmin = !!adminSession; // Admin session cookie present
 
   if (!isCron && !isAdmin) {

@@ -54,6 +54,7 @@ interface Booking {
   adults: number;
   children: number;
   created_at: string;
+  special_requests?: string;
 }
 
 interface Payment {
@@ -91,6 +92,7 @@ interface BorgChecklist {
   check_in?: string;
   check_out?: string;
   borg_amount?: string;
+  borg_return_method?: string | null;
 }
 
 type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'tips' | 'voorwaarden' | 'profiel';
@@ -541,21 +543,17 @@ function MijnAccountContent() {
 
                   {/* Upcoming trip hero card */}
                   {upcomingBooking && (() => {
-                    const caravan = getCaravan(upcomingBooking.caravan_id);
                     const camping = getCamping(upcomingBooking.camping_id);
                     const days = daysUntil(upcomingBooking.check_in);
                     return (
                       <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
                         <div className="relative h-36 sm:h-44 bg-foreground">
-                          {caravan?.photos?.[0] && (
-                            <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover opacity-25" />
-                          )}
                           <div className="absolute inset-0 flex items-end justify-between p-5 sm:p-6">
                             <div>
                               <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">{t('myAccount.upcomingTrip')}</p>
-                              <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{caravan?.name || 'Caravan'}</h3>
+                              <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{camping?.name || 'Camping'}</h3>
                               <div className="flex items-center gap-3 text-white/60 text-sm mt-1.5">
-                                <span className="flex items-center gap-1"><MapPin size={12} />{camping?.name}</span>
+                                <span className="flex items-center gap-1"><MapPin size={12} />{camping?.location}</span>
                                 <span className="flex items-center gap-1"><Calendar size={12} />{fd(upcomingBooking.check_in)}</span>
                               </div>
                             </div>
@@ -626,6 +624,43 @@ function MijnAccountContent() {
                           <Plane size={12} className="text-primary" />
                           {t('myAccount.arrivalOn').replace('{date}', fd(upcomingBooking.check_in))}
                         </p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Pre-departure checklist */}
+                  {upcomingBooking && (() => {
+                    const days = daysUntil(upcomingBooking.check_in);
+                    if (days > 14 || days <= 0) return null;
+                    const hasBedlinnen = !!(upcomingBooking.special_requests && upcomingBooking.special_requests.toLowerCase().includes('bedlinnen'));
+                    const checklistItems = [
+                      { key: 'docs', icon: <FileText size={16} className="text-primary" />, label: t('myAccount.checklistDocs') },
+                      { key: 'insurance', icon: <Shield size={16} className="text-primary" />, label: t('myAccount.checklistInsurance') },
+                      ...(!hasBedlinnen ? [{ key: 'bedding', icon: <AlertTriangle size={16} className="text-amber-500" />, label: t('myAccount.checklistBedding'), highlight: true }] : []),
+                      { key: 'sunscreen', icon: <Sun size={16} className="text-primary" />, label: t('myAccount.checklistSunscreen') },
+                      { key: 'charger', icon: <Lightbulb size={16} className="text-primary" />, label: t('myAccount.checklistCharger') },
+                      { key: 'contact', icon: <Phone size={16} className="text-primary" />, label: t('myAccount.checklistContact') },
+                    ];
+                    return (
+                      <div className="bg-white rounded-2xl border border-amber-200 p-5 sm:p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <ClipboardCheck size={20} className="text-amber-600" />
+                          <h3 className="font-bold text-foreground text-sm">{t('myAccount.checklistTitle')}</h3>
+                          <span className="ml-auto text-xs text-amber-600 font-semibold bg-amber-50 px-2.5 py-0.5 rounded-full">{days} {days === 1 ? t('myAccount.day') : t('myAccount.days')}</span>
+                        </div>
+                        <div className="space-y-2.5">
+                          {checklistItems.map(item => (
+                            <div key={item.key} className={`flex items-center gap-3 p-2.5 rounded-xl text-sm ${('highlight' in item && item.highlight) ? 'bg-amber-50 border border-amber-200' : 'bg-surface'}`}>
+                              <div className="shrink-0">{item.icon}</div>
+                              <span className={('highlight' in item && item.highlight) ? 'font-semibold text-amber-800' : 'text-foreground'}>{item.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {!hasBedlinnen && (
+                          <p className="mt-3 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg">
+                            {t('myAccount.checklistBeddingNote')}
+                          </p>
+                        )}
                       </div>
                     );
                   })()}
@@ -741,46 +776,27 @@ function MijnAccountContent() {
                     </div>
                   ) : (
                     bookings.map(booking => {
-                      const caravan = getCaravan(booking.caravan_id);
                       const camping = getCamping(booking.camping_id);
                       const isPast = new Date(booking.check_out) < new Date();
+                      const extras = booking.special_requests ? booking.special_requests.split(' | ').filter(Boolean) : [];
                       return (
                         <div key={booking.id} className={`bg-white rounded-2xl overflow-hidden transition-all ${isPast ? 'opacity-60' : ''}`}>
-                          {/* Caravan image strip */}
-                          {caravan?.photos?.[0] && !isPast && (
-                            <div className="relative h-24 sm:h-28">
-                              <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover" />
-                              <div className="absolute inset-0 bg-black/30" />
-                              <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
-                                <div>
-                                  <h3 className="font-bold text-white text-sm">{caravan.name}</h3>
-                                  <div className="text-white/70 text-xs flex items-center gap-1"><MapPin size={10} />{camping?.name || 'Camping'}</div>
+                          <div className="p-4 sm:p-5">
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-xs text-muted">{booking.reference}</span>
+                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
+                                    {statusLabelsNL[booking.status] || booking.status}
+                                  </span>
                                 </div>
-                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
-                                  {statusLabelsNL[booking.status] || booking.status}
-                                </span>
+                                <h3 className="font-semibold text-foreground mt-1 text-sm">{camping?.name || 'Camping'}</h3>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-bold text-foreground text-sm">{fp(Number(booking.total_price))}</div>
                               </div>
                             </div>
-                          )}
-
-                          <div className="p-4 sm:p-5">
-                            {/* Compact header for past/no-image */}
-                            {(isPast || !caravan?.photos?.[0]) && (
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-xs text-muted">{booking.reference}</span>
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[booking.status] || 'bg-surface-alt text-foreground-light'}`}>
-                                      {statusLabelsNL[booking.status] || booking.status}
-                                    </span>
-                                  </div>
-                                  <h3 className="font-semibold text-foreground mt-1 text-sm">{caravan?.name || `Caravan`}</h3>
-                                </div>
-                                <div className="text-right">
-                                  <div className="font-bold text-foreground text-sm">{fp(Number(booking.total_price))}</div>
-                                </div>
-                              </div>
-                            )}
 
                             {/* Details grid */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
@@ -819,7 +835,7 @@ function MijnAccountContent() {
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-muted">{t('myAccount.borgOnCamping')}</span>
-                                  <span className="text-foreground-light">€400</span>
+                                  <span className="text-foreground-light">{fp(Number(booking.borg_amount || 400))}</span>
                                 </div>
                               </div>
                             </div>
@@ -845,26 +861,19 @@ function MijnAccountContent() {
                               })()}
                             </div>
 
-                            {/* Reference footer for image-cards */}
-                            {!isPast && caravan?.photos?.[0] && (
-                              <div className="mt-3 flex items-center justify-between">
-                                <span className="font-mono text-xs text-muted">{booking.reference}</span>
-                                <div className="flex items-center gap-3">
-                                  {booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
-                                    <button
-                                      onClick={() => setCancelConfirmId(booking.id)}
-                                      className="text-xs text-muted hover:text-danger transition-colors cursor-pointer"
-                                    >
-                                      {t('myAccount.cancelLabel')}
-                                    </button>
-                                  )}
-                                  <span className="text-sm font-bold text-foreground">{fp(Number(booking.total_price))}</span>
-                                </div>
+                            {/* Extras */}
+                            {extras.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-border/40 flex flex-wrap gap-1.5">
+                                {extras.map((extra, i) => (
+                                  <span key={i} className="inline-flex items-center gap-1 text-xs bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">
+                                    {extra}
+                                  </span>
+                                ))}
                               </div>
                             )}
 
-                            {/* Cancel button for past/no-image cards */}
-                            {(isPast || !caravan?.photos?.[0]) && booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
+                            {/* Cancel button */}
+                            {booking.status !== 'GEANNULEERD' && booking.status !== 'AFGEROND' && !isPast && (
                               <div className="mt-3 pt-2">
                                 <button
                                   onClick={() => setCancelConfirmId(booking.id)}
@@ -1034,7 +1043,6 @@ function MijnAccountContent() {
                       const ontbreektItems = items.filter(i => i.status === 'ontbreekt').length;
                       const canRespond = bc.status === 'AFGEROND' && !bc.customer_agreed;
                       const hasResponded = bc.status === 'KLANT_AKKOORD' || bc.status === 'KLANT_BEZWAAR';
-                      const caravan = getCaravan(bc.caravan_id);
 
                       // Group by category
                       const grouped: Record<string, BorgItem[]> = {};
@@ -1066,7 +1074,6 @@ function MijnAccountContent() {
                               </div>
                               <div className="text-xs text-muted mt-0.5 flex items-center gap-2 flex-wrap">
                                 <span>{bc.booking_ref}</span>
-                                <span>{caravan?.name || bc.caravan_id}</span>
                                 {canRespond && <span className="text-primary font-medium animate-pulse">{t('myAccount.actionRequired')}</span>}
                               </div>
                             </div>
@@ -1169,6 +1176,11 @@ function MijnAccountContent() {
                                       {bc.customer_agreed && bc.borg_amount && (
                                         <p className="text-sm text-primary-dark mt-2">
                                           {t('myAccount.borgReturnNote').replace('{amount}', parseFloat(bc.borg_amount).toFixed(2))}
+                                        </p>
+                                      )}
+                                      {bc.borg_return_method && (
+                                        <p className="text-xs font-medium mt-2">
+                                          {t('borgPage.borgReturnMethodLabel')}: <span className="font-bold">{bc.borg_return_method === 'contant' ? t('borgPage.borgReturnCash') : t('borgPage.borgReturnBank')}</span>
                                         </p>
                                       )}
                                     </div>

@@ -136,6 +136,15 @@ export default function AdminKlanten() {
     );
   });
 
+  const ITEMS_PER_PAGE = 25;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  // Reset page when search changes
+  useEffect(() => { setCurrentPage(1); }, [search]);
+
   const formatDate = (d: string | null) => {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('nl-NL', {
@@ -346,7 +355,7 @@ export default function AdminKlanten() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(customer => (
+                {paginated.map(customer => (
                   <tr
                     key={customer.id}
                     className="hover:bg-primary-50/30 transition-colors"
@@ -370,7 +379,7 @@ export default function AdminKlanten() {
                     </td>
                     <td className="px-4 py-3 text-muted">{customer.email}</td>
                     <td className="px-4 py-3 text-muted">
-                      {customer.phone || '—'} </td> <td className="px-4 py-3 text-muted"> {formatDate(customer.created_at)} </td> <td className="px-4 py-3"> <div className="flex items-center gap-1.5 text-muted"> <Clock size={14} /> <span>{formatDateTime(customer.last_login)}</span> </div> </td> <td className="px-4 py-3"> <div className="flex items-center justify-end gap-1"> <button onClick={() => openCustomerDetail(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={isNl ? 'Communicatie' : 'Communication'} > <MessageCircle size={15} /> </button> <button onClick={() => openEditModal(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={t("common.edit")} > <Pencil size={15} /> </button> <button onClick={() => openDeleteModal(customer)} className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title={t("common.delete")} > <Trash2 size={15} /> </button> </div> </td> </tr> ))} </tbody> </table> </div> {/* Mobile cards */} <div className="md:hidden"> {filtered.map(customer => ( <div key={customer.id} className="p-3 sm:p-4 space-y-1.5 sm:space-y-2"> <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm"> {customer.name ? customer.name .split(' ')
+                      {customer.phone || '—'} </td> <td className="px-4 py-3 text-muted"> {formatDate(customer.created_at)} </td> <td className="px-4 py-3"> <div className="flex items-center gap-1.5 text-muted"> <Clock size={14} /> <span>{formatDateTime(customer.last_login)}</span> </div> </td> <td className="px-4 py-3"> <div className="flex items-center justify-end gap-1"> <button onClick={() => openCustomerDetail(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={isNl ? 'Communicatie' : 'Communication'} > <MessageCircle size={15} /> </button> <button onClick={() => openEditModal(customer)} className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title={t("common.edit")} > <Pencil size={15} /> </button> <button onClick={() => openDeleteModal(customer)} className="p-2 text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title={t("common.delete")} > <Trash2 size={15} /> </button> </div> </td> </tr> ))} </tbody> </table> </div> {/* Mobile cards */} <div className="md:hidden"> {paginated.map(customer => ( <div key={customer.id} className="p-3 sm:p-4 space-y-1.5 sm:space-y-2"> <div className="flex items-center justify-between"> <div className="flex items-center gap-3"> <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm"> {customer.name ? customer.name .split(' ')
                             .map(n => n[0])
                             .join('')
                             .toUpperCase()
@@ -432,6 +441,30 @@ export default function AdminKlanten() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 pt-2 flex-wrap">
+          <button onClick={() => setCurrentPage(1)} disabled={safePage <= 1} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">«</button>
+          <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safePage <= 1} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">‹</button>
+          {(() => {
+            const pages: number[] = [];
+            const start = Math.max(1, safePage - 2);
+            const end = Math.min(totalPages, safePage + 2);
+            if (start > 1) pages.push(1);
+            if (start > 2) pages.push(-1);
+            for (let i = start; i <= end; i++) pages.push(i);
+            if (end < totalPages - 1) pages.push(-2);
+            if (end < totalPages) pages.push(totalPages);
+            return pages.map((p, i) =>
+              p < 0 ? <span key={`e${i}`} className="px-1 text-sm text-muted">…</span> : (
+                <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 text-sm rounded-lg transition-colors cursor-pointer ${safePage === p ? 'bg-primary text-white font-bold' : 'bg-white text-foreground hover:bg-surface'}`}>{p}</button>
+              )
+            );
+          })()}
+          <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safePage >= totalPages} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">›</button>
+          <button onClick={() => setCurrentPage(totalPages)} disabled={safePage >= totalPages} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">»</button>
         </div>
       )}
 

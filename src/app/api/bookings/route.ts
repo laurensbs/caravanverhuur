@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, getCustomerByEmail, checkCaravanAvailability, updatePaymentStripeId } from '@/lib/db';
-import { sendBookingConfirmationEmail } from '@/lib/email';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentStripeId, getActivePricingRules } from '@/lib/db';
+import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
 import { getStripe } from '@/lib/stripe';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber, discountCode, discountAmount, depositAmount } = body;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, spotNumber, discountCode, extraBedlinnen, extraFridge, extraAirco, extraBikes, extraMountainbikes } = body;
 
     if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -48,17 +48,81 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Minimaal 7 nachten vereist.' }, { status: 400 });
     }
 
-    // Check availability: prevent double-bookings for the same caravan
-    const available = await checkCaravanAvailability(caravanId, checkIn, checkOut);
-    if (!available) {
-      return NextResponse.json({ error: 'Deze caravan is al geboekt voor de geselecteerde periode. Kies andere data.' }, { status: 409 });
+    // SERVER-SIDE PRICE CALCULATION — never trust client-supplied totalPrice
+    const serverNights = calcNights;
+    const getWeeklyRate = (date: Date): number => {
+      const month = date.getMonth();
+      if (month === 6) return 650; // July = high season
+      return 550;
+    };
+    const start = new Date(checkIn);
+    let basePrice = 0;
+    for (let i = 0; i < serverNights; i++) {
+      const day = new Date(start.getTime() + i * 86400000);
+      basePrice += getWeeklyRate(day) / 7;
+    }
+    basePrice = Math.round(basePrice);
+
+    // Apply pricing rules (seizoen/vroegboek/lastminute)
+    let adjustedPrice = basePrice;
+    try {
+      const rules = await getActivePricingRules();
+      const now = new Date();
+      const checkinDate = new Date(checkIn);
+      const daysBeforeArrival = Math.ceil((checkinDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sorted = [...rules].sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0));
+      for (const rule of sorted) {
+        const pct = parseFloat(rule.percentage);
+        if (isNaN(pct) || pct === 0) continue;
+        if ((rule.min_nights || 1) > serverNights) continue;
+
+        let applies = false;
+        if (rule.type === 'seizoen' && rule.start_date && rule.end_date) {
+          applies = checkinDate >= new Date(rule.start_date) && checkinDate <= new Date(rule.end_date);
+        } else if (rule.type === 'vroegboek' && rule.days_before_checkin != null) {
+          applies = daysBeforeArrival >= rule.days_before_checkin;
+        } else if (rule.type === 'lastminute' && rule.days_before_checkin != null) {
+          applies = daysBeforeArrival <= rule.days_before_checkin;
+        }
+        if (applies) {
+          adjustedPrice += Math.round(basePrice * pct / 100);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load pricing rules:', err);
+    }
+    adjustedPrice = Math.max(0, adjustedPrice);
+
+    // Calculate extras server-side
+    const weeks = Math.ceil(serverNights / 7);
+    let serverExtrasCost = 0;
+    const bikeCount = Math.max(0, Math.min(10, Number(extraBikes) || 0));
+    const mtbCount = Math.max(0, Math.min(10, Number(extraMountainbikes) || 0));
+    if (extraBedlinnen) serverExtrasCost += weeks * 70;
+    if (extraFridge) serverExtrasCost += weeks * 40;
+    if (extraAirco) serverExtrasCost += weeks * 50;
+    serverExtrasCost += bikeCount * weeks * 50;
+    serverExtrasCost += mtbCount * weeks * 50;
+
+    // Apply discount — validate code server-side, never trust client amount
+    let serverDiscount = 0;
+    if (discountCode && typeof discountCode === 'string' && discountCode.trim()) {
+      const validation = await validateDiscountCode(discountCode.trim(), adjustedPrice);
+      if (validation.valid && validation.discountAmount) {
+        serverDiscount = validation.discountAmount;
+      }
     }
 
-    // Calculate 25% deposit amount
-    const deposit25 = depositAmount || Math.round(totalPrice * 0.25);
+    const totalPrice = adjustedPrice - serverDiscount + serverExtrasCost;
+    const serverBorgAmount = 400 + (bikeCount + mtbCount) * 200;
+
+    // Calculate 25% deposit amount (server-calculated)
+    const deposit25 = Math.round(totalPrice * 0.25);
     const remaining = totalPrice - deposit25;
 
-    const result = await createBooking({
+    // Atomic availability check + booking creation (prevents race condition / double-bookings)
+    const result = await createBookingAtomic({
       guestName,
       guestEmail,
       guestPhone,
@@ -69,13 +133,17 @@ export async function POST(request: NextRequest) {
       campingId,
       checkIn,
       checkOut,
-      nights,
+      nights: serverNights,
       totalPrice,
       depositAmount: deposit25,
       remainingAmount: remaining,
-      borgAmount: borgAmount || 400,
+      borgAmount: serverBorgAmount,
       spotNumber,
     });
+
+    if (!result) {
+      return NextResponse.json({ error: 'Deze caravan is al geboekt voor de geselecteerde periode. Kies andere data.' }, { status: 409 });
+    }
 
     // Send booking confirmation email (non-blocking)
     let caravanName: string = staticCaravans.find(c => c.id === caravanId)?.name || '';
@@ -143,7 +211,7 @@ export async function POST(request: NextRequest) {
       campingName,
       checkIn,
       checkOut,
-      nights,
+      nights: serverNights,
       adults: adults || 2,
       children: children || 0,
       totalPrice,
@@ -151,8 +219,25 @@ export async function POST(request: NextRequest) {
       immediatePayment,
       spotNumber,
       paymentUrl,
-      borgAmount: borgAmount || 400,
+      borgAmount: serverBorgAmount,
+      hasBedlinnen: !!extraBedlinnen,
     }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
+
+    // Notify admin of new booking (non-blocking)
+    sendAdminNewBookingNotification({
+      guestName,
+      guestEmail,
+      guestPhone,
+      reference: result.reference,
+      campingName,
+      checkIn,
+      checkOut,
+      nights: serverNights,
+      adults: adults || 2,
+      children: children || 0,
+      totalPrice,
+      specialRequests,
+    }).catch(err => console.error('Admin booking notification email failed:', err));
 
     // Auto-create borgchecklist for this booking (inchecken)
     createBorgChecklist({ bookingId: result.id, type: 'INCHECKEN' })
@@ -180,7 +265,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, status, adminNotes } = body;
+    const { id, status, adminNotes, caravanId } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing booking id' }, { status: 400 });
@@ -191,6 +276,9 @@ export async function PATCH(request: NextRequest) {
     }
     if (adminNotes !== undefined) {
       await updateBookingNotes(id, adminNotes);
+    }
+    if (caravanId !== undefined) {
+      await updateBookingCaravan(id, caravanId || null);
     }
 
     return NextResponse.json({ success: true });

@@ -202,6 +202,54 @@ function getPaymentTypeLabel(type: string, locale?: string): string {
 
 // ===== EMAIL TEMPLATES =====
 
+export async function sendAdminNewBookingNotification(data: {
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  reference: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  totalPrice: number;
+  specialRequests?: string;
+}) {
+  const adminEmail = 'info@caravanverhuurspanje.com';
+  const formatDate = (d: string) => new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const extras = data.specialRequests ? data.specialRequests.split(' | ').filter(Boolean) : [];
+
+  return sendEmail({
+    to: adminEmail,
+    subject: `🔔 Nieuwe boeking ${data.reference} — ${data.guestName}`,
+    html: emailWrapper(`
+      <div style="text-align:center;padding:30px 0 10px;">
+        <div style="font-size:40px;">🎉</div>
+        <h1 style="font-size:22px;color:#1a1a1a;margin:10px 0 5px;">Nieuwe boeking ontvangen!</h1>
+        <p style="color:#888;font-size:14px;">Referentie: <strong>${data.reference}</strong></p>
+      </div>
+      ${divider()}
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr><td style="padding:8px 0;color:#888;width:140px;">Naam</td><td style="padding:8px 0;font-weight:600;">${data.guestName}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">E-mail</td><td style="padding:8px 0;"><a href="mailto:${data.guestEmail}" style="color:#2563eb;">${data.guestEmail}</a></td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Telefoon</td><td style="padding:8px 0;"><a href="tel:${data.guestPhone}" style="color:#2563eb;">${data.guestPhone}</a></td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Camping</td><td style="padding:8px 0;font-weight:600;">${data.campingName}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Inchecken</td><td style="padding:8px 0;">${formatDate(data.checkIn)}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Uitchecken</td><td style="padding:8px 0;">${formatDate(data.checkOut)}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Nachten</td><td style="padding:8px 0;">${data.nights}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Gasten</td><td style="padding:8px 0;">${data.adults} volwassenen${data.children > 0 ? ` + ${data.children} kinderen` : ''}</td></tr>
+        <tr><td style="padding:8px 0;color:#888;">Totaalprijs</td><td style="padding:8px 0;font-weight:700;font-size:16px;">€${data.totalPrice}</td></tr>
+        ${extras.length > 0 ? `<tr><td style="padding:8px 0;color:#888;vertical-align:top;">Extra's</td><td style="padding:8px 0;">${extras.join('<br/>')}</td></tr>` : ''}
+      </table>
+      ${divider()}
+      <div style="text-align:center;padding:15px 0;">
+        <a href="${SITE_URL}/admin/boekingen" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;">Bekijk in admin</a>
+      </div>
+    `),
+  });
+}
+
 export async function sendWelcomeEmail(to: string, name: string, locale?: string, verifyUrl?: string) {
   const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];
@@ -280,6 +328,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   spotNumber?: string;
   paymentUrl?: string;
   borgAmount?: number;
+  hasBedlinnen?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -300,12 +349,11 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#0F172A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
-        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${t.bookingAwaitConfirm}</span>
+        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${data.paymentUrl ? t.bookingAwaitConfirm : t.bookingAwaitPaymentLink}</span>
       </div>
 
       <!-- Booking details -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow(t.bookingCaravan, data.caravanName)}
         ${infoRow(t.bookingCamping, data.campingName)}
         ${data.spotNumber ? infoRow(t.bookingSpot, data.spotNumber) : ''}
         ${infoRow(t.bookingCheckIn, formatDate(data.checkIn, locale))}
@@ -346,14 +394,29 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          ${data.immediatePayment
-            ? t.bookingImmediateNote(formatPrice(data.totalPrice), deadlineLabel)
-            : t.bookingLaterNote(formatPrice(data.totalPrice), deadlineLabel)
+          ${data.paymentUrl
+            ? (data.immediatePayment
+              ? t.bookingImmediateNote(formatPrice(data.totalPrice), deadlineLabel)
+              : t.bookingLaterNote(formatPrice(data.totalPrice), deadlineLabel))
+            : t.bookingPendingPaymentNote(formatPrice(data.totalPrice), deadlineLabel)
           }
         </p>
       `, true)}
 
       ${data.paymentUrl ? button(t.bookingPayNow(formatPrice(deposit25)), data.paymentUrl) : ''}
+
+      ${!data.hasBedlinnen ? highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="vertical-align:top;">
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+                ${t.bookingBeddingReminder}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `) : ''}
+
       ${button(t.bookingButton, `${SITE_URL}/mijn-account`)}
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
@@ -375,10 +438,11 @@ export async function sendManualBookingEmail(to: string, data: {
   paymentDeadline: string;
   immediatePayment: boolean;
   spotNumber?: string;
-  paymentUrl: string;
+  paymentUrl?: string;
   isNewAccount: boolean;
   password?: string;
   borgAmount?: number;
+  hasBedlinnen?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -423,7 +487,6 @@ export async function sendManualBookingEmail(to: string, data: {
 
       <!-- Booking details -->
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
-        ${infoRow(t.bookingCaravan, data.caravanName)}
         ${infoRow(t.bookingCamping, data.campingName)}
         ${data.spotNumber ? infoRow(t.bookingSpot, data.spotNumber) : ''}
         ${infoRow(t.bookingCheckIn, formatDate(data.checkIn, locale))}
@@ -464,15 +527,27 @@ export async function sendManualBookingEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          ${t.manualPayNote}
+          ${data.paymentUrl ? t.manualPayNote : t.bookingPendingPaymentNote(formatPrice(data.totalPrice), '')}
         </p>
       `, true)}
 
-      ${button(t.manualPayButton(formatPrice(deposit25)), data.paymentUrl)}
+      ${data.paymentUrl ? button(t.manualPayButton(formatPrice(deposit25)), data.paymentUrl) : ''}
 
-      <p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">${t.manualPayLater}</p>
+      ${data.paymentUrl ? `<p style="margin:0 0 20px;color:#94A3B8;font-size:12px;text-align:center;">${t.manualPayLater}</p>` : ''}
 
       ${accountSection}
+
+      ${!data.hasBedlinnen ? highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="vertical-align:top;">
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+                ${t.bookingBeddingReminder}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `) : ''}
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, `${t.manualSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
@@ -552,6 +627,30 @@ export async function sendPaymentConfirmationEmail(to: string, data: {
 
       ${button(t.paymentButton, `${SITE_URL}/mijn-account`)}
     `, `${t.paymentSubject(data.reference)} — ${formatPrice(data.amount)}`, locale),
+  });
+}
+
+export async function sendPaymentLinkEmail(to: string, data: {
+  guestName: string;
+  reference: string;
+  depositAmount: number;
+  paymentUrl: string;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
+  const firstName = data.guestName.split(' ')[0];
+
+  return sendEmail({
+    to,
+    subject: t.paymentLinkSubject(data.reference),
+    html: emailWrapper(`
+      ${badge('\uD83D\uDCB3', t.paymentLinkHeading)}
+      ${heading(t.paymentLinkHeading)}
+      ${subtext(t.paymentLinkText(firstName, data.reference, formatPrice(data.depositAmount)))}
+
+      ${button(t.paymentLinkButton(formatPrice(data.depositAmount)), data.paymentUrl)}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
+    `, `${t.paymentLinkSubject(data.reference)}`, locale),
   });
 }
 
@@ -643,7 +742,6 @@ export async function sendBorgChecklistEmail(data: {
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         ${infoRow(t.borgBooking, data.reference)}
-        ${data.caravanName ? infoRow(t.bookingCaravan, data.caravanName) : ''}
         ${infoRow(t.paymentType, data.type === 'INCHECKEN' ? t.borgCheckInType : t.borgCheckOutType)}
         ${data.checkIn ? infoRow(t.bookingCheckIn, data.checkIn) : ''}
         ${data.checkOut ? infoRow(t.bookingCheckOut, data.checkOut) : ''}
@@ -670,6 +768,56 @@ export async function sendBorgChecklistEmail(data: {
         <a href="${dashboardUrl}" style="color:#0F172A;font-size:13px;text-decoration:none;font-weight:500;">${t.borgDashboardLink}</a>
       </div>
     `, `${t.borgSubject(data.reference)}`, locale),
+  });
+}
+
+// ===== BORG CONFIRMATION EMAIL (after customer agrees) =====
+
+export async function sendBorgConfirmationEmail(data: {
+  to: string;
+  guestName: string;
+  reference: string;
+  borgReturnMethod: 'contant' | 'bank';
+  refundAmount: number;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
+  const firstName = data.guestName.split(' ')[0];
+  const dashboardUrl = `${SITE_URL}/mijn-account?tab=borg`;
+  const returnMethodLabel = data.borgReturnMethod === 'contant' ? t.borgReturnCash : t.borgReturnBank;
+
+  return sendEmail({
+    to: data.to,
+    subject: t.borgConfirmSubject(data.reference),
+    html: emailWrapper(`
+      ${badge('✅', t.borgConfirmHeading)}
+      ${heading(t.borgConfirmHeading)}
+      ${subtext(t.borgConfirmSubtext(firstName))}
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
+        ${infoRow(t.borgBooking, data.reference)}
+        ${infoRow(t.borgReturnMethodLabel, returnMethodLabel)}
+        ${infoRow(t.borgRefundAmount, `€${data.refundAmount.toFixed(2)}`)}
+      </table>
+
+      ${highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="width:40px;vertical-align:top;padding-top:2px;">
+              <span style="font-size:20px;">💰</span>
+            </td>
+            <td style="vertical-align:top;">
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+                ${t.borgConfirmNote}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `)}
+
+      <div style="text-align:center;margin-top:24px;">
+        <a href="${dashboardUrl}" style="color:#0F172A;font-size:13px;text-decoration:none;font-weight:500;">${t.borgConfirmDashboardLink}</a>
+      </div>
+    `, `${t.borgConfirmSubject(data.reference)}`, locale),
   });
 }
 
@@ -742,22 +890,57 @@ export async function sendNewsletterEmail(data: {
   unsubscribeUrl?: string;
 }) {
   const cat = CATEGORY_LABELS[data.category] || CATEGORY_LABELS.algemeen;
-  const lines = data.content.split('\n').filter(l => l.trim());
-  const contentHtml = lines.map(l =>
-    `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
-  ).join('');
-
   const hasDetails = data.eventDate || data.eventLocation;
 
-  const photosHtml = data.photos && data.photos.length > 0
-    ? `<div style="margin:0 0 28px;">
-        ${data.photos.map(url =>
-          `<div style="margin:0 0 14px;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-            <img src="${url}" alt="Nieuwsbrief afbeelding" style="width:100%;height:auto;display:block;" />
-          </div>`
-        ).join('')}
-      </div>`
-    : '';
+  const IMAGE_SIZE_MAP: Record<string, string> = { small: '40%', medium: '60%', large: '80%', full: '100%' };
+
+  // Detect block-based content (JSON array)
+  let contentHtml = '';
+  let photosHtml = '';
+
+  if (data.content.trim().startsWith('[{') || data.content.trim().startsWith('[{')) {
+    try {
+      const blocks = JSON.parse(data.content) as { type: string; content: string; imageSize?: string }[];
+      contentHtml = blocks.map(block => {
+        if (block.type === 'text' && block.content.trim()) {
+          return block.content.split('\n').filter((l: string) => l.trim()).map((l: string) =>
+            `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
+          ).join('');
+        }
+        if (block.type === 'image' && block.content.trim()) {
+          const width = IMAGE_SIZE_MAP[block.imageSize || 'full'] || '100%';
+          return `<div style="margin:0 auto 14px;width:${width};text-align:center;">
+            <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+              <img src="${block.content}" alt="Nieuwsbrief afbeelding" style="width:100%;height:auto;display:block;" />
+            </div>
+          </div>`;
+        }
+        return '';
+      }).join('');
+    } catch {
+      // Fallback to legacy if JSON parse fails
+      const lines = data.content.split('\n').filter(l => l.trim());
+      contentHtml = lines.map(l =>
+        `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
+      ).join('');
+    }
+  } else {
+    // Legacy plain text format
+    const lines = data.content.split('\n').filter(l => l.trim());
+    contentHtml = lines.map(l =>
+      `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
+    ).join('');
+
+    photosHtml = data.photos && data.photos.length > 0
+      ? `<div style="margin:0 0 28px;">
+          ${data.photos.map(url =>
+            `<div style="margin:0 0 14px;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+              <img src="${url}" alt="Nieuwsbrief afbeelding" style="width:100%;height:auto;display:block;" />
+            </div>`
+          ).join('')}
+        </div>`
+      : '';
+  }
 
   const unsubscribeHtml = data.unsubscribeUrl
     ? `<div style="text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid #E7E5E4;">
@@ -829,6 +1012,7 @@ export async function sendCountdownEmail(data: {
   checkIn: string;
   checkOut: string;
   daysUntil: number;
+  hasBedlinnen?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -886,7 +1070,6 @@ export async function sendCountdownEmail(data: {
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         ${infoRow(t.borgBooking, data.reference)}
-        ${infoRow(t.bookingCaravan, data.caravanName)}
         ${infoRow(t.bookingCamping, data.campingName)}
         ${infoRow(t.bookingCheckIn, formatDateLong(data.checkIn, locale))}
         ${infoRow(t.bookingCheckOut, formatDateLong(data.checkOut, locale))}
@@ -906,6 +1089,18 @@ export async function sendCountdownEmail(data: {
           </tr>
         </table>
       `, true)}
+
+      ${!data.hasBedlinnen && data.daysUntil <= 14 ? highlight(`
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="vertical-align:top;">
+              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
+                ${t.countdownBeddingReminder}
+              </p>
+            </td>
+          </tr>
+        </table>
+      `) : ''}
 
       ${button(t.countdownButton, `${SITE_URL}/mijn-account?tab=boekingen`)}
     `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`, locale),
@@ -1012,7 +1207,6 @@ export async function sendPaymentReminderEmail(data: {
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         ${infoRow(t.reminderRef, data.reference)}
-        ${infoRow(t.bookingCaravan, data.caravanName)}
         ${infoRow(t.bookingCamping, data.campingName)}
         ${infoRow(t.reminderArrival, formatDateShort(data.checkIn, locale))}
         ${infoRow(t.reminderOutstanding, formatPrice(data.amount))}
@@ -1056,7 +1250,6 @@ export async function sendCancellationEmail(data: {
 
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 28px;">
         ${infoRow(t.cancelRef, data.reference)}
-        ${infoRow(t.bookingCaravan, data.caravanName)}
         ${infoRow(t.bookingCamping, data.campingName)}
         ${infoRow(t.bookingCheckIn, formatDateLong(data.checkIn, locale))}
         ${infoRow(t.bookingCheckOut, formatDateLong(data.checkOut, locale))}

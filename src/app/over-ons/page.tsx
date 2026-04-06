@@ -318,9 +318,9 @@ export default function OverOnsPage() {
             className="grid grid-cols-3 gap-4 sm:gap-8 max-w-4xl mx-auto"
           >
             {[
-              { number: '4', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Users size={24} /> },
-              { number: '100+', label: t('about.stat3Label'), sub: t('about.stat3Sub'), icon: <Star size={24} /> },
-              { number: '4.8/5', label: t('about.stat4Label'), sub: t('about.stat4Sub'), icon: <Award size={24} /> },
+              { number: '30+', label: t('about.stat1Label'), sub: t('about.stat1Sub'), icon: <Users size={24} /> },
+              { number: '100+', label: t('about.stat2Label'), sub: t('about.stat2Sub'), icon: <Star size={24} /> },
+              { number: '4.8/5', label: t('about.stat3Label'), sub: t('about.stat3Sub'), icon: <Award size={24} /> },
             ].map((stat, i) => (
               <motion.div key={i} variants={fadeUp} custom={i} className="text-center p-4 sm:p-8">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">

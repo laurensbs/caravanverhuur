@@ -27,6 +27,12 @@ import {
   Mail,
   PlusCircle,
   Search,
+  Banknote,
+  Building2,
+  Truck,
+  CreditCard,
+  Key,
+  Wallet,
 } from 'lucide-react';
 
 interface BorgItem {
@@ -65,6 +71,8 @@ interface BorgChecklist {
   extra_damages?: ExtraDamage[] | null;
   cleaning_deduction?: string | null;
   total_deduction?: string | null;
+  borg_return_method?: string | null;
+  customer_signature?: string | null;
 }
 
 interface Booking {
@@ -115,6 +123,8 @@ export default function AdminBorgPage() {
   const [bookingSearch, setBookingSearch] = useState('');
   const [bookingDropdownOpen, setBookingDropdownOpen] = useState(false);
   const bookingDropdownRef = useRef<HTMLDivElement>(null);
+  const [confirmOnBehalfId, setConfirmOnBehalfId] = useState<string | null>(null);
+  const [confirmReturnMethod, setConfirmReturnMethod] = useState<'contant' | 'bank'>('bank');
 
   const fetchData = useCallback(async () => {
     try {
@@ -229,6 +239,28 @@ export default function AdminBorgPage() {
     }
   };
 
+  const handleConfirmOnBehalf = async (checklist: BorgChecklist) => {
+    setSaving(true);
+    try {
+      await fetch('/api/borg', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: checklist.id,
+          customerConfirm: { borgReturnMethod: confirmReturnMethod },
+        }),
+      });
+      setConfirmOnBehalfId(null);
+      await fetchData();
+      toast(t('common.saved'), 'success');
+    } catch (err) {
+      console.error('Confirm on behalf error:', err);
+      toast(t('common.actionFailed'), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleNotesChange = (checklistId: string, notes: string) => {
     setChecklists(prev => prev.map(cl =>
       cl.id === checklistId ? { ...cl, general_notes: notes } : cl
@@ -328,6 +360,119 @@ export default function AdminBorgPage() {
           </div>
         ))}
       </div>
+
+      {/* Departure Prep - Upcoming borg returns */}
+      {(() => {
+        const departures = checklists.filter(c => {
+          if (!c.borg_return_method) return false;
+          if (c.status !== 'KLANT_AKKOORD') return false;
+          if (!c.check_out) return false;
+          // Show departures in next 14 days or past 3 days
+          const checkoutDate = new Date(c.check_out);
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          const diffDays = Math.ceil((checkoutDate.getTime() - now.getTime()) / 86400000);
+          return diffDays >= -3 && diffDays <= 14;
+        }).sort((a, b) => new Date(a.check_out!).getTime() - new Date(b.check_out!).getTime());
+
+        const cashDepartures = departures.filter(c => c.borg_return_method === 'contant');
+
+        if (departures.length === 0) return null;
+
+        return (
+          <div className="bg-white rounded-xl p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm sm:text-base">
+                  <Truck className="w-4 h-4 text-primary" />
+                  {t('deposit.departurePrep')}
+                </h3>
+                <p className="text-xs text-muted mt-0.5">{t('deposit.departurePrepDesc')}</p>
+              </div>
+              {cashDepartures.length > 0 && (
+                <div className="bg-amber-100 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                  <CreditCard size={14} />
+                  {t('deposit.bringPinDevice')}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              {departures.map(dep => {
+                const borgAmount = dep.borg_amount ? parseFloat(dep.borg_amount) : 400;
+                const totalDed = dep.total_deduction ? parseFloat(dep.total_deduction) : 0;
+                const refund = Math.max(0, borgAmount - totalDed);
+                const isCash = dep.borg_return_method === 'contant';
+                const checkoutDate = new Date(dep.check_out!);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                const daysUntil = Math.ceil((checkoutDate.getTime() - now.getTime()) / 86400000);
+                const isToday = daysUntil === 0;
+                const isPast = daysUntil < 0;
+
+                return (
+                  <div key={dep.id} className={`rounded-xl p-3 sm:p-4 border-2 ${
+                    isCash && (isToday || isPast) ? 'border-amber-300 bg-amber-50' :
+                    isCash ? 'border-amber-200 bg-amber-50/50' :
+                    'border-gray-200 bg-gray-50'
+                  }`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-sm text-foreground">{dep.guest_name || 'Gast'}</span>
+                          <span className="text-xs text-muted">{dep.booking_ref}</span>
+                          {isCash ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full">
+                              <Banknote size={10} /> {t('deposit.borgCash')}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                              <Building2 size={10} /> {t('deposit.borgBank')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted">
+                          <span>{dep.caravan_id}</span>
+                          <span className={isToday ? 'font-bold text-amber-700' : isPast ? 'font-bold text-red-600' : ''}>
+                            {t('deposit.checkoutOn')} {checkoutDate.toLocaleDateString('nl-NL')}
+                            {isToday ? ' (vandaag!)' : isPast ? ` (${Math.abs(daysUntil)}d geleden)` : daysUntil <= 3 ? ` (${daysUntil}d)` : ''}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-lg font-bold text-emerald-600">€{refund.toFixed(0)}</div>
+                        <div className="text-[10px] text-muted">{t('deposit.refundAmount')}</div>
+                      </div>
+                    </div>
+
+                    {/* Driver checklist for cash returns */}
+                    {isCash && (
+                      <div className="mt-3 pt-3 border-t border-amber-200">
+                        <p className="text-[10px] font-bold text-amber-800 uppercase tracking-wider mb-2">{t('deposit.driverChecklist')}</p>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {[
+                            { icon: CreditCard, label: t('deposit.driverPinDevice'), critical: true },
+                            { icon: Wallet, label: t('deposit.driverCashReady'), critical: true },
+                            { icon: Key, label: t('deposit.driverKeys'), critical: false },
+                            { icon: ClipboardCheck, label: t('deposit.driverInspectionForm'), critical: false },
+                          ].map((item, i) => (
+                            <div key={i} className={`flex items-center gap-1.5 text-xs rounded-lg px-2 py-1.5 ${
+                              item.critical ? 'bg-amber-100 text-amber-800 font-semibold' : 'bg-white/70 text-gray-600'
+                            }`}>
+                              <item.icon size={12} />
+                              {item.label}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* New Checklist Form */}
       <AnimatePresence>
@@ -782,6 +927,17 @@ export default function AdminBorgPage() {
                             {checklist.customer_notes && (
                               <p className="text-sm mt-1">{checklist.customer_notes}</p>
                             )}
+                            {checklist.borg_return_method && (
+                              <p className="text-xs font-medium mt-2">
+                                💰 Borg terug: <span className="font-bold">{checklist.borg_return_method === 'contant' ? 'Contant' : 'Via bank'}</span>
+                              </p>
+                            )}
+                            {checklist.customer_signature && (
+                              <div className="mt-2">
+                                <p className="text-[10px] text-muted mb-1">Handtekening:</p>
+                                <img src={checklist.customer_signature} alt="Signature" className="h-12 object-contain bg-white rounded p-1" />
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -810,10 +966,58 @@ export default function AdminBorgPage() {
                               </p>
                             </>
                           )}
-                          {checklist.status === 'AFGEROND' && (
-                            <div className="flex items-center gap-2 text-xs text-primary">
-                              <Mail size={13} />
-                              <span className="font-medium">{t('deposit.emailSentWaiting')}</span>
+                          {checklist.status === 'AFGEROND' && !checklist.customer_agreed && (
+                            <div className="w-full space-y-3">
+                              <div className="flex items-center gap-2 text-xs text-primary">
+                                <Mail size={13} />
+                                <span className="font-medium">{t('deposit.emailSentWaiting')}</span>
+                              </div>
+                              {confirmOnBehalfId === checklist.id ? (
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                                  <p className="text-sm text-amber-800 font-medium">{t('deposit.selectReturnMethod')}</p>
+                                  <div className="flex gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmReturnMethod('contant')}
+                                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'contant' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
+                                    >
+                                      <Banknote size={16} /> {t('deposit.borgCash')}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmReturnMethod('bank')}
+                                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'bank' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
+                                    >
+                                      <Building2 size={16} /> {t('deposit.borgBank')}
+                                    </button>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleConfirmOnBehalf(checklist)}
+                                      disabled={saving}
+                                      className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
+                                    >
+                                      {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                      {t('deposit.confirmAndComplete')}
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmOnBehalfId(null)}
+                                      className="px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface transition-colors cursor-pointer"
+                                    >
+                                      {t('common.cancel')}
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => { setConfirmOnBehalfId(checklist.id); setConfirmReturnMethod('bank'); }}
+                                  className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg text-sm font-semibold hover:bg-amber-200 transition-colors cursor-pointer"
+                                >
+                                  <User size={14} />
+                                  {t('deposit.confirmOnBehalf')}
+                                </button>
+                              )}
+                              <p className="text-[11px] text-muted">{t('deposit.confirmOnBehalfDesc')}</p>
                             </div>
                           )}
                           <button
