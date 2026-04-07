@@ -437,7 +437,7 @@ function smartMatch(
     if (ctx.lastTopic === 'couple') {
       return {
         answer: isNl
-          ? `Goed idee${name}! 💕 Ga naar onze boekingspagina en kies een compacte caravan:\n\n👉 **[Direct boeken](/boeken)**\n\nTip: kies een camping bij Begur of Pals voor de mooiste verborgen baaien!`
+          ? `Goed idee${name}! 💕 Ga naar onze boekingspagina:\n\n👉 **[Direct boeken](/boeken)**\n\nWij wijzen een nette caravan aan je toe. Tip: kies een camping bij Begur of Pals voor de mooiste verborgen baaien!`
           : `Great choice${name}! 💕 Book at [Book now](/boeken)`,
         followUp: isNl ? ['Campings in Begur', 'Campings in Pals', 'Wat kost het?'] : ['Campings in Begur', 'Cost?'],
         confidence: 0.9,
@@ -564,16 +564,16 @@ function smartMatch(
   if (caravanName) {
     const caravan = caravans.find(c => c.name === caravanName)!;
     const caravanAnswers = isNl ? [
-      `De **${caravan.name}** is een ${caravan.maxPersons >= 5 ? 'ruime ' : ''}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n💰 €${caravan.pricePerDay}/dag · €${caravan.pricePerWeek}/week\n🔒 Borg: €${caravan.deposit}\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
-      `Goede keuze${name}! De **${caravan.name}** is een van onze fijne caravans! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n💰 Vanaf **€${caravan.pricePerDay}/dag** of **€${caravan.pricePerWeek}/week**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!' : ''}\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
+      `De **${caravan.name}** is een ${caravan.maxPersons >= 5 ? 'ruime ' : ''}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n⚠️ De getoonde caravans zijn indicatief. Wij wijzen een caravan aan je toe — je ontvangt altijd een vergelijkbaar, netjes ingericht model.\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
+      `De **${caravan.name}** is een van onze caravans${name}! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!\n\n' : ''}⚠️ Let op: wij wijzen een caravan aan je toe. De caravans op de website zijn indicatief — je ontvangt altijd een nette, volledig ingerichte caravan.\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
     ] : isEs ? [
-      `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n💰 €${caravan.pricePerDay}/día · €${caravan.pricePerWeek}/semana\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`,
+      `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n\n⚠️ Te asignamos una caravana — las mostradas son indicativas.\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`,
     ] : [
-      `The **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} people**\n💰 €${caravan.pricePerDay}/day · €${caravan.pricePerWeek}/week\n\n👉 **[View details](/caravans/${caravan.id})**`,
+      `The **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} people**\n\n⚠️ We assign a caravan to you — those shown are indicative.\n\n👉 **[View details](/caravans/${caravan.id})**`,
     ];
     return {
       answer: pick(caravanAnswers, asked),
-      followUp: isNl ? ['Hoe boek ik deze?', 'Andere caravans?', 'Welke campings?'] : ['How to book?', 'Other caravans?'],
+      followUp: isNl ? ['Hoe boek ik?', 'Wat kost het?', 'Welke campings?'] : ['How to book?', 'Cost?'],
       confidence: 0.9,
       topic: 'specific-caravan',
     };
@@ -583,7 +583,7 @@ function smartMatch(
   if (/prijs|kosten|kost|tarief|goedkoop|duur|euro|bedrag|per dag|per week|price|cost|cheap|rate|precio|cuesta|tarifa|hoeveel|budget/.test(lower)) {
     const pricingAnswers = isNl ? [
       `Onze prijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Hoogseizoen juli**: toeslag via prijsregels\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\n📅 Vroeg boeken? Profiteer van **vroegboekkorting**!\n\nWil je meer weten over de betaling?`,
-      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag via prijsregels\n\n🔑 Geldt voor **alle ${caravans.length} caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nZal ik je helpen kiezen?`,
+      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag via prijsregels\n\n🔑 Geldt voor **alle caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nWil je meer weten over hoe boeken werkt?`,
       `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
     ] : isEs ? [
       `Nuestros precios (todas las caravanas):\n\n📅 Precio base: **€550/semana**\n☀️ Temporada alta (julio): recargo según reglas de precios`,
@@ -601,9 +601,9 @@ function smartMatch(
   // ===== BOOKING =====
   if (/boek|reserv|aanvraag|hoe.*boek|how.*book|reservar|como reserv|help.*boeken|wil.*boeken|wil.*huren|huren|vastleggen|inschrijv|aanmelden|vastgelegd|kan ik.*huren|ik wil.*huren|wil graag|graag boeken|graag huren|boeking maken|hoe werkt.*boek|stappen|hoe gaat.*boek|hoe kan ik|boeking|booking|how does.*book|i want.*book|i.d like|make.*reservation/.test(lower)) {
     const bookingAnswers = isNl ? [
-      `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Kies een caravan\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nJe kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
-      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je caravan en camping, selecteert je data en reserveert met een **aanbetaling van 25%** via iDEAL/Wero.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
-      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n🚐 Kies je favoriete caravan\n📍 Selecteer een camping\n📅 Kies je periode\n💳 Betaal 25% aanbetaling bij boeking\n\nIk kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
+      `Boeken is heel eenvoudig${name}! 🎉\n\n1️⃣ Kies je datum\n2️⃣ Selecteer je camping\n3️⃣ Aantal personen opgeven\n4️⃣ Vul je gegevens in\n5️⃣ Betaal via iDEAL/Wero\n\nWij wijzen een nette, volledig ingerichte caravan aan je toe. Je kunt dit direct hier in de chat doen, of via onze **[boekingspagina](/boeken)**.\n\nWil je nu boeken? Klik dan op **"Ja, help me boeken!"** 👇`,
+      `Het boekingsproces is super simpel${name}! ✨\n\nJe kiest je datum en camping, geeft het aantal personen op en reserveert met een **aanbetaling van 25%** via iDEAL/Wero. Wij wijzen een caravan aan je toe — altijd netjes en volledig ingericht.\n\n⏱️ Het hele proces duurt nog geen 5 minuten.\n📧 Je krijgt meteen een bevestiging per mail.\n\nIk kan je ook **direct hier in de chat** helpen met boeken! 💬`,
+      `Wil je boeken${name}? Dat kan in een paar stappen! 🚀\n\n📅 Kies je periode\n📍 Selecteer een camping\n👥 Geef het aantal personen op\n💳 Betaal 25% aanbetaling bij boeking\n\nWij wijzen een nette caravan aan je toe. Ik kan je **hier in de chat** door het hele boekingsproces begeleiden. Wil je dat? 😊`,
     ] : isEs ? [
       `¡Reservar es muy fácil! 🎉\n\n¡Puedo ayudarte directamente aquí en el chat!\n\n👉 Haz clic en **"¡Sí, ayúdame!"** abajo.`,
     ] : [
@@ -690,22 +690,22 @@ function smartMatch(
   // ===== CARAVANS =====
   if (/caravan|welke.*caravan|type|model|which.*caravan|que caravana|overzicht|aanbod|camper|stacaravan|mobilhome|mobile home|welke wagens|hoeveel personen|hoeveel slaapplaats|slaapplaats|slaapplek|hoe groot|formaat|afmeting|lengte caravan/.test(lower)) {
     const caravanAnswers = isNl ? [
-      `We hebben **${caravans.length} caravans** beschikbaar${name}:\n\n${caravans.map(c => {
+      `Wij wijzen een caravan aan je toe${name} — je ontvangt altijd een nette, volledig ingerichte 4-persoons caravan incl. koelkast & toilet. 🚐\n\nDit zijn onze caravans (indicatief):\n\n${caravans.map(c => {
         const highlights: string[] = [];
         if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
         if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
         if (c.amenities.some(a => a.toLowerCase().includes('voortent'))) highlights.push('⛺ Voortent');
-        return `🚐 **${c.name}** (${c.manufacturer})\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week\n   ${highlights.join(' · ')}`;
-      }).join('\n\n')}\n\n👉 [Bekijk alle caravans](/caravans)\n\nWil je meer weten over een specifieke caravan?`,
+        return `🚐 **${c.name}** (${c.manufacturer})\n   Max ${c.maxPersons} pers · ${highlights.join(' · ')}`;
+      }).join('\n\n')}\n\n⚠️ De exacte caravan kan afwijken — je krijgt altijd een vergelijkbaar model.\n\n👉 [Bekijk caravans](/caravans)`,
       `Hier is ons aanbod${name}! 🚐\n\n${caravans.map(c => {
         
-        return `**${c.name}** — ${c.manufacturer}\n   ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 3).join(', ')}`;
-      }).join('\n\n')}\n\nElke caravan is **compleet uitgerust** met beddengoed, servies, kookgerei en meer!\n\n👉 [Alle details & foto's](/caravans)`,
-    ] : isEs ? [`Tenemos **${caravans.length} caravanas**:\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers · €${c.pricePerDay}/día`).join('\n\n')}\n\n👉 [Ver caravanas](/caravans)`]
-    : [`We have **${caravans.length} caravans**:\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people · €${c.pricePerDay}/day`).join('\n\n')}\n\n👉 [View caravans](/caravans)`];
+        return `**${c.name}** — ${c.manufacturer}\n   ${c.maxPersons} pers · ${c.amenities.slice(0, 3).join(', ')}`;
+      }).join('\n\n')}\n\nElke caravan is **compleet uitgerust** met beddengoed, servies, kookgerei en meer!\n\n⚠️ Wij wijzen een caravan aan je toe — de getoonde caravans zijn indicatief.\n\n👉 [Alle details & foto's](/caravans)`,
+    ] : isEs ? [`Tenemos **${caravans.length} caravanas** (indicativas):\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers`).join('\n\n')}\n\n⚠️ Te asignamos una caravana — siempre limpia y equipada.\n\n👉 [Ver caravanas](/caravans)`]
+    : [`We assign a caravan to you — always clean and fully equipped! 🚐\n\nOur caravans (indicative):\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people`).join('\n\n')}\n\n⚠️ The exact caravan may differ — you'll always receive an equivalent model.\n\n👉 [View caravans](/caravans)`];
     return {
       answer: pick(caravanAnswers, asked),
-      followUp: isNl ? ['Vertel meer over de Knaus', 'Vertel meer over de HomeCar', 'Wat kost het?', 'Hoe boek ik?'] : ['Tell me about Knaus', 'Cost?'],
+      followUp: isNl ? ['Wat kost het?', 'Hoe boek ik?', 'Welke campings?'] : ['Cost?', 'How to book?'],
       confidence: 0.85,
       topic: 'caravans',
     };
@@ -2211,30 +2211,32 @@ export default function ChatBot() {
     saveMessage('user', userText);
     setTimeout(() => {
       const msg = isNl
-        ? `Mooie keuze! 🏕️\n\nMet hoeveel personen gaan jullie? Kies hieronder het aantal en selecteer een caravan.`
+        ? `Mooie keuze! 🏕️\n\nMet hoeveel personen gaan jullie?`
         : isEs
-        ? `¡Buena elección! 🏕️\n\n¿Cuántas personas? Elige abajo.`
-        : `Great choice! 🏕️\n\nHow many people? Choose below and select a caravan.`;
+        ? `¡Buena elección! 🏕️\n\n¿Cuántas personas?`
+        : `Great choice! 🏕️\n\nHow many people?`;
       advanceBookingStep('persons', msg);
     }, 400);
   }, [isNl, isEs, saveMessage, advanceBookingStep]);
 
-  const handleBookingCaravanSelect = useCallback((caravan: typeof caravans[0]) => {
-    const nights = bookingFlow.nights;
-    const price = calculateSeasonalPrice(bookingFlow.checkIn, nights);
-    setBookingFlow(prev => ({ ...prev, caravanId: caravan.id, caravanName: caravan.name, totalPrice: price }));
-    const userText = `🚐 ${caravan.name} — €${price} (${nights} ${isNl ? 'nachten' : 'nights'})`;
+  const handleBookingPersonsConfirm = useCallback(() => {
+    const totalPersons = bookingFlow.adults + bookingFlow.children;
+    const availableCaravans = caravans.filter(c => c.maxPersons >= totalPersons);
+    const assigned = availableCaravans[0] || caravans[0];
+    const price = calculateSeasonalPrice(bookingFlow.checkIn, bookingFlow.nights);
+    setBookingFlow(prev => ({ ...prev, caravanId: assigned.id, caravanName: assigned.name, totalPrice: price }));
+    const userText = `👥 ${bookingFlow.adults} ${isNl ? 'volwassenen' : 'adults'}${bookingFlow.children > 0 ? `, ${bookingFlow.children} ${isNl ? 'kinderen' : 'children'}` : ''}`;
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
     saveMessage('user', userText);
     setTimeout(() => {
       const msg = isNl
-        ? `Uitstekende keuze! 🎉\n\nVul nu je gegevens in om de boeking af te ronden.`
+        ? `Top! 🎉\n\nVul nu je gegevens in om de boeking af te ronden. Wij wijzen een nette caravan aan je toe.`
         : isEs
-        ? `¡Excelente elección! 🎉\n\nRellena tus datos para completar la reserva.`
-        : `Excellent choice! 🎉\n\nFill in your details to complete the booking.`;
+        ? `¡Perfecto! 🎉\n\nRellena tus datos para completar la reserva.`
+        : `Great! 🎉\n\nFill in your details to complete the booking. We'll assign a caravan to you.`;
       advanceBookingStep('contact', msg);
     }, 400);
-  }, [bookingFlow.nights, isNl, isEs, saveMessage, advanceBookingStep]);
+  }, [bookingFlow.adults, bookingFlow.children, bookingFlow.checkIn, bookingFlow.nights, isNl, isEs, saveMessage, advanceBookingStep]);
 
   const handleBookingContactConfirm = useCallback(() => {
     if (!bookingFlow.name || !bookingFlow.email || !bookingFlow.phone) return;
@@ -2244,12 +2246,11 @@ export default function ChatBot() {
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: userText, timestamp: new Date() }]);
     saveMessage('user', userText);
     setTimeout(() => {
-      const caravan = caravans.find(c => c.id === bookingFlow.caravanId);
       const msg = isNl
-        ? `Hier is je boekingsoverzicht:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nachten)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} volwassenen${bookingFlow.children > 0 ? `, ${bookingFlow.children} kinderen` : ''}\n\n💰 **Totaal: €${bookingFlow.totalPrice}**\n🔒 Borg: €${caravan?.deposit || 0} (retour na inspectie)\n\nKlopt alles? Bevestig je boeking hieronder!`
+        ? `Hier is je boekingsoverzicht:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nachten)\n⛺ **${bookingFlow.campingName}**\n🚐 Caravan wordt toegewezen (nette, volledig ingerichte caravan)\n👥 ${bookingFlow.adults} volwassenen${bookingFlow.children > 0 ? `, ${bookingFlow.children} kinderen` : ''}\n\n💰 **Totaal: €${bookingFlow.totalPrice}**\n🔒 Borg: €400 (+ €200/fiets, retour na inspectie)\n\nKlopt alles? Bevestig je boeking hieronder!`
         : isEs
-        ? `Tu resumen:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} noches)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} adultos${bookingFlow.children > 0 ? `, ${bookingFlow.children} niños` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\n¡Confirma tu reserva abajo!`
-        : `Your summary:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nights)\n⛺ **${bookingFlow.campingName}**\n🚐 **${bookingFlow.caravanName}**\n👥 ${bookingFlow.adults} adults${bookingFlow.children > 0 ? `, ${bookingFlow.children} children` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\nConfirm your booking below!`;
+        ? `Tu resumen:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} noches)\n⛺ **${bookingFlow.campingName}**\n🚐 Caravana asignada (limpia y equipada)\n👥 ${bookingFlow.adults} adultos${bookingFlow.children > 0 ? `, ${bookingFlow.children} niños` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\n¡Confirma tu reserva abajo!`
+        : `Your summary:\n\n📅 **${bookingFlow.checkIn}** – **${bookingFlow.checkOut}** (${bookingFlow.nights} nights)\n⛺ **${bookingFlow.campingName}**\n🚐 Caravan assigned (clean, fully equipped)\n👥 ${bookingFlow.adults} adults${bookingFlow.children > 0 ? `, ${bookingFlow.children} children` : ''}\n\n💰 **Total: €${bookingFlow.totalPrice}**\n\nConfirm your booking below!`;
       advanceBookingStep('summary', msg);
     }, 400);
   }, [bookingFlow, isNl, isEs, saveMessage, advanceBookingStep]);
@@ -2303,10 +2304,10 @@ export default function ChatBot() {
       const remaining75 = bookingFlow.totalPrice - deposit25;
       setBookingFlow(prev => ({ ...prev, step: 'complete' }));
       const msg = isNl
-        ? `Je boeking is bevestigd! 🎉🥳\n\n📋 Referentie: **${data.reference}**\n\n📧 Je ontvangt een bevestiging per e-mail op ${bookingFlow.email}.\n\n💰 **Aanbetaling (25%)**: €${deposit25} — je ontvangt een betaallink per e-mail.\n🔒 **Borg**: €${caravan?.deposit || 400} — na goedkeuring op de camping.\n💵 **Restbetaling**: €${remaining75} — direct na ontvangst borg (contant/overboeking).\n\nBedankt en tot ziens aan de Costa Brava! ☀️🏖️`
+        ? `Je boeking is bevestigd! 🎉🥳\n\n📋 Referentie: **${data.reference}**\n\n📧 Je ontvangt een bevestiging per e-mail op ${bookingFlow.email}.\n\n� **Caravan**: wordt aan je toegewezen (nette, volledig ingerichte caravan)\n💰 **Aanbetaling (25%)**: €${deposit25} — je ontvangt een betaallink per e-mail.\n🔒 **Borg**: vanaf €400 (+ €200/fiets) — na goedkeuring op de camping.\n💵 **Restbetaling**: €${remaining75} — direct na ontvangst borg (contant/overboeking).\n\nBedankt en tot ziens aan de Costa Brava! ☀️🏖️`
         : isEs
-        ? `¡Tu reserva está confirmada! 🎉\n\nReferencia: **${data.reference}**\nAnticipo (25%): €${deposit25} — recibirás un enlace de pago.\nFianza: €${caravan?.deposit || 400} en el camping.\nResto: €${remaining75} después de la fianza.\n\n¡Gracias y nos vemos en la Costa Brava! ☀️`
-        : `Your booking is confirmed! 🎉\n\nReference: **${data.reference}**\nDown payment (25%): €${deposit25} — you'll receive a payment link.\nDeposit: €${caravan?.deposit || 400} at the campsite.\nRemaining: €${remaining75} after deposit receipt.\n\nSee you at the Costa Brava! ☀️`;
+        ? `¡Tu reserva está confirmada! 🎉\n\nReferencia: **${data.reference}**\n🚐 Caravana: asignada (limpia y equipada)\nAnticipo (25%): €${deposit25} — recibirás un enlace de pago.\nFianza: desde €400 (+ €200/bici) en el camping.\nResto: €${remaining75} después de la fianza.\n\n¡Gracias y nos vemos en la Costa Brava! ☀️`
+        : `Your booking is confirmed! 🎉\n\nReference: **${data.reference}**\n🚐 Caravan: assigned (clean, fully equipped)\nDown payment (25%): €${deposit25} — you'll receive a payment link.\nDeposit: from €400 (+ €200/bike) at the campsite.\nRemaining: €${remaining75} after deposit receipt.\n\nSee you at the Costa Brava! ☀️`;
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', text: msg, timestamp: new Date() }]);
       saveMessage('bot', msg);
     } catch {
@@ -2560,10 +2561,10 @@ export default function ChatBot() {
                   {/* Step indicator */}
                   <div className="bg-primary/5 px-3 py-2 flex items-center gap-2">
                     <div className="flex gap-1">
-                      {['dates','camping','persons','caravan','contact','summary'].map((s, i) => (
+                      {['dates','camping','persons','contact','summary'].map((s, i) => (
                         <div key={s} className={`w-2 h-2 rounded-full transition-colors ${
                           s === bookingFlow.step ? 'bg-primary scale-125' :
-                          ['dates','camping','persons','caravan','contact','summary'].indexOf(bookingFlow.step) > i ? 'bg-primary/50' : 'bg-gray-200'
+                          ['dates','camping','persons','contact','summary'].indexOf(bookingFlow.step) > i ? 'bg-primary/50' : 'bg-gray-200'
                         }`} />
                       ))}
                     </div>
@@ -2572,7 +2573,6 @@ export default function ChatBot() {
                         bookingFlow.step === 'dates' ? (isNl ? 'Datum' : isEs ? 'Fechas' : 'Dates') :
                         bookingFlow.step === 'camping' ? 'Camping' :
                         bookingFlow.step === 'persons' ? (isNl ? 'Reizigers' : isEs ? 'Viajeros' : 'Travelers') :
-                        bookingFlow.step === 'caravan' ? 'Caravan' :
                         bookingFlow.step === 'contact' ? (isNl ? 'Gegevens' : isEs ? 'Datos' : 'Details') :
                         (isNl ? 'Overzicht' : isEs ? 'Resumen' : 'Summary')
                       }
@@ -2644,10 +2644,9 @@ export default function ChatBot() {
                       </>
                     )}
 
-                    {/* STEP: PERSONS + CARAVAN SELECTION */}
-                    {(bookingFlow.step === 'persons' || bookingFlow.step === 'caravan') && (() => {
+                    {/* STEP: PERSONS (caravan auto-assigned) */}
+                    {bookingFlow.step === 'persons' && (() => {
                       const totalPersons = bookingFlow.adults + bookingFlow.children;
-                      const availableCaravans = caravans.filter(c => c.maxPersons >= totalPersons);
                       return (
                         <>
                           {/* Person counters */}
@@ -2685,35 +2684,17 @@ export default function ChatBot() {
                             <p className="text-[11px] text-primary font-medium flex items-center gap-1"><Users size={11} /> {totalPersons} {isNl ? 'personen' : isEs ? 'personas' : 'people'}</p>
                           </div>
 
-                          {/* Caravan selection */}
-                          <div>
-                            <p className="text-[11px] font-semibold text-gray-500 mb-1.5">{isNl ? 'Kies een caravan' : isEs ? 'Elige una caravana' : 'Choose a caravan'} ({availableCaravans.length})</p>
-                            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                              {availableCaravans.map(c => {
-                                const price = calculateSeasonalPrice(bookingFlow.checkIn, bookingFlow.nights);
-                                return (
-                                  <button key={c.id} onClick={() => handleBookingCaravanSelect(c)}
-                                    className={`w-full text-left rounded-lg overflow-hidden border transition-all active:scale-[0.98] ${
-                                      bookingFlow.caravanId === c.id ? 'border-primary ring-1 ring-primary/30' : 'border-gray-200 hover:border-gray-300'
-                                    }`}>
-                                    <div className="flex gap-2.5">
-                                      <div className="relative w-20 h-16 shrink-0">
-                                        <Image src={c.photos[0]} alt={c.name} fill className="object-cover" />
-                                      </div>
-                                      <div className="py-1.5 pr-2 flex-1 min-w-0">
-                                        <p className="text-[13px] font-bold text-gray-800 truncate">{c.name}</p>
-                                        <p className="text-[11px] text-gray-500">{c.maxPersons} pers · {c.manufacturer}</p>
-                                        <div className="flex items-baseline gap-1 mt-0.5">
-                                          <span className="text-[13px] font-bold text-primary">€{price}</span>
-                                          <span className="text-[10px] text-gray-400">{bookingFlow.nights} {isNl ? 'nachten' : 'nights'}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
+                          {/* Info: caravan assigned */}
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                            <p className="text-[11px] text-blue-800 leading-relaxed">
+                              {isNl ? '🚐 Wij wijzen een nette, volledig ingerichte caravan aan je toe.' : isEs ? '🚐 Te asignamos una caravana limpia y equipada.' : '🚐 We assign a clean, fully equipped caravan to you.'}
+                            </p>
                           </div>
+
+                          <button onClick={() => handleBookingPersonsConfirm()}
+                            className="w-full py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+                            {isNl ? 'Verder' : isEs ? 'Continuar' : 'Continue'} <ArrowRight size={14} />
+                          </button>
                         </>
                       );
                     })()}
@@ -2751,21 +2732,16 @@ export default function ChatBot() {
 
                     {/* STEP: SUMMARY */}
                     {bookingFlow.step === 'summary' && (() => {
-                      const caravan = caravans.find(c => c.id === bookingFlow.caravanId);
                       return (
                         <>
                           <div className="space-y-1.5 text-[13px]">
                             <div className="flex items-center gap-2"><CalendarDays size={12} className="text-primary" /> <span>{bookingFlow.checkIn} – {bookingFlow.checkOut}</span></div>
                             <div className="flex items-center gap-2"><Tent size={12} className="text-primary" /> <span>{bookingFlow.campingName}</span></div>
                             <div className="flex items-center gap-2"><Users size={12} className="text-primary" /> <span>{bookingFlow.adults + bookingFlow.children} {isNl ? 'personen' : 'people'}</span></div>
-                            {caravan && (
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-sm overflow-hidden relative shrink-0">
-                                  <Image src={caravan.photos[0]} alt={caravan.name} fill className="object-cover" />
-                                </div>
-                                <span>{caravan.name}</span>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2 text-blue-600">
+                              <span className="text-xs">🚐</span>
+                              <span className="italic">{isNl ? 'Caravan wordt toegewezen' : isEs ? 'Caravana asignada' : 'Caravan assigned'}</span>
+                            </div>
                             <div className="flex items-center justify-between pt-1.5 border-t border-gray-100 mt-1.5">
                               <span className="font-semibold">{isNl ? 'Totaal' : 'Total'}</span>
                               <span className="font-bold text-primary text-base">€{bookingFlow.totalPrice}</span>
