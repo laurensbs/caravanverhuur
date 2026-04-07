@@ -1208,10 +1208,10 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border overflow-x-hidden ${
+        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border ${
           isMobile
             ? `w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
-            : sidebarOpen ? 'w-64' : 'w-16'
+            : sidebarOpen ? 'w-64 overflow-x-hidden' : 'w-16'
         }`}
       >
         {/* Logo + close button */}
