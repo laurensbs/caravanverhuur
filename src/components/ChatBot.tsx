@@ -424,11 +424,10 @@ function smartMatch(
       };
     }
     if (ctx.lastTopic === 'family') {
-      const biggest = caravans.reduce((a, b) => a.maxPersons > b.maxPersons ? a : b);
       return {
         answer: isNl
-          ? `Voor gezinnen raad ik de **${biggest.name}** aan${name}! 👨‍👩‍👧‍👦\n\n👥 Max ${biggest.maxPersons} personen\n💰 €${biggest.pricePerWeek}/week\n\nCombineer met een familiecamping zoals **Cypsela Resort** (Pals) met zwembadcomplex!\n\n👉 **[Direct boeken](/boeken)**`
-          : `For families I recommend the **${biggest.name}**! Book at [Book now](/boeken)`,
+          ? `Voor gezinnen is een caravanvakantie ideaal${name}! 👨‍👩‍👧‍👦\n\nWij wijzen een ruime, volledig ingerichte caravan toe met 4 slaapplekken.\n\nCombineer met een familiecamping zoals **Cypsela Resort** (Pals) met zwembadcomplex!\n\n👉 **[Direct boeken](/boeken)**`
+          : `A caravan holiday is perfect for families! We assign a fully equipped caravan. Book at [Book now](/boeken)`,
         followUp: isNl ? ['Hoe boek ik?', 'Wat zit erin?', 'Andere campings?'] : ['How to book?', "What's included?"],
         confidence: 0.9,
         topic: 'booking-redirect',
@@ -471,7 +470,7 @@ function smartMatch(
 
   // ===== COMPLEX MULTI-ENTITY QUERIES =====
   if (persons || (location && location !== 'Costa Brava') || month) {
-    const matchingCaravans = persons ? caravans.filter(c => c.maxPersons >= persons) : caravans;
+    const maxCapacity = Math.max(...caravans.map(c => c.maxPersons));
     const matchingCampings = (location && location !== 'Costa Brava')
       ? campings.filter(c => {
           const campLoc = c.location.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -497,7 +496,7 @@ function smartMatch(
           answer += `📅 Helaas, **${month.charAt(0).toUpperCase() + month.slice(1)}** valt buiten ons seizoen. Onze caravans zijn beschikbaar van **mei t/m september**.\n\nWil je voor een andere periode kijken?\n`;
           return {
             answer,
-            followUp: ['Welke maanden kan het?', 'Hoe boek ik?', 'Welke caravans?'],
+            followUp: ['Welke maanden kan het?', 'Hoe boek ik?', 'Wat kost het?'],
             confidence: 0.95,
             topic: 'out-of-season',
           };
@@ -505,14 +504,10 @@ function smartMatch(
       }
 
       if (persons) {
-        answer += `Voor **${persons} ${persons === 1 ? 'persoon' : 'personen'}** zijn deze caravans geschikt:\n\n`;
-        matchingCaravans.forEach(c => {
-          const airco = c.amenities.some(a => a.toLowerCase().includes('airco')) ? ' · ❄️ Airco' : '';
-          answer += `🚐 **${c.name}** — max ${c.maxPersons} pers · €${c.pricePerWeek}/week${airco}\n`;
-        });
-        answer += '\n';
-        if (matchingCaravans.length === 0) {
-          answer += '⚠️ Helaas hebben we geen caravans voor zoveel personen. Het maximum is 5 personen.\n\n';
+        if (persons <= maxCapacity) {
+          answer += `👥 Voor **${persons} ${persons === 1 ? 'persoon' : 'personen'}** is dat geen probleem! Onze caravans bieden plek voor maximaal ${maxCapacity} personen.\n\nWij wijzen een nette, volledig ingerichte caravan aan je toe.\n\n`;
+        } else {
+          answer += `⚠️ Helaas, onze caravans bieden plek voor maximaal **${maxCapacity} personen**. Voor ${persons} personen zou je eventueel 2 caravans op dezelfde camping kunnen boeken!\n\n`;
         }
       }
 
@@ -529,8 +524,11 @@ function smartMatch(
     } else if (isEs) {
       answer = `${userName ? `¡Buenas noticias, ${userName}` : '¡Buenas noticias'}! 🎉\n\n`;
       if (persons) {
-        answer += `Para **${persons} personas**:\n\n`;
-        matchingCaravans.forEach(c => { answer += `🚐 **${c.name}** — máx ${c.maxPersons} pers · €${c.pricePerWeek}/semana\n`; });
+        if (persons <= maxCapacity) {
+          answer += `Para **${persons} personas** — ¡sin problema! Te asignamos una caravana equipada.\n\n`;
+        } else {
+          answer += `⚠️ Nuestras caravanas tienen capacidad máxima de **${maxCapacity} personas**.\n\n`;
+        }
       }
       if (matchingCampings && matchingCampings.length > 0) {
         answer += `\n📍 Campings cerca de **${location}**:\n\n`;
@@ -540,8 +538,11 @@ function smartMatch(
     } else {
       answer = `${userName ? `Great news, ${userName}` : 'Great news'}! 🎉\n\n`;
       if (persons) {
-        answer += `For **${persons} people**:\n\n`;
-        matchingCaravans.forEach(c => { answer += `🚐 **${c.name}** — max ${c.maxPersons} people · €${c.pricePerWeek}/week\n`; });
+        if (persons <= maxCapacity) {
+          answer += `For **${persons} people** — no problem! We'll assign a fully equipped caravan to you.\n\n`;
+        } else {
+          answer += `⚠️ Our caravans have a maximum capacity of **${maxCapacity} people**.\n\n`;
+        }
       }
       if (matchingCampings && matchingCampings.length > 0) {
         answer += `\n📍 Campings near **${location}**:\n\n`;
@@ -553,7 +554,7 @@ function smartMatch(
     return {
       answer,
       followUp: isNl
-        ? ['Ja, help me boeken!', 'Wat kost het precies?', 'Bekijk caravans', 'Spreek een medewerker']
+        ? ['Ja, help me boeken!', 'Wat kost het precies?', 'Welke campings?', 'Spreek een medewerker']
         : isEs ? ['¡Sí, ayúdame!', '¿Cuánto cuesta?'] : ['Yes, help me book!', 'What does it cost?', 'Talk to staff'],
       confidence: 0.95,
       topic: 'complex-query',
@@ -562,14 +563,13 @@ function smartMatch(
 
   // ===== SPECIFIC CARAVAN QUESTION =====
   if (caravanName) {
-    const caravan = caravans.find(c => c.name === caravanName)!;
     const caravanAnswers = isNl ? [
-      `De **${caravan.name}** is een ${caravan.maxPersons >= 5 ? 'ruime ' : ''}caravan (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} personen**\n\n🔧 **Uitrusting**: ${caravan.amenities.join(', ')}\n\n📝 ${caravan.description}\n\n⚠️ De getoonde caravans zijn indicatief. Wij wijzen een caravan aan je toe — je ontvangt altijd een vergelijkbaar, netjes ingericht model.\n\n👉 **[Bekijk details](/caravans/${caravan.id})**`,
-      `De **${caravan.name}** is een van onze caravans${name}! ✨\n\n🏷️ ${caravan.manufacturer} (${caravan.year})\n👥 Plek voor **${caravan.maxPersons} personen**\n\n${caravan.amenities.some(a => a.toLowerCase().includes('airco')) ? '❄️ **Met airco** — heerlijk in de zomer!\n\n' : ''}⚠️ Let op: wij wijzen een caravan aan je toe. De caravans op de website zijn indicatief — je ontvangt altijd een nette, volledig ingerichte caravan.\n\n👉 **[Bekijk alle details & foto\'s](/caravans/${caravan.id})**`,
+      `Goed dat je kijkt${name}! 🚐\n\nBij ons kies je geen specifieke caravan — wij wijzen er eentje aan je toe. Zo krijg je altijd een **nette, volledig ingerichte 4-persoons caravan** met:\n\n🍳 Compleet uitgeruste keuken\n🛏️ 2 slaapkamers (4 slaapplekken)\n🚽 Toilet\n⛺ Luifel\n\nDe caravans op de website geven een beeld van wat je kunt verwachten.\n\n👉 **[Bekijk wat je kunt verwachten](/caravans)**`,
+      `Leuke keuze om te bekijken${name}! ✨\n\nWij werken met een **toewijzingssysteem** — je krijgt altijd een nette, volledig ingerichte caravan toegewezen. De caravans op onze website zijn ter indicatie.\n\nElke caravan heeft:\n🍽️ Volledig servies & kookgerei\n🛏️ 4 slaapplekken\n🚽 Toilet & koelkast\n⛺ Luifel voor buiten\n\n👉 **[Bekijk ons aanbod](/caravans)**`,
     ] : isEs ? [
-      `La **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Máx **${caravan.maxPersons} personas**\n\n⚠️ Te asignamos una caravana — las mostradas son indicativas.\n\n👉 **[Ver detalles](/caravans/${caravan.id})**`,
+      `Te asignamos una caravana limpia y completamente equipada${name}! 🚐\n\nLas caravanas en la web son indicativas.\n\n👉 **[Ver más](/caravans)**`,
     ] : [
-      `The **${caravan.name}** (${caravan.manufacturer}, ${caravan.year}):\n\n👥 Max **${caravan.maxPersons} people**\n\n⚠️ We assign a caravan to you — those shown are indicative.\n\n👉 **[View details](/caravans/${caravan.id})**`,
+      `We assign a caravan to you${name}! 🚐\n\nYou'll always receive a clean, fully equipped 4-person caravan. The ones shown on our website are indicative.\n\n👉 **[See what to expect](/caravans)**`,
     ];
     return {
       answer: pick(caravanAnswers, asked),
@@ -690,19 +690,10 @@ function smartMatch(
   // ===== CARAVANS =====
   if (/caravan|welke.*caravan|type|model|which.*caravan|que caravana|overzicht|aanbod|camper|stacaravan|mobilhome|mobile home|welke wagens|hoeveel personen|hoeveel slaapplaats|slaapplaats|slaapplek|hoe groot|formaat|afmeting|lengte caravan/.test(lower)) {
     const caravanAnswers = isNl ? [
-      `Wij wijzen een caravan aan je toe${name} — je ontvangt altijd een nette, volledig ingerichte 4-persoons caravan incl. koelkast & toilet. 🚐\n\nDit zijn onze caravans (indicatief):\n\n${caravans.map(c => {
-        const highlights: string[] = [];
-        if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
-        if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
-        if (c.amenities.some(a => a.toLowerCase().includes('voortent'))) highlights.push('⛺ Voortent');
-        return `🚐 **${c.name}** (${c.manufacturer})\n   Max ${c.maxPersons} pers · ${highlights.join(' · ')}`;
-      }).join('\n\n')}\n\n⚠️ De exacte caravan kan afwijken — je krijgt altijd een vergelijkbaar model.\n\n👉 [Bekijk caravans](/caravans)`,
-      `Hier is ons aanbod${name}! 🚐\n\n${caravans.map(c => {
-        
-        return `**${c.name}** — ${c.manufacturer}\n   ${c.maxPersons} pers · ${c.amenities.slice(0, 3).join(', ')}`;
-      }).join('\n\n')}\n\nElke caravan is **compleet uitgerust** met beddengoed, servies, kookgerei en meer!\n\n⚠️ Wij wijzen een caravan aan je toe — de getoonde caravans zijn indicatief.\n\n👉 [Alle details & foto's](/caravans)`,
-    ] : isEs ? [`Tenemos **${caravans.length} caravanas** (indicativas):\n\n${caravans.map(c => `🚐 **${c.name}** — máx ${c.maxPersons} pers`).join('\n\n')}\n\n⚠️ Te asignamos una caravana — siempre limpia y equipada.\n\n👉 [Ver caravanas](/caravans)`]
-    : [`We assign a caravan to you — always clean and fully equipped! 🚐\n\nOur caravans (indicative):\n\n${caravans.map(c => `🚐 **${c.name}** — max ${c.maxPersons} people`).join('\n\n')}\n\n⚠️ The exact caravan may differ — you'll always receive an equivalent model.\n\n👉 [View caravans](/caravans)`];
+      `Wij wijzen een caravan aan je toe${name} — je ontvangt altijd een **nette, volledig ingerichte 4-persoons caravan**! 🚐\n\n🍳 Compleet uitgeruste keuken (3-pits kookplaat, koelkast, servies, kookgerei)\n🛏️ 2 slaapkamers met 4 slaapplekken\n🚽 Toilet\n⛺ Luifel voor lekker buiten zitten\n🪑 Tuinset (tafel + 4 stoelen)\n\n💡 **Extra's bij te boeken:**\n🛏️ Beddengoed: €70/week\n🚵 Mountainbike: €50/week per fiets\n🧊 Grotere koelkast: €40/week\n\nJe hoeft je nergens zorgen over te maken — alles is geregeld!\n\n👉 [Bekijk wat je kunt verwachten](/caravans)`,
+      `Bij ons kies je geen specifieke caravan${name} — wij regelen dat voor je! 🚐\n\nElke caravan is **compleet uitgerust**:\n\n✅ Keuken met servies, pannen & kookgerei\n✅ 2 slaapkamers (4 personen)\n✅ Toilet & koelkast\n✅ Luifel & tuinmeubilair\n✅ Schoonmaakmiddelen & handdoeken\n\nJe ontvangt altijd een nette, goed onderhouden caravan. De foto's op de website geven een beeld van wat je kunt verwachten.\n\n👉 [Bekijk onze caravans](/caravans)`,
+    ] : isEs ? [`Te asignamos una caravana limpia y completamente equipada! 🚐\n\n✅ Cocina completa\n✅ 2 dormitorios (4 personas)\n✅ Baño & nevera\n✅ Toldo & muebles de jardín\n\n👉 [Ver caravanas](/caravans)`]
+    : [`We assign a caravan to you — always clean and fully equipped! 🚐\n\n✅ Full kitchen with cookware & tableware\n✅ 2 bedrooms (4 people)\n✅ Toilet & fridge\n✅ Awning & garden furniture\n\nThe photos on our website give you an idea of what to expect.\n\n👉 [View caravans](/caravans)`];
     return {
       answer: pick(caravanAnswers, asked),
       followUp: isNl ? ['Wat kost het?', 'Hoe boek ik?', 'Welke campings?'] : ['Cost?', 'How to book?'],
@@ -716,15 +707,15 @@ function smartMatch(
     const withAirco = caravans.filter(c => c.amenities.some(a => a.toLowerCase().includes('airco')));
     const aircoAnswers = isNl ? [
       `Goede vraag${name}! In de zomermaanden kan het flink warm worden aan de Costa Brava. ☀️\n\n${withAirco.length > 0
-        ? `De volgende caravan${withAirco.length > 1 ? 's hebben' : ' heeft'} **airco**:\n\n${withAirco.map(c => `❄️ **${c.name}** — €${c.pricePerWeek}/week`).join('\n')}\n\nDe andere caravans hebben goede ventilatie en luifels voor schaduw.`
-        : 'Op dit moment heeft geen van onze caravans airco, maar ze hebben wel goede ventilatie.'}`,
-      `Bij 30°C+ wil je airco${name}! ☀️🥵\n\n${withAirco.length > 0
-        ? `Deze caravan${withAirco.length > 1 ? 's zijn' : ' is'} voorzien van **airconditioning**:\n\n${withAirco.map(c => `❄️ **${c.name}** — max ${c.maxPersons} pers · €${c.pricePerWeek}/week`).join('\n')}\n\n💡 Onze tip: in juli/augustus is airco echt een aanrader aan de Costa Brava!\n\nDe caravans zonder airco hebben wél goede ventilatie, luifels en rolgordijnen.`
+        ? `Een deel van onze caravans is voorzien van **airconditioning**. Wij wijzen de caravan toe, dus we kunnen niet garanderen dat je een caravan met airco krijgt.\n\n💡 **Tip**: geef bij je boeking aan dat je voorkeur hebt voor airco — we doen ons best!\n\nAlle caravans hebben wél goede ventilatie, luifels en rolgordijnen voor schaduw.`
+        : 'Op dit moment heeft geen van onze caravans airco, maar ze hebben wel goede ventilatie, luifels en rolgordijnen.'}`,
+      `Bij 30°C+ is airco fijn${name}! ☀️🥵\n\n${withAirco.length > 0
+        ? `Sommige van onze caravans hebben **airco**. Omdat wij de caravan toewijzen, kunnen we dit niet garanderen — maar vermeld je voorkeur bij het boeken en we proberen er rekening mee te houden!\n\n💡 In juli/augustus is airco echt een aanrader aan de Costa Brava.\n\nGeen airco? Geen stress — alle caravans hebben luifels, rolgordijnen en goede ventilatie.`
         : 'Helaas, momenteel hebben onze caravans geen airco. Wél goede ventilatie en luifels!'}`,
-    ] : [`The **${withAirco.map(c => c.name).join(', ')}** ${withAirco.length > 1 ? 'have' : 'has'} air conditioning.`];
+    ] : [withAirco.length > 0 ? `Some of our caravans have air conditioning. Since we assign caravans, we can't guarantee it — but mention your preference when booking!` : 'Currently our caravans don\'t have AC, but they have good ventilation and awnings.'];
     return {
       answer: pick(aircoAnswers, asked),
-      followUp: isNl ? ['Vertel meer over de HomeCar', 'Welke caravans?', 'Hoe boek ik?'] : ['Tell me about HomeCar', 'How to book?'],
+      followUp: isNl ? ['Wat zit er in de caravan?', 'Hoe boek ik?', 'Wat kost het?'] : ['What\'s included?', 'How to book?'],
       confidence: 0.85,
       topic: 'airco',
     };
@@ -846,9 +837,9 @@ function smartMatch(
   // ===== COUPLE / ROMANTIC =====
   if (/koppel|stelletje|samen|romantisch|twee personen|couple|romantic|pareja|romantico/.test(lower)) {
     const coupleAnswers = isNl ? [
-      `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze compacte caravans zijn perfect voor koppels:\n\n🚐 **Knaus 1997** — vanaf €550/week, gezellige rondzit\n🚐 **Adria 430 Unica** — vanaf €550/week, compact en knus\n\nTips voor koppels:\n🌅 Begur & Pals — prachtige dorpjes en verborgen stranden\n🍷 L'Escala — Griekse ruines en heerlijke vis\n🏖️ Cadaques — kunstenaarsdorp met charme\n\nZal ik een optie voor jullie samenstellen?`,
-      `Costa Brava is dé plek voor een romantische vakantie${name}! 💕\n\nVoor koppels raden we aan:\n\n🚐 **Compacte caravans** — knus, betaalbaar, alles wat je nodig hebt\n📍 **Begur** — verborgen baaien, charmante straatjes\n📍 **Cadaqués** — artistiek, romantisch, prachtige zonsondergangen\n📍 **Pals** — middeleeuws dorp, heerlijke rijstgerechten\n\nVanaf slechts **€550/week** — inclusief alles!\n\nWil je dat ik een romantisch pakketje voor jullie samenstel?`,
-    ] : ['Our compact caravans are perfect for couples! Starting from €550/week.'];
+      `Een romantisch uitje aan de Costa Brava${name}? ❤️\n\nOnze caravans zijn perfect voor koppels — lekker knus met z'n tweetjes!\n\nTips voor een romantische vakantie:\n🌅 **Begur & Pals** — prachtige dorpjes en verborgen stranden\n🍷 **L'Escala** — Griekse ruïnes en heerlijke vis\n🏖️ **Cadaqués** — kunstenaarsdorp met charme\n\nVanaf **€550/week** voor een volledig ingerichte caravan.\n\nZal ik een optie voor jullie samenstellen?`,
+      `Costa Brava is dé plek voor een romantische vakantie${name}! 💕\n\nJe krijgt een **nette, volledig ingerichte caravan** toegewezen — knus en betaalbaar!\n\n📍 **Begur** — verborgen baaien, charmante straatjes\n📍 **Cadaqués** — artistiek, romantisch, prachtige zonsondergangen\n📍 **Pals** — middeleeuws dorp, heerlijke rijstgerechten\n\nVanaf slechts **€550/week** — inclusief alles!\n\nWil je dat ik een romantisch pakketje voor jullie samenstel?`,
+    ] : ['Our caravans are perfect for couples! Cozy and fully equipped, starting from €550/week.'];
     return {
       answer: pick(coupleAnswers, asked),
       followUp: isNl ? ['Ja, stel iets samen!', 'Wat kost het?', 'Welke campings?'] : ['Yes!', 'Cost?'],
@@ -874,8 +865,8 @@ function smartMatch(
   // ===== WEATHER =====
   if (/weer|temperatuur|regen|zon|klimaat|weather|temperature|rain|sun|clima|tiempo/.test(lower)) {
     const weatherAnswers = isNl ? [
-      `Het weer aan de Costa Brava is heerlijk${name}! ☀️\n\n🌡️ **Mei**: 18-23°C, lekker warm\n🌡️ **Juni**: 22-28°C, ideaal\n🌡️ **Juli/Aug**: 25-33°C, volop zomer!\n🌡️ **September**: 22-28°C, aangenaam warm\n\nGemiddeld 300 dagen zon per jaar! Regenachtige dagen zijn zeldzaam in het seizoen.\n\n💡 Tip: de **HomeCar 450 Racer** heeft airco voor de warmste dagen!`,
-      `De Costa Brava heeft fantastisch weer${name}! ☀️\n\nWat je kunt verwachten per maand:\n\n🌞 **Mei** — 18-23°C, ideaal voor wandelen\n🌞 **Juni** — 22-28°C, lekker strandweer\n🔥 **Juli/Aug** — 25-33°C, heerlijk warm!\n🌞 **Sept** — 22-28°C, nazomeren op z'n best\n\n🌊 Zeewatertemperatuur: 20-25°C\n☁️ Gemiddeld 300 zonnedagen per jaar\n\nIn juli/augustus kan een caravan met **airco** fijn zijn — de HomeCar 450 Racer heeft dat!`,
+      `Het weer aan de Costa Brava is heerlijk${name}! ☀️\n\n🌡️ **Mei**: 18-23°C, lekker warm\n🌡️ **Juni**: 22-28°C, ideaal\n🌡️ **Juli/Aug**: 25-33°C, volop zomer!\n🌡️ **September**: 22-28°C, aangenaam warm\n\nGemiddeld 300 dagen zon per jaar! Regenachtige dagen zijn zeldzaam in het seizoen.\n\n💡 Tip: geef bij je boeking aan dat je voorkeur hebt voor airco — sommige caravans hebben dat!`,
+      `De Costa Brava heeft fantastisch weer${name}! ☀️\n\nWat je kunt verwachten per maand:\n\n🌞 **Mei** — 18-23°C, ideaal voor wandelen\n🌞 **Juni** — 22-28°C, lekker strandweer\n🔥 **Juli/Aug** — 25-33°C, heerlijk warm!\n🌞 **Sept** — 22-28°C, nazomeren op z'n best\n\n🌊 Zeewatertemperatuur: 20-25°C\n☁️ Gemiddeld 300 zonnedagen per jaar\n\n💡 In juli/augustus is airco fijn — vermeld je voorkeur bij het boeken!`,
     ] : ['Costa Brava weather is wonderful! 25-33°C in summer with 300 sunny days a year. ☀️'];
     return {
       answer: pick(weatherAnswers, asked),
@@ -953,12 +944,12 @@ function smartMatch(
   // ===== RECOMMENDATIONS =====
   if (/tip|aanrader|recommend|advies|advice|welke.*beste|which.*best|favoriet|anraden|suggestie/.test(lower)) {
     const recoAnswers = isNl ? [
-      `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n🚐 Hobby Prestige 650 (5 pers) + Cypsela Resort (Pals)\n\n**Voor koppels:**\n🚐 Knaus 1997 (4 pers, gezellig) + Camping Begur\n\n**Met airco (aanrader bij zomerhitte!):**\n🚐 HomeCar 450 Racer + La Ballena Alegre\n\nAlle caravans vanaf **€550/week** (hoogseizoen €650/week).\n\nWil je dat ik iets specifieks voor je uitzoek?`,
-      `Graag${name}! Hier mijn persoonlijke aanbevelingen: ✨\n\n🏆 **Beste camping** → Cypsela Resort (Pals) — luxe, direct aan het strand\n🚐 **Beste familiecaravan** → Hobby Prestige 650 — ruimst, comfortabel\n❄️ **Beste voor de zomer** → HomeCar 450 Racer — mét airco!\n💰 **Prijzen** → Vanaf €550/week (hoogseizoen €650/week)\n🌅 **Mooiste bestemming** → Begur — verborgen baaien + charme\n🤿 **Meeste activiteiten** → Estartit — duiken bij Medes Eilanden\n\nVertel me wat jij belangrijk vindt, en ik geef persoonlijk advies!`,
-    ] : ['My recommendations: Hobby Prestige for families, Knaus for couples, HomeCar for AC!'];
+      `Hier zijn mijn tips${name}! 🌟\n\n**Voor gezinnen:**\n⛺ Cypsela Resort (Pals) — luxe 5-sterren, zwembad + strand\n⛺ Cala Gogo (Calonge) — animatie & waterpret\n\n**Voor koppels:**\n⛺ Camping Begur — romantisch, verborgen baaien\n⛺ Campings bij Pals — rijstvelden, charmant\n\n**Zomertip:** vermeld bij je boeking dat je voorkeur hebt voor airco!\n\nAlle caravans vanaf **€550/week** (hoogseizoen €650/week).\n\nWil je dat ik iets specifieks voor je uitzoek?`,
+      `Graag${name}! Hier mijn persoonlijke aanbevelingen: ✨\n\n🏆 **Beste camping** → Cypsela Resort (Pals) — luxe, direct aan het strand\n👨‍👩‍👧‍👦 **Gezinnen** → Cala Gogo of Tucan — animatie & waterpret\n❤️ **Koppels** → Begur of Cadaqués — romantiek & charme\n💰 **Prijzen** → Vanaf €550/week (hoogseizoen €650/week)\n🌅 **Mooiste bestemming** → Begur — verborgen baaien + charme\n🤿 **Meeste activiteiten** → Estartit — duiken bij Medes Eilanden\n\nVertel me wat jij belangrijk vindt, en ik geef persoonlijk advies!`,
+    ] : ['My recommendations: Cypsela Resort for families, Begur for couples, and mention AC preference when booking!'];
     return {
       answer: pick(recoAnswers, asked),
-      followUp: isNl ? ['Vertel meer over Hobby Prestige', 'Vertel meer over HomeCar', 'Hoe boek ik?'] : ['Tell me about Hobby', 'How to book?'],
+      followUp: isNl ? ['Welke campings?', 'Wat kost het?', 'Hoe boek ik?'] : ['Which campings?', 'How to book?'],
       confidence: 0.85,
       topic: 'recommendations',
     };
@@ -1077,21 +1068,13 @@ function smartMatch(
 
   // ===== COMPARISON / DIFFERENCES =====
   if (/verschil|vergelijk|compare|difference|beter|better|cual es mejor|groter|kleiner|ruimer|versus|vs\.?|of de|liever|kiezen tussen|welke.*het beste|welke.*beste|which.*best|best.*voor|wat raad|welke raad|welke moet|welke neem|welke kies|twijfel/.test(lower)) {
-    const sorted = [...caravans].sort((a, b) => b.maxPersons - a.maxPersons);
     const compAnswers = isNl ? [
-      `Goed dat je vergelijkt${name}! Hier is een overzicht:\n\n${sorted.map(c => {
-        const highlights: string[] = [];
-        if (c.maxPersons >= 4) highlights.push('👨‍👩‍👧‍👦 Ruim');
-        else highlights.push('💑 Compact');
-        if (c.amenities.some(a => a.toLowerCase().includes('airco'))) highlights.push('❄️ Airco');
-        if (c.amenities.some(a => a.toLowerCase().includes('douche'))) highlights.push('🚿 Douche');
-        return `🚐 **${c.name}**\n   ${highlights.join(' · ')}\n   Max ${c.maxPersons} pers · €${c.pricePerDay}/dag · €${c.pricePerWeek}/week`;
-      }).join('\n\n')}\n\n💡 **Mijn advies:**\n• **Gezin met kinderen?** → ${sorted[0].name} (meeste ruimte)\n• **Koppel of klein gezelschap?** → ${sorted[sorted.length - 1].name} (compacte prijs)\n• **Warme zomermaanden?** → Kies er eentje met airco!\n\nWil je meer weten over een specifieke caravan?`,
-      `Lastige keuze hè${name}? 😄 Laat me je helpen:\n\n📊 **Snelle vergelijking:**\n\n${sorted.map(c => `• **${c.name}** — ${c.maxPersons} pers · €${c.pricePerWeek}/week · ${c.amenities.slice(0, 2).join(', ')}`).join('\n')}\n\n🏆 **Meeste slaapplaatsen**: ${sorted[0].name}\n💰 **Voordeligst**: ${[...caravans].sort((a, b) => a.pricePerWeek - b.pricePerWeek)[0].name}\n❄️ **Met airco**: ${caravans.filter(c => c.amenities.some(a => a.toLowerCase().includes('airco'))).map(c => c.name).join(', ') || 'Geen'}\n\nVertel me wat jij belangrijk vindt (ruimte, prijs, airco?) en ik geef een persoonlijk advies!`,
-    ] : [`Here's a quick comparison:\n\n${sorted.map(c => `🚐 **${c.name}** — max ${c.maxPersons} · €${c.pricePerWeek}/week`).join('\n')}\n\nTell me what matters most to you!`];
+      `Bij ons hoef je niet te kiezen${name}! 😄\n\nWij wijzen een caravan aan je toe — je krijgt altijd een **nette, volledig ingerichte 4-persoons caravan** met:\n\n🍳 Complete keuken (3-pits kookplaat, koelkast, servies)\n🛏️ 2 slaapkamers (4 slaapplekken)\n🚽 Toilet\n⛺ Luifel & tuinmeubilair\n\n💡 **Tip:** vermeld bij je boeking als je voorkeur hebt voor airco — sommige caravans hebben dat!\n\nDe foto's op onze website geven een goed beeld van wat je kunt verwachten.\n\n👉 [Bekijk onze caravans](/caravans)`,
+      `Begrijpelijk dat je wilt vergelijken${name}! Maar het mooie is: je hoeft niet te kiezen. 😉\n\nWij wijzen je een caravan toe — altijd netjes, volledig ingericht en klaar voor gebruik.\n\nWat je altijd krijgt:\n✅ 4 slaapplekken in 2 slaapkamers\n✅ Keuken met alles erop en eraan\n✅ Toilet & koelkast\n✅ Luifel voor lekker buiten zitten\n\nVertel me liever wat belangrijk voor je is (airco, locatie, activiteiten?) en ik help je verder!`,
+    ] : [`You don't need to choose — we assign a caravan to you! Always clean, fully equipped, 4-person caravan. Tell me what matters most and I'll help you find the right camping!`];
     return {
       answer: pick(compAnswers, asked),
-      followUp: isNl ? ['De goedkoopste', 'De grootste', 'Met airco', 'Hoe boek ik?'] : ['Cheapest', 'Largest', 'With AC'],
+      followUp: isNl ? ['Welke campings?', 'Wat kost het?', 'Hoe boek ik?'] : ['Which campings?', 'Cost?', 'How to book?'],
       confidence: 0.88,
       topic: 'comparison',
     };
@@ -1101,9 +1084,9 @@ function smartMatch(
   if (/slaap|bed|matras|slapen|slaapconfigur|slaapruimte|eenpersoons|tweepersoons|stapelbed|bedden|sleeping|sleep|bed config|double bed|single bed|litera|cama/.test(lower)) {
     return {
       answer: isNl
-        ? `Goede vraag over de slaapplaatsen${name}! 🛏️\n\n${caravans.map(c => `🚐 **${c.name}** — Max ${c.maxPersons} personen\n   4 slaapplekken (2 slaapkamers)`).join('\n\n')}\n\nAlle caravans hebben:\n✅ 4 slaapplekken verdeeld over 2 slaapkamers\n✅ Matrassen inbegrepen\n🛒 Dekbedden & kussens optioneel bijboeken (€70/week) of zelf meenemen\n\n💡 Tip: de familiecaravans hebben vaak een aparte kinderslaaphoek!`
+        ? `Goede vraag over de slaapplaatsen${name}! 🛏️\n\nElke caravan heeft:\n✅ **4 slaapplekken** verdeeld over **2 slaapkamers**\n✅ Matrassen inbegrepen\n🛏️ Dekbedden & kussens optioneel bijboeken (**€70/week**) of zelf meenemen\n\n💡 Tip: sommige caravans hebben een vast bed, andere een zithoek die je ombouwt. Wij wijzen een caravan aan je toe!`
         : `All caravans have 4 sleeping spots across 2 bedrooms. Mattresses included! Duvets & pillows can be booked as an extra (€70/week) or bring your own. 🛏️`,
-      followUp: isNl ? ['Wat zit er nog meer in?', 'Welke caravans?', 'Hoe boek ik?'] : ["What's included?", 'How to book?'],
+      followUp: isNl ? ['Wat zit er nog meer in?', 'Wat kost het?', 'Hoe boek ik?'] : ["What's included?", 'How to book?'],
       confidence: 0.85,
       topic: 'sleeping',
     };
