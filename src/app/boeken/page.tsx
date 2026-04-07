@@ -106,8 +106,6 @@ function BoekenContent() {
   const [extraAirco, setExtraAirco] = useState(false);
   const [showAllCampings, setShowAllCampings] = useState(false);
   const [paymentId, setPaymentId] = useState('');
-  const [redirectingToPayment, setRedirectingToPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState('');
   const contentRef = useRef<HTMLDivElement>(null);
   const [pricingRules, setPricingRules] = useState<{ id: string; name: string; type: string; percentage: string; start_date: string | null; end_date: string | null; days_before_checkin: number | null; min_nights: number; priority: number }[]>([]);
 
@@ -294,7 +292,6 @@ function BoekenContent() {
 
       // Auto-redirect to Stripe checkout for the 25% deposit
       if (data.paymentUrl) {
-        setRedirectingToPayment(true);
         window.location.href = data.paymentUrl;
         return;
       }
@@ -355,7 +352,7 @@ function BoekenContent() {
 
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">{t('booking.successTitle')}</h1>
             <p className="text-muted text-lg mb-2">
-              {t('booking.successThank')} <span className="font-semibold text-foreground-light">{name}</span>! {paymentId ? t('booking.successText') : t('booking.successTextNoPay')}
+              {t('booking.successThank')} <span className="font-semibold text-foreground-light">{name}</span>! {t('booking.successTextNoPay')}
             </p>
             {bookingRef && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full font-semibold mb-8">
@@ -394,8 +391,12 @@ function BoekenContent() {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary-50 rounded-xl p-4 text-sm text-foreground mb-6">
-              <strong>{t('booking.nextStep')}</strong> {paymentId ? t('booking.nextStepText') : t('booking.nextStepTextNoPay')}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="bg-primary/5 border border-primary/20 rounded-xl p-5 text-sm text-foreground mb-6 flex items-start gap-3">
+              <Mail size={20} className="text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-primary mb-1">{t('booking.paymentLinkTitle')}</p>
+                <p className="text-muted">{t('booking.paymentLinkText')}</p>
+              </div>
             </motion.div>
 
             {!extraBedlinnen && (
@@ -404,42 +405,6 @@ function BoekenContent() {
                 <div>
                   <strong>{t('booking.beddingReminderTitle')}</strong> {t('booking.beddingReminderText')}
                 </div>
-              </motion.div>
-            )}
-
-            {/* Pay Now button — Stripe redirect */}
-            {paymentId && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-                <button
-                  onClick={async () => {
-                    setRedirectingToPayment(true);
-                    setPaymentError('');
-                    try {
-                      const res = await fetch('/api/checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ paymentId }),
-                      });
-                      const data = await res.json();
-                      if (data.url) { window.location.href = data.url; return; }
-                      setPaymentError(t('booking.paymentUnavailable'));
-                    } catch {
-                      setPaymentError(t('booking.paymentUnavailable'));
-                    }
-                    setRedirectingToPayment(false);
-                  }}
-                  disabled={redirectingToPayment}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-3.5 rounded-xl font-bold text-base hover:bg-primary-dark transition-colors disabled:opacity-60 mb-4"
-                >
-                  {redirectingToPayment ? (
-                    <>{t('booking.redirectingToPayment')}</>
-                  ) : (
-                    <><CreditCard size={18} /> {t('booking.payDeposit')} &euro;{deposit25}</>
-                  )}
-                </button>
-                {paymentError && (
-                  <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm mt-2">{paymentError}</p>
-                )}
               </motion.div>
             )}
 
