@@ -297,16 +297,16 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           const borgDone = payments.some(p => p.type === 'BORG' && p.status === 'BETAALD');
           const borgRetourDone = payments.some(p => p.type === 'BORG_RETOUR');
           const steps = [
-            { label: t('bookings.deposit30'), done: depositDone },
-            { label: t('bookings.remainingAmount'), done: restDone },
-            { label: t('bookings.securityDeposit'), done: borgDone },
-            { label: t('bookings.borgReturnLabel'), done: borgRetourDone },
+            { label: t('bookings.deposit30'), done: depositDone, desc: t('bookings.stepDepositDesc') },
+            { label: t('bookings.remainingAmount'), done: restDone, desc: t('bookings.stepRemainingDesc') },
+            { label: t('bookings.securityDeposit'), done: borgDone, desc: t('bookings.stepBorgDesc') },
+            { label: t('bookings.borgReturnLabel'), done: borgRetourDone, desc: t('bookings.stepBorgReturnDesc') },
           ];
           return (
             <div className="flex items-center gap-0 mb-2 bg-white rounded-xl p-3 overflow-x-auto">
               {steps.map((step, i) => (
                 <div key={i} className="flex items-center flex-1 min-w-0">
-                  <div className="flex flex-col items-center min-w-[56px]">
+                  <div className="flex flex-col items-center min-w-[56px]" title={step.desc}>
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${step.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
                       {step.done ? '✓' : (i + 1)}
                     </div>

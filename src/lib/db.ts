@@ -306,6 +306,18 @@ export async function setupDatabase() {
     )
   `;
 
+  // Drivers / chauffeurs table
+  await sql`
+    CREATE TABLE IF NOT EXISTS drivers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      phone TEXT,
+      active BOOLEAN DEFAULT true,
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
   // Chat conversations table
   await sql`
     CREATE TABLE IF NOT EXISTS chat_conversations (
@@ -1717,6 +1729,47 @@ export async function ensureAllBookingTasks() {
   for (const booking of bookings.rows) {
     await ensureTasksForBooking(booking.id, booking.check_in, booking.check_out);
   }
+}
+
+// ===== DRIVERS =====
+
+export async function getDrivers() {
+  const result = await sql`SELECT * FROM drivers ORDER BY sort_order ASC, name ASC`;
+  return result.rows;
+}
+
+export async function getActiveDrivers() {
+  const result = await sql`SELECT * FROM drivers WHERE active = true ORDER BY sort_order ASC, name ASC`;
+  return result.rows;
+}
+
+export async function seedDefaultDrivers() {
+  const existing = await sql`SELECT COUNT(*) as count FROM drivers`;
+  if (parseInt(existing.rows[0].count) > 0) return;
+  const names = ['Michael', 'Mark', 'Robbert', 'Joost', 'Johan', 'Jaume', 'Luke', 'Darren'];
+  for (let i = 0; i < names.length; i++) {
+    const id = generateId('drv');
+    await sql`INSERT INTO drivers (id, name, sort_order) VALUES (${id}, ${names[i]}, ${i + 1})`;
+  }
+}
+
+export async function createDriver(name: string, phone?: string) {
+  const id = generateId('drv');
+  const maxOrder = await sql`SELECT COALESCE(MAX(sort_order), 0) + 1 as next FROM drivers`;
+  const sortOrder = maxOrder.rows[0].next;
+  await sql`INSERT INTO drivers (id, name, phone, sort_order) VALUES (${id}, ${name}, ${phone || null}, ${sortOrder})`;
+  return { id };
+}
+
+export async function updateDriver(id: string, data: { name?: string; phone?: string; active?: boolean; sort_order?: number }) {
+  if (data.name !== undefined) await sql`UPDATE drivers SET name = ${data.name} WHERE id = ${id}`;
+  if (data.phone !== undefined) await sql`UPDATE drivers SET phone = ${data.phone || null} WHERE id = ${id}`;
+  if (data.active !== undefined) await sql`UPDATE drivers SET active = ${data.active} WHERE id = ${id}`;
+  if (data.sort_order !== undefined) await sql`UPDATE drivers SET sort_order = ${data.sort_order} WHERE id = ${id}`;
+}
+
+export async function deleteDriver(id: string) {
+  await sql`DELETE FROM drivers WHERE id = ${id}`;
 }
 
 // ===== CHAT CONVERSATIONS =====

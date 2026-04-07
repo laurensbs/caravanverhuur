@@ -39,6 +39,7 @@ import {
   Bell,
   BellOff,
   Percent,
+  Truck,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -69,6 +70,7 @@ const NAV_SECTIONS: NavSection[] = [
       { sub: '/boekingen', key: 'nav.bookings', icon: CalendarCheck, roles: ['admin', 'staff'] },
       { sub: '/betalingen', key: 'nav.payments', icon: CreditCard, roles: ['admin'] },
       { sub: '/borg', key: 'nav.deposit', icon: ClipboardCheck, roles: ['admin', 'staff'] },
+      { sub: '/chauffeurs', key: 'nav.drivers', icon: Truck, roles: ['admin', 'staff'] },
     ],
   },
   {

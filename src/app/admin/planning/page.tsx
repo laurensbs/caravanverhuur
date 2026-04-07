@@ -100,6 +100,30 @@ function getTaskLabel(taskType: string, locale: string): string {
   return (labels[locale] || labels.nl)[taskType] || taskType;
 }
 
+function getTaskDescription(taskType: string, locale: string): string {
+  const descs: Record<string, Record<string, string>> = {
+    nl: {
+      PREP: 'Caravan schoonmaken, beddengoed, gasflessen en inventaris checken',
+      TRANSPORT: 'Caravan naar de camping rijden en op de juiste plek neerzetten',
+      SETUP: 'Luifel uitklappen, gasaansluiting, stroom aansluiten en koelkast aan',
+      CHECKIN: 'Gast ontvangen, sleutels overhandigen, borginspectie doen',
+      CHECKOUT: 'Sleutels innemen, uitcheck-inspectie doen, borg afhandelen',
+      PICKUP: 'Caravan opruimen, afkoppelen en terugrijden naar de stalling',
+      INSPECTION: 'Eindcontrole op schade en inventaris na terugkomst',
+    },
+    en: {
+      PREP: 'Clean caravan, check bedding, gas bottles and inventory',
+      TRANSPORT: 'Drive caravan to campsite and place on the correct pitch',
+      SETUP: 'Set up awning, connect gas, electricity and turn on fridge',
+      CHECKIN: 'Welcome guest, hand over keys, perform deposit inspection',
+      CHECKOUT: 'Collect keys, perform check-out inspection, handle deposit',
+      PICKUP: 'Clear caravan, disconnect and drive back to storage',
+      INSPECTION: 'Final check for damage and inventory after return',
+    },
+  };
+  return (descs[locale] || descs.nl)[taskType] || '';
+}
+
 function getDaysUntil(dateStr: string): number {
   const now = new Date(); now.setHours(0, 0, 0, 0);
   const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
@@ -327,14 +351,21 @@ function TripCard({
 
 // ===== TASK DETAIL SHEET =====
 
+interface DriverOption {
+  id: string;
+  name: string;
+  phone: string | null;
+}
+
 function TaskDetail({
-  task, onClose, onToggle, onSave, locale,
+  task, onClose, onToggle, onSave, locale, drivers,
 }: {
   task: BookingTask;
   onClose: () => void;
   onToggle: (task: BookingTask) => void;
   onSave: (taskId: string, updates: { assignedTo?: string; notes?: string }) => void;
   locale: string;
+  drivers: DriverOption[];
 }) {
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || '');
   const [notes, setNotes] = useState(task.notes || '');
@@ -369,6 +400,10 @@ function TaskDetail({
           </div>
         </div>
         <div className="p-4 space-y-4">
+          {/* Task explanation */}
+          <div className="bg-blue-50 rounded-xl p-3">
+            <p className="text-xs text-blue-700 leading-relaxed">{getTaskDescription(task.task_type, locale)}</p>
+          </div>
           <div className="bg-surface rounded-xl p-3 space-y-2">
             <div className="flex items-center gap-2 text-sm"><CarFront className="w-4 h-4 text-muted" /><span>{caravan?.name || task.caravan_id}</span></div>
             <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted" /><span>{camping?.name || task.camping_id}</span></div>
@@ -379,8 +414,26 @@ function TaskDetail({
           </div>
           <div>
             <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{isNl ? 'Toegewezen aan' : 'Assigned to'}</label>
-            <input type="text" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
-              placeholder={isNl ? 'Naam medewerker...' : 'Staff member...'} className="w-full px-3 py-2.5 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+            {drivers.length > 0 ? (
+              <div className="space-y-2">
+                <select
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+                >
+                  <option value="">{isNl ? '— Selecteer chauffeur —' : '— Select driver —'}</option>
+                  {drivers.map(d => (
+                    <option key={d.id} value={d.name}>{d.name}{d.phone ? ` (${d.phone})` : ''}</option>
+                  ))}
+                </select>
+                {assignedTo && !drivers.some(d => d.name === assignedTo) && (
+                  <p className="text-[10px] text-muted">{isNl ? 'Handmatig ingevoerd:' : 'Manual entry:'} {assignedTo}</p>
+                )}
+              </div>
+            ) : (
+              <input type="text" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
+                placeholder={isNl ? 'Naam medewerker...' : 'Staff member...'} className="w-full px-3 py-2.5 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+            )}
           </div>
           <div>
             <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{isNl ? 'Notities' : 'Notes'}</label>
@@ -415,6 +468,7 @@ export default function PlanningPage() {
 
   const [tasks, setTasks] = useState<BookingTask[]>([]);
   const [borgChecklists, setBorgChecklists] = useState<BorgChecklist[]>([]);
+  const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
@@ -432,9 +486,10 @@ export default function PlanningPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [tasksRes, borgRes] = await Promise.all([
+      const [tasksRes, borgRes, driversRes] = await Promise.all([
         fetch('/api/admin/tasks'),
         fetch('/api/borg').catch(() => null),
+        fetch('/api/admin/drivers?active=true').catch(() => null),
       ]);
       if (!tasksRes.ok) throw new Error('Tasks API error');
       const tasksData = await tasksRes.json();
@@ -445,6 +500,13 @@ export default function PlanningPage() {
         const borgData = await borgRes.json();
         setBorgChecklists((borgData || []).map((bc: Record<string, unknown>) => ({
           id: bc.id as string, booking_id: bc.booking_id as string, type: bc.type as string, status: bc.status as string,
+        })));
+      }
+
+      if (driversRes?.ok) {
+        const driversData = await driversRes.json();
+        setDrivers((driversData.drivers || []).map((d: Record<string, unknown>) => ({
+          id: d.id as string, name: d.name as string, phone: d.phone as string | null,
         })));
       }
     } catch {
@@ -778,7 +840,7 @@ export default function PlanningPage() {
 
       {/* Task detail */}
       <AnimatePresence>
-        {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} onToggle={handleToggle} onSave={handleSave} locale={locale} />}
+        {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} onToggle={handleToggle} onSave={handleSave} locale={locale} drivers={drivers} />}
       </AnimatePresence>
     </div>
   );
