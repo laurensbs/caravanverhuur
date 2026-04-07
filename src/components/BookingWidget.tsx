@@ -298,58 +298,59 @@ export default function BookingWidget() {
 
   /* ---- Shared guests content ---- */
   const guestsContent = (
-    <div className="p-5 space-y-1">
-      <div className="flex items-center justify-between py-4">
-        <div>
+    <div className="p-2 space-y-0">
+      <div className="flex items-center justify-between py-4 px-2">
+        <div className="min-w-[100px]">
           <div className="text-sm font-semibold text-foreground">{t('booking.widgetAdults')}</div>
           <div className="text-xs text-muted">{t('booking.widgetAdultsAge')}</div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setAdults(Math.max(1, adults - 1))}
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
             disabled={adults <= 1}
           >
-            <Minus size={16} />
+            <Minus size={14} />
           </button>
-          <span className="w-8 text-center text-lg font-bold">{adults}</span>
+          <span className="w-10 text-center text-base font-bold tabular-nums">{adults}</span>
           <button
             onClick={() => setAdults(Math.min(6, adults + 1))}
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
             disabled={adults >= 6}
           >
-            <Plus size={16} />
+            <Plus size={14} />
           </button>
         </div>
       </div>
-      <div className="flex items-center justify-between py-4">
-        <div>
+      <div className="border-t border-gray-100" />
+      <div className="flex items-center justify-between py-4 px-2">
+        <div className="min-w-[100px]">
           <div className="text-sm font-semibold text-foreground">{t('booking.widgetChildren')}</div>
           <div className="text-xs text-muted">{t('booking.widgetChildrenAge')}</div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setChildren(Math.max(0, children - 1))}
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
             disabled={children <= 0}
           >
-            <Minus size={16} />
+            <Minus size={14} />
           </button>
-          <span className="w-8 text-center text-lg font-bold">{children}</span>
+          <span className="w-10 text-center text-base font-bold tabular-nums">{children}</span>
           <button
             onClick={() => setChildren(Math.min(6, children + 1))}
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
+            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
             disabled={children >= 6}
           >
-            <Plus size={16} />
+            <Plus size={14} />
           </button>
         </div>
       </div>
-      {/* Confirm button (mobile only) */}
-      <div className="pt-3">
+      {/* Confirm button */}
+      <div className="pt-2 px-2 pb-1">
         <button
           onClick={() => setGuestsOpen(false)}
-          className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm"
+          className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm cursor-pointer hover:bg-primary/90 transition-colors"
         >
           {t('booking.widgetConfirm') || 'Bevestigen'}
         </button>
@@ -472,7 +473,7 @@ export default function BookingWidget() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-2xl overflow-hidden p-4"
+            className="bg-white rounded-2xl shadow-2xl overflow-hidden"
           >
             {guestsContent}
           </motion.div>

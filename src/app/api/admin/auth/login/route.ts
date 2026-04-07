@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCredentials, createAdminToken } from '@/lib/admin-auth';
 import { adminLoginLimiter, getClientIp } from '@/lib/rate-limit';
+import { setupDatabase } from '@/lib/db';
+
+let dbReady = false;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!dbReady) {
+      await setupDatabase();
+      dbReady = true;
+    }
+
     const ip = getClientIp(request);
     const rl = adminLoginLimiter.check(ip);
     if (!rl.success) {
