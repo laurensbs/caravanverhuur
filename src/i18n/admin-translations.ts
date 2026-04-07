@@ -262,8 +262,8 @@ export const translations: Record<AdminLocale, Dict> = {
       couldNotLoad: 'Kon dashboard data niet laden',
       somethingWrong: 'Er ging iets mis',
       checkSetup: 'Controleer of de database is opgezet via /api/setup',
-      stripeNotConfigured: 'Stripe is nog niet geconfigureerd',
-      stripeNotConfiguredDesc: 'Betaallinks worden niet automatisch aangemaakt. Boekingen komen gewoon binnen — markeer betalingen handmatig als betaald wanneer je een overboeking ontvangt.',
+      stripeNotConfigured: 'Betalingen handmatig afhandelen',
+      stripeNotConfiguredDesc: 'Wanneer een klant boekt, ontvang je een e-mail. Maak zelf een betaallink aan in Stripe en plak deze bij de boeking. De klant krijgt dan automatisch een e-mail. Heb je een overboeking ontvangen? Markeer de betaling dan als betaald.',
     },
 
     /* ── bookings page ──────────────────── */
@@ -1037,8 +1037,8 @@ export const translations: Record<AdminLocale, Dict> = {
       couldNotLoad: 'Could not load dashboard data',
       somethingWrong: 'Something went wrong',
       checkSetup: 'Check if the database is set up via /api/setup',
-      stripeNotConfigured: 'Stripe is not yet configured',
-      stripeNotConfiguredDesc: 'Payment links are not automatically created. Bookings still come in — mark payments manually as paid when you receive a bank transfer.',
+      stripeNotConfigured: 'Handle payments manually',
+      stripeNotConfiguredDesc: 'When a customer books, you receive an email. Create a payment link in Stripe and paste it in the booking. The customer will automatically receive an email. Received a bank transfer? Mark the payment as paid.',
     },
 
     bookings: {
