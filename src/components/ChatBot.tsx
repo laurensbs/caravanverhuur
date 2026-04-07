@@ -582,13 +582,13 @@ function smartMatch(
   // ===== PRICING =====
   if (/prijs|kosten|kost|tarief|goedkoop|duur|euro|bedrag|per dag|per week|price|cost|cheap|rate|precio|cuesta|tarifa|hoeveel|budget/.test(lower)) {
     const pricingAnswers = isNl ? [
-      `Onze seizoensprijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\nWil je meer weten over de betaling?`,
-      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\n🔑 Geldt voor **alle ${caravans.length} caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nZal ik je helpen kiezen?`,
-      `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1-31 juli): **€650/week**\n🍂 **Naseizoen** (vanaf 1 augustus): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
+      `Onze prijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Hoogseizoen juli**: toeslag via prijsregels\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\n📅 Vroeg boeken? Profiteer van **vroegboekkorting**!\n\nWil je meer weten over de betaling?`,
+      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag via prijsregels\n\n🔑 Geldt voor **alle ${caravans.length} caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nZal ik je helpen kiezen?`,
+      `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
     ] : isEs ? [
-      `Nuestros precios por temporada (todas las caravanas):\n\n📅 Pretemporada (hasta 30 junio): **€550/semana**\n☀️ Temporada alta (1-31 julio): **€650/semana**\n🍂 Postemporada (desde 1 agosto): **€550/semana**`,
+      `Nuestros precios (todas las caravanas):\n\n📅 Precio base: **€550/semana**\n☀️ Temporada alta (julio): recargo según reglas de precios`,
     ] : [
-      `Our seasonal prices (all caravans):\n\n📅 Pre-season (until June 30): **€550/week**\n☀️ High season (July 1-31): **€650/week**\n🍂 Post-season (from Aug 1): **€550/week**`,
+      `Our prices (all caravans):\n\n📅 Base rate: **€550/week**\n☀️ High season (July): surcharge via pricing rules`,
     ];
     return {
       answer: pick(pricingAnswers, asked),

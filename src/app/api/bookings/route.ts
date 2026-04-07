@@ -48,20 +48,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Minimaal 7 nachten vereist.' }, { status: 400 });
     }
 
-    // SERVER-SIDE PRICE CALCULATION — never trust client-supplied totalPrice
+    // SERVER-SIDE PRICE CALCULATION — base rate €550/week, seasonal adjustments via pricing rules
     const serverNights = calcNights;
-    const getWeeklyRate = (date: Date): number => {
-      const month = date.getMonth();
-      if (month === 6) return 650; // July = high season
-      return 550;
-    };
-    const start = new Date(checkIn);
-    let basePrice = 0;
-    for (let i = 0; i < serverNights; i++) {
-      const day = new Date(start.getTime() + i * 86400000);
-      basePrice += getWeeklyRate(day) / 7;
-    }
-    basePrice = Math.round(basePrice);
+    const BASE_WEEKLY_RATE = 550;
+    let basePrice = Math.round(serverNights * BASE_WEEKLY_RATE / 7);
 
     // Apply pricing rules (seizoen/vroegboek/lastminute)
     let adjustedPrice = basePrice;

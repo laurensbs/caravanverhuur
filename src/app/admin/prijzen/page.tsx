@@ -42,16 +42,14 @@ const TYPE_CONFIG = {
 
 /* ——— Presets: one-click rule templates ——— */
 const PRESETS_NL = [
-  { name: 'Hoogseizoen jul-aug', type: 'seizoen' as const, percentage: 20, startDate: '2026-07-01', endDate: '2026-08-31', minNights: 7 },
-  { name: 'Voorseizoen jun & sep', type: 'seizoen' as const, percentage: 10, startDate: '2026-06-01', endDate: '2026-06-30', minNights: 5 },
-  { name: 'Vroegboekkorting', type: 'vroegboek' as const, percentage: -10, daysBefore: 90, minNights: 7 },
-  { name: 'Last Minute deal', type: 'lastminute' as const, percentage: -15, daysBefore: 14, minNights: 3 },
+  { name: 'Hoogseizoen juli (+18%)', type: 'seizoen' as const, percentage: 18, startDate: '2026-07-01', endDate: '2026-07-31', minNights: 7 },
+  { name: 'Vroegboekkorting (>60 dagen)', type: 'vroegboek' as const, percentage: -5, daysBefore: 60, minNights: 7 },
+  { name: 'Last minute (<14 dagen)', type: 'lastminute' as const, percentage: -10, daysBefore: 14, minNights: 7 },
 ];
 const PRESETS_EN = [
-  { name: 'Peak season Jul-Aug', type: 'seizoen' as const, percentage: 20, startDate: '2026-07-01', endDate: '2026-08-31', minNights: 7 },
-  { name: 'Shoulder season Jun & Sep', type: 'seizoen' as const, percentage: 10, startDate: '2026-06-01', endDate: '2026-06-30', minNights: 5 },
-  { name: 'Early bird discount', type: 'vroegboek' as const, percentage: -10, daysBefore: 90, minNights: 7 },
-  { name: 'Last minute deal', type: 'lastminute' as const, percentage: -15, daysBefore: 14, minNights: 3 },
+  { name: 'Peak season July (+18%)', type: 'seizoen' as const, percentage: 18, startDate: '2026-07-01', endDate: '2026-07-31', minNights: 7 },
+  { name: 'Early bird discount (>60 days)', type: 'vroegboek' as const, percentage: -5, daysBefore: 60, minNights: 7 },
+  { name: 'Last minute (<14 days)', type: 'lastminute' as const, percentage: -10, daysBefore: 14, minNights: 7 },
 ];
 
 export default function PrijzenPage() {

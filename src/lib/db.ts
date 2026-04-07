@@ -437,6 +437,23 @@ export async function setupDatabase() {
   await sql`CREATE INDEX IF NOT EXISTS idx_chat_msgs_conv ON chat_messages(conversation_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_booking_tasks_booking ON booking_tasks(booking_id)`;
 
+  // Seed default pricing rules if none exist
+  const existingRules = await sql`SELECT COUNT(*) as cnt FROM pricing_rules`;
+  if (parseInt(existingRules.rows[0].cnt) === 0) {
+    const rules = [
+      // Basisprijs: €550/week. Seizoenstoeslag juli via deze regel (+18% ≈ €650/week).
+      { id: 'pr-seed-hoog', name: 'Hoogseizoen juli (+18%)', type: 'seizoen', percentage: 18, start_date: '2026-07-01', end_date: '2026-07-31', days_before: null, min_nights: 7, priority: 10 },
+      { id: 'pr-seed-vroeg', name: 'Vroegboekkorting (>60 dagen)', type: 'vroegboek', percentage: -5, start_date: null, end_date: null, days_before: 60, min_nights: 7, priority: 5 },
+      { id: 'pr-seed-last', name: 'Last minute (<14 dagen)', type: 'lastminute', percentage: -10, start_date: null, end_date: null, days_before: 14, min_nights: 7, priority: 5 },
+    ];
+    for (const r of rules) {
+      await sql`
+        INSERT INTO pricing_rules (id, name, type, percentage, start_date, end_date, days_before_checkin, min_nights, active, priority)
+        VALUES (${r.id}, ${r.name}, ${r.type}, ${r.percentage}, ${r.start_date}, ${r.end_date}, ${r.days_before}, ${r.min_nights}, true, ${r.priority})
+      `;
+    }
+  }
+
   return { success: true, message: 'Database tables created successfully' };
 }
 

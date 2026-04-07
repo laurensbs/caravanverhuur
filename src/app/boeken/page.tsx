@@ -151,29 +151,10 @@ function BoekenContent() {
     return diff > 0 ? diff : 0;
   }, [checkIn, checkOut]);
 
-  /* ---- Seasonal pricing helper ---- */
-  const getWeeklyRate = (date: Date): number => {
-    const month = date.getMonth(); // 0-indexed: 6 = July
-    if (month === 6) return 650; // High season: July 1 - July 31
-    return 550; // Pre-season & post-season
-  };
-
-  const getSeasonLabel = (date: Date): string => {
-    const month = date.getMonth();
-    if (month === 6) return t('booking.highSeasonShort');
-    if (month < 6) return t('booking.preSeasonShort');
-    return t('booking.postSeasonShort');
-  };
-
+  /* ---- Seasonal pricing: base rate from caravan data, adjustments via pricing rules ---- */
   const totalPrice = useMemo(() => {
     if (!checkIn || nights <= 0) return 0;
-    const start = new Date(checkIn);
-    let total = 0;
-    for (let i = 0; i < nights; i++) {
-      const day = new Date(start.getTime() + i * 86400000);
-      total += getWeeklyRate(day) / 7;
-    }
-    return Math.round(total);
+    return Math.round(nights * 550 / 7);
   }, [checkIn, nights]);
 
   const extrasCost = useMemo(() => {
