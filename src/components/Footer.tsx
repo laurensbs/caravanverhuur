@@ -106,19 +106,21 @@ export default function Footer() {
 
       {/* Main grid */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-          {/* Brand */}
-          <div className="col-span-2 sm:col-span-1">
+        <div className="flex flex-col gap-8 sm:grid sm:grid-cols-4 sm:gap-8">
+          {/* Brand — centered on mobile */}
+          <div className="text-center sm:text-left">
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
               alt="Caravanverhuur Costa Brava"
               width={240}
               height={70}
-              className="w-36 h-auto mb-3"
+              className="w-36 h-auto mb-3 mx-auto sm:mx-0"
               sizes="144px"
             />
-            <GoogleStars size={12} />
-            <p className="text-white/50 text-xs leading-relaxed mt-2 max-w-[220px]">
+            <div className="flex justify-center sm:justify-start">
+              <GoogleStars size={12} />
+            </div>
+            <p className="text-white/50 text-xs leading-relaxed mt-2 max-w-[260px] mx-auto sm:mx-0">
               {t('footer.tagline')}
             </p>
             <p className="text-white/30 text-[11px] mt-2">
@@ -129,48 +131,49 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Links */}
-          <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.links')}</h3>
-            <ul className="space-y-1.5">
-              {links.map(l => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-white/60 hover:text-white text-xs transition-colors">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
+          {/* Links + Legal side-by-side on mobile */}
+          <div className="grid grid-cols-2 gap-6 sm:contents">
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.links')}</h3>
+              <ul className="space-y-2.5 sm:space-y-1.5">
+                {links.map(l => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-white/60 hover:text-white text-[13px] sm:text-xs transition-colors">{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.legal')}</h3>
+              <ul className="space-y-2.5 sm:space-y-1.5">
+                {legal.map(l => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-white/60 hover:text-white text-[13px] sm:text-xs transition-colors">{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.legal')}</h3>
-            <ul className="space-y-1.5">
-              {legal.map(l => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-white/60 hover:text-white text-xs transition-colors">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
+          {/* Contact — full-width on mobile */}
           <div>
             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-3">{t('footer.contactTitle')}</h3>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2.5 sm:space-y-1.5">
               <li>
-                <a href="mailto:info@caravanverhuurspanje.com" className="text-white/60 hover:text-white text-xs flex items-center gap-1.5 transition-colors">
-                  <Mail size={12} className="shrink-0 text-white/30" />
-                  info@caravanverhuurspanje.com
+                <a href="mailto:info@caravanverhuurspanje.com" className="text-white/60 hover:text-white text-[13px] sm:text-xs flex items-center gap-2 sm:gap-1.5 transition-colors">
+                  <Mail size={14} className="shrink-0 text-white/30 sm:w-3 sm:h-3" />
+                  <span className="break-all sm:break-normal">info@caravanverhuurspanje.com</span>
                 </a>
               </li>
               <li>
-                <a href="tel:+34650036755" className="text-white/60 hover:text-white text-xs flex items-center gap-1.5 transition-colors">
-                  <Phone size={12} className="shrink-0 text-white/30" />
+                <a href="tel:+34650036755" className="text-white/60 hover:text-white text-[13px] sm:text-xs flex items-center gap-2 sm:gap-1.5 transition-colors">
+                  <Phone size={14} className="shrink-0 text-white/30 sm:w-3 sm:h-3" />
                   +34 650 036 755
                 </a>
               </li>
-              <li className="text-white/60 text-xs flex items-center gap-1.5">
-                <MapPin size={12} className="shrink-0 text-white/30" />
+              <li className="text-white/60 text-[13px] sm:text-xs flex items-center gap-2 sm:gap-1.5">
+                <MapPin size={14} className="shrink-0 text-white/30 sm:w-3 sm:h-3" />
                 {t('footer.location')}
               </li>
             </ul>
@@ -180,13 +183,13 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[11px] text-white/30">&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
-          <div className="flex items-center gap-4 sm:gap-5">
-            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-4 sm:h-5 object-contain opacity-50" />
-            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-4 sm:h-5 object-contain opacity-50" />
-            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-3.5 sm:h-4 object-contain opacity-50" />
-            <img src="/images/badges/kit-digital.svg" alt="Kit Digital" className="h-4 sm:h-5 object-contain opacity-50" />
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+          <p className="text-[11px] text-white/30 order-2 sm:order-none">&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
+          <div className="flex items-center gap-3 sm:gap-5 flex-wrap justify-center order-1 sm:order-none">
+            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-5 object-contain opacity-50" />
+            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-5 object-contain opacity-50" />
+            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-4 object-contain opacity-50" />
+            <img src="/images/badges/kit-digital.svg" alt="Kit Digital" className="h-5 object-contain opacity-50" />
           </div>
         </div>
       </div>

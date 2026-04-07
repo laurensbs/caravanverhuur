@@ -90,7 +90,6 @@ export async function POST(request: NextRequest) {
       })();
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['ideal'],
         mode: 'payment',
         line_items: [{
           price_data: {
@@ -222,7 +221,6 @@ export async function PUT(request: NextRequest) {
     const deposit25 = Number(payment.amount);
 
     const stripeSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['ideal'],
       mode: 'payment',
       line_items: [{
         price_data: {

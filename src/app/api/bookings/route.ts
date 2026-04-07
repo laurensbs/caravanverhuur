@@ -165,7 +165,6 @@ export async function POST(request: NextRequest) {
       const stripe = getStripe();
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['ideal'],
         mode: 'payment',
         line_items: [{
           price_data: {
