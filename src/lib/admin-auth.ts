@@ -19,21 +19,15 @@ export function getSessionFromHeaders(request: NextRequest): { user: string; rol
   };
 }
 
-/* ── Credentials (from environment) ──────────────── */
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+/* ── Credentials (from environment — fallback for staff) ─ */
 const STAFF_PASSWORD = process.env.STAFF_PASSWORD || '';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || '';
 
-if (!process.env.ADMIN_PASSWORD || !process.env.STAFF_PASSWORD || !process.env.ADMIN_SECRET) {
+if (!process.env.STAFF_PASSWORD || !process.env.ADMIN_SECRET) {
   if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
-    console.warn('[admin-auth] Missing env vars: ADMIN_PASSWORD / STAFF_PASSWORD / ADMIN_SECRET');
+    console.warn('[admin-auth] Missing env vars: STAFF_PASSWORD / ADMIN_SECRET');
   }
 }
-
-const CREDENTIALS: Record<string, { password: string; role: AdminRole }> = {
-  admin: { password: ADMIN_PASSWORD || '', role: 'admin' },
-  staff: { password: STAFF_PASSWORD || '', role: 'staff' },
-};
 
 /* ── Token helpers (HMAC-signed JSON) ────────────── */
 async function hmacSign(payload: string): Promise<string> {
@@ -72,11 +66,39 @@ export async function verifyAdminToken(token: string): Promise<{ user: string; r
 }
 
 /* ── Login validation ────────────────────────────── */
-export function validateCredentials(user: string, password: string): { role: AdminRole } | null {
-  const cred = CREDENTIALS[user];
-  if (!cred) return null;
-  if (!timingSafeEqual(cred.password, password)) return null;
-  return { role: cred.role };
+
+/** Validate against DB admin_users first, then fall back to env var for staff */
+export async function validateCredentials(user: string, password: string): Promise<{
+  role: AdminRole;
+  displayName?: string;
+  mustChangePassword?: boolean;
+  locale?: string | null;
+} | null> {
+  // Staff fallback — env var based
+  if (user === 'staff') {
+    if (!STAFF_PASSWORD) return null;
+    if (!timingSafeEqual(STAFF_PASSWORD, password)) return null;
+    return { role: 'staff' };
+  }
+
+  // DB-based admin users
+  try {
+    const { getAdminUserByUsername } = await import('./db');
+    const { verifyPassword } = await import('./password');
+    const dbUser = await getAdminUserByUsername(user.toLowerCase());
+    if (!dbUser) return null;
+    const { valid } = await verifyPassword(password, dbUser.password_hash);
+    if (!valid) return null;
+    return {
+      role: dbUser.role as AdminRole,
+      displayName: dbUser.display_name,
+      mustChangePassword: dbUser.must_change_password,
+      locale: dbUser.locale,
+    };
+  } catch (err) {
+    console.error('[admin-auth] DB validation error:', err);
+    return null;
+  }
 }
 
 /* ── Request auth check for API routes ───────────── */

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { useLastActivity, LastEditedBadge } from '@/components/LastEditedBy';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -785,6 +786,7 @@ export default function BookingenPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const lastActivity = useLastActivity('booking', paginated.map(b => b.id));
 
   // Reset page when filters change
   useEffect(() => { setCurrentPage(1); }, [statusFilter, search, dateFrom, dateTo]);
@@ -1126,6 +1128,9 @@ export default function BookingenPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-sm text-foreground">{booking.guest_name}</p>
                     <span className="text-xs text-muted">{booking.reference}</span>
+                    {lastActivity[booking.id] && (
+                      <LastEditedBadge actor={lastActivity[booking.id].actor} createdAt={lastActivity[booking.id].created_at} />
+                    )}
                   </div>
                   <p className="text-xs text-muted truncate mt-0.5">
                     {caravan?.name} → {camping?.name}{booking.spot_number ? ` (${booking.spot_number})` : ''} &nbsp;|&nbsp; {formatDate(booking.check_in)} – {formatDate(booking.check_out)}

@@ -28,6 +28,7 @@ import {
 
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { useLastActivity, LastEditedBadge } from '@/components/LastEditedBy';
 
 interface Customer {
   id: string;
@@ -174,6 +175,7 @@ export default function AdminKlanten() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const lastActivity = useLastActivity('customer', paginated.map(c => c.id));
 
   // Reset page when search changes
   useEffect(() => { setCurrentPage(1); }, [search]);
@@ -408,6 +410,9 @@ export default function AdminKlanten() {
                         <span className="font-medium text-foreground">
                           {customer.name || '—'}
                         </span>
+                        {lastActivity[customer.id] && (
+                          <LastEditedBadge actor={lastActivity[customer.id].actor} createdAt={lastActivity[customer.id].created_at} />
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-muted">{customer.email}</td>
@@ -423,6 +428,9 @@ export default function AdminKlanten() {
                       <div className="font-medium text-foreground">
                         {customer.name || t('customers.noName')}
                       </div>
+                      {lastActivity[customer.id] && (
+                        <LastEditedBadge actor={lastActivity[customer.id].actor} createdAt={lastActivity[customer.id].created_at} />
+                      )}
                       <div className="text-xs text-muted">
                         {t('customers.registered')} {formatDate(customer.created_at)}
                       </div>

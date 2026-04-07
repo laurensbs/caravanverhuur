@@ -18,14 +18,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Gebruikersnaam en wachtwoord zijn verplicht' }, { status: 400 });
     }
 
-    const result = validateCredentials(user, password);
+    const result = await validateCredentials(user, password);
     if (!result) {
       return NextResponse.json({ error: 'Ongeldige inloggegevens' }, { status: 401 });
     }
 
     const token = await createAdminToken(user, result.role);
 
-    const response = NextResponse.json({ success: true, role: result.role, user });
+    const response = NextResponse.json({
+      success: true,
+      role: result.role,
+      user,
+      displayName: result.displayName || user,
+      mustChangePassword: result.mustChangePassword || false,
+      locale: result.locale || null,
+    });
     response.cookies.set('admin_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -37,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Log login activity
     try {
       const { logActivity } = await import('@/lib/db');
-      await logActivity({ actor: user, role: result.role, action: 'login', details: `Ingelogd als ${result.role}` });
+      await logActivity({ actor: user, role: result.role, action: 'login', details: `${result.displayName || user} ingelogd als ${result.role}` });
     } catch {}
 
     return response;

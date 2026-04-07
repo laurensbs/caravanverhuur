@@ -11,7 +11,6 @@ import {
   XCircle,
   Minus,
   Calendar,
-  Car,
   User,
   Hash,
   MessageSquare,
@@ -436,9 +435,6 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             </div>
             <div className="flex items-center gap-2 text-muted">
               <User size={14} /> <span>{checklist.guest_name}</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted">
-              <Car size={14} /> <span>{checklist.caravan_id}</span>
             </div>
             <div className="flex items-center gap-2 text-muted">
               <Shield size={14} /> <span className="font-medium">&euro;{parseFloat(checklist.borg_amount).toFixed(2)} {t('borgPage.deposit')}</span>

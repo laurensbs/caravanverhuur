@@ -5,6 +5,8 @@ import { translations, createT, type AdminLocale, type AdminRole } from './admin
 
 interface AdminContextType {
   role: AdminRole;
+  username: string;
+  displayName: string;
   locale: AdminLocale;
   setLocale: (l: AdminLocale) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -24,9 +26,11 @@ export function useAdmin(): AdminContextType {
 interface AdminProviderProps {
   children: ReactNode;
   role: AdminRole;
+  username?: string;
+  displayName?: string;
 }
 
-export function AdminProvider({ children, role }: AdminProviderProps) {
+export function AdminProvider({ children, role, username = '', displayName = '' }: AdminProviderProps) {
   const [locale, setLocaleState] = useState<AdminLocale>('nl');
   const [mounted, setMounted] = useState(false);
 
@@ -39,7 +43,16 @@ export function AdminProvider({ children, role }: AdminProviderProps) {
   const setLocale = useCallback((l: AdminLocale) => {
     setLocaleState(l);
     localStorage.setItem('admin_locale', l);
-  }, []);
+    // Persist to DB for named users
+    if (username && username !== 'staff') {
+      fetch('/api/admin/auth/update-locale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ locale: l }),
+      }).catch(() => {});
+    }
+  }, [username]);
 
   const t = useCallback(createT(locale), [locale]);
 
@@ -56,7 +69,7 @@ export function AdminProvider({ children, role }: AdminProviderProps) {
   if (!mounted) return null;
 
   return (
-    <AdminContext.Provider value={{ role, locale, setLocale, t, ts, dateLocale }}>
+    <AdminContext.Provider value={{ role, username, displayName, locale, setLocale, t, ts, dateLocale }}>
       {children}
     </AdminContext.Provider>
   );

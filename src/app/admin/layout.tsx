@@ -99,6 +99,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [role, setRole] = useState<AdminRole>('staff');
   const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -107,6 +108,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginLocale, setLoginLocale] = useState<AdminLocale>('nl');
   const pathname = usePathname();
+
+  /* First-login flow states */
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [showLocaleSelect, setShowLocaleSelect] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+  const [passwordChangeLoading, setPasswordChangeLoading] = useState(false);
+  const [localeSelectLoading, setLocaleSelectLoading] = useState(false);
 
   /* Translation helper for login screen (before context) */
   const lt = useMemo(() => createT(loginLocale), [loginLocale]);
@@ -119,17 +129,27 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const savedLocale = localStorage.getItem('admin_locale') as AdminLocale | null;
     if (savedLocale && (savedLocale === 'nl' || savedLocale === 'en')) setLoginLocale(savedLocale);
 
-    /* Restore saved role */
-    const savedRole = localStorage.getItem('admin_role');
-    if (savedRole === 'admin' || savedRole === 'staff') setUsername(savedRole);
-
     /* Verify existing session with server */
     fetch('/api/admin/auth/me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(async (data) => {
         if (data?.authenticated) {
-          setAuthenticated(true);
           setRole(data.role);
+          setUsername(data.user);
+          setDisplayName(data.displayName || data.user);
+          if (data.mustChangePassword) {
+            setAuthenticated(true);
+            setShowPasswordChange(true);
+          } else if (data.user !== 'staff' && !data.locale) {
+            setAuthenticated(true);
+            setShowLocaleSelect(true);
+          } else {
+            setAuthenticated(true);
+            if (data.locale) {
+              setLoginLocale(data.locale);
+              localStorage.setItem('admin_locale', data.locale);
+            }
+          }
         }
       })
       .catch((e) => console.error('Fetch error:', e))
@@ -153,10 +173,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (res.ok && data.success) {
         setRole(data.role);
-        setAuthenticated(true);
+        setDisplayName(data.displayName || username);
         setError('');
-        /* Remember role (not password!) */
-        localStorage.setItem('admin_role', username);
+        localStorage.setItem('admin_last_user', username.toLowerCase());
+        if (data.mustChangePassword) {
+          setAuthenticated(true);
+          setShowPasswordChange(true);
+        } else if (data.user !== 'staff' && !data.locale) {
+          setAuthenticated(true);
+          setShowLocaleSelect(true);
+        } else {
+          setAuthenticated(true);
+          if (data.locale) {
+            setLoginLocale(data.locale);
+            localStorage.setItem('admin_locale', data.locale);
+          }
+        }
       } else {
         setError(data.error || lt('auth.wrongCredentials'));
       }
@@ -167,14 +199,69 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (newPassword.length < 8) {
+      setPasswordChangeError(lt('auth.passwordMinLength'));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordChangeError(lt('auth.passwordsNoMatch'));
+      return;
+    }
+    setPasswordChangeLoading(true);
+    setPasswordChangeError('');
+    try {
+      const res = await fetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowPasswordChange(false);
+        setNewPassword('');
+        setConfirmPassword('');
+        // Check if locale needs to be set
+        if (username !== 'staff') {
+          setShowLocaleSelect(true);
+        }
+      } else {
+        setPasswordChangeError(data.error || 'Error');
+      }
+    } catch {
+      setPasswordChangeError('Network error');
+    } finally {
+      setPasswordChangeLoading(false);
+    }
+  };
+
+  const handleLocaleSelect = async (selectedLocale: AdminLocale) => {
+    setLocaleSelectLoading(true);
+    try {
+      await fetch('/api/admin/auth/update-locale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ locale: selectedLocale }),
+      });
+      setLoginLocale(selectedLocale);
+      localStorage.setItem('admin_locale', selectedLocale);
+    } catch {}
+    setShowLocaleSelect(false);
+    setLocaleSelectLoading(false);
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {}
-    localStorage.removeItem('admin_role');
     setAuthenticated(false);
     setPassword('');
     setUsername('');
+    setDisplayName('');
+    setShowPasswordChange(false);
+    setShowLocaleSelect(false);
   };
 
   /* ── Loading state while checking auth ──────────── */
@@ -251,7 +338,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* ====== RIGHT SIDE — FORM ====== */}
-          <div className="w-full lg:w-1/2 flex flex-col">
+          <div className="w-full lg:w-1/2 flex flex-col relative">
             {/* Mobile hero header */}
             <div className="lg:hidden bg-foreground px-5 pt-6 pb-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
@@ -278,10 +365,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* Language toggle */}
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-4 right-4 z-20">
               <button
                 onClick={() => { const next = loginLocale === 'nl' ? 'en' : 'nl'; setLoginLocale(next); localStorage.setItem('admin_locale', next); }}
-                className="flex items-center gap-1.5 text-muted hover:text-foreground text-sm transition-colors cursor-pointer bg-surface px-3 py-1.5 rounded-full shadow-sm lg:bg-white/10 lg:text-white/70 lg:hover:text-white"
+                className="flex items-center gap-1.5 text-sm font-medium transition-all cursor-pointer px-3 py-1.5 rounded-full shadow-sm bg-white text-foreground/70 hover:text-foreground hover:shadow-md lg:bg-white/15 lg:backdrop-blur-sm lg:text-white/80 lg:hover:text-white lg:hover:bg-white/25"
               >
                 <Globe className="w-4 h-4" />
                 {loginLocale === 'nl' ? 'EN' : 'NL'}
@@ -308,55 +395,66 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   className="bg-white rounded-2xl shadow-sm p-5 sm:p-7"
                 >
                   <form onSubmit={handleLogin} className="space-y-4">
-                    {/* Role selector (tab style) */}
+                    {/* User selector */}
                     <div>
                       <label className="block text-xs font-semibold text-muted mb-2 uppercase tracking-wide">
-                        {lt('auth.selectRole')}
+                        {lt('auth.selectUser')}
                       </label>
-                      <div className="flex bg-surface rounded-xl p-1">
-                        {(['admin', 'staff'] as const).map((u) => (
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'jake', name: 'Jake', initials: 'JK', color: 'bg-blue-500' },
+                          { id: 'johan', name: 'Johan', initials: 'JH', color: 'bg-emerald-500' },
+                          { id: 'helen', name: 'Helen', initials: 'HL', color: 'bg-purple-500' },
+                          { id: 'dominique', name: 'Dominique', initials: 'DM', color: 'bg-amber-500' },
+                          { id: 'laurens', name: 'Laurens', initials: 'LB', color: 'bg-rose-500' },
+                          { id: 'staff', name: 'Staff', initials: '👤', color: 'bg-gray-400' },
+                        ].map((u) => (
                           <button
-                            key={u}
+                            key={u.id}
                             type="button"
-                            onClick={() => { setUsername(u); setError(''); }}
-                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                              username === u
-                                ? 'bg-white text-foreground shadow-sm'
-                                : 'text-muted hover:text-foreground'
+                            onClick={() => { setUsername(u.id); setError(''); }}
+                            className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border-2 ${
+                              username === u.id
+                                ? 'border-foreground bg-foreground/5 text-foreground'
+                                : 'border-transparent bg-surface text-muted hover:border-gray-200 hover:text-foreground'
                             }`}
                           >
-                            {u === 'admin' ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                            {u.charAt(0).toUpperCase() + u.slice(1)}
+                            <div className={`w-9 h-9 rounded-full ${u.color} flex items-center justify-center text-white text-xs font-bold`}>
+                              {u.initials}
+                            </div>
+                            {u.name}
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* Password field */}
-                    <div>
-                      <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
-                        {lt('auth.password')}
-                      </label>
-                      <div className="relative">
-                        <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                          className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 focus:bg-white outline-none transition-all"
-                          placeholder={lt('auth.enterPassword')}
-                          autoFocus
-                          autoComplete="current-password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer transition-colors"
-                        >
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
-                    </div>
+                    {username && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                        <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
+                          {lt('auth.password')}
+                        </label>
+                        <div className="relative">
+                          <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                            className="w-full pl-10 pr-12 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 focus:bg-white outline-none transition-all"
+                            placeholder={lt('auth.enterPassword')}
+                            autoFocus
+                            autoComplete="current-password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
 
                     {/* Error */}
                     <AnimatePresence>
@@ -419,6 +517,124 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  /* ── First-login: Password Change Modal ─────────── */
+  if (showPasswordChange) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden"
+        >
+          <div className="h-1.5 bg-foreground" />
+          <div className="p-6 sm:p-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-foreground/5 mb-4">
+                <span className="text-4xl">🔐</span>
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{lt('auth.changePasswordTitle')}</h2>
+              <p className="text-muted text-sm mt-1.5">{lt('auth.changePasswordDesc').replace('{name}', displayName)}</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{lt('auth.newPassword')}</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={e => { setNewPassword(e.target.value); setPasswordChangeError(''); }}
+                    className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 focus:bg-white outline-none transition-all"
+                    placeholder={lt('auth.newPasswordPlaceholder')}
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{lt('auth.confirmPassword')}</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => { setConfirmPassword(e.target.value); setPasswordChangeError(''); }}
+                    className="w-full pl-10 pr-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-foreground/10 focus:bg-white outline-none transition-all"
+                    placeholder={lt('auth.confirmPasswordPlaceholder')}
+                    onKeyDown={e => { if (e.key === 'Enter') handlePasswordChange(); }}
+                  />
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {passwordChangeError && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="flex items-start gap-2.5 bg-red-50 text-red-600 text-sm p-3 rounded-xl"
+                  >
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                    <span>{passwordChangeError}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <button
+                onClick={handlePasswordChange}
+                disabled={passwordChangeLoading || !newPassword || !confirmPassword}
+                className="w-full py-3.5 bg-foreground text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-foreground/90 active:scale-[0.98] cursor-pointer disabled:opacity-60"
+              >
+                {passwordChangeLoading ? '...' : lt('auth.setPassword')}
+                {!passwordChangeLoading && <ArrowRight size={16} />}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  /* ── First-login: Language Selection ─────────────── */
+  if (showLocaleSelect) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden"
+        >
+          <div className="h-1.5 bg-foreground" />
+          <div className="p-6 sm:p-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-foreground/5 mb-4">
+                <span className="text-4xl">🌍</span>
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Choose your language</h2>
+              <p className="text-muted text-sm mt-1.5">Kies je taal / Select your language</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleLocaleSelect('nl')}
+                disabled={localeSelectLoading}
+                className="flex flex-col items-center gap-3 p-6 bg-surface rounded-xl border-2 border-transparent hover:border-foreground transition-all cursor-pointer active:scale-[0.97] disabled:opacity-60"
+              >
+                <span className="text-4xl">🇳🇱</span>
+                <span className="font-semibold text-foreground">Nederlands</span>
+              </button>
+              <button
+                onClick={() => handleLocaleSelect('en')}
+                disabled={localeSelectLoading}
+                className="flex flex-col items-center gap-3 p-6 bg-surface rounded-xl border-2 border-transparent hover:border-foreground transition-all cursor-pointer active:scale-[0.97] disabled:opacity-60"
+              >
+                <span className="text-4xl">🇬🇧</span>
+                <span className="font-semibold text-foreground">English</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   /* ── Authenticated Layout ───────────────────────── */
   const navSections: NavSectionFiltered[] = NAV_SECTIONS
     .map(section => ({
@@ -431,7 +647,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const allNavItems = navSections.flatMap(s => s.items);
 
   return (
-    <AdminProvider role={role}>
+    <AdminProvider role={role} username={username} displayName={displayName}>
       <ToastProvider>
         <AdminLayoutInner
           navSections={navSections}
@@ -454,25 +670,25 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 type OnboardingStep = { title: string; desc: string; icon: string };
 
 const ONBOARDING_ADMIN_NL: OnboardingStep[] = [
-  { title: 'Welkom bij het beheerpaneel!', desc: 'We laten je in een paar stappen zien hoe alles werkt. Als admin heb je volledige toegang tot alle functies — van boekingen en betalingen tot caravanbeheer.', icon: '👋' },
+  { title: 'Welkom bij het beheerpaneel!', desc: 'We laten je in een paar stappen zien hoe alles werkt. Je hebt een persoonlijk account — zo kunnen we bijhouden wie wat aanpast en jouw voorkeuren onthouden.', icon: '👋' },
   { title: 'Dashboard — jouw startpunt', desc: 'Het dashboard geeft direct een overzicht van nieuwe boekingen, openstaande taken en de maandomzet. Klik op een kaart om naar de details te gaan.', icon: '📊' },
   { title: 'Boekingen & Planning', desc: 'Beheer alle boekingen en bekijk de visuele bezettingskalender. Via "Nieuwe boeking" kun je ook telefonische reserveringen aanmaken — de klant ontvangt automatisch een betaallink.', icon: '📅' },
   { title: 'Betalingen & Borg', desc: 'Volg betalingen en verwerk terugbetalingen via Stripe. Bij vertrek gebruik je "Mobiel Inspecteren" om samen met de klant de borgchecklist af te lopen.', icon: '💳' },
-  { title: 'Klanten & Communicatie', desc: 'Bekijk klantgegevens, beantwoord contactberichten en reageer op live chats. Campingaanvragen komen ook bij de berichten binnen.', icon: '👥' },
+  { title: 'Klanten & Communicatie', desc: 'Bekijk klantgegevens, beantwoord contactberichten en reageer op live chats. Bij elke wijziging zie je subtiel wie de laatste aanpassing heeft gedaan.', icon: '👥' },
   { title: 'Caravans & Campings', desc: 'Beheer je caravanaanbod (prijzen, foto\'s, faciliteiten) en de campinglijst. Sleep campings om de volgorde op de website aan te passen.', icon: '🏕️' },
   { title: 'Kortingscodes & Nieuwsbrieven', desc: 'Maak kortingscodes aan (bijv. ZOMER2025) en bekijk nieuwsbriefabonnees. Tip: stel altijd een vervaldatum in bij kortingscodes.', icon: '🏷️' },
-  { title: 'Hulp altijd binnen bereik', desc: 'Klik op het vraagteken (?) rechtsboven voor contextgevoelige hulp per pagina. Onderaan het menu wissel je tussen NL en EN. Veel succes!', icon: '🚀' },
+  { title: 'Hulp altijd binnen bereik', desc: 'Klik op het vraagteken (?) rechtsboven voor contextgevoelige hulp per pagina. Je taalvoorkeur wordt per account opgeslagen. Veel succes!', icon: '🚀' },
 ];
 
 const ONBOARDING_ADMIN_EN: OnboardingStep[] = [
-  { title: 'Welcome to the admin panel!', desc: 'We\'ll walk you through how everything works in a few quick steps. As admin, you have full access to all features — from bookings and payments to caravan management.', icon: '👋' },
+  { title: 'Welcome to the admin panel!', desc: 'We\'ll walk you through how everything works in a few quick steps. You have a personal account — so we can track who changed what and remember your preferences.', icon: '👋' },
   { title: 'Dashboard — your starting point', desc: 'The dashboard gives you an instant overview of new bookings, open tasks, and monthly revenue. Click any card to go straight to the details.', icon: '📊' },
   { title: 'Bookings & Planning', desc: 'Manage all bookings and view the visual occupancy calendar. Use "New booking" to create phone reservations — the customer automatically receives a payment link.', icon: '📅' },
   { title: 'Payments & Deposit', desc: 'Track payments and process refunds through Stripe. At check-out, use "Mobile Inspect" to walk through the deposit checklist together with the customer.', icon: '💳' },
-  { title: 'Customers & Communication', desc: 'View customer data, answer contact form messages, and respond to live chats. Camping requests also appear in messages.', icon: '👥' },
+  { title: 'Customers & Communication', desc: 'View customer data, answer contact form messages, and respond to live chats. Each change subtly shows who made the last modification.', icon: '👥' },
   { title: 'Caravans & Campings', desc: 'Manage your caravan inventory (prices, photos, facilities) and the camping list. Drag campings to reorder them on the website.', icon: '🏕️' },
   { title: 'Discount Codes & Newsletters', desc: 'Create discount codes (e.g. SUMMER2025) and view newsletter subscribers. Tip: always set an expiry date on discount codes.', icon: '🏷️' },
-  { title: 'Help is always nearby', desc: 'Click the question mark (?) in the top-right for context-sensitive help per page. Switch between NL and EN at the bottom of the menu. Good luck!', icon: '🚀' },
+  { title: 'Help is always nearby', desc: 'Click the question mark (?) in the top-right for context-sensitive help per page. Your language preference is saved per account. Good luck!', icon: '🚀' },
 ];
 
 const ONBOARDING_STAFF_NL: OnboardingStep[] = [
@@ -519,54 +735,54 @@ function SidebarNavItem({
   const Icon = item.icon;
 
   const linkContent = (
-    <Link
-      href={item.href}
-      onClick={(e) => {
-        if (isDraggingRef.current) {
-          e.preventDefault();
-          return;
-        }
-        onNavigate();
-      }}
-      draggable={false}
-      title={collapsed ? t(item.key) : undefined}
-      className={`flex items-center ${collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-4 py-2.5'} rounded-xl text-sm font-medium transition-all duration-200 ${
-        isActive
-          ? 'bg-foreground/10 text-foreground font-semibold'
-          : 'text-foreground-light hover:bg-gray-200/60 hover:text-foreground'
-      }`}
-    >
+    <div className="relative group/nav">
+      {/* Drag handle — outside the link, only on desktop expanded */}
       {!isMobile && !collapsed && (
-        <GripVertical
-          className="w-3.5 h-3.5 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing"
+        <div
+          className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover/nav:opacity-100 transition-opacity z-10 cursor-grab active:cursor-grabbing"
           onPointerDown={(e) => controls.start(e)}
           style={{ touchAction: 'none' }}
-        />
+        >
+          <GripVertical className="w-3 h-3 text-gray-300" />
+        </div>
       )}
-      <div className="relative shrink-0">
-        <Icon className="w-5 h-5" />
-        {collapsed && badge && badge > 0 ? (
-          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        ) : null}
-      </div>
-      {!collapsed && (
-        <>
-          <span className="flex-1">{t(item.key)}</span>
-          {badge && badge > 0 ? (
-            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
+      <Link
+        href={item.href}
+        onClick={(e) => {
+          if (isDraggingRef.current) {
+            e.preventDefault();
+            return;
+          }
+          onNavigate();
+        }}
+        draggable={false}
+        title={collapsed ? t(item.key) : undefined}
+        className={`flex items-center ${collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2'} rounded-xl text-[13px] font-medium transition-all duration-150 cursor-pointer ${
+          isActive
+            ? 'bg-foreground text-white shadow-sm'
+            : 'text-foreground/70 hover:bg-foreground/[0.06] hover:text-foreground'
+        }`}
+      >
+        <div className="relative shrink-0">
+          <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : ''}`} />
+          {collapsed && badge && badge > 0 ? (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
               {badge > 99 ? '99+' : badge}
             </span>
-          ) : isActive ? (
-            <motion.div
-              layoutId="activeIndicator"
-              className="w-1.5 h-1.5 bg-foreground rounded-full shrink-0"
-            />
           ) : null}
-        </>
-      )}
-    </Link>
+        </div>
+        {!collapsed && (
+          <>
+            <span className="flex-1 truncate">{t(item.key)}</span>
+            {badge && badge > 0 ? (
+              <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full shrink-0">
+                {badge > 99 ? '99+' : badge}
+              </span>
+            ) : null}
+          </>
+        )}
+      </Link>
+    </div>
   );
 
   if (isMobile) {
@@ -621,7 +837,7 @@ function AdminLayoutInner({
   children: ReactNode;
 }) {
   /* Use the admin context for translations */
-  const { t, locale, setLocale } = useAdminCtx();
+  const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName } = useAdminCtx();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
@@ -975,7 +1191,8 @@ function AdminLayoutInner({
             return (
               <div key={section.sectionKey}>
                 {!collapsed && !isMobile && (
-                  <div className={collapsed ? 'hidden' : ''}>
+                  <div>
+                    <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted/50">{t(section.sectionKey)}</p>
                     <Reorder.Group
                       axis="y"
                       values={orderedItems.map(i => i.href)}
@@ -1011,7 +1228,9 @@ function AdminLayoutInner({
                   </ul>
                 )}
                 {isMobile && (
-                  <ul className="space-y-0.5">
+                  <div>
+                    <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted/50">{t(section.sectionKey)}</p>
+                    <ul className="space-y-0.5">
                     {orderedItems.map((item) => (
                       <SidebarNavItem
                         key={item.href}
@@ -1023,7 +1242,8 @@ function AdminLayoutInner({
                         isMobile
                       />
                     ))}
-                  </ul>
+                    </ul>
+                  </div>
                 )}
               </div>
             );
@@ -1279,6 +1499,14 @@ function AdminLayoutInner({
           </button>
 
           {/* Notification toggle */}
+          {ctxUsername && ctxUsername !== 'staff' && (
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-muted font-medium px-2" title={ctxDisplayName}>
+              <span className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground">
+                {ctxDisplayName.charAt(0)}
+              </span>
+              {ctxDisplayName}
+            </span>
+          )}
           <button
             onClick={toggleNotifications}
             className={`relative p-2 rounded-lg transition-colors cursor-pointer ${

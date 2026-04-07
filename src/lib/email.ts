@@ -105,6 +105,13 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
           <p style="margin:0 0 8px;color:#94A3B8;font-size:13px;line-height:1.5;">
             ${BRAND_NAME} &middot; ${t.footerTagline}
           </p>
+          <p style="margin:0 0 10px;color:#94A3B8;font-size:12px;line-height:1.6;">
+            <a href="mailto:info@caravanverhuurspanje.com" style="color:#94A3B8;text-decoration:none;">&#9993; info@caravanverhuurspanje.com</a>
+            &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+            <a href="https://wa.me/34650036755" style="color:#25D366;text-decoration:none;font-weight:500;">WhatsApp</a>
+            &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+            <a href="tel:+34650036755" style="color:#94A3B8;text-decoration:none;">&#9742; +34 650 036 755</a>
+          </p>
           <p style="margin:0 0 16px;color:#CBD5E1;font-size:12px;line-height:1.5;">
             <a href="${SITE_URL}" style="color:#0F172A;text-decoration:none;font-weight:500;">caravanverhuurspanje.com</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -420,7 +427,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${button(t.bookingButton, `${SITE_URL}/mijn-account`)}
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
-    `, `${t.bookingSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
+    `, `${t.bookingSubject(data.reference)} — ${data.campingName}`, locale),
   });
 }
 
@@ -550,7 +557,7 @@ export async function sendManualBookingEmail(to: string, data: {
       `) : ''}
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
-    `, `${t.manualSubject(data.reference)} — ${data.caravanName}, ${data.campingName}`, locale),
+    `, `${t.manualSubject(data.reference)} — ${data.campingName}`, locale),
   });
 }
 
@@ -1122,7 +1129,7 @@ export async function sendCountdownEmail(data: {
       `) : ''}
 
       ${button(t.countdownButton, `${SITE_URL}/mijn-account?tab=boekingen`)}
-    `, `${emoji} ${subjectLine} — ${data.caravanName}, ${data.campingName}`, locale),
+    `, `${emoji} ${subjectLine} — ${data.campingName}`, locale),
   });
 }
 
@@ -1331,7 +1338,7 @@ export async function sendReviewRequestEmail(data: {
             </td>
             <td style="vertical-align:top;">
               <p style="margin:0 0 4px;color:#0F172A;font-size:14px;font-weight:700;">
-                ${data.caravanName} — ${data.campingName}
+                ${data.campingName}
               </p>
               <p style="margin:0;color:#64748B;font-size:13px;">
                 ${t.reviewDateRange(formatDateShort(data.checkIn, locale), formatDateShort(data.checkOut, locale))}

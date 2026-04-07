@@ -437,6 +437,42 @@ export async function setupDatabase() {
     )
   `;
 
+  // Admin users table
+  await sql`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      display_name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin',
+      password_hash TEXT NOT NULL,
+      locale TEXT DEFAULT NULL,
+      must_change_password BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Seed default admin users if table is empty
+  const existingAdminUsers = await sql`SELECT COUNT(*) as cnt FROM admin_users`;
+  if (parseInt(existingAdminUsers.rows[0].cnt) === 0) {
+    const { hashPassword } = await import('./password');
+    const defaultHash = await hashPassword('CostaAdmin2026!');
+    const users = [
+      { id: 'au-jake', username: 'jake', display_name: 'Jake', role: 'admin' },
+      { id: 'au-johan', username: 'johan', display_name: 'Johan', role: 'admin' },
+      { id: 'au-helen', username: 'helen', display_name: 'Helen', role: 'admin' },
+      { id: 'au-dominique', username: 'dominique', display_name: 'Dominique', role: 'admin' },
+      { id: 'au-laurens', username: 'laurens', display_name: 'Laurens', role: 'admin' },
+    ];
+    for (const u of users) {
+      await sql`
+        INSERT INTO admin_users (id, username, display_name, role, password_hash, must_change_password)
+        VALUES (${u.id}, ${u.username}, ${u.display_name}, ${u.role}, ${defaultHash}, true)
+        ON CONFLICT (username) DO NOTHING
+      `;
+    }
+  }
+
   // Performance indexes
   await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_bookings_checkin ON bookings(check_in)`;
@@ -2193,6 +2229,58 @@ export async function getActivityLog(limit = 50, offset = 0) {
 export async function getActivityLogCount() {
   const result = await sql`SELECT COUNT(*) as count FROM activity_log`;
   return parseInt(result.rows[0].count as string) || 0;
+}
+
+export async function getLastActivityForEntity(entityType: string, entityId: string) {
+  const result = await sql`
+    SELECT actor, action, created_at FROM activity_log
+    WHERE entity_type = ${entityType} AND entity_id = ${entityId}
+    ORDER BY created_at DESC LIMIT 1
+  `;
+  return result.rows[0] || null;
+}
+
+export async function getLastActivityBatch(entityType: string, entityIds: string[]) {
+  if (!entityIds.length) return {};
+  const result = await sql`
+    SELECT DISTINCT ON (entity_id) entity_id, actor, action, created_at
+    FROM activity_log
+    WHERE entity_type = ${entityType} AND entity_id = ANY(${entityIds}::text[])
+    ORDER BY entity_id, created_at DESC
+  `;
+  const map: Record<string, { actor: string; action: string; created_at: string }> = {};
+  for (const row of result.rows) {
+    map[row.entity_id as string] = { actor: row.actor as string, action: row.action as string, created_at: row.created_at as string };
+  }
+  return map;
+}
+
+// ===== ADMIN USERS =====
+
+export async function getAdminUserByUsername(username: string) {
+  const result = await sql`SELECT * FROM admin_users WHERE username = ${username}`;
+  return result.rows[0] || null;
+}
+
+export async function updateAdminUserPassword(username: string, passwordHash: string) {
+  await sql`
+    UPDATE admin_users
+    SET password_hash = ${passwordHash}, must_change_password = false, updated_at = NOW()
+    WHERE username = ${username}
+  `;
+}
+
+export async function updateAdminUserLocale(username: string, locale: string) {
+  await sql`
+    UPDATE admin_users
+    SET locale = ${locale}, updated_at = NOW()
+    WHERE username = ${username}
+  `;
+}
+
+export async function getAllAdminUsers() {
+  const result = await sql`SELECT id, username, display_name, role, locale, must_change_password, created_at FROM admin_users ORDER BY display_name`;
+  return result.rows;
 }
 
 // ===== PRICING RULES QUERIES =====
