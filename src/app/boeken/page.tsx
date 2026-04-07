@@ -107,6 +107,7 @@ function BoekenContent() {
   const [showAllCampings, setShowAllCampings] = useState(false);
   const [paymentId, setPaymentId] = useState('');
   const [redirectingToPayment, setRedirectingToPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const contentRef = useRef<HTMLDivElement>(null);
   const [pricingRules, setPricingRules] = useState<{ id: string; name: string; type: string; percentage: string; start_date: string | null; end_date: string | null; days_before_checkin: number | null; min_nights: number; priority: number }[]>([]);
 
@@ -409,6 +410,7 @@ function BoekenContent() {
                 <button
                   onClick={async () => {
                     setRedirectingToPayment(true);
+                    setPaymentError('');
                     try {
                       const res = await fetch('/api/checkout', {
                         method: 'POST',
@@ -417,7 +419,10 @@ function BoekenContent() {
                       });
                       const data = await res.json();
                       if (data.url) { window.location.href = data.url; return; }
-                    } catch {}
+                      setPaymentError(t('booking.paymentUnavailable'));
+                    } catch {
+                      setPaymentError(t('booking.paymentUnavailable'));
+                    }
                     setRedirectingToPayment(false);
                   }}
                   disabled={redirectingToPayment}
@@ -429,6 +434,9 @@ function BoekenContent() {
                     <><CreditCard size={18} /> {t('booking.payDeposit')} &euro;{deposit25}</>
                   )}
                 </button>
+                {paymentError && (
+                  <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm mt-2">{paymentError}</p>
+                )}
               </motion.div>
             )}
 

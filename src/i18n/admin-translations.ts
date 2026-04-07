@@ -244,6 +244,8 @@ export const translations: Record<AdminLocale, Dict> = {
       couldNotLoad: 'Kon dashboard data niet laden',
       somethingWrong: 'Er ging iets mis',
       checkSetup: 'Controleer of de database is opgezet via /api/setup',
+      stripeNotConfigured: 'Stripe is nog niet geconfigureerd',
+      stripeNotConfiguredDesc: 'Betaallinks worden niet automatisch aangemaakt. Boekingen komen gewoon binnen — markeer betalingen handmatig als betaald wanneer je een overboeking ontvangt.',
     },
 
     /* ── bookings page ──────────────────── */
@@ -970,6 +972,8 @@ export const translations: Record<AdminLocale, Dict> = {
       couldNotLoad: 'Could not load dashboard data',
       somethingWrong: 'Something went wrong',
       checkSetup: 'Check if the database is set up via /api/setup',
+      stripeNotConfigured: 'Stripe is not yet configured',
+      stripeNotConfiguredDesc: 'Payment links are not automatically created. Bookings still come in — mark payments manually as paid when you receive a bank transfer.',
     },
 
     bookings: {

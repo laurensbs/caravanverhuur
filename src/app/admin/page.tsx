@@ -95,6 +95,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [stripeConfigured, setStripeConfigured] = useState(true);
 
   useEffect(() => {
     loadCustomData();
@@ -107,6 +108,10 @@ export default function AdminDashboard() {
       })
       .catch((e) => setError(e?.message || 'Could not load dashboard'))
       .finally(() => setLoading(false));
+    fetch('/api/admin/stripe-status', { credentials: 'include' })
+      .then(res => res.json())
+      .then(body => setStripeConfigured(body.configured ?? true))
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -169,6 +174,22 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-3 sm:space-y-6">
+      {/* Stripe not configured banner */}
+      {!stripeConfigured && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-amber-50 border border-amber-200 rounded-2xl p-3 sm:p-5 flex items-start gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-amber-800 text-sm sm:text-base">{t('dashboard.stripeNotConfigured')}</p>
+            <p className="text-xs sm:text-sm text-amber-700 mt-1">{t('dashboard.stripeNotConfiguredDesc')}</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Monthly overview */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
