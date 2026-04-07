@@ -264,7 +264,7 @@ const nl: EmailTranslations = {
   bookingTotalPrice: 'Totaalprijs',
   bookingPayBefore: '💳 Aanbetaling (25%)',
   bookingRestOnCamping: '💰 Restbetaling (75%) — op de camping (contant of pin)',
-  bookingBorgOnCamping: '🔒 Borg — op de camping (contant of pin)',
+  bookingBorgOnCamping: '🔒 Borg €400 (+ €200/fiets) — op de camping (contant of pin)',
   bookingDirectPayment: 'Direct bij boeking',
   bookingImmediateNote: (price, _) => `<strong>Betalingsoverzicht:</strong> De aanbetaling van 25% dient nu voldaan te worden via iDEAL/Wero in je account. Het restbedrag en de borg betaal je op de camping (contant of pin).`,
   bookingPendingPaymentNote: (price, _) => `<strong>Betalingsoverzicht:</strong> Je ontvangt binnenkort een betaallink per e-mail om de aanbetaling van 25% te voldoen via iDEAL/Wero. Het restbedrag en de borg betaal je op de camping (contant of pin).`,
@@ -313,7 +313,7 @@ const nl: EmailTranslations = {
   paymentTotalPrice: 'Totale huurprijs',
   paymentDepositPaid: 'Aanbetaling voldaan',
   paymentRestOnCamping: 'Restbetaling — op de camping (contant of pin)',
-  paymentBorgOnCamping: 'Borg — op de camping (contant of pin)',
+  paymentBorgOnCamping: 'Borg €400 (+ €200/fiets) — op de camping (contant of pin)',
 
   // Contact
   contactBadge: 'BERICHT ONTVANGEN',
@@ -480,7 +480,7 @@ const en: EmailTranslations = {
   bookingTotalPrice: 'Total price',
   bookingPayBefore: '💳 Down payment (25%)',
   bookingRestOnCamping: '💰 Remaining (75%) — at the campsite (cash or card/PIN)',
-  bookingBorgOnCamping: '🔒 Deposit — at the campsite (cash or card/PIN)',
+  bookingBorgOnCamping: '🔒 Deposit €400 (+ €200/bike) — at the campsite (cash or card/PIN)',
   bookingDirectPayment: 'Immediately upon booking',
   bookingImmediateNote: (price, _) => `<strong>Payment overview:</strong> The 25% down payment must be paid now via iDEAL/Wero in your account. The remaining amount and deposit are paid at the campsite (cash or card/PIN).`,
   bookingPendingPaymentNote: (price, _) => `<strong>Payment overview:</strong> You will receive a payment link by email shortly to pay the 25% down payment via iDEAL/Wero. The remaining amount and deposit are paid at the campsite (cash or card/PIN).`,
@@ -529,7 +529,7 @@ const en: EmailTranslations = {
   paymentTotalPrice: 'Total rental price',
   paymentDepositPaid: 'Deposit paid',
   paymentRestOnCamping: 'Remaining — at the campsite (cash or card/PIN)',
-  paymentBorgOnCamping: 'Deposit — at the campsite (cash or card/PIN)',
+  paymentBorgOnCamping: 'Deposit €400 (+ €200/bike) — at the campsite (cash or card/PIN)',
 
   // Contact
   contactBadge: 'MESSAGE RECEIVED',
@@ -696,7 +696,7 @@ const es: EmailTranslations = {
   bookingTotalPrice: 'Precio total',
   bookingPayBefore: '💳 Anticipo (25%)',
   bookingRestOnCamping: '💰 Resto (75%) — en el camping (efectivo o tarjeta/PIN)',
-  bookingBorgOnCamping: '🔒 Fianza — en el camping (efectivo o tarjeta/PIN)',
+  bookingBorgOnCamping: '🔒 Fianza €400 (+ €200/bici) — en el camping (efectivo o tarjeta/PIN)',
   bookingDirectPayment: 'Inmediatamente al reservar',
   bookingImmediateNote: (price, _) => `<strong>Resumen de pago:</strong> El anticipo del 25% debe pagarse ahora vía iDEAL/Wero en tu cuenta. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).`,
   bookingPendingPaymentNote: (price, _) => `<strong>Resumen de pago:</strong> Recibirás un enlace de pago por correo electrónico en breve para pagar el anticipo del 25% vía iDEAL/Wero. El importe restante y la fianza se pagan en el camping (efectivo o tarjeta/PIN).`,
@@ -745,7 +745,7 @@ const es: EmailTranslations = {
   paymentTotalPrice: 'Precio total del alquiler',
   paymentDepositPaid: 'Anticipo pagado',
   paymentRestOnCamping: 'Pago restante — en el camping (efectivo o tarjeta/PIN)',
-  paymentBorgOnCamping: 'Fianza — en el camping (efectivo o tarjeta/PIN)',
+  paymentBorgOnCamping: 'Fianza €400 (+ €200/bici) — en el camping (efectivo o tarjeta/PIN)',
 
   // Contact
   contactBadge: 'MENSAJE RECIBIDO',

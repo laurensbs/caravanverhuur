@@ -416,8 +416,8 @@ function smartMatch(
     if (ctx.lastTopic === 'pricing') {
       return {
         answer: isNl
-          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Aanbetaling**: 25% bij boeking via iDEAL/Wero\n🔒 **Borg**: €400 na goedkeuring op de camping\n💵 **Restbetaling**: direct na ontvangst borg (contant/overboeking)\n\nAlles gaat veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
-          : `More payment info:\n\n💰 **Down payment**: 25% at booking via iDEAL/Wero\n🔒 **Security deposit**: €400 after approval at campsite\n💵 **Remaining**: immediately after deposit receipt (cash/bank transfer)`,
+          ? `Mooi${name}! Hier nog wat handige info:\n\n💰 **Aanbetaling**: 25% bij boeking via iDEAL/Wero\n🔒 **Borg**: €400 (+ €200/fiets bij fietsverhuur) op de camping\n💵 **Restbetaling**: direct na ontvangst borg (contant/overboeking)\n\nAlles gaat veilig en vertrouwd!\n\n👉 **[Bekijk caravans](/caravans)** of **[Direct boeken](/boeken)**`
+          : `More payment info:\n\n💰 **Down payment**: 25% at booking via iDEAL/Wero\n🔒 **Security deposit**: €400 (+ €200/bike if renting bikes) at campsite\n💵 **Remaining**: immediately after deposit receipt (cash/bank transfer)`,
         followUp: isNl ? ['Hoe boek ik?', 'Kan ik annuleren?'] : ['How to book?', 'Can I cancel?'],
         confidence: 0.9,
         topic: 'payment-details',
@@ -661,9 +661,9 @@ function smartMatch(
   // ===== PAYMENT =====
   if (/betaal|ideal|wero|aanbetaling|betaalmethod|payment|pay method|pago|metodo de pago|betaling|creditcard|pinnen|hoe betaal|wanneer betalen|hoeveel betalen|overmaken|overboeking|factuur|rekening|contant|cash|bancontact|visa|mastercard|tikkie/.test(lower)) {
     const paymentAnswers = isNl ? [
-      `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Aanbetaling (25%)**: bij boeking via iDEAL/Wero\n2️⃣ **Borg (€400)**: na goedkeuring op de camping bij de caravanplaats\n3️⃣ **Restbetaling (75%)**: direct na ontvangst van de borg (contant of overboeking)\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling van de aanbetaling ontvang je direct een bevestigingsmail met alle details.`,
-      `We werken met **iDEAL en Wero** voor de aanbetaling${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: Reserveer je caravan en camping\n💳 **Stap 2**: Betaal 25% aanbetaling bij boeking via iDEAL/Wero\n🔒 **Stap 3**: Borg (€400) na goedkeuring op de camping\n💰 **Stap 4**: Restbetaling direct na borg (contant of overboeking)\n\nGeen creditcard nodig! Na betaling krijg je een bevestiging per e-mail.`,
-    ] : ['Payments:\n\n1. **Down payment (25%)**: at booking via iDEAL/Wero\n2. **Security deposit (€400)**: after approval at the campsite\n3. **Remaining (75%)**: immediately after deposit receipt (cash or bank transfer)'];
+      `Zo werkt de betaling${name}! 💳\n\n1️⃣ **Aanbetaling (25%)**: bij boeking via iDEAL/Wero\n2️⃣ **Borg (€400 + €200/fiets)**: na goedkeuring op de camping bij de caravanplaats\n3️⃣ **Restbetaling (75%)**: direct na ontvangst van de borg (contant of overboeking)\n\n🔒 Veilig, snel en vertrouwd!\n\nNa betaling van de aanbetaling ontvang je direct een bevestigingsmail met alle details.`,
+      `We werken met **iDEAL en Wero** voor de aanbetaling${name} — veilig en snel! 🔐\n\nZo werkt het:\n💳 **Stap 1**: Reserveer je caravan en camping\n💳 **Stap 2**: Betaal 25% aanbetaling bij boeking via iDEAL/Wero\n🔒 **Stap 3**: Borg (€400 + €200/fiets) na goedkeuring op de camping\n💰 **Stap 4**: Restbetaling direct na borg (contant of overboeking)\n\nGeen creditcard nodig! Na betaling krijg je een bevestiging per e-mail.`,
+    ] : ['Payments:\n\n1. **Down payment (25%)**: at booking via iDEAL/Wero\n2. **Security deposit (€400 + €200/bike)**: after approval at the campsite\n3. **Remaining (75%)**: immediately after deposit receipt (cash or bank transfer)'];
     return {
       answer: pick(paymentAnswers, asked),
       followUp: isNl ? ['Hoe boek ik?', 'Hoe werkt de borg?', 'Kan ik annuleren?'] : ['How to book?', 'Deposit info?'],

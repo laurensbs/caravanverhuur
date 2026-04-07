@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertTriangle, CreditCard, Clock, Shield, Info } from 'lucide-react';
+import { AlertTriangle, CreditCard, Clock, Shield, Info, Bike } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
 export default function VoorwaardenPage() {
@@ -13,7 +13,7 @@ export default function VoorwaardenPage() {
     { key: 'a3', highlight: false },
     { key: 'a4', highlight: true },
     { key: 'a5', highlight: true },
-    { key: 'a6', highlight: false },
+    { key: 'a6', highlight: true },
     { key: 'a7', highlight: true },
     { key: 'a8', highlight: false },
     { key: 'a9', highlight: true },
@@ -94,8 +94,8 @@ export default function VoorwaardenPage() {
                 <p className="text-xs text-muted mt-1">Aanbetaling bij boeking</p>
               </div>
               <div className="bg-surface rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-foreground">€400</p>
-                <p className="text-xs text-muted mt-1">Borg (na goedkeuring op camping)</p>
+                <p className="text-2xl font-bold text-foreground">€400+</p>
+                <p className="text-xs text-muted mt-1">Borg (+ €200/fiets)</p>
               </div>
               <div className="bg-surface rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-foreground">75%</p>
@@ -115,6 +115,37 @@ export default function VoorwaardenPage() {
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
               <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-1" />
               <p className="text-sm text-amber-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.a7Note') }} />
+            </div>
+          </div>
+
+          {/* Borg highlight (Article 6) */}
+          <div id="a6" className="bg-white rounded-2xl p-6 sm:p-8 scroll-mt-20">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                <Shield size={20} className="text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{t('termsPage.a6Title')}</h2>
+            </div>
+            <div className="space-y-3">
+              <p className="text-muted leading-relaxed">{t('termsPage.a6Text')}</p>
+              <p className="text-muted leading-relaxed">{t('termsPage.a6Text2')}</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="bg-surface rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-foreground">&euro;400</p>
+                  <p className="text-xs text-muted mt-1">Standaard borg caravan</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Bike size={18} className="text-amber-700" />
+                    <p className="text-2xl font-bold text-amber-700">+ &euro;200</p>
+                  </div>
+                  <p className="text-xs text-amber-800">Extra borg per (mountain)fiets</p>
+                </div>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+                <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-1" />
+                <p className="text-sm text-amber-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.a6Note') }} />
+              </div>
             </div>
           </div>
 
@@ -138,8 +169,8 @@ export default function VoorwaardenPage() {
 
           {/* All articles */}
           {articles.map(a => {
-            // Skip a4, a5, a9 since they have their own highlight sections above
-            if (['a4', 'a5', 'a9'].includes(a.key)) return null;
+            // Skip a4, a5, a6, a9 since they have their own highlight sections above
+            if (['a4', 'a5', 'a6', 'a9'].includes(a.key)) return null;
             const title = t(`termsPage.${a.key}Title`) as string;
             const text = t(`termsPage.${a.key}Text`) as string;
             const text2 = t(`termsPage.${a.key}Text2`);
