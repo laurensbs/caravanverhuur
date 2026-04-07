@@ -14,7 +14,6 @@ import {
   ClipboardCheck,
   Users,
   LogOut,
-  Menu,
   X,
   Lock,
   Eye,
@@ -504,6 +503,7 @@ function SidebarNavItem({
   t,
   badge,
   isMobile,
+  collapsed,
 }: {
   item: { href: string; key: string; icon: typeof LayoutDashboard };
   isActive: boolean;
@@ -511,6 +511,7 @@ function SidebarNavItem({
   t: (key: string) => string;
   badge?: number;
   isMobile?: boolean;
+  collapsed?: boolean;
 }) {
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
@@ -527,35 +528,51 @@ function SidebarNavItem({
         onNavigate();
       }}
       draggable={false}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+      title={collapsed ? t(item.key) : undefined}
+      className={`flex items-center ${collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-4 py-2.5'} rounded-xl text-sm font-medium transition-all duration-200 ${
         isActive
           ? 'bg-foreground/10 text-foreground font-semibold'
           : 'text-foreground-light hover:bg-gray-200/60 hover:text-foreground'
       }`}
     >
-      {!isMobile && (
+      {!isMobile && !collapsed && (
         <GripVertical
           className="w-3.5 h-3.5 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing"
           onPointerDown={(e) => controls.start(e)}
           style={{ touchAction: 'none' }}
         />
       )}
-      <Icon className="w-5 h-5 shrink-0" />
-      <span className="flex-1">{t(item.key)}</span>
-      {badge && badge > 0 ? (
-        <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
-          {badge > 99 ? '99+' : badge}
-        </span>
-      ) : isActive ? (
-        <motion.div
-          layoutId="activeIndicator"
-          className="w-1.5 h-1.5 bg-foreground rounded-full shrink-0"
-        />
-      ) : null}
+      <div className="relative shrink-0">
+        <Icon className="w-5 h-5" />
+        {collapsed && badge && badge > 0 ? (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        ) : null}
+      </div>
+      {!collapsed && (
+        <>
+          <span className="flex-1">{t(item.key)}</span>
+          {badge && badge > 0 ? (
+            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full shrink-0 animate-in fade-in">
+              {badge > 99 ? '99+' : badge}
+            </span>
+          ) : isActive ? (
+            <motion.div
+              layoutId="activeIndicator"
+              className="w-1.5 h-1.5 bg-foreground rounded-full shrink-0"
+            />
+          ) : null}
+        </>
+      )}
     </Link>
   );
 
   if (isMobile) {
+    return <li className="list-none">{linkContent}</li>;
+  }
+
+  if (collapsed) {
     return <li className="list-none">{linkContent}</li>;
   }
 
@@ -905,39 +922,92 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out w-64 border-r border-border ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border ${
+          isMobile
+            ? `w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : sidebarOpen ? 'w-64' : 'w-16'
         }`}
       >
         {/* Logo + close button */}
-        <div className="px-4 pt-3 pb-1 lg:px-5 lg:pt-4 lg:pb-2">
+        <div className={`${sidebarOpen ? 'px-4 lg:px-5' : 'px-2'} pt-3 pb-1 lg:pt-4 lg:pb-2`}>
           <div className="flex items-center justify-between">
-            <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-              alt="Caravanverhuur Costa Brava"
-              width={200}
-              height={56}
-              className="w-32 lg:w-40 h-auto"
-            />
-            <button
-              onClick={toggleSidebar}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer"
-              title="Sidebar sluiten"
-            >
-              <ChevronLeft size={18} />
-            </button>
+            {sidebarOpen ? (
+              <Image
+                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                alt="Caravanverhuur Costa Brava"
+                width={200}
+                height={56}
+                className="w-32 lg:w-40 h-auto"
+              />
+            ) : !isMobile ? (
+              <Image
+                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                alt="Caravanverhuur Costa Brava"
+                width={200}
+                height={56}
+                className="w-8 h-8 object-contain"
+              />
+            ) : null}
+            {sidebarOpen && (
+              <button
+                onClick={toggleSidebar}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer"
+                title="Sidebar sluiten"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            )}
           </div>
         </div>
 
-        <nav className="flex-1 p-3 overflow-y-auto space-y-2">
+        <nav className={`flex-1 ${sidebarOpen ? 'p-3' : 'p-1.5'} overflow-y-auto space-y-2`}>
           {navSections.map((section) => {
             const orderedItems = getOrderedItems(section.sectionKey, section.items);
+            const collapsed = !sidebarOpen && !isMobile;
             return (
               <div key={section.sectionKey}>
-                <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                  {t(section.sectionKey)}
-                </div>
-                {isMobile ? (
+                {sidebarOpen && (
+                  <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                    {t(section.sectionKey)}
+                  </div>
+                )}
+                {!collapsed && !isMobile && (
+                  <div className={collapsed ? 'hidden' : ''}>
+                    <Reorder.Group
+                      axis="y"
+                      values={orderedItems.map(i => i.href)}
+                      onReorder={(newOrder) => handleSectionReorder(section.sectionKey, newOrder)}
+                      className="space-y-0.5"
+                    >
+                      {orderedItems.map((item) => (
+                        <SidebarNavItem
+                          key={item.href}
+                          item={item}
+                          isActive={pathname === item.href}
+                          onNavigate={() => {}}
+                          t={t}
+                          badge={badges[item.key]}
+                        />
+                      ))}
+                    </Reorder.Group>
+                  </div>
+                )}
+                {collapsed && (
+                  <ul className="space-y-0.5">
+                    {orderedItems.map((item) => (
+                      <SidebarNavItem
+                        key={item.href}
+                        item={item}
+                        isActive={pathname === item.href}
+                        onNavigate={() => {}}
+                        t={t}
+                        badge={badges[item.key]}
+                        collapsed
+                      />
+                    ))}
+                  </ul>
+                )}
+                {isMobile && (
                   <ul className="space-y-0.5">
                     {orderedItems.map((item) => (
                       <SidebarNavItem
@@ -951,24 +1021,6 @@ function AdminLayoutInner({
                       />
                     ))}
                   </ul>
-                ) : (
-                <Reorder.Group
-                  axis="y"
-                  values={orderedItems.map(i => i.href)}
-                  onReorder={(newOrder) => handleSectionReorder(section.sectionKey, newOrder)}
-                  className="space-y-0.5"
-                >
-                  {orderedItems.map((item) => (
-                    <SidebarNavItem
-                      key={item.href}
-                      item={item}
-                      isActive={pathname === item.href}
-                      onNavigate={() => {}}
-                      t={t}
-                      badge={badges[item.key]}
-                    />
-                  ))}
-                </Reorder.Group>
                 )}
               </div>
             );
@@ -976,45 +1028,74 @@ function AdminLayoutInner({
         </nav>
 
         <div className="p-2 border-t border-border space-y-1">
-          {/* Compact row: NL/EN + Website + Logout */}
-          <div className="flex items-center gap-1 px-2">
-            <div className="flex bg-gray-200/60 rounded-lg p-0.5">
-              <button
-                onClick={() => setLocale('nl')}
-                className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'nl' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
+          {sidebarOpen ? (
+            /* Compact row: NL/EN + Website + Logout */
+            <div className="flex items-center gap-1 px-2">
+              <div className="flex bg-gray-200/60 rounded-lg p-0.5">
+                <button
+                  onClick={() => setLocale('nl')}
+                  className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'nl' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
+                >
+                  NL
+                </button>
+                <button
+                  onClick={() => setLocale('en')}
+                  className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'en' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
+                >
+                  EN
+                </button>
+              </div>
+              <a
+                href={mainSiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors flex-1 min-w-0"
               >
-                NL
-              </button>
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{t('nav.viewWebsite')}</span>
+              </a>
               <button
-                onClick={() => setLocale('en')}
-                className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'en' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
+                onClick={onLogout}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
+                title={t('nav.logout')}
               >
-                EN
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
-            <a
-              href={mainSiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors flex-1 min-w-0"
-            >
-              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{t('nav.viewWebsite')}</span>
-            </a>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
-              title={t('nav.logout')}
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          ) : !isMobile ? (
+            /* Collapsed: icon-only column */
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
+                title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
+              >
+                {locale === 'nl' ? 'EN' : 'NL'}
+              </button>
+              <a
+                href={mainSiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors"
+                title={t('nav.viewWebsite')}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={onLogout}
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                title={t('nav.logout')}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : null}
         </div>
       </aside>
 
       {/* Main content */}
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-        !isMobile && sidebarOpen ? 'lg:ml-64' : ''
+        !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16') : ''
       }`}>
         {/* Top bar */}
         <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
@@ -1023,7 +1104,7 @@ function AdminLayoutInner({
             className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
             title={sidebarOpen ? 'Sidebar sluiten' : 'Sidebar openen'}
           >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">
