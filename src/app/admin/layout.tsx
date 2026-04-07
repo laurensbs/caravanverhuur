@@ -39,6 +39,7 @@ import {
   BellOff,
   Percent,
   Truck,
+  Menu,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -1113,6 +1114,15 @@ function AdminLayoutInner({
       }`}>
         {/* Top bar */}
         <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
+          {isMobile && (
+            <button
+              onClick={toggleSidebar}
+              className="p-2 -ml-1 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-foreground"
+              aria-label="Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">
               {allNavItems.find((n) => n.href === pathname)
