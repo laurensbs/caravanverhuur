@@ -13,6 +13,7 @@ import {
   Loader2,
   Send,
   RefreshCw,
+  MessageCircle,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -21,6 +22,7 @@ import {
   formatDateTime,
   type ContactSubmission,
   type ContactStatus,
+  type ContactSource,
 } from '@/data/admin';
 
 const STATUS_OPTIONS: ContactStatus[] = ['NIEUW', 'GELEZEN', 'BEANTWOORD'];
@@ -181,6 +183,7 @@ export default function BerichtenPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ContactStatus | 'ALLE'>('ALLE');
+  const [sourceFilter, setSourceFilter] = useState<ContactSource | 'all'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchContacts = () => {
@@ -202,6 +205,7 @@ export default function BerichtenPage() {
   const filtered = contacts
     .filter((c) => {
       if (statusFilter !== 'ALLE' && c.status !== statusFilter) return false;
+      if (sourceFilter !== 'all' && (c.source || 'contact') !== sourceFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -221,6 +225,8 @@ export default function BerichtenPage() {
   const newCount = contacts.filter((c) => c.status === 'NIEUW').length;
   const readCount = contacts.filter((c) => c.status === 'GELEZEN').length;
   const answeredCount = contacts.filter((c) => c.status === 'BEANTWOORD').length;
+  const contactFormCount = contacts.filter((c) => (c.source || 'contact') === 'contact').length;
+  const livechatCount = contacts.filter((c) => c.source === 'livechat').length;
 
   if (loading) {
     return (
@@ -246,6 +252,27 @@ export default function BerichtenPage() {
           <p className="text-2xl font-bold text-primary">{answeredCount}</p>
           <p className="text-xs text-muted">{t('messages.repliedCount')}</p>
         </div>
+      </div>
+
+      {/* Source tabs */}
+      <div className="flex gap-1.5 bg-white rounded-xl p-1">
+        {([
+          { key: 'all' as const, label: t('messages.sourceAll'), count: contacts.length },
+          { key: 'contact' as const, label: t('messages.sourceContact'), count: contactFormCount },
+          { key: 'livechat' as const, label: t('messages.sourceLivechat'), count: livechatCount },
+        ]).map(({ key, label, count }) => (
+          <button
+            key={key}
+            onClick={() => setSourceFilter(key)}
+            className={`flex-1 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+              sourceFilter === key
+                ? 'bg-primary-dark text-white'
+                : 'text-muted hover:bg-surface'
+            }`}
+          >
+            {label} <span className="opacity-70">({count})</span>
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
@@ -309,7 +336,11 @@ export default function BerichtenPage() {
                 }`}
               >
                 <div className="p-2 rounded-xl bg-surface shrink-0">
-                  <MessageSquare className="w-5 h-5 text-muted" />
+                  {contact.source === 'livechat' ? (
+                    <MessageCircle className="w-5 h-5 text-primary" />
+                  ) : (
+                    <MessageSquare className="w-5 h-5 text-muted" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

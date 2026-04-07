@@ -72,8 +72,14 @@ export async function setupDatabase() {
       phone TEXT,
       subject TEXT NOT NULL,
       message TEXT NOT NULL,
-      admin_reply TEXT
+      admin_reply TEXT,
+      source TEXT NOT NULL DEFAULT 'contact'
     )
+  `;
+
+  // Add source column if missing (migration)
+  await sql`
+    ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'contact'
   `;
 
   // Caravan settings table (availability, notes)
@@ -737,11 +743,13 @@ export async function createContact(data: {
   phone?: string;
   subject: string;
   message: string;
+  source?: string;
 }) {
   const id = generateId('C');
+  const source = data.source || 'contact';
   await sql`
-    INSERT INTO contacts (id, name, email, phone, subject, message)
-    VALUES (${id}, ${data.name}, ${data.email}, ${data.phone || null}, ${data.subject}, ${data.message})
+    INSERT INTO contacts (id, name, email, phone, subject, message, source)
+    VALUES (${id}, ${data.name}, ${data.email}, ${data.phone || null}, ${data.subject}, ${data.message}, ${source})
   `;
   return { id };
 }

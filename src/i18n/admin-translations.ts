@@ -394,6 +394,9 @@ export const translations: Record<AdminLocale, Dict> = {
       templatePricing: 'Onze prijzen beginnen vanaf €550 per week. Bekijk ons actuele aanbod op caravanverhuurspanje.com/caravans. Heeft u een specifieke periode in gedachten?',
       templateBookingInfo: 'Bedankt voor uw interesse! Bij het boeken betaalt u een aanbetaling van 25% via iDEAL. Het restbedrag en de borg voldoet u op de camping (contant of pin).',
       templateThankYou: 'Bedankt voor uw bericht! Mocht u nog vragen hebben, neem dan gerust contact met ons op. Wij helpen u graag verder.',
+      sourceAll: 'Alle berichten',
+      sourceContact: 'Contactformulier',
+      sourceLivechat: 'Livechat',
     },
 
     /* ── caravans page ──────────────────── */
@@ -1119,6 +1122,9 @@ export const translations: Record<AdminLocale, Dict> = {
       templatePricing: 'Our prices start from €550 per week. Check our current offerings at caravanverhuurspanje.com/caravans. Do you have a specific period in mind?',
       templateBookingInfo: 'Thank you for your interest! When booking you pay a 25% deposit via iDEAL. The remaining amount and deposit are paid at the campsite (cash or card).',
       templateThankYou: 'Thank you for your message! If you have any further questions, please don\'t hesitate to contact us. We\'re happy to help!',
+      sourceAll: 'All messages',
+      sourceContact: 'Contact form',
+      sourceLivechat: 'Live chat',
     },
 
     caravans: {

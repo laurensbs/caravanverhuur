@@ -1879,7 +1879,7 @@ export default function ChatBot() {
   const [chatMode, setChatMode] = useState<ChatMode>('bot');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [humanWaitStart, setHumanWaitStart] = useState<number | null>(null);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
+  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [showContactForm, setShowContactForm] = useState(false);
   const [loggedInCustomer, setLoggedInCustomer] = useState<{ id: string; name: string; email: string; phone?: string } | null>(null);
   const [askingName, setAskingName] = useState(false);
@@ -1981,6 +1981,7 @@ export default function ChatBot() {
               name: data.customer.name || '',
               email: data.customer.email || '',
               phone: data.customer.phone || '',
+              message: '',
             });
             const greeting = isNl
               ? `Hoi **${data.customer.name}**! 👋 Welkom terug!\n\nWaar kan ik je mee helpen? 😊`
@@ -2060,17 +2061,17 @@ export default function ChatBot() {
             }
           }
           if (chatMode === 'waiting-human' && humanWaitStart) {
-            if (Date.now() - humanWaitStart > 180_000) {
+            if (Date.now() - humanWaitStart > 120_000) {
               setChatMode('leave-message');
               setShowContactForm(true);
               setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'bot',
                 text: isNl
-                  ? 'Helaas is er op dit moment niemand beschikbaar. 😔\n\nLaat je gegevens achter en we nemen zo snel mogelijk contact met je op!'
+                  ? 'We hebben het momenteel erg druk en kunnen je nu niet direct helpen. 😔\n\nLaat een bericht achter met je gegevens en we nemen zo snel mogelijk contact met je op!'
                   : isEs
-                  ? 'Lo siento, no hay nadie disponible. 😔\n\nDeja tus datos y te contactamos.'
-                  : "Sorry, no one is available right now. 😔\n\nLeave your details and we'll get back to you!",
+                  ? 'Estamos muy ocupados en este momento. 😔\n\nDeja un mensaje con tus datos y te contactaremos lo antes posible.'
+                  : "We're very busy at the moment and can't help you right away. 😔\n\nLeave a message with your details and we'll get back to you as soon as possible!",
                 timestamp: new Date(),
               }]);
             }
@@ -2436,6 +2437,35 @@ export default function ChatBot() {
 
   const handleContactSubmit = async () => {
     if (!contactForm.name || (!contactForm.email && !contactForm.phone)) return;
+
+    // Build message from the textarea + chat transcript for context
+    const chatTranscript = messages
+      .filter(m => m.role === 'user')
+      .map(m => m.text)
+      .join('\n');
+    const fullMessage = contactForm.message
+      ? contactForm.message + (chatTranscript ? '\n\n--- Chatverlop ---\n' + chatTranscript : '')
+      : chatTranscript || (isNl ? 'Bericht achtergelaten via livechat' : 'Message left via live chat');
+
+    // Save as contact with source 'livechat'
+    try {
+      await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email || '',
+          phone: contactForm.phone || '',
+          subject: isNl ? 'Livechat bericht' : isEs ? 'Mensaje de chat' : 'Live chat message',
+          message: fullMessage,
+          source: 'livechat',
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to save livechat message:', e);
+    }
+
+    // Also update chat visitor info
     if (conversationId) {
       await fetch('/api/chat', {
         method: 'POST',
@@ -2448,7 +2478,7 @@ export default function ChatBot() {
       id: Date.now().toString(),
       role: 'bot',
       text: isNl
-        ? `Bedankt, ${contactForm.name}! ✅\n\nWe hebben je gegevens ontvangen en nemen zo snel mogelijk contact op via ${contactForm.email || contactForm.phone}.\n\nFijne dag! ☀️`
+        ? `Bedankt, ${contactForm.name}! ✅\n\nWe hebben je bericht ontvangen en nemen zo snel mogelijk contact op via ${contactForm.email || contactForm.phone}.\n\nFijne dag! ☀️`
         : isEs ? `¡Gracias, ${contactForm.name}! ✅ Te contactaremos.`
         : `Thanks, ${contactForm.name}! ✅ We'll reach out via ${contactForm.email || contactForm.phone}.`,
       timestamp: new Date(),
@@ -2786,7 +2816,7 @@ export default function ChatBot() {
               {showContactForm && (
                 <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 space-y-2.5 sm:space-y-3">
                   <p className="text-xs sm:text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {isNl ? 'Laat je gegevens achter' : isEs ? 'Deja tus datos' : 'Leave your details'}
+                    {isNl ? 'Laat een bericht achter' : isEs ? 'Deja un mensaje' : 'Leave a message'}
                   </p>
                   <div className="space-y-2">
                     <div className="relative">
@@ -2801,9 +2831,16 @@ export default function ChatBot() {
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input type="tel" value={contactForm.phone} onChange={e => setContactForm(p => ({ ...p, phone: e.target.value }))} placeholder={isNl ? 'Telefoonnummer' : 'Phone number'} className="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl text-[13px] sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
+                    <textarea
+                      value={contactForm.message}
+                      onChange={e => setContactForm(p => ({ ...p, message: e.target.value }))}
+                      placeholder={isNl ? 'Je bericht...' : isEs ? 'Tu mensaje...' : 'Your message...'}
+                      rows={3}
+                      className="w-full px-3 py-2.5 bg-gray-50 rounded-xl text-[13px] sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                    />
                   </div>
                   <button onClick={handleContactSubmit} disabled={!contactForm.name || (!contactForm.email && !contactForm.phone)} className="w-full py-2.5 bg-primary text-white text-[13px] sm:text-sm font-semibold rounded-xl disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all">
-                    {isNl ? 'Versturen' : isEs ? 'Enviar' : 'Send'}
+                    {isNl ? 'Bericht versturen' : isEs ? 'Enviar mensaje' : 'Send message'}
                   </button>
                 </div>
               )}

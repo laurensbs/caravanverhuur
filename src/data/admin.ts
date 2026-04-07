@@ -80,6 +80,8 @@ export interface Payment {
   caravan_id?: string;
 }
 
+export type ContactSource = 'contact' | 'livechat';
+
 export interface ContactSubmission {
   id: string;
   created_at: string;
@@ -90,6 +92,7 @@ export interface ContactSubmission {
   subject: string;
   message: string;
   admin_reply?: string;
+  source: ContactSource;
 }
 
 // ===== HELPERS =====

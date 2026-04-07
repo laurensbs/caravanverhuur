@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, phone, subject, message, website } = body;
+    const { name, email, phone, subject, message, website, source } = body;
 
     // Honeypot check — if filled, it's a bot
     if (website) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const result = await createContact({ name, email, phone, subject, message });
+    const result = await createContact({ name, email, phone, subject, message, source });
 
     // Send acknowledgment email (non-blocking)
     const contactCustomer = await getCustomerByEmail(email.toLowerCase().trim()).catch(() => null);
