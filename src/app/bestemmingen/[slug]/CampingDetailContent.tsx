@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -48,40 +48,45 @@ interface Props {
   otherCampings: Camping[];
 }
 
-function AutoSlideGallery({ photos, altPrefix, useImg }: { photos: string[]; altPrefix: string; useImg?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const pauseRef = useRef(false);
-
+/* Slow-motion marquee — continuous CSS scroll, premium feel */
+function SlowMarquee({ children }: { children: React.ReactNode }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [dur, setDur] = useState(40);
   useEffect(() => {
-    const el = ref.current;
+    const el = trackRef.current;
     if (!el) return;
-    const iv = setInterval(() => {
-      if (pauseRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = el;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-      el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.6, behavior: 'smooth' });
-    }, 3500);
-    const pause = () => { pauseRef.current = true; };
-    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
-    el.addEventListener('touchstart', pause, { passive: true });
-    el.addEventListener('touchend', resume, { passive: true });
-    el.addEventListener('mouseenter', pause);
-    el.addEventListener('mouseleave', resume);
-    return () => { clearInterval(iv); el.removeEventListener('touchstart', pause); el.removeEventListener('touchend', resume); el.removeEventListener('mouseenter', pause); el.removeEventListener('mouseleave', resume); };
-  }, []);
-
+    const contentW = el.scrollWidth / 2;
+    setDur(contentW / 35);
+  }, [children]);
   return (
-    <div ref={ref} className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+    <div className="overflow-hidden">
+      <div
+        ref={trackRef}
+        className="flex gap-3 w-max hover:[animation-play-state:paused] active:[animation-play-state:paused]"
+        style={{ animation: `marquee-scroll ${dur}s linear infinite` }}
+        onTouchStart={e => { e.currentTarget.style.animationPlayState = 'paused'; }}
+        onTouchEnd={e => { e.currentTarget.style.animationPlayState = 'running'; }}
+      >
+        {children}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function AutoSlideGallery({ photos, altPrefix, useImg }: { photos: string[]; altPrefix: string; useImg?: boolean }) {
+  return (
+    <SlowMarquee>
       {photos.map((photo, i) => (
-        <div key={i} className="relative w-36 h-24 sm:w-44 sm:h-30 md:w-52 md:h-36 rounded-xl overflow-hidden shrink-0 snap-center group">
+        <div key={i} className="relative w-32 h-22 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
           {useImg ? (
-            <img src={photo} alt={`${altPrefix} foto ${i + 2}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+            <img src={photo} alt={`${altPrefix} foto ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
-            <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px" />
+            <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px" />
           )}
         </div>
       ))}
-    </div>
+    </SlowMarquee>
   );
 }
 

@@ -66,42 +66,32 @@ const scaleIn = {
 
 
 /* ------------------------------------------------------------------ */
-/*  Auto-sliding carousel — scrolls on mobile, pauses on touch        */
+/*  Slow-motion marquee — continuous CSS scroll, premium feel          */
 /* ------------------------------------------------------------------ */
-function AutoSlideCarousel({ children, speed = 4000 }: { children: React.ReactNode; speed?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const pauseRef = useRef(false);
+function SlowMarquee({ children, speed = 40, className = '' }: { children: React.ReactNode; speed?: number; className?: string }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [dur, setDur] = useState(speed);
 
   useEffect(() => {
-    const el = ref.current;
+    const el = trackRef.current;
     if (!el) return;
-
-    const iv = setInterval(() => {
-      if (pauseRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = el;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-      el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.82, behavior: 'smooth' });
-    }, speed);
-
-    const pause = () => { pauseRef.current = true; };
-    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
-    el.addEventListener('touchstart', pause, { passive: true });
-    el.addEventListener('touchend', resume, { passive: true });
-    el.addEventListener('mouseenter', pause);
-    el.addEventListener('mouseleave', resume);
-
-    return () => {
-      clearInterval(iv);
-      el.removeEventListener('touchstart', pause);
-      el.removeEventListener('touchend', resume);
-      el.removeEventListener('mouseenter', pause);
-      el.removeEventListener('mouseleave', resume);
-    };
-  }, [speed]);
+    // Calculate duration based on content width for consistent perceived speed
+    const contentW = el.scrollWidth / 2; // half because we duplicate
+    setDur(contentW / 35); // px per second ≈ 35 → slow & smooth
+  }, [children]);
 
   return (
-    <div ref={ref} className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
-      {children}
+    <div className={`overflow-hidden ${className}`}>
+      <div
+        ref={trackRef}
+        className="flex gap-4 w-max hover:[animation-play-state:paused] active:[animation-play-state:paused]"
+        style={{ animation: `marquee-scroll ${dur}s linear infinite` }}
+        onTouchStart={e => { (e.currentTarget.style.animationPlayState = 'paused'); }}
+        onTouchEnd={e => { (e.currentTarget.style.animationPlayState = 'running'); }}
+      >
+        {children}
+        {children}
+      </div>
     </div>
   );
 }
@@ -481,27 +471,23 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">{t('home.caravanAssignedNote')}</p>
           </motion.div>
 
-          {/* Horizontal scroll carousel — auto-slides on mobile */}
-          <AutoSlideCarousel>
+          {/* Slow-motion photo marquee — premium sliding feel */}
+          <SlowMarquee>
             {caravans.flatMap(c => c.photos).slice(0, 8).map((photo, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
-                className="snap-center shrink-0 w-[75vw] sm:w-[45vw] lg:w-[30vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]"
+                className="shrink-0 w-[55vw] sm:w-[32vw] lg:w-[22vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]"
               >
                 <Image
                   src={photo}
                   alt={`Caravan impressie ${i + 1}`}
                   fill
-                  sizes="(max-width: 640px) 75vw, (max-width: 1024px) 45vw, 30vw"
+                  sizes="(max-width: 640px) 55vw, (max-width: 1024px) 32vw, 22vw"
                   className="object-cover"
                 />
-              </motion.div>
+              </div>
             ))}
-          </AutoSlideCarousel>
+          </SlowMarquee>
 
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -589,27 +575,23 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
             </h3>
-            <AutoSlideCarousel speed={5000}>
+            <SlowMarquee>
               {destinations.slice(0, 8).map((d, i) => (
-                <motion.div
+                <div
                   key={d.slug}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05, duration: 0.4 }}
-                  className="snap-center shrink-0"
+                  className="shrink-0"
                 >
-                  <Link href={`/bestemmingen/${d.slug}`} className="group block w-[130px] sm:w-[150px]">
+                  <Link href={`/bestemmingen/${d.slug}`} className="group block w-[120px] sm:w-[140px]">
                     <div className="relative aspect-square rounded-xl overflow-hidden mb-1.5">
-                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="150px" />
+                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="140px" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
                     <h4 className="text-xs sm:text-sm font-semibold text-foreground text-center truncate">{d.name}</h4>
                     <p className="text-[10px] text-muted text-center">{d.beaches.length} {t('destinations.beaches')}</p>
                   </Link>
-                </motion.div>
+                </div>
               ))}
-            </AutoSlideCarousel>
+            </SlowMarquee>
           </div>
 
           <motion.div

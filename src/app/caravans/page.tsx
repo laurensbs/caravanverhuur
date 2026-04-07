@@ -9,48 +9,45 @@ import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
 
 /* ------------------------------------------------------------------ */
-/*  Auto-sliding photo carousel                                        */
+/*  Slow-motion marquee — continuous CSS scroll, premium feel          */
 /* ------------------------------------------------------------------ */
-function CaravanPhotoCarousel({ photos, t }: { photos: string[]; t: (k: string) => string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const pauseRef = useRef(false);
+function SlowMarquee({ children }: { children: React.ReactNode }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [dur, setDur] = useState(40);
 
   useEffect(() => {
-    const el = ref.current;
+    const el = trackRef.current;
     if (!el) return;
-
-    const iv = setInterval(() => {
-      if (pauseRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = el;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-      el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.82, behavior: 'smooth' });
-    }, 3500);
-
-    const pause = () => { pauseRef.current = true; };
-    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
-    el.addEventListener('touchstart', pause, { passive: true });
-    el.addEventListener('touchend', resume, { passive: true });
-    el.addEventListener('mouseenter', pause);
-    el.addEventListener('mouseleave', resume);
-
-    return () => {
-      clearInterval(iv);
-      el.removeEventListener('touchstart', pause);
-      el.removeEventListener('touchend', resume);
-      el.removeEventListener('mouseenter', pause);
-      el.removeEventListener('mouseleave', resume);
-    };
-  }, []);
+    const contentW = el.scrollWidth / 2;
+    setDur(contentW / 35);
+  }, [children]);
 
   return (
-    <div ref={ref} className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
+    <div className="overflow-hidden">
+      <div
+        ref={trackRef}
+        className="flex gap-4 w-max hover:[animation-play-state:paused] active:[animation-play-state:paused]"
+        style={{ animation: `marquee-scroll ${dur}s linear infinite` }}
+        onTouchStart={e => { e.currentTarget.style.animationPlayState = 'paused'; }}
+        onTouchEnd={e => { e.currentTarget.style.animationPlayState = 'running'; }}
+      >
+        {children}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CaravanPhotoCarousel({ photos, t }: { photos: string[]; t: (k: string) => string }) {
+  return (
+    <SlowMarquee>
       {photos.map((photo, i) => (
-        <div key={i} className="snap-center shrink-0 w-[72vw] sm:w-[38vw] md:w-[30vw] lg:w-[23vw] relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
+        <div key={i} className="shrink-0 w-[55vw] sm:w-[32vw] md:w-[24vw] lg:w-[20vw] relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
           <Image
             src={photo}
             alt={`Caravan foto ${i + 1}`}
             fill
-            sizes="(max-width: 640px) 72vw, (max-width: 768px) 38vw, (max-width: 1024px) 30vw, 23vw"
+            sizes="(max-width: 640px) 55vw, (max-width: 768px) 32vw, (max-width: 1024px) 24vw, 20vw"
             className="object-cover"
           />
           <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
@@ -58,7 +55,7 @@ function CaravanPhotoCarousel({ photos, t }: { photos: string[]; t: (k: string) 
           </div>
         </div>
       ))}
-    </div>
+    </SlowMarquee>
   );
 }
 
