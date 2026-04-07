@@ -458,20 +458,24 @@ export async function setupDatabase() {
     const { hashPassword } = await import('./password');
     const defaultHash = await hashPassword('CostaAdmin2026!');
     const users = [
-      { id: 'au-jake', username: 'jake', display_name: 'Jake', role: 'admin' },
-      { id: 'au-johan', username: 'johan', display_name: 'Johan', role: 'admin' },
-      { id: 'au-helen', username: 'helen', display_name: 'Helen', role: 'admin' },
-      { id: 'au-dominique', username: 'dominique', display_name: 'Dominique', role: 'admin' },
-      { id: 'au-laurens', username: 'laurens', display_name: 'Laurens', role: 'admin' },
+      { id: 'au-jake', username: 'jake', display_name: 'Jake', role: 'admin', locale: 'en' },
+      { id: 'au-johan', username: 'johan', display_name: 'Johan', role: 'admin', locale: 'nl' },
+      { id: 'au-helen', username: 'helen', display_name: 'Helen', role: 'admin', locale: 'en' },
+      { id: 'au-dominique', username: 'dominique', display_name: 'Dominique', role: 'admin', locale: 'nl' },
+      { id: 'au-laurens', username: 'laurens', display_name: 'Laurens', role: 'admin', locale: 'nl' },
     ];
     for (const u of users) {
       await sql`
-        INSERT INTO admin_users (id, username, display_name, role, password_hash, must_change_password)
-        VALUES (${u.id}, ${u.username}, ${u.display_name}, ${u.role}, ${defaultHash}, true)
+        INSERT INTO admin_users (id, username, display_name, role, password_hash, locale, must_change_password)
+        VALUES (${u.id}, ${u.username}, ${u.display_name}, ${u.role}, ${defaultHash}, ${u.locale}, true)
         ON CONFLICT (username) DO NOTHING
       `;
     }
   }
+
+  // Set default locale for Jake & Helen if not yet set
+  await sql`UPDATE admin_users SET locale = 'en' WHERE username IN ('jake', 'helen') AND locale IS NULL`;
+  await sql`UPDATE admin_users SET locale = 'nl' WHERE username IN ('johan', 'dominique', 'laurens') AND locale IS NULL`;
 
   // Performance indexes
   await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`;
