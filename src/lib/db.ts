@@ -1854,8 +1854,8 @@ export async function createChatConversation(data: {
 }) {
   const id = generateId('chat');
   await sql`
-    INSERT INTO chat_conversations (id, visitor_name, visitor_email, visitor_phone, locale)
-    VALUES (${id}, ${data.visitorName || null}, ${data.visitorEmail || null}, ${data.visitorPhone || null}, ${data.locale || 'nl'})
+    INSERT INTO chat_conversations (id, visitor_name, visitor_email, visitor_phone, locale, status)
+    VALUES (${id}, ${data.visitorName || null}, ${data.visitorEmail || null}, ${data.visitorPhone || null}, ${data.locale || 'nl'}, 'bot')
   `;
   return { id };
 }
