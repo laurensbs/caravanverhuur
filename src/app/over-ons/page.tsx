@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import BookingCTA from '@/components/BookingCTA';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -367,6 +368,9 @@ export default function OverOnsPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ===== BOOKING CTA ===== */}
+      <BookingCTA />
     </>
   );
 }

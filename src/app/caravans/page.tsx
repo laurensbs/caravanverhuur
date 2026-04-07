@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import BookingCTA from '@/components/BookingCTA';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
@@ -274,17 +275,11 @@ export default function CaravansPage() {
             <CaravanInventoryCategories />
           </div>
 
-          {/* CTA */}
-          <div className="text-center">
-            <Link
-              href="/boeken"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm hover:bg-primary-dark shadow-lg"
-            >
-              {t('nav.bookNow')} <ArrowRight size={16} />
-            </Link>
-          </div>
         </div>
       </section>
+
+      {/* ===== BOOKING CTA ===== */}
+      <BookingCTA />
     </>
   );
 }

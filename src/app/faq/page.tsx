@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, HelpCircle, ArrowRight, Search, Sparkles, MessageCircle } from 'lucide-react';
+import BookingCTA from '@/components/BookingCTA';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
 
@@ -306,6 +307,9 @@ export default function FAQPage() {
           </div>
         </div>
       </section>
+
+      {/* ===== BOOKING CTA ===== */}
+      <BookingCTA />
     </>
   );
 }

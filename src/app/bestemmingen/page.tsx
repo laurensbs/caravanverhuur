@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { motion, AnimatePresence } from 'framer-motion';
+import BookingCTA from '@/components/BookingCTA';
 
 /* ── Types ─────────────────────────────── */
 type Tab = 'stranden' | 'dorpen' | 'campings';
@@ -723,6 +724,9 @@ export default function BestemmingenPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ===== BOOKING CTA ===== */}
+      <BookingCTA />
     </div>
   );
 }

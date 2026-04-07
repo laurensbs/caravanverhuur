@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import BookingCTA from '@/components/BookingCTA';
 import { notFound } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, ArrowLeft, CheckCircle, ArrowRight, X, ChevronLeft, ChevronRight, Wifi, Wind, Flame, Droplets, Tv, Star, Shield, Calendar, MapPin, Quote, Truck } from 'lucide-react';
@@ -333,6 +334,9 @@ export default function CaravanDetailContent({ id }: { id: string }) {
             </div>
           )}
         </div>
+
+        {/* ===== BOOKING CTA ===== */}
+        <BookingCTA />
 
         {/* Mobile sticky CTA bar */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md px-4 py-3 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] border-t border-gray-100" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>

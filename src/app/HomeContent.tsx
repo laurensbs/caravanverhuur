@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import BookingCTA from '@/components/BookingCTA';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect, useCallback, useState } from 'react';
 import {
@@ -818,6 +819,9 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
         </div>
       </section>
+
+      {/* ===== BOOKING CTA ===== */}
+      <BookingCTA />
     </>
   );
 }
