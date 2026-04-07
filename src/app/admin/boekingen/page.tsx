@@ -86,6 +86,11 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const [borgReturnMethod, setBorgReturnMethod] = useState<string | null>(null);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
   const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
+  const [manualLinkInput, setManualLinkInput] = useState('');
+  const [savingManualLink, setSavingManualLink] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [editingLink, setEditingLink] = useState(false);
 
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
 
@@ -135,6 +140,8 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       const data = await res.json();
       if (data.success && data.paymentUrl) {
         setPaymentLinkUrl(data.paymentUrl);
+        setManualLinkInput(data.paymentUrl);
+        setLinkSent(true);
         toast(t('bookings.paymentLinkSent'), 'success');
       } else {
         toast(data.error || t('bookings.paymentLinkFailed'), 'error');
@@ -145,10 +152,67 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
     setSendingPaymentLink(false);
   };
 
+  const handleSaveManualLink = async () => {
+    if (!manualLinkInput.trim()) return;
+    setSavingManualLink(true);
+    try {
+      const res = await fetch('/api/admin/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save-payment-link', bookingId: booking.id, paymentLink: manualLinkInput.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPaymentLinkUrl(manualLinkInput.trim());
+        setLinkSent(true);
+        setEditingLink(false);
+        // Refresh payments
+        const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
+        const pData = await pRes.json();
+        setPayments(pData.payments || []);
+        toast(t('bookings.linkSavedAndSent'), 'success');
+      } else {
+        toast(data.error || t('bookings.linkSaveFailed'), 'error');
+      }
+    } catch {
+      toast(t('bookings.linkSaveFailed'), 'error');
+    }
+    setSavingManualLink(false);
+  };
+
+  const handleCheckPaymentStatus = async () => {
+    setCheckingPayment(true);
+    try {
+      const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
+      const pData = await pRes.json();
+      setPayments(pData.payments || []);
+      const depositPaid = (pData.payments || []).some((p: Payment) => p.type === 'AANBETALING' && p.status === 'BETAALD');
+      if (depositPaid) {
+        toast(t('bookings.paymentReceived'), 'success');
+        onStatusChange(booking.id, 'AANBETAALD');
+        setNewStatus('AANBETAALD');
+      } else {
+        toast(t('bookings.paymentNotYetReceived'), 'info');
+      }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setCheckingPayment(false);
+  };
+
   useEffect(() => {
     fetch(`/api/payments?bookingId=${booking.id}`)
       .then(res => res.json())
-      .then(data => setPayments(data.payments || []))
+      .then(data => {
+        setPayments(data.payments || []);
+        // Load existing payment link from AANBETALING payment
+        const deposit = (data.payments || []).find((p: Payment) => p.type === 'AANBETALING');
+        if (deposit?.payment_link) {
+          setPaymentLinkUrl(deposit.payment_link);
+          setManualLinkInput(deposit.payment_link);
+          setLinkSent(true);
+        }
+      })
       .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingPayments(false));
     fetch(`/api/borg?booking_id=${booking.id}`)
@@ -374,51 +438,153 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
         {/* Deposit confirmation */}
         <div className="mt-3 p-3 bg-blue-50 rounded-xl space-y-2">
           <p className="text-xs text-blue-700">{t('bookings.restOnCampingNote')}</p>
-          {depositAlreadyPaid ? (
-            <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
-              <CheckCircle2 className="w-4 h-4" />
-              {t('bookings.depositAlreadyPaid')}
+        </div>
+
+        {/* ═══ AANBETALING STRIPE LINK SECTION ═══ */}
+        {!loadingPayments && (
+          <div className="mt-3 border border-blue-200 rounded-xl overflow-hidden">
+            {/* Header with explanation */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                <div>
+                  <h5 className="text-sm font-semibold text-blue-900">{t('bookings.depositExplainTitle')}</h5>
+                  <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">{t('bookings.depositExplainText')}</p>
+                </div>
+              </div>
             </div>
-          ) : (
-            <button
-              onClick={handleConfirmDeposit}
-              disabled={depositConfirming}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {depositConfirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-              {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.confirmDepositReceived')}
-            </button>
-          )}
-          {/* Send payment link button */}
-          {!depositAlreadyPaid && (
-            <div className="space-y-2">
-              {paymentLinkUrl ? (
-                <div className="flex items-center gap-2">
-                  <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border rounded-lg px-3 py-2 truncate" />
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }}
-                    className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
-                    title="Kopiëren"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-blue-100 text-blue-600" title="Openen">
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+
+            <div className="p-4 space-y-3">
+              {/* Deposit amount prominently displayed */}
+              <div className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100">
+                <span className="text-sm font-medium text-gray-700">{t('bookings.depositAmountToPay')}</span>
+                <span className="text-xl font-bold text-blue-700">{formatCurrency(Number(booking.deposit_amount))}</span>
+              </div>
+
+              {depositAlreadyPaid ? (
+                /* ── Deposit already paid ── */
+                <div className="flex items-center gap-2 bg-green-50 text-green-700 rounded-lg px-4 py-3">
+                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold">{t('bookings.depositAlreadyPaid')}</p>
+                    <p className="text-xs text-green-600">{t('bookings.paymentReceived')}</p>
+                  </div>
                 </div>
               ) : (
-                <button
-                  onClick={handleSendPaymentLink}
-                  disabled={sendingPaymentLink}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {sendingPaymentLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                  {sendingPaymentLink ? t('bookings.sendingPaymentLink') : t('bookings.sendPaymentLink')}
-                </button>
+                <>
+                  {/* ── Payment link input ── */}
+                  {paymentLinkUrl && linkSent && !editingLink ? (
+                    /* Link is set and sent */
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2.5">
+                        <RefreshCw className="w-4 h-4 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{t('bookings.paymentLinkActive')}</p>
+                          <p className="text-xs text-amber-600">{t('bookings.awaitingPayment')}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 truncate text-gray-600" />
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }}
+                          className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 cursor-pointer"
+                          title="Kopiëren"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-blue-100 text-blue-600" title="Openen">
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={() => setEditingLink(true)}
+                          className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 cursor-pointer"
+                        >
+                          {t('bookings.editLink')}
+                        </button>
+                      </div>
+                      {/* Check payment status */}
+                      <button
+                        onClick={handleCheckPaymentStatus}
+                        disabled={checkingPayment}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {checkingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                        {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
+                      </button>
+                    </div>
+                  ) : (
+                    /* Input for new/edited link */
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="url"
+                          value={manualLinkInput}
+                          onChange={(e) => setManualLinkInput(e.target.value)}
+                          placeholder={t('bookings.enterStripeLink')}
+                          className="flex-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={handleSaveManualLink}
+                          disabled={savingManualLink || !manualLinkInput.trim()}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {savingManualLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                          {savingManualLink ? t('bookings.savingLink') : t('bookings.saveAndSendLink')}
+                        </button>
+                        {editingLink && (
+                          <button
+                            onClick={() => { setEditingLink(false); setManualLinkInput(paymentLinkUrl || ''); }}
+                            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2 cursor-pointer"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Divider with OR */}
+                  <div className="flex items-center gap-3 py-1">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs text-gray-400 uppercase font-medium">of</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+
+                  {/* Auto-generate Stripe checkout */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={handleSendPaymentLink}
+                      disabled={sendingPaymentLink}
+                      className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {sendingPaymentLink ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
+                      {sendingPaymentLink ? t('bookings.sendingPaymentLink') : t('bookings.orGenerateAutoLink')}
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-3 py-1">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs text-gray-400 uppercase font-medium">of</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+
+                  {/* Manual confirm deposit (bank transfer etc) */}
+                  <button
+                    onClick={handleConfirmDeposit}
+                    disabled={depositConfirming}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {depositConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.manualConfirmDeposit')}
+                  </button>
+                </>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div>

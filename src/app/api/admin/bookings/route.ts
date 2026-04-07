@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity, getBookingById, getPaymentById, updatePaymentStripeId } from '@/lib/db';
+import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity, getBookingById, getPaymentById, updatePaymentStripeId, updatePaymentLink } from '@/lib/db';
 import { getStripe } from '@/lib/stripe';
 import { sendManualBookingEmail, sendPaymentLinkEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
@@ -195,7 +195,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { action, bookingId } = body;
 
-    if (action !== 'send-payment-link' || !bookingId) {
+    if (!bookingId || !['send-payment-link', 'save-payment-link'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action or missing bookingId' }, { status: 400 });
     }
 
@@ -204,6 +204,51 @@ export async function PUT(request: NextRequest) {
     if (!booking) {
       return NextResponse.json({ error: 'Boeking niet gevonden' }, { status: 404 });
     }
+
+    // ── Save manual payment link & send email ──
+    if (action === 'save-payment-link') {
+      const { paymentLink } = body;
+      if (!paymentLink) {
+        return NextResponse.json({ error: 'Missing paymentLink' }, { status: 400 });
+      }
+
+      // Find AANBETALING payment (any status)
+      const { sql } = await import('@vercel/postgres');
+      const paymentsResult = await sql`
+        SELECT * FROM payments WHERE booking_id = ${bookingId} AND type = 'AANBETALING' LIMIT 1
+      `;
+      const payment = paymentsResult.rows[0];
+      if (!payment) {
+        return NextResponse.json({ error: 'Geen aanbetaling gevonden' }, { status: 400 });
+      }
+
+      // Save the link on the payment record
+      await updatePaymentLink(payment.id, paymentLink);
+
+      // Send payment link email to customer
+      const customer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+      await sendPaymentLinkEmail(booking.guest_email, {
+        guestName: booking.guest_name,
+        reference: booking.reference,
+        depositAmount: Number(payment.amount),
+        paymentUrl: paymentLink,
+      }, customer?.locale);
+
+      // Log activity
+      logActivity({
+        actor: session.user,
+        role: session.role,
+        action: 'payment_link_sent',
+        entityType: 'booking',
+        entityId: booking.id,
+        entityLabel: booking.reference,
+        details: `Betaallink handmatig ingesteld en verstuurd naar ${booking.guest_email}`,
+      }).catch(() => {});
+
+      return NextResponse.json({ success: true });
+    }
+
+    // ── Auto-generate Stripe checkout session ──
 
     // Find OPENSTAAND deposit payment
     const { sql } = await import('@vercel/postgres');

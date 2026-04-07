@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
             await updatePaymentStripeId(paymentId, String(session.payment_intent));
           }
 
-          // Update booking status to BEVESTIGD when deposit is paid
+          // Update booking status to AANBETAALD when deposit is paid
           const paidPayment = await getPaymentById(paymentId);
           if (paidPayment?.type === 'AANBETALING') {
-            await updateBookingStatus(paidPayment.booking_id, 'BEVESTIGD');
+            await updateBookingStatus(paidPayment.booking_id, 'AANBETAALD');
           }
 
           // Send confirmation email
