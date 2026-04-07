@@ -26,6 +26,7 @@ import {
   Copy,
   ExternalLink,
   Info,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -838,6 +839,13 @@ export default function BookingenPage() {
           placeholder={t('bookings.dateTo')}
           className="px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
         />
+        <button
+          onClick={() => { fetchBookings(); }}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title="Refresh"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors"

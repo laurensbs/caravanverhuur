@@ -21,6 +21,7 @@ import {
   Zap,
   UserPlus,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -415,6 +416,11 @@ export default function AdminChatPage() {
               )}
             </h1>
             <div className="flex items-center gap-1.5">
+              <button onClick={() => fetchConversations()}
+                className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                title={isNl ? 'Vernieuwen' : 'Refresh'}>
+                <RefreshCw className="w-4 h-4" />
+              </button>
               {selectMode && selectedIds.size > 0 && (
                 <button
                   onClick={() => setDeleteConfirm('bulk')}

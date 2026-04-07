@@ -33,6 +33,7 @@ import {
   CreditCard,
   Key,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
 
 interface BorgItem {
@@ -337,13 +338,20 @@ export default function AdminBorgPage() {
           </h1>
           <p className="text-xs sm:text-sm text-muted mt-0.5 sm:mt-1">{t('deposit.subtitle')}</p>
         </div>
-        <button
-          onClick={() => setShowNewForm(!showNewForm)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
-        >
-          <Plus size={16} />
-          {t('deposit.newChecklist')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => fetchData()}
+            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+            title="Refresh">
+            <RefreshCw size={16} />
+          </button>
+          <button
+            onClick={() => setShowNewForm(!showNewForm)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
+          >
+            <Plus size={16} />
+            {t('deposit.newChecklist')}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

@@ -18,6 +18,7 @@ import {
   Filter,
   User,
   Shield,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 
@@ -190,6 +191,11 @@ export default function ActivityPage() {
               : `${total} activities tracked`}
           </p>
         </div>
+        <button onClick={() => fetchLog()}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title={locale === 'nl' ? 'Vernieuwen' : 'Refresh'}>
+          <RefreshCw size={16} />
+        </button>
       </div>
 
       {/* Filters */}

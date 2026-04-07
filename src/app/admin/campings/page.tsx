@@ -13,6 +13,7 @@ import {
   GripVertical,
   Eye,
   EyeOff,
+  RefreshCw,
   Pencil,
   Check,
   AlertTriangle,
@@ -366,6 +367,11 @@ export default function AdminCampingsPage() {
               {isNl ? 'Importeer standaard' : 'Import defaults'}
             </button>
           )}
+          <button onClick={() => { fetchCampings(); toast(isNl ? 'Vernieuwd' : 'Refreshed', 'success'); }}
+            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+            title={isNl ? 'Vernieuwen' : 'Refresh'}>
+            <RefreshCw size={16} />
+          </button>
           <button
             onClick={() => { resetForm(); setShowForm(true); }}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"

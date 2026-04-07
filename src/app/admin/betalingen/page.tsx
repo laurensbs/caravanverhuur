@@ -10,6 +10,7 @@ import {
   ArrowUpDown,
   Loader2,
   Download,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -42,16 +43,17 @@ export default function BetalingenPage() {
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
 
-  useEffect(() => {
-    fetch('/api/admin/caravans')
-      .then(res => res.json())
-      .then(data => setCustomCaravans(data.caravans || []))
-      .catch((e) => console.error('Fetch error:', e));
-    fetch('/api/payments')
-      .then(res => res.json())
-      .then(data => setPayments(data.payments || []))
-      .catch((e) => { console.error('Fetch error:', e); })
+  const fetchPayments = () => {
+    setLoading(true);
+    Promise.all([
+      fetch('/api/admin/caravans').then(res => res.json()).then(data => setCustomCaravans(data.caravans || [])),
+      fetch('/api/payments').then(res => res.json()).then(data => setPayments(data.payments || [])),
+    ]).catch((e) => console.error('Fetch error:', e))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchPayments();
   }, []);
 
   const handleMarkPaid = async (paymentId: string) => {
@@ -225,6 +227,11 @@ export default function BetalingenPage() {
             ))}
           </select>
         </div>
+        <button onClick={() => fetchPayments()}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title="Refresh">
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
         <input

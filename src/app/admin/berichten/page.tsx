@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Loader2,
   Send,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -182,12 +183,16 @@ export default function BerichtenPage() {
   const [statusFilter, setStatusFilter] = useState<ContactStatus | 'ALLE'>('ALLE');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchContacts = () => {
     fetch('/api/contacts')
       .then((res) => res.json())
       .then((data) => setContacts(data.contacts || []))
       .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchContacts();
   }, []);
 
   const handleUpdate = (updated: ContactSubmission) => {
@@ -272,6 +277,11 @@ export default function BerichtenPage() {
             ))}
           </select>
         </div>
+        <button onClick={() => fetchContacts()}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title="Refresh">
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       <p className="text-xs text-muted">

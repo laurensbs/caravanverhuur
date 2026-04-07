@@ -5,7 +5,7 @@ import Image from "next/image";
 import {
   Search, Users, Calendar, CheckCircle2, Wrench, CalendarCheck, ChevronDown, ChevronUp,
   Loader2, XCircle, Power, Plus, Pencil, Trash2, X, Check, ImagePlus, Camera,
-  AlertTriangle, RotateCcw, Video, ChevronLeft, ChevronRight,
+  AlertTriangle, RotateCcw, Video, ChevronLeft, ChevronRight, RefreshCw,
 } from "lucide-react";
 import { useAdmin } from "@/i18n/admin-context";
 import { useToast } from "@/components/AdminToast";
@@ -672,10 +672,17 @@ export default function CaravansAdminPage() {
           <h1 className="text-xl font-bold text-foreground">{t("caravans.title")}</h1>
           <p className="text-sm text-muted">{totalCaravans} caravan{totalCaravans !== 1 ? "s" : ""} {t("caravans.inTotal")}</p>
         </div>
-        <button onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">
-          <Plus size={18} />{t("caravans.newCaravan")}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => fetchCaravans()}
+            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+            title="Refresh">
+            <RefreshCw size={18} />
+          </button>
+          <button onClick={() => setShowNewModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">
+            <Plus size={18} />{t("caravans.newCaravan")}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

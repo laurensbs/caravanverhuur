@@ -23,6 +23,7 @@ import {
   ArrowRight,
   Shield,
   ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '@/i18n/admin-context';
@@ -678,6 +679,11 @@ export default function PlanningPage() {
           <button onClick={() => setShowDone(!showDone)}
             className={`px-3 py-2 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${showDone ? 'bg-primary text-white border-primary' : 'bg-white text-muted border-gray-200 hover:bg-gray-50'}`}>
             <Filter className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={() => fetchData()}
+            className="px-3 py-2 rounded-xl text-xs font-medium border border-gray-200 bg-white text-muted hover:text-primary transition-colors cursor-pointer"
+            title={isNl ? 'Vernieuwen' : 'Refresh'}>
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
