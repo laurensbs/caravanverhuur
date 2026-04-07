@@ -932,29 +932,29 @@ function AdminLayoutInner({
         <div className={`${sidebarOpen ? 'px-4 lg:px-5' : 'px-2'} pt-3 pb-1 lg:pt-4 lg:pb-2`}>
           <div className="flex items-center justify-between">
             {sidebarOpen ? (
-              <Image
-                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                alt="Caravanverhuur Costa Brava"
-                width={200}
-                height={56}
-                className="w-32 lg:w-40 h-auto"
-              />
-            ) : !isMobile ? (
-              <Image
-                src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                alt="Caravanverhuur Costa Brava"
-                width={200}
-                height={56}
-                className="w-8 h-8 object-contain"
-              />
-            ) : null}
-            {sidebarOpen && (
+              <>
+                <Image
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                  alt="Caravanverhuur Costa Brava"
+                  width={200}
+                  height={56}
+                  className="w-32 lg:w-40 h-auto"
+                />
+                <button
+                  onClick={toggleSidebar}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer"
+                  title="Sidebar sluiten"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </>
+            ) : (
               <button
                 onClick={toggleSidebar}
-                className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer"
-                title="Sidebar sluiten"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer mx-auto"
+                title="Sidebar openen"
               >
-                <ChevronLeft size={18} />
+                <ChevronRight size={18} />
               </button>
             )}
           </div>
