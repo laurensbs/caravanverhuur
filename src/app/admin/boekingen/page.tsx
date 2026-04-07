@@ -434,7 +434,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                 <div>
                   <p className="font-medium text-foreground">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
                   <p className="text-xs text-muted">
-                    {p.method === 'ideal' ? 'iDEAL/Wero' : p.method === 'stripe' ? 'iDEAL/Wero' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
+                    {p.method === 'ideal' || p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
                     {p.stripe_id && ` (${p.stripe_id})`}
                   </p>
                   {p.paid_at && <p className="text-xs text-primary">{t('bookings.paidOn', { date: formatDateTime(p.paid_at) })}</p>}
@@ -449,15 +449,18 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
-          <select
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
-            className="w-full px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s.replace('_', ' ')}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getStatusColor(newStatus).split(' ').filter(c => c.startsWith('bg-')).join(' ')}`} />
+            <select
+              value={newStatus}
+              onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
+              className="flex-1 px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s.replace('_', ' ')}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div>
           <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>

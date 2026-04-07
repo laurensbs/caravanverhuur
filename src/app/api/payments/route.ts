@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken } from '@/lib/db';
-import { sendPaymentConfirmationEmail } from '@/lib/email';
+import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken, updatePaymentLink, updatePaymentReminderSent, getPaymentById } from '@/lib/db';
+import { sendPaymentConfirmationEmail, sendPaymentReminderEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
   try {
@@ -113,5 +113,54 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('PATCH /api/payments error:', error);
     return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const body = await request.json();
+    const { id, action, paymentLink } = body;
+
+    if (!id) return NextResponse.json({ error: 'Missing payment id' }, { status: 400 });
+
+    if (action === 'update-link') {
+      await updatePaymentLink(id, paymentLink || '');
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'send-reminder') {
+      const payment = await getPaymentById(id);
+      if (!payment) return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+
+      const booking = await getBookingById(payment.booking_id);
+      if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+
+      const customer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+      const daysUntil = Math.max(0, Math.ceil((new Date(booking.check_in).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+
+      await sendPaymentReminderEmail({
+        to: booking.guest_email,
+        guestName: booking.guest_name,
+        reference: booking.reference,
+        caravanName: '',
+        campingName: '',
+        checkIn: booking.check_in,
+        amount: parseFloat(payment.amount),
+        daysUntil,
+      }, customer?.locale);
+
+      await updatePaymentReminderSent(id);
+      return NextResponse.json({ success: true, reminderSentAt: new Date().toISOString() });
+    }
+
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (error) {
+    console.error('PUT /api/payments error:', error);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

@@ -389,6 +389,15 @@ export const translations: Record<AdminLocale, Dict> = {
       holdedUnmarked: 'Holded markering verwijderd',
       holdedMarkInvoice: 'Markeer als gefactureerd in Holded',
       holdedMarkedOn: 'Gefactureerd op',
+      paymentLink: 'Betaallink',
+      linkCopied: 'Link gekopieerd!',
+      reminder: 'Herinnering',
+      sendReminder: 'Verzend herinnering',
+      sendAgain: 'Opnieuw verzenden',
+      reminderSent: 'Betaalherinnering verstuurd!',
+      reminderSentOn: 'Verstuurd op',
+      invoiceCreated: 'Gefactureerd',
+      markInvoiceCreated: 'Markeer gefactureerd',
     },
 
     /* ── messages page ──────────────────── */
@@ -1136,6 +1145,15 @@ export const translations: Record<AdminLocale, Dict> = {
       holdedUnmarked: 'Holded marking removed',
       holdedMarkInvoice: 'Mark as invoiced in Holded',
       holdedMarkedOn: 'Invoiced on',
+      paymentLink: 'Payment link',
+      linkCopied: 'Link copied!',
+      reminder: 'Reminder',
+      sendReminder: 'Send reminder',
+      sendAgain: 'Send again',
+      reminderSent: 'Payment reminder sent!',
+      reminderSentOn: 'Sent on',
+      invoiceCreated: 'Invoiced',
+      markInvoiceCreated: 'Mark invoiced',
     },
 
     messages: {

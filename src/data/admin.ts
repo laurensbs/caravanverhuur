@@ -74,6 +74,8 @@ export interface Payment {
   holded_status?: HoldedStatus;
   holded_invoice_id?: string;
   holded_marked_at?: string;
+  payment_link?: string;
+  reminder_sent_at?: string;
   // Joined fields from getAllPayments
   guest_name?: string;
   booking_ref?: string;

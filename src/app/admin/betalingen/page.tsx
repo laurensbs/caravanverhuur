@@ -12,6 +12,11 @@ import {
   Download,
   RefreshCw,
   FileText,
+  ChevronDown,
+  Link2,
+  Send,
+  ExternalLink,
+  Copy,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -45,6 +50,10 @@ export default function BetalingenPage() {
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
   const [holdedUpdating, setHoldedUpdating] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [linkInput, setLinkInput] = useState<Record<string, string>>({});
+  const [savingLink, setSavingLink] = useState<string | null>(null);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
 
   const fetchPayments = () => {
     setLoading(true);
@@ -133,6 +142,40 @@ export default function BetalingenPage() {
       toast(t('common.actionFailed'), 'error');
     }
     setHoldedUpdating(null);
+  };
+
+  const handleSavePaymentLink = async (paymentId: string) => {
+    const link = linkInput[paymentId] ?? '';
+    setSavingLink(paymentId);
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentId, action: 'update-link', paymentLink: link }),
+      });
+      if (res.ok) {
+        setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, payment_link: link } : p));
+        toast(t('common.saved'), 'success');
+      } else { toast(t('common.actionFailed'), 'error'); }
+    } catch { toast(t('common.actionFailed'), 'error'); }
+    setSavingLink(null);
+  };
+
+  const handleSendReminder = async (paymentId: string) => {
+    setSendingReminder(paymentId);
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentId, action: 'send-reminder' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, reminder_sent_at: data.reminderSentAt } : p));
+        toast(t('payments.reminderSent'), 'success');
+      } else { toast(t('common.actionFailed'), 'error'); }
+    } catch { toast(t('common.actionFailed'), 'error'); }
+    setSendingReminder(null);
   };
 
   const getCaravanName = (caravanId?: string) => {
@@ -304,7 +347,18 @@ export default function BetalingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-1">{t('payments.date')}</div> <div className="col-span-1">Holded</div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> {payment.stripe_id && <p className="text-[10px] text-muted/60 font-mono truncate" title={payment.stripe_id}>{payment.stripe_id}</p>} </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
+        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-1">{t('payments.date')}</div> <div className="col-span-1"></div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="border-b border-gray-50 last:border-0">
+              <div
+                className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors cursor-pointer"
+                onClick={() => setExpandedId(expandedId === payment.id ? null : payment.id)}
+              >
+                <div className="col-span-3">
+                  <p className="text-sm font-medium text-foreground">{payment.guest_name}</p>
+                  <p className="text-xs text-muted">{payment.booking_ref}</p>
+                  {payment.stripe_id && <p className="text-[10px] text-muted/60 font-mono truncate" title={payment.stripe_id}>{payment.stripe_id}</p>}
+                </div>
+                <div className="col-span-2">
+                  <span className="text-sm text-foreground">{ts(payment.type)}</span>
               </div>
 
               <div className="col-span-2">
@@ -313,7 +367,7 @@ export default function BetalingenPage() {
                 </span>
               </div>
 
-              <div className="col-span-2 flex items-center gap-2">
+              <div className="col-span-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <span
                   className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(payment.status)}`}
                 >
@@ -323,7 +377,7 @@ export default function BetalingenPage() {
                   <button
                     onClick={() => handleMarkPaid(payment.id)}
                     disabled={updatingId === payment.id}
-                    className="text-xs text-primary-dark bg-primary-50 hover:bg-primary-50 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                    className="text-xs text-white bg-green-600 hover:bg-green-700 px-2.5 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
                   >
                     {updatingId === payment.id ? '...' : t('payments.markPaid')}
                   </button>
@@ -358,42 +412,118 @@ export default function BetalingenPage() {
 
               <div className="col-span-1">
                 <span className="text-xs text-muted">
-                  {payment.method === 'ideal' ? 'iDEAL/Wero' : payment.method === 'stripe' ? 'iDEAL/Wero' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
+                  {payment.method === 'ideal' || payment.method === 'stripe' ? 'Stripe' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
                 </span>
               </div>
 
               <div className="col-span-1">
                 <p className="text-xs text-muted">{formatDateTime(payment.created_at)}</p>
                 {payment.paid_at && (
-                  <p className="text-xs text-primary">✓ {formatDateTime(payment.paid_at)}</p>
+                  <p className="text-xs text-green-600">✓ {formatDateTime(payment.paid_at)}</p>
                 )}
               </div>
 
-              <div className="col-span-1">
-                {payment.status === 'BETAALD' ? (
-                  <button
-                    onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
-                    disabled={holdedUpdating === payment.id}
-                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
-                      payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                    title={payment.holded_status === 'HANDMATIG' && payment.holded_marked_at
-                      ? `${t('payments.holdedMarkedOn')} ${formatDateTime(payment.holded_marked_at)}`
-                      : t('payments.holdedMarkInvoice')}
-                  >
-                    <FileText size={12} />
-                    {holdedUpdating === payment.id
-                      ? '...'
-                      : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                        ? '✓'
-                        : t('payments.holdedInvoice')}
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-muted">—</span>
-                )}
+              <div className="col-span-1 flex items-center justify-end">
+                <ChevronDown size={16} className={`text-muted transition-transform ${expandedId === payment.id ? 'rotate-180' : ''}`} />
               </div>
+              </div>
+
+              {/* Expanded detail panel */}
+              {expandedId === payment.id && (
+                <div className="px-3 sm:px-5 pb-4 pt-1 bg-surface/50 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Payment link */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
+                        <Link2 size={10} /> {t('payments.paymentLink')}
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={linkInput[payment.id] ?? payment.payment_link ?? ''}
+                          onChange={(e) => setLinkInput(prev => ({ ...prev, [payment.id]: e.target.value }))}
+                          placeholder="https://..."
+                          className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 truncate"
+                        />
+                        <button
+                          onClick={() => handleSavePaymentLink(payment.id)}
+                          disabled={savingLink === payment.id}
+                          className="px-2 py-1.5 bg-primary text-white rounded-lg text-[10px] font-medium hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {savingLink === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('common.save')}
+                        </button>
+                        {payment.payment_link && (
+                          <>
+                            <button onClick={() => { navigator.clipboard.writeText(payment.payment_link!); toast(t('payments.linkCopied'), 'success'); }}
+                              className="p-1.5 rounded-lg hover:bg-white text-muted" title="Kopiëren"><Copy size={12} /></button>
+                            <a href={payment.payment_link} target="_blank" rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg hover:bg-white text-muted" title="Openen"><ExternalLink size={12} /></a>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Reminder */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
+                        <Send size={10} /> {t('payments.reminder')}
+                      </label>
+                      {payment.reminder_sent_at ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-green-700 bg-green-50 px-2.5 py-1.5 rounded-lg">
+                            ✓ {t('payments.reminderSentOn')} {formatDateTime(payment.reminder_sent_at)}
+                          </span>
+                          <button
+                            onClick={() => handleSendReminder(payment.id)}
+                            disabled={sendingReminder === payment.id}
+                            className="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
+                          >
+                            {sendingReminder === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('payments.sendAgain')}
+                          </button>
+                        </div>
+                      ) : payment.status === 'OPENSTAAND' ? (
+                        <button
+                          onClick={() => handleSendReminder(payment.id)}
+                          disabled={sendingReminder === payment.id}
+                          className="flex items-center gap-1.5 text-xs text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
+                        >
+                          {sendingReminder === payment.id ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                          {t('payments.sendReminder')}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
+                    </div>
+
+                    {/* Holded invoice */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
+                        <FileText size={10} /> Holded {t('payments.holdedInvoice')}
+                      </label>
+                      {payment.status === 'BETAALD' ? (
+                        <button
+                          onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
+                          disabled={holdedUpdating === payment.id}
+                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium ${
+                            payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                              ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          }`}
+                        >
+                          <FileText size={12} />
+                          {holdedUpdating === payment.id
+                            ? '...'
+                            : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                              ? `✓ ${t('payments.invoiceCreated')}${payment.holded_marked_at ? ` — ${formatDateTime(payment.holded_marked_at)}` : ''}`
+                              : t('payments.markInvoiceCreated')}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

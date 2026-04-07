@@ -526,6 +526,12 @@ export async function setupDatabase() {
     await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS holded_marked_at TIMESTAMP`;
   } catch { /* columns already exist */ }
 
+  // Migration: add payment_link and reminder tracking to payments
+  try {
+    await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_link TEXT`;
+    await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP`;
+  } catch { /* columns already exist */ }
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -732,6 +738,18 @@ export async function updatePaymentHoldedStatus(id: string, holdedStatus: string
         holded_invoice_id = ${holdedInvoiceId || null},
         holded_marked_at = NOW()
     WHERE id = ${id}
+  `;
+}
+
+export async function updatePaymentLink(id: string, paymentLink: string) {
+  await sql`
+    UPDATE payments SET payment_link = ${paymentLink} WHERE id = ${id}
+  `;
+}
+
+export async function updatePaymentReminderSent(id: string) {
+  await sql`
+    UPDATE payments SET reminder_sent_at = NOW() WHERE id = ${id}
   `;
 }
 
