@@ -19,6 +19,8 @@ import {
   FileText,
   Sparkles,
   Zap,
+  UserPlus,
+  X,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -48,6 +50,13 @@ interface ChatMessage {
   role: 'user' | 'bot' | 'staff';
   message: string;
   created_at: string;
+}
+
+interface CustomerResult {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
 }
 
 /* ── Component ────────────────────────────────── */
@@ -226,10 +235,17 @@ export default function AdminChatPage() {
   };
 
   const handleBulkDelete = async () => {
-    for (const id of selectedIds) {
-      try { await fetch(`/api/admin/chat?id=${id}`, { method: 'DELETE' }); } catch { /* skip */ }
+    try {
+      const res = await fetch('/api/admin/chat?action=bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      const data = await res.json();
+      toast(isNl ? `${data.deleted || selectedIds.size} gesprek(ken) verwijderd` : `${data.deleted || selectedIds.size} conversation(s) deleted`, 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
     }
-    toast(t('common.deleted'), 'success');
     setSelectedIds(new Set());
     setSelectMode(false);
     setDeleteConfirm(null);
@@ -238,6 +254,63 @@ export default function AdminChatPage() {
       setActiveConv(null);
       setMessages([]);
     }
+  };
+
+  const handleDeleteAllClosed = async () => {
+    try {
+      const res = await fetch('/api/admin/chat?action=closed', { method: 'DELETE' });
+      const data = await res.json();
+      toast(isNl ? `${data.deleted || 0} gesloten gesprek(ken) verwijderd` : `${data.deleted || 0} closed conversation(s) deleted`, 'success');
+      fetchConversations();
+      if (activeConv && activeConv.status === 'CLOSED') {
+        setActiveConv(null);
+        setMessages([]);
+      }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setDeleteConfirm(null);
+  };
+
+  /* ── Customer Linking ────────────── */
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerResults, setCustomerResults] = useState<CustomerResult[]>([]);
+  const [searchingCustomers, setSearchingCustomers] = useState(false);
+  const [linking, setLinking] = useState(false);
+
+  const searchCustomers = async (q: string) => {
+    setCustomerSearch(q);
+    if (q.length < 2) { setCustomerResults([]); return; }
+    setSearchingCustomers(true);
+    try {
+      const res = await fetch(`/api/admin/chat?action=searchCustomers&q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setCustomerResults(data.customers || []);
+    } catch { setCustomerResults([]); }
+    setSearchingCustomers(false);
+  };
+
+  const handleLinkCustomer = async (customerId: string) => {
+    if (!activeConv) return;
+    setLinking(true);
+    try {
+      await fetch('/api/admin/chat', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId: activeConv.id, customerId }),
+      });
+      toast(isNl ? 'Klant gekoppeld' : 'Customer linked', 'success');
+      setShowLinkModal(false);
+      setCustomerSearch('');
+      setCustomerResults([]);
+      // Update activeConv to show link
+      setActiveConv({ ...activeConv, customer_id: customerId });
+      fetchConversations();
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setLinking(false);
   };
 
   // Close modals on Escape
@@ -394,15 +467,42 @@ export default function AdminChatPage() {
                     {isNl ? 'Annuleer' : 'Cancel'}
                   </button>
                 </div>
+              ) : deleteConfirm === 'all-closed' ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleDeleteAllClosed}
+                    className="px-2.5 py-1 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                  >
+                    {isNl ? 'Bevestigen' : 'Confirm'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(null)}
+                    className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    {isNl ? 'Annuleer' : 'Cancel'}
+                  </button>
+                </div>
               ) : (
-                <button
-                  onClick={() => setCleanupConfirm(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                  title={isNl ? 'Oude chats opschonen (30+ dagen)' : 'Clean up old chats (30+ days)'}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {isNl ? 'Opschonen' : 'Cleanup'}
-                </button>
+                <div className="flex items-center gap-1">
+                  {conversations.some(c => c.status === 'CLOSED') && (
+                    <button
+                      onClick={() => setDeleteConfirm('all-closed')}
+                      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title={isNl ? 'Alle gesloten chats verwijderen' : 'Delete all closed chats'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {isNl ? 'Gesloten' : 'Closed'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setCleanupConfirm(true)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    title={isNl ? 'Oude chats opschonen (30+ dagen)' : 'Clean up old chats (30+ days)'}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {isNl ? 'Opschonen' : 'Cleanup'}
+                  </button>
+                </div>
               )}
               </div>
             </div>
@@ -571,6 +671,65 @@ export default function AdminChatPage() {
         </div>
       )}
 
+      {/* Link customer modal */}
+      {showLinkModal && activeConv && (
+        <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4" onClick={() => setShowLinkModal(false)}>
+          <div className="bg-white rounded-xl shadow-xl p-5 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-primary" />
+                {isNl ? 'Koppel aan klant' : 'Link to customer'}
+              </h3>
+              <button onClick={() => setShowLinkModal(false)} className="p-1 text-gray-400 hover:text-gray-600 rounded cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={customerSearch}
+                onChange={e => searchCustomers(e.target.value)}
+                placeholder={isNl ? 'Zoek op naam of e-mail...' : 'Search by name or email...'}
+                className="w-full pl-9 pr-3 py-2 bg-gray-50 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none border border-gray-200"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-48 overflow-y-auto">
+              {searchingCustomers ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                </div>
+              ) : customerResults.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">
+                  {customerSearch.length < 2
+                    ? (isNl ? 'Typ minstens 2 tekens...' : 'Type at least 2 characters...')
+                    : (isNl ? 'Geen klanten gevonden' : 'No customers found')}
+                </p>
+              ) : (
+                customerResults.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => handleLinkCustomer(c.id)}
+                    disabled={linking}
+                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-lg flex items-center gap-3 transition-colors cursor-pointer"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+                      {c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : c.email[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{c.name || '—'}</p>
+                      <p className="text-xs text-gray-500 truncate">{c.email}</p>
+                    </div>
+                    <Link2 className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Main: Chat View ── */}
       <div className={`${activeConv ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white`}>
         {activeConv ? (
@@ -601,11 +760,20 @@ export default function AdminChatPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {activeConv.customer_id && (
+                {activeConv.customer_id ? (
                   <span className="px-2 py-1 text-[10px] font-medium bg-green-50 text-green-700 rounded-full flex items-center gap-1">
                     <Link2 className="w-3 h-3" />
                     {isNl ? 'Klant' : 'Customer'}
                   </span>
+                ) : (
+                  <button
+                    onClick={() => { setShowLinkModal(true); setCustomerSearch(''); setCustomerResults([]); }}
+                    className="px-2.5 py-1.5 text-[10px] font-medium bg-amber-50 text-amber-700 rounded-full flex items-center gap-1 hover:bg-amber-100 transition-colors cursor-pointer"
+                    title={isNl ? 'Koppel aan klant' : 'Link to customer'}
+                  >
+                    <UserPlus className="w-3 h-3" />
+                    {isNl ? 'Koppel klant' : 'Link customer'}
+                  </button>
                 )}
                 {activeConv.status === 'ACTIVE' && (
                   <button

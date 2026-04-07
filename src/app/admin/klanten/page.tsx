@@ -48,6 +48,14 @@ interface ChatHistory {
   last_message: string | null;
 }
 
+interface ChatHistoryMessage {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'bot' | 'staff';
+  message: string;
+  created_at: string;
+}
+
 type ModalType = 'create' | 'edit' | 'delete' | null;
 
 export default function AdminKlanten() {
@@ -96,6 +104,9 @@ export default function AdminKlanten() {
   }, [modal, detailCustomer]);
   const [customerChats, setCustomerChats] = useState<ChatHistory[]>([]);
   const [loadingChats, setLoadingChats] = useState(false);
+  const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatHistoryMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -116,6 +127,8 @@ export default function AdminKlanten() {
   const openCustomerDetail = async (customer: Customer) => {
     setDetailCustomer(customer);
     setLoadingChats(true);
+    setExpandedChatId(null);
+    setChatMessages([]);
     try {
       const res = await fetch(`/api/admin/customers?action=chats&customerId=${customer.id}`);
       const data = await res.json();
@@ -124,6 +137,25 @@ export default function AdminKlanten() {
       setCustomerChats([]);
     } finally {
       setLoadingChats(false);
+    }
+  };
+
+  const toggleExpandChat = async (chatId: string) => {
+    if (expandedChatId === chatId) {
+      setExpandedChatId(null);
+      setChatMessages([]);
+      return;
+    }
+    setExpandedChatId(chatId);
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`/api/admin/chat?action=messages&id=${chatId}`);
+      const data = await res.json();
+      setChatMessages(data.messages || []);
+    } catch {
+      setChatMessages([]);
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -544,29 +576,41 @@ export default function AdminKlanten() {
                 ) : (
                   <div className="space-y-2">
                     {customerChats.map(chat => (
-                      <div key={chat.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100 hover:border-gray-200 transition-colors">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                                chat.status === 'CLOSED' ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'
-                              }`}>
-                                {chat.status === 'CLOSED' ? (isNl ? 'Gesloten' : 'Closed') : (isNl ? 'Actief' : 'Active')}
-                              </span>
-                              <span className="text-[10px] text-gray-400">
-                                {new Date(chat.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </span>
-                              <span className="text-[10px] text-gray-400">
-                                {chat.message_count} {isNl ? 'berichten' : 'messages'}
-                              </span>
+                      <div key={chat.id} className="bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors overflow-hidden">
+                        <button
+                          onClick={() => toggleExpandChat(chat.id)}
+                          className="w-full text-left px-3 py-3 cursor-pointer"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                                  chat.status === 'CLOSED' ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'
+                                }`}>
+                                  {chat.status === 'CLOSED' ? (isNl ? 'Gesloten' : 'Closed') : (isNl ? 'Actief' : 'Active')}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                  {new Date(chat.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                  {chat.message_count} {isNl ? 'berichten' : 'messages'}
+                                </span>
+                              </div>
+                              {chat.last_message && (
+                                <p className="text-xs text-gray-500 mt-1.5 truncate">
+                                  {chat.last_message}
+                                </p>
+                              )}
                             </div>
-                            {chat.last_message && (
-                              <p className="text-xs text-gray-500 mt-1.5 truncate">
-                                {chat.last_message}
-                              </p>
-                            )}
+                            <ChevronRight size={14} className={`text-gray-300 mt-1 shrink-0 transition-transform ${expandedChatId === chat.id ? 'rotate-90' : ''}`} />
+                          </div>
+                        </button>
+
+                        {/* Expanded messages */}
+                        {expandedChatId === chat.id && (
+                          <div className="border-t border-gray-100">
                             {chat.summary && (
-                              <div className="mt-2 bg-white rounded-lg p-2.5 border border-gray-100">
+                              <div className="mx-3 mt-2 bg-white rounded-lg p-2.5 border border-gray-100">
                                 <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-400 mb-1 flex items-center gap-1">
                                   <FileText size={10} />
                                   {isNl ? 'Samenvatting' : 'Summary'}
@@ -574,9 +618,37 @@ export default function AdminKlanten() {
                                 <p className="text-xs text-gray-600 whitespace-pre-line leading-relaxed">{chat.summary}</p>
                               </div>
                             )}
+                            <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                              {loadingMessages ? (
+                                <div className="flex items-center justify-center py-4">
+                                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                </div>
+                              ) : chatMessages.length === 0 ? (
+                                <p className="text-xs text-gray-400 text-center py-3">{isNl ? 'Geen berichten' : 'No messages'}</p>
+                              ) : (
+                                chatMessages.map(msg => (
+                                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+                                    <div className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
+                                      msg.role === 'user'
+                                        ? 'bg-white text-gray-800 border border-gray-100'
+                                        : msg.role === 'staff'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'bg-gray-100 text-gray-500 italic'
+                                    }`}>
+                                      <p className="text-[10px] font-medium mb-0.5 opacity-60">
+                                        {msg.role === 'user' ? (isNl ? 'Klant' : 'Customer') : msg.role === 'staff' ? (isNl ? 'Medewerker' : 'Staff') : 'Bot'}
+                                      </p>
+                                      <p className="whitespace-pre-line leading-relaxed">{msg.message}</p>
+                                      <p className="text-[9px] opacity-40 mt-1">
+                                        {new Date(msg.created_at).toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
                           </div>
-                          <ChevronRight size={14} className="text-gray-300 mt-1 shrink-0" />
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -8,14 +8,34 @@ import {
   updateChatSummary,
   setupDatabase,
   logActivity,
+  bulkDeleteChatConversations,
+  deleteClosedChatConversations,
+  linkChatToCustomer,
+  getChatMessagesByConversationId,
+  searchCustomersSimple,
 } from '@/lib/db';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 
-// GET: List all conversations or get one by ?id=...
+// GET: List all conversations, get one by ?id=..., get messages, or search customers
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const action = searchParams.get('action');
+
+    // Search customers for linking
+    if (action === 'searchCustomers') {
+      const q = searchParams.get('q') || '';
+      if (q.length < 2) return NextResponse.json({ customers: [] });
+      const customers = await searchCustomersSimple(q);
+      return NextResponse.json({ customers });
+    }
+
+    // Get messages for a conversation (used by customer detail panel)
+    if (action === 'messages' && id) {
+      const messages = await getChatMessagesByConversationId(id);
+      return NextResponse.json({ messages });
+    }
 
     if (id) {
       const conversation = await getChatConversation(id);
@@ -65,14 +85,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: Update conversation status or summary
+// PATCH: Update conversation status, summary, or link to customer
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { conversationId, status, assignedTo, summary } = body;
+    const { conversationId, status, assignedTo, summary, customerId } = body;
 
     if (!conversationId) {
       return NextResponse.json({ error: 'Missing conversationId' }, { status: 400 });
+    }
+
+    if (customerId !== undefined) {
+      await linkChatToCustomer(conversationId, customerId);
+      logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'chat_linked_customer', entityType: 'chat', entityId: conversationId, entityLabel: `Chat #${conversationId}` }).catch(() => {});
     }
 
     if (summary !== undefined) {
@@ -90,11 +115,29 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE: Delete a chat conversation
+// DELETE: Delete a chat conversation, bulk delete, or delete all closed
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const action = searchParams.get('action');
+
+    // Bulk delete by IDs (POST body)
+    if (action === 'bulk') {
+      const body = await request.json();
+      const ids: string[] = body.ids || [];
+      if (ids.length === 0) return NextResponse.json({ error: 'No IDs provided' }, { status: 400 });
+      const deleted = await bulkDeleteChatConversations(ids);
+      logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'chat_bulk_deleted', entityType: 'chat', entityId: 'bulk', entityLabel: `${deleted} chats`, details: `Deleted ${deleted} conversations` }).catch(() => {});
+      return NextResponse.json({ success: true, deleted });
+    }
+
+    // Delete all closed conversations
+    if (action === 'closed') {
+      const deleted = await deleteClosedChatConversations();
+      logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'chat_closed_deleted', entityType: 'chat', entityId: 'closed', entityLabel: `${deleted} closed chats`, details: `Deleted ${deleted} closed conversations` }).catch(() => {});
+      return NextResponse.json({ success: true, deleted });
+    }
 
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });

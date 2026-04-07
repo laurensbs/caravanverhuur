@@ -1836,6 +1836,44 @@ export async function deleteOldChatConversations(daysOld: number) {
   return result.rows.length;
 }
 
+export async function bulkDeleteChatConversations(ids: string[]) {
+  if (ids.length === 0) return 0;
+  // Delete in chunks to avoid parameter limits
+  let deleted = 0;
+  for (const id of ids) {
+    await sql`DELETE FROM chat_conversations WHERE id = ${id}`;
+    deleted++;
+  }
+  return deleted;
+}
+
+export async function deleteClosedChatConversations() {
+  const result = await sql`
+    DELETE FROM chat_conversations WHERE status = 'CLOSED' RETURNING id
+  `;
+  return result.rows.length;
+}
+
+export async function getChatMessagesByConversationId(conversationId: string) {
+  const result = await sql`
+    SELECT id, conversation_id, role, message, created_at
+    FROM chat_messages
+    WHERE conversation_id = ${conversationId}
+    ORDER BY created_at ASC
+  `;
+  return result.rows;
+}
+
+export async function searchCustomersSimple(query: string) {
+  const q = `%${query}%`;
+  const result = await sql`
+    SELECT id, email, name, phone FROM customers
+    WHERE LOWER(email) LIKE LOWER(${q}) OR LOWER(name) LIKE LOWER(${q})
+    LIMIT 10
+  `;
+  return result.rows;
+}
+
 export async function getCustomerByEmailSimple(email: string) {
   const result = await sql`SELECT id, email, name, phone FROM customers WHERE LOWER(email) = LOWER(${email})`;
   return result.rows[0] || null;
