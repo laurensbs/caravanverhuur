@@ -268,6 +268,7 @@ export default function Header() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5">
             <Link href="/" className={navCls('/')}>{t('nav.home')}</Link>
+            <Link href="/caravans" className={navCls('/caravans')}>{t('nav.caravans')}</Link>
 
             <div className="relative h-full flex items-center" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
@@ -443,6 +444,10 @@ export default function Header() {
               <div className="space-y-0.5">
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }}>
                   <MobLink href="/" label={t('nav.home')} on={active('/') && pathname === '/'} close={() => setMenuOpen(false)} />
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 }}>
+                  <MobLink href="/caravans" label={t('nav.caravans')} on={active('/caravans')} close={() => setMenuOpen(false)} />
                 </motion.div>
 
                 {/* Bestemmingen — link + expandable chevron */}
