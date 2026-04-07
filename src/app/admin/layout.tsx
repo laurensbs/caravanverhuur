@@ -40,6 +40,7 @@ import {
   Percent,
   Truck,
   Menu,
+  ChevronDown,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -864,6 +865,8 @@ function AdminLayoutInner({
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   // Notification sound via Web Audio API
   const playNotificationSound = useCallback(() => {
@@ -1090,6 +1093,17 @@ function AdminLayoutInner({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Close user dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   // Keyboard shortcut: Cmd/Ctrl+K to focus search
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1194,7 +1208,7 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border ${
+        className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border overflow-x-hidden ${
           isMobile
             ? `w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
             : sidebarOpen ? 'w-64' : 'w-16'
@@ -1300,22 +1314,7 @@ function AdminLayoutInner({
 
         <div className="p-2 border-t border-border space-y-1">
           {sidebarOpen ? (
-            /* Compact row: NL/EN + Website + Logout */
             <div className="flex items-center gap-1 px-2">
-              <div className="flex bg-gray-200/60 rounded-lg p-0.5">
-                <button
-                  onClick={() => setLocale('nl')}
-                  className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'nl' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
-                >
-                  NL
-                </button>
-                <button
-                  onClick={() => setLocale('en')}
-                  className={`px-2 text-[11px] font-medium py-1 rounded-md transition-all cursor-pointer ${locale === 'en' ? 'bg-white text-foreground shadow-sm' : 'text-gray-500 hover:text-foreground'}`}
-                >
-                  EN
-                </button>
-              </div>
               <a
                 href={mainSiteUrl}
                 target="_blank"
@@ -1325,35 +1324,9 @@ function AdminLayoutInner({
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{t('nav.viewWebsite')}</span>
               </a>
-              <button
-                onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                title={t('auth.changePassword')}
-              >
-                <Lock className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
-                title={t('nav.logout')}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
             </div>
           ) : !isMobile ? (
-            /* Collapsed: icon-only column */
             <div className="flex flex-col items-center gap-1">
-              <div className="relative group">
-                <button
-                  onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
-                >
-                  {locale === 'nl' ? 'EN' : 'NL'}
-                </button>
-                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
-                  {locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
-                </div>
-              </div>
               <div className="relative group">
                 <a
                   href={mainSiteUrl}
@@ -1365,28 +1338,6 @@ function AdminLayoutInner({
                 </a>
                 <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
                   {t('nav.viewWebsite')}
-                </div>
-              </div>
-              <div className="relative group">
-                <button
-                  onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                </button>
-                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
-                  {t('auth.changePassword')}
-                </div>
-              </div>
-              <div className="relative group">
-                <button
-                  onClick={onLogout}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
-                  {t('nav.logout')}
                 </div>
               </div>
             </div>
@@ -1554,24 +1505,77 @@ function AdminLayoutInner({
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Mobile language toggle */}
+          {/* Language toggle */}
           <button
             onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-            className="sm:hidden flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
             title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
           >
             <Globe className="w-4 h-4" />
             {locale === 'nl' ? 'EN' : 'NL'}
           </button>
 
-          {/* Notification toggle */}
+          {/* User dropdown */}
           {ctxUsername && ctxUsername !== 'staff' && (
-            <span className="hidden sm:flex items-center gap-1.5 text-xs text-muted font-medium px-2" title={ctxDisplayName}>
-              <span className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground">
-                {ctxDisplayName.charAt(0)}
-              </span>
-              {ctxDisplayName}
-            </span>
+            <div className="relative hidden sm:block" ref={userDropdownRef}>
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-1.5 text-xs text-muted font-medium px-2 py-1.5 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
+              >
+                <span className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground">
+                  {ctxDisplayName.charAt(0)}
+                </span>
+                {ctxDisplayName}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {userDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-border py-1 z-50"
+                  >
+                    <button
+                      onClick={() => { setUserDropdownOpen(false); setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <Lock className="w-4 h-4 text-gray-400" />
+                      {t('auth.changePassword')}
+                    </button>
+                    <div className="h-px bg-border mx-2" />
+                    <button
+                      onClick={() => { setUserDropdownOpen(false); onLogout(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t('nav.logout')}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Mobile user menu */}
+          {ctxUsername && ctxUsername !== 'staff' && (
+            <div className="sm:hidden flex items-center gap-1">
+              <button
+                onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
+                className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+                title={t('auth.changePassword')}
+              >
+                <Lock className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onLogout}
+                className="p-2 rounded-lg hover:bg-red-50 transition-colors cursor-pointer text-red-500"
+                title={t('nav.logout')}
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           )}
           <button
             onClick={toggleNotifications}
