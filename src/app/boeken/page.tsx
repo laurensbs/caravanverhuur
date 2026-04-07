@@ -376,18 +376,21 @@ function BoekenContent() {
               </div>
               <div className="mt-4 pt-4 space-y-2">
                 <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className="font-bold text-primary text-lg">&euro;{discountedTotal}</span></div>
-                <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
-                {extrasCost > 0 && (
-                  <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.extrasLabel')}</span><span className="font-medium">+&euro;{extrasCost}</span></div>
-                )}
-                {extraBorgAmount > 0 && (
-                  <div className="flex justify-between text-sm"><span className="text-muted">{t('booking.extraBorgBikes')}</span><span className="font-medium">+&euro;{extraBorgAmount}</span></div>
-                )}
                 {discountApplied && (
                   <div className="flex justify-between text-sm"><span className="text-primary flex items-center gap-1"><Tag size={12} /> {t('booking.discountLabel')}</span><span className="font-medium text-primary">-&euro;{discountApplied.amount}</span></div>
                 )}
+                <div className="bg-primary/5 rounded-lg p-3 mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">{t('booking.payNowLabel')}</span>
+                    <span className="font-bold text-primary">&euro;{deposit25}</span>
+                  </div>
+                </div>
+                <div className="bg-amber-50 rounded-lg p-3 space-y-1">
+                  <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">{t('booking.payOnCampingLabel')}</p>
+                  <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
+                  <p className="text-[11px] text-amber-600 mt-1">💳 {t('booking.paymentMethodCamping')}</p>
+                </div>
               </div>
             </motion.div>
 
@@ -1150,19 +1153,37 @@ function BoekenContent() {
                             {(pricingAdjustments.length > 0 || discountApplied || extrasCost > 0) && (
                               <div className="flex justify-between pt-1 border-t border-gray-100"><span className="font-semibold text-foreground">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span></div>
                             )}
+                          </div>
 
-                            {/* Payment breakdown: 25% now + rest on camping */}
-                            <div className="mt-3 pt-3 border-t border-gray-100 space-y-3">
-                              <div className="bg-primary/5 rounded-xl p-3 space-y-1">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-primary">{t('booking.payNowLabel')}</p>
-                                <div className="flex justify-between text-sm"><span className="font-semibold text-foreground">{t('booking.deposit25Label')}</span><span className="font-bold text-primary">&euro;{deposit25}</span></div>
+                          {/* Payment breakdown */}
+                          <div className="mt-2 space-y-3">
+                            {/* PAY NOW */}
+                            <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                  <CreditCard size={12} className="text-white" />
+                                </div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-primary">{t('booking.payNowLabel')}</p>
                               </div>
-                              <div className="bg-amber-50 rounded-xl p-3 space-y-1">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">{t('booking.payOnCampingLabel')}</p>
-                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.restOnCamping')}</span><span className="font-medium">&euro;{restAmount}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.borgOnCamping')}</span><span className="font-medium">&euro;{totalBorg}</span></div>
-                                <p className="text-[11px] text-amber-600 mt-1">{t('booking.paymentMethodCamping')}</p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-semibold text-foreground">{t('booking.deposit25Label')}</span>
+                                <span className="text-xl font-bold text-primary">&euro;{deposit25}</span>
                               </div>
+                            </div>
+
+                            {/* PAY AT CAMPSITE */}
+                            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
+                                  <MapPin size={12} className="text-white" />
+                                </div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-amber-700">{t('booking.payOnCampingLabel')}</p>
+                              </div>
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.restOnCamping')}</span><span className="font-semibold">&euro;{restAmount}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-foreground">{t('booking.borgOnCamping')}</span><span className="font-semibold">&euro;{totalBorg}</span></div>
+                              </div>
+                              <p className="text-[11px] text-amber-600 mt-2 flex items-center gap-1">💳 {t('booking.paymentMethodCamping')}</p>
                             </div>
                           </div>
 
@@ -1284,28 +1305,35 @@ function BoekenContent() {
 
                     {/* Price */}
                     {totalPrice > 0 && (
-                      <div className="pt-2.5 mt-1 border-t border-gray-100">
-                        <div className="flex justify-between items-baseline mb-1">
+                      <div className="pt-2.5 mt-1 border-t border-gray-100 space-y-2">
+                        <div className="flex justify-between items-baseline">
                           <span className="text-muted text-xs">{t('booking.total')}</span>
                           <motion.span key={discountedTotal} initial={{ scale: 1.2, color: '#334155' }} animate={{ scale: 1, color: '#0F172A' }} className="text-lg font-bold">&euro;{discountedTotal}</motion.span>
                         </div>
                         {discountApplied && (
-                          <div className="flex justify-between text-xs mb-1">
+                          <div className="flex justify-between text-xs">
                             <span className="text-primary flex items-center gap-1"><Tag size={10} /> {discountApplied.code}</span>
                             <span className="text-primary font-medium">-&euro;{discountApplied.amount}</span>
                           </div>
                         )}
-                        <div className="flex justify-between text-xs">
-                          <span className="text-foreground font-medium">{t('booking.deposit25Label')}</span>
-                          <span className="font-semibold text-primary">&euro;{deposit25}</span>
+                        {/* Pay now */}
+                        <div className="bg-primary/5 rounded-lg px-2.5 py-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] font-bold text-primary uppercase tracking-wider">{t('booking.payNowLabel')}</span>
+                            <span className="text-sm font-bold text-primary">&euro;{deposit25}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-xs mt-0.5">
-                          <span className="text-muted">{t('booking.restOnCamping')}</span>
-                          <span className="font-medium text-foreground-light">&euro;{restAmount}</span>
-                        </div>
-                        <div className="flex justify-between text-xs mt-0.5">
-                          <span className="text-muted">{t('booking.borgOnCamping')}</span>
-                          <span className="font-medium text-foreground-light">&euro;{totalBorg}</span>
+                        {/* At campsite */}
+                        <div className="bg-amber-50 rounded-lg px-2.5 py-2 space-y-0.5">
+                          <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1">{t('booking.payOnCampingLabel')}</p>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-foreground-light">{t('booking.restOnCamping')}</span>
+                            <span className="font-medium">&euro;{restAmount}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-foreground-light">{t('booking.borgOnCamping')}</span>
+                            <span className="font-medium">&euro;{totalBorg}</span>
+                          </div>
                         </div>
                       </div>
                     )}
