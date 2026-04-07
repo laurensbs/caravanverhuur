@@ -141,6 +141,22 @@ export const translations: Record<AdminLocale, Dict> = {
         customers: 'Klantenbeheer',
         website: 'Website Beheer',
       },
+      desc: {
+        dashboard: 'Overzicht van boekingen, betalingen en openstaande taken',
+        planning: 'Bezettingskalender en takenbeheer per caravan',
+        bookings: 'Alle boekingen bekijken, bewerken en nieuwe aanmaken',
+        payments: 'Betalingsoverzicht, openstaand en terugbetalingen',
+        messages: 'Contactformulier-berichten bekijken en beantwoorden',
+        caravans: 'Caravanaanbod, foto\'s, prijzen en beschikbaarheid',
+        campings: 'Campings beheren, volgorde en zichtbaarheid',
+        deposit: 'Borginspecties bij in- en uitchecken',
+        customers: 'Klantgegevens, accounts en communicatiehistorie',
+        newsletters: 'Nieuwsbrieven opstellen, inplannen en versturen',
+        discountCodes: 'Kortingscodes aanmaken en beheren',
+        pricing: 'Seizoenstoeslagen, vroegboek- en lastminutekortingen',
+        chat: 'Live chatgesprekken met websitebezoekers',
+        activity: 'Logboek van alle admin-acties',
+      },
     },
 
     /* ── statuses (DB enum → display) ───── */
@@ -310,6 +326,15 @@ export const translations: Record<AdminLocale, Dict> = {
       namePlaceholder: 'Naam klant',
       emailPlaceholder: 'E-mailadres',
       phonePlaceholder: 'Telefoonnummer',
+      statusLegend: 'Statusverloop',
+      statusFlow: 'NIEUW → BEVESTIGD → AANBETAALD → VOLLEDIG BETAALD → ACTIEF → AFGEROND',
+      statusDescNieuw: 'Net binnengekomen, nog niet behandeld',
+      statusDescBevestigd: 'Bevestigd door admin, wacht op betaling',
+      statusDescAanbetaald: '25% aanbetaling ontvangen',
+      statusDescVolledigBetaald: 'Volledige betaling ontvangen',
+      statusDescActief: 'Gast is momenteel op de camping',
+      statusDescAfgerond: 'Verblijf afgerond, borg afgehandeld',
+      statusDescGeannuleerd: 'Boeking geannuleerd',
     },
 
     /* ── payments page ──────────────────── */
@@ -350,6 +375,11 @@ export const translations: Record<AdminLocale, Dict> = {
       messagesFound: '{count} bericht{s} gevonden',
       noMessages: 'Geen berichten gevonden',
       adjustFilters: 'Pas je filters aan',
+      templates: 'Snel antwoord',
+      templateAvailability: 'Ik ga de beschikbaarheid voor u controleren. Kunt u aangeven welke periode en welk type caravan uw voorkeur heeft?',
+      templatePricing: 'Onze prijzen beginnen vanaf €550 per week. Bekijk ons actuele aanbod op caravanverhuurspanje.com/caravans. Heeft u een specifieke periode in gedachten?',
+      templateBookingInfo: 'Bedankt voor uw interesse! Bij het boeken betaalt u een aanbetaling van 25% via iDEAL. Het restbedrag en de borg voldoet u op de camping (contant of pin).',
+      templateThankYou: 'Bedankt voor uw bericht! Mocht u nog vragen hebben, neem dan gerust contact met ons op. Wij helpen u graag verder.',
     },
 
     /* ── caravans page ──────────────────── */
@@ -806,6 +836,22 @@ export const translations: Record<AdminLocale, Dict> = {
         customers: 'Customer Management',
         website: 'Website Management',
       },
+      desc: {
+        dashboard: 'Overview of bookings, payments and open tasks',
+        planning: 'Occupancy calendar and task management per caravan',
+        bookings: 'View, edit and create bookings',
+        payments: 'Payment overview, outstanding and refunds',
+        messages: 'View and reply to contact form messages',
+        caravans: 'Caravan inventory, photos, pricing and availability',
+        campings: 'Manage campings, ordering and visibility',
+        deposit: 'Deposit inspections at check-in and check-out',
+        customers: 'Customer data, accounts and communication history',
+        newsletters: 'Compose, schedule and send newsletters',
+        discountCodes: 'Create and manage discount codes',
+        pricing: 'Seasonal surcharges, early bird and last minute discounts',
+        chat: 'Live chat conversations with website visitors',
+        activity: 'Log of all admin actions',
+      },
     },
 
     status: {
@@ -972,6 +1018,15 @@ export const translations: Record<AdminLocale, Dict> = {
       namePlaceholder: 'Customer name',
       emailPlaceholder: 'Email address',
       phonePlaceholder: 'Phone number',
+      statusLegend: 'Status flow',
+      statusFlow: 'NEW → CONFIRMED → DEPOSIT PAID → FULLY PAID → ACTIVE → COMPLETED',
+      statusDescNieuw: 'Just received, not yet processed',
+      statusDescBevestigd: 'Confirmed by admin, awaiting payment',
+      statusDescAanbetaald: '25% deposit received',
+      statusDescVolledigBetaald: 'Full payment received',
+      statusDescActief: 'Guest is currently at the campsite',
+      statusDescAfgerond: 'Stay completed, deposit handled',
+      statusDescGeannuleerd: 'Booking cancelled',
     },
 
     payments: {
@@ -1010,6 +1065,11 @@ export const translations: Record<AdminLocale, Dict> = {
       messagesFound: '{count} message{s} found',
       noMessages: 'No messages found',
       adjustFilters: 'Adjust your filters',
+      templates: 'Quick reply',
+      templateAvailability: 'I will check the availability for you. Could you let me know which period and caravan type you prefer?',
+      templatePricing: 'Our prices start from €550 per week. Check our current offerings at caravanverhuurspanje.com/caravans. Do you have a specific period in mind?',
+      templateBookingInfo: 'Thank you for your interest! When booking you pay a 25% deposit via iDEAL. The remaining amount and deposit are paid at the campsite (cash or card).',
+      templateThankYou: 'Thank you for your message! If you have any further questions, please don\'t hesitate to contact us. We\'re happy to help!',
     },
 
     caravans: {

@@ -116,6 +116,24 @@ function ContactDetail({
       {/* Reply box */}
       {contact.status !== 'BEANTWOORD' && (
         <div>
+          {/* Template quick-replies */}
+          <div className="mb-2">
+            <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
+              {t('messages.templates')}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {(['templateAvailability', 'templatePricing', 'templateBookingInfo', 'templateThankYou'] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setReply(t(`messages.${key}`))}
+                  className="px-2.5 py-1 bg-surface hover:bg-surface-alt rounded-lg text-xs text-muted hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {t(`messages.${key}`).slice(0, 40)}…
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}

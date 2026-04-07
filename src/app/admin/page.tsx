@@ -387,9 +387,14 @@ export default function AdminDashboard() {
         transition={{ delay: 0.55, duration: 0.4 }}
         className="bg-white rounded-2xl p-3 sm:p-5"
       >
-        <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider mb-2 sm:mb-4">
-          {t('dashboard.upcomingStays')}
-        </h3>
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
+            {t('dashboard.upcomingStays')}
+          </h3>
+          <Link href={p('/planning')} className="text-xs text-primary-dark font-medium hover:underline flex items-center gap-1">
+            {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
         {upcomingStays.length === 0 ? (
           <p className="text-sm text-muted py-8 text-center">{t('dashboard.noUpcoming')}</p>
         ) : (

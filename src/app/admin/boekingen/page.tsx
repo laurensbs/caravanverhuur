@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
+  Info,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -633,6 +634,7 @@ export default function BookingenPage() {
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
   const [allCampings, setAllCampings] = useState(staticCampings.map(c => ({ ...c, active: true })));
   const [createSuccess, setCreateSuccess] = useState<{ reference: string; paymentUrl: string; isNewAccount: boolean } | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   // Create form state
   const [cName, setCName] = useState('');
@@ -1055,9 +1057,41 @@ export default function BookingenPage() {
         </div>
       )}
 
-      <p className="text-xs text-muted">
-        {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
-      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-xs text-muted flex-1">
+          {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
+        </p>
+        <button
+          onClick={() => setShowLegend(!showLegend)}
+          className="flex items-center gap-1 text-xs text-muted hover:text-foreground transition-colors cursor-pointer"
+        >
+          <Info className="w-3.5 h-3.5" />
+          {t('bookings.statusLegend')}
+          {showLegend ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+      </div>
+
+      {showLegend && (
+        <div className="bg-white rounded-xl p-3 sm:p-4 text-xs space-y-1.5">
+          <p className="font-semibold text-muted uppercase tracking-wider text-[11px] mb-2">{t('bookings.statusFlow')}</p>
+          {([
+            ['NIEUW', 'statusDescNieuw', 'bg-blue-100 text-blue-700'],
+            ['BEVESTIGD', 'statusDescBevestigd', 'bg-purple-100 text-purple-700'],
+            ['AANBETAALD', 'statusDescAanbetaald', 'bg-amber-100 text-amber-700'],
+            ['VOLLEDIG_BETAALD', 'statusDescVolledigBetaald', 'bg-green-100 text-green-700'],
+            ['ACTIEF', 'statusDescActief', 'bg-emerald-100 text-emerald-700'],
+            ['AFGEROND', 'statusDescAfgerond', 'bg-gray-100 text-gray-700'],
+            ['GEANNULEERD', 'statusDescGeannuleerd', 'bg-red-100 text-red-700'],
+          ] as const).map(([status, descKey, color]) => (
+            <div key={status} className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${color}`}>
+                {ts(status)}
+              </span>
+              <span className="text-muted">{t(`bookings.${descKey}`)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-1.5 sm:space-y-2">
         {paginated.map((booking) => {

@@ -1023,11 +1023,22 @@ function AdminLayoutInner({
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <h1 className="text-base sm:text-lg font-semibold text-foreground flex-1 truncate">
-            {allNavItems.find((n) => n.href === pathname)
-              ? t(allNavItems.find((n) => n.href === pathname)!.key)
-              : 'Admin'}
-          </h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">
+              {allNavItems.find((n) => n.href === pathname)
+                ? t(allNavItems.find((n) => n.href === pathname)!.key)
+                : 'Admin'}
+            </h1>
+            {(() => {
+              const navItem = allNavItems.find((n) => n.href === pathname);
+              if (!navItem) return null;
+              const shortKey = navItem.key.replace('nav.', '');
+              const desc = t(`nav.desc.${shortKey}`);
+              return desc && desc !== `nav.desc.${shortKey}` ? (
+                <p className="text-xs text-muted truncate hidden sm:block">{desc}</p>
+              ) : null;
+            })()}
+          </div>
 
           {/* Global search */}
           <div ref={searchRef} className="relative hidden sm:block">
