@@ -973,11 +973,6 @@ function AdminLayoutInner({
             const collapsed = !sidebarOpen && !isMobile;
             return (
               <div key={section.sectionKey}>
-                {sidebarOpen && (
-                  <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                    {t(section.sectionKey)}
-                  </div>
-                )}
                 {!collapsed && !isMobile && (
                   <div className={collapsed ? 'hidden' : ''}>
                     <Reorder.Group
@@ -1118,13 +1113,6 @@ function AdminLayoutInner({
       }`}>
         {/* Top bar */}
         <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
-          <button
-            onClick={toggleSidebar}
-            className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
-            title={sidebarOpen ? 'Sidebar sluiten' : 'Sidebar openen'}
-          >
-            {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-          </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">
               {allNavItems.find((n) => n.href === pathname)
