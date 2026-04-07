@@ -573,7 +573,14 @@ function SidebarNavItem({
   }
 
   if (collapsed) {
-    return <li className="list-none">{linkContent}</li>;
+    return (
+      <li className="list-none relative group">
+        {linkContent}
+        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
+          {t(item.key)}
+        </div>
+      </li>
+    );
   }
 
   return (
@@ -1065,29 +1072,41 @@ function AdminLayoutInner({
           ) : !isMobile ? (
             /* Collapsed: icon-only column */
             <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
-                title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
-              >
-                {locale === 'nl' ? 'EN' : 'NL'}
-              </button>
-              <a
-                href={mainSiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors"
-                title={t('nav.viewWebsite')}
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-              <button
-                onClick={onLogout}
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                title={t('nav.logout')}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
+              <div className="relative group">
+                <button
+                  onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg text-[11px] font-bold text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {locale === 'nl' ? 'EN' : 'NL'}
+                </button>
+                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
+                  {locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
+                </div>
+              </div>
+              <div className="relative group">
+                <a
+                  href={mainSiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
+                  {t('nav.viewWebsite')}
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={onLogout}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
+                  {t('nav.logout')}
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
