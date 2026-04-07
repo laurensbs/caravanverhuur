@@ -126,6 +126,13 @@ export const translations: Record<AdminLocale, Dict> = {
       passwordsNoMatch: 'Wachtwoorden komen niet overeen',
       setPassword: 'Wachtwoord instellen',
       loggingIn: 'Bezig...',
+      changePassword: 'Wachtwoord wijzigen',
+      currentPassword: 'Huidig wachtwoord',
+      currentPasswordPlaceholder: 'Voer huidig wachtwoord in',
+      changePasswordSettingsTitle: 'Wachtwoord wijzigen',
+      changePasswordSettingsDesc: 'Voer je huidige wachtwoord in en kies een nieuw wachtwoord.',
+      passwordChanged: 'Wachtwoord succesvol gewijzigd!',
+      wrongCurrentPassword: 'Huidig wachtwoord is onjuist',
     },
 
     /* ── navigation ─────────────────────── */
@@ -871,6 +878,13 @@ export const translations: Record<AdminLocale, Dict> = {
       passwordsNoMatch: 'Passwords do not match',
       setPassword: 'Set password',
       loggingIn: 'Loading...',
+      changePassword: 'Change password',
+      currentPassword: 'Current password',
+      currentPasswordPlaceholder: 'Enter current password',
+      changePasswordSettingsTitle: 'Change password',
+      changePasswordSettingsDesc: 'Enter your current password and choose a new one.',
+      passwordChanged: 'Password changed successfully!',
+      wrongCurrentPassword: 'Current password is incorrect',
     },
 
     nav: {

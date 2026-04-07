@@ -840,6 +840,14 @@ function AdminLayoutInner({
   const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName } = useAdminCtx();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSettingsPassword, setShowSettingsPassword] = useState(false);
+  const [settingsCurrentPw, setSettingsCurrentPw] = useState('');
+  const [settingsNewPw, setSettingsNewPw] = useState('');
+  const [settingsConfirmPw, setSettingsConfirmPw] = useState('');
+  const [settingsPwError, setSettingsPwError] = useState('');
+  const [settingsPwLoading, setSettingsPwLoading] = useState(false);
+  const [settingsShowCurrent, setSettingsShowCurrent] = useState(false);
+  const [settingsShowNew, setSettingsShowNew] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
@@ -934,6 +942,46 @@ function AdminLayoutInner({
     // Toast
     toast(`${title}: ${body}`, 'info');
   }, [playNotificationSound, toast]);
+
+  // Settings: change password
+  const handleSettingsPasswordChange = async () => {
+    if (!settingsCurrentPw) {
+      setSettingsPwError(t('auth.currentPassword') + ' ' + t('common.required'));
+      return;
+    }
+    if (settingsNewPw.length < 8) {
+      setSettingsPwError(t('auth.passwordMinLength'));
+      return;
+    }
+    if (settingsNewPw !== settingsConfirmPw) {
+      setSettingsPwError(t('auth.passwordsNoMatch'));
+      return;
+    }
+    setSettingsPwLoading(true);
+    setSettingsPwError('');
+    try {
+      const res = await fetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword: settingsCurrentPw, newPassword: settingsNewPw }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowSettingsPassword(false);
+        setSettingsCurrentPw('');
+        setSettingsNewPw('');
+        setSettingsConfirmPw('');
+        toast(t('auth.passwordChanged'), 'success');
+      } else {
+        setSettingsPwError(data.error || t('common.error'));
+      }
+    } catch {
+      setSettingsPwError(t('common.error'));
+    } finally {
+      setSettingsPwLoading(false);
+    }
+  };
 
   // Detect mobile (< lg breakpoint)
   useEffect(() => {
@@ -1278,6 +1326,13 @@ function AdminLayoutInner({
                 <span className="truncate">{t('nav.viewWebsite')}</span>
               </a>
               <button
+                onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer shrink-0"
+                title={t('auth.changePassword')}
+              >
+                <Lock className="w-3.5 h-3.5" />
+              </button>
+              <button
                 onClick={onLogout}
                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer shrink-0"
                 title={t('nav.logout')}
@@ -1310,6 +1365,17 @@ function AdminLayoutInner({
                 </a>
                 <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
                   {t('nav.viewWebsite')}
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-200/60 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                </button>
+                <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[60] shadow-lg">
+                  {t('auth.changePassword')}
                 </div>
               </div>
               <div className="relative group">
@@ -1707,6 +1773,123 @@ function AdminLayoutInner({
                       <ArrowRight size={16} />
                     </button>
                   )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ SETTINGS: CHANGE PASSWORD MODAL ═══ */}
+      <AnimatePresence>
+        {showSettingsPassword && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
+            onClick={() => setShowSettingsPassword(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="h-1.5 bg-foreground" />
+              <div className="p-6 sm:p-8">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-foreground/5 mb-3">
+                    <Lock className="w-7 h-7 text-foreground" />
+                  </div>
+                  <h2 className="text-xl font-bold text-foreground">{t('auth.changePasswordSettingsTitle')}</h2>
+                  <p className="text-muted text-sm mt-1.5">{t('auth.changePasswordSettingsDesc')}</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.currentPassword')}</label>
+                    <div className="relative">
+                      <input
+                        type={settingsShowCurrent ? 'text' : 'password'}
+                        value={settingsCurrentPw}
+                        onChange={e => setSettingsCurrentPw(e.target.value)}
+                        placeholder={t('auth.currentPasswordPlaceholder')}
+                        className="w-full px-4 py-3 bg-surface rounded-xl text-sm outline-none focus:ring-2 focus:ring-foreground/20 pr-10"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettingsShowCurrent(!settingsShowCurrent)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer"
+                      >
+                        {settingsShowCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.newPassword')}</label>
+                    <div className="relative">
+                      <input
+                        type={settingsShowNew ? 'text' : 'password'}
+                        value={settingsNewPw}
+                        onChange={e => setSettingsNewPw(e.target.value)}
+                        placeholder={t('auth.newPasswordPlaceholder')}
+                        className="w-full px-4 py-3 bg-surface rounded-xl text-sm outline-none focus:ring-2 focus:ring-foreground/20 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSettingsShowNew(!settingsShowNew)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground cursor-pointer"
+                      >
+                        {settingsShowNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">{t('auth.confirmPassword')}</label>
+                    <input
+                      type="password"
+                      value={settingsConfirmPw}
+                      onChange={e => setSettingsConfirmPw(e.target.value)}
+                      placeholder={t('auth.confirmPasswordPlaceholder')}
+                      className="w-full px-4 py-3 bg-surface rounded-xl text-sm outline-none focus:ring-2 focus:ring-foreground/20"
+                      onKeyDown={e => { if (e.key === 'Enter') handleSettingsPasswordChange(); }}
+                    />
+                  </div>
+
+                  {settingsPwError && (
+                    <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
+                      <AlertCircle size={14} className="shrink-0" />
+                      {settingsPwError}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowSettingsPassword(false)}
+                    className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleSettingsPasswordChange}
+                    disabled={settingsPwLoading}
+                    className="flex-1 py-3 text-sm font-semibold text-white bg-foreground rounded-xl hover:bg-foreground/90 transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {settingsPwLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Lock size={14} />
+                        {t('auth.changePassword')}
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </motion.div>

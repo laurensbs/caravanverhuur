@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
+import { headers } from "next/headers";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-heading",
@@ -111,11 +112,14 @@ const jsonLd = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const isAdminSubdomain = headersList.get('x-admin-subdomain') === '1';
+
   return (
     <html lang="nl" suppressHydrationWarning>
       <head>
@@ -132,6 +136,7 @@ export default function RootLayout({
           header={<Header />}
           footer={<Footer />}
           cookieConsent={<CookieConsent />}
+          isAdminSubdomain={isAdminSubdomain}
         >
           {children}
         </LayoutWrapper>
