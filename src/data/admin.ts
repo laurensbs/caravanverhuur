@@ -59,6 +59,8 @@ export interface Booking {
   payments?: Payment[];
 }
 
+export type HoldedStatus = 'NIET_AANGEMAAKT' | 'HANDMATIG' | 'IN_HOLDED';
+
 export interface Payment {
   id: string;
   booking_id: string;
@@ -69,6 +71,9 @@ export interface Payment {
   stripe_id?: string;
   created_at: string;
   paid_at?: string;
+  holded_status?: HoldedStatus;
+  holded_invoice_id?: string;
+  holded_marked_at?: string;
   // Joined fields from getAllPayments
   guest_name?: string;
   booking_ref?: string;

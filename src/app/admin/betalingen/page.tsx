@@ -11,6 +11,7 @@ import {
   Loader2,
   Download,
   RefreshCw,
+  FileText,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -21,6 +22,7 @@ import {
   type Payment,
   type PaymentStatus,
   type PaymentType,
+  type HoldedStatus,
 } from '@/data/admin';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -42,6 +44,7 @@ export default function BetalingenPage() {
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
+  const [holdedUpdating, setHoldedUpdating] = useState<string | null>(null);
 
   const fetchPayments = () => {
     setLoading(true);
@@ -103,6 +106,33 @@ export default function BetalingenPage() {
     }
     setRefundingId(null);
     setRefundConfirm(null);
+  };
+
+  const handleHoldedToggle = async (paymentId: string, current: HoldedStatus | undefined) => {
+    const next: HoldedStatus = (!current || current === 'NIET_AANGEMAAKT') ? 'HANDMATIG' : 'NIET_AANGEMAAKT';
+    setHoldedUpdating(paymentId);
+    try {
+      const res = await fetch('/api/admin/holded', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, holdedStatus: next }),
+      });
+      if (res.ok) {
+        setPayments(prev =>
+          prev.map(p =>
+            p.id === paymentId
+              ? { ...p, holded_status: next, holded_marked_at: next === 'HANDMATIG' ? new Date().toISOString() : undefined }
+              : p
+          )
+        );
+        toast(next === 'HANDMATIG' ? t('payments.holdedMarked') : t('payments.holdedUnmarked'), 'success');
+      } else {
+        toast(t('common.actionFailed'), 'error');
+      }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setHoldedUpdating(null);
   };
 
   const getCaravanName = (caravanId?: string) => {
@@ -250,11 +280,12 @@ export default function BetalingenPage() {
         />
         <button
           onClick={() => {
-            const headers = ['Gast', 'Boeking', 'Type', 'Bedrag', 'Status', 'Methode', 'Datum'];
+            const headers = ['Gast', 'Boeking', 'Type', 'Bedrag', 'Status', 'Methode', 'Datum', 'Holded'];
             const rows = filtered.map(p => [
               p.guest_name || '', p.booking_ref || '', ts(p.type),
               Number(p.amount).toFixed(2), ts(p.status), p.method || '',
               new Date(p.created_at).toLocaleDateString('nl-NL'),
+              p.holded_status === 'HANDMATIG' || p.holded_status === 'IN_HOLDED' ? 'Ja' : 'Nee',
             ]);
             const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -273,7 +304,7 @@ export default function BetalingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-2">{t('payments.date')}</div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> {payment.stripe_id && <p className="text-[10px] text-muted/60 font-mono truncate" title={payment.stripe_id}>{payment.stripe_id}</p>} </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
+        {filtered.length} {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-1">{t('payments.date')}</div> <div className="col-span-1">Holded</div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors" > <div className="col-span-3"> <p className="text-sm font-medium text-foreground">{payment.guest_name}</p> <p className="text-xs text-muted">{payment.booking_ref}</p> {payment.stripe_id && <p className="text-[10px] text-muted/60 font-mono truncate" title={payment.stripe_id}>{payment.stripe_id}</p>} </div> <div className="col-span-2"> <span className="text-sm text-foreground">{ts(payment.type)}</span>
               </div>
 
               <div className="col-span-2">
@@ -331,10 +362,36 @@ export default function BetalingenPage() {
                 </span>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <p className="text-xs text-muted">{formatDateTime(payment.created_at)}</p>
                 {payment.paid_at && (
                   <p className="text-xs text-primary">✓ {formatDateTime(payment.paid_at)}</p>
+                )}
+              </div>
+
+              <div className="col-span-1">
+                {payment.status === 'BETAALD' ? (
+                  <button
+                    onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
+                    disabled={holdedUpdating === payment.id}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
+                      payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                    title={payment.holded_status === 'HANDMATIG' && payment.holded_marked_at
+                      ? `${t('payments.holdedMarkedOn')} ${formatDateTime(payment.holded_marked_at)}`
+                      : t('payments.holdedMarkInvoice')}
+                  >
+                    <FileText size={12} />
+                    {holdedUpdating === payment.id
+                      ? '...'
+                      : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                        ? '✓'
+                        : t('payments.holdedInvoice')}
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-muted">—</span>
                 )}
               </div>
             </div>

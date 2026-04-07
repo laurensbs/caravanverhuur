@@ -473,6 +473,13 @@ export async function setupDatabase() {
     WHERE id = 'pr-seed-hoog' AND end_date = '2026-07-31'
   `;
 
+  // Migration: add Holded invoice tracking columns to payments
+  try {
+    await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS holded_status TEXT DEFAULT 'NIET_AANGEMAAKT'`;
+    await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS holded_invoice_id TEXT`;
+    await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS holded_marked_at TIMESTAMP`;
+  } catch { /* columns already exist */ }
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -670,6 +677,16 @@ export async function getPaymentByStripeId(stripeId: string) {
     SELECT * FROM payments WHERE stripe_id = ${stripeId} LIMIT 1
   `;
   return result.rows[0] || null;
+}
+
+export async function updatePaymentHoldedStatus(id: string, holdedStatus: string, holdedInvoiceId?: string) {
+  await sql`
+    UPDATE payments
+    SET holded_status = ${holdedStatus},
+        holded_invoice_id = ${holdedInvoiceId || null},
+        holded_marked_at = NOW()
+    WHERE id = ${id}
+  `;
 }
 
 export async function updatePaymentStatus(id: string, status: string, paidAt?: string) {

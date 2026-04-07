@@ -364,6 +364,11 @@ export const translations: Record<AdminLocale, Dict> = {
       dateFrom: 'Vanaf',
       dateTo: 'Tot',
       exportCsv: 'Exporteer CSV',
+      holdedInvoice: 'Factuur',
+      holdedMarked: 'Gemarkeerd als gefactureerd in Holded',
+      holdedUnmarked: 'Holded markering verwijderd',
+      holdedMarkInvoice: 'Markeer als gefactureerd in Holded',
+      holdedMarkedOn: 'Gefactureerd op',
     },
 
     /* ── messages page ──────────────────── */
@@ -1083,6 +1088,11 @@ export const translations: Record<AdminLocale, Dict> = {
       dateFrom: 'From',
       dateTo: 'To',
       exportCsv: 'Export CSV',
+      holdedInvoice: 'Invoice',
+      holdedMarked: 'Marked as invoiced in Holded',
+      holdedUnmarked: 'Holded marking removed',
+      holdedMarkInvoice: 'Mark as invoiced in Holded',
+      holdedMarkedOn: 'Invoiced on',
     },
 
     messages: {
