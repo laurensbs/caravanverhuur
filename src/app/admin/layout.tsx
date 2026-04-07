@@ -1251,6 +1251,16 @@ function AdminLayoutInner({
             <Search className="w-5 h-5" />
           </button>
 
+          {/* Mobile language toggle */}
+          <button
+            onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
+            className="sm:hidden flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
+            title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
+          >
+            <Globe className="w-4 h-4" />
+            {locale === 'nl' ? 'EN' : 'NL'}
+          </button>
+
           {/* Notification toggle */}
           <button
             onClick={toggleNotifications}
