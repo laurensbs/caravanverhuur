@@ -127,12 +127,12 @@ export default function Header() {
     <div className="sticky top-0 z-50">
       {/* ===== TOP UTILITY BAR ===== */}
       <div className="bg-foreground text-white text-[11px] sm:text-xs">
-        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
-          <p className="font-semibold uppercase tracking-wide">
+        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-center relative">
+          <p className="font-semibold uppercase tracking-wide text-center">
             <span className="hidden sm:inline">{t('nav.season')}</span>
             <span className="sm:hidden">{t('nav.seasonShort')}</span>
           </p>
-          <div className="flex items-center">
+          <div className="absolute right-4 flex items-center">
             {/* Language */}
             <div className="relative" ref={langRef}>
               <button
