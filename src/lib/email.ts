@@ -66,7 +66,7 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
   <title>${BRAND_NAME}</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&display=swap');
     * { box-sizing: border-box; }
     body, table, td { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
     h1, h2, h3 { font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -894,36 +894,55 @@ export async function sendNewsletterEmail(data: {
 
   const IMAGE_SIZE_MAP: Record<string, string> = { small: '40%', medium: '60%', large: '80%', full: '100%' };
 
-  // Detect block-based content (JSON array)
+  const FONT_CSS_MAP: Record<string, string> = {
+    'Inter': "'Inter', sans-serif",
+    'Georgia': "'Georgia', serif",
+    'Merriweather': "'Merriweather', serif",
+    'Playfair Display': "'Playfair Display', serif",
+    'Plus Jakarta Sans': "'Plus Jakarta Sans', sans-serif",
+    'Lora': "'Lora', serif",
+  };
+
+  // Parse content - handle wrapped format {"blocks":[...],"font":"..."} and array format [{...}]
+  let blocks: { type: string; content: string; imageSize?: string }[] = [];
+  let fontFamily = FONT_CSS_MAP['Inter'];
   let contentHtml = '';
   let photosHtml = '';
 
-  if (data.content.trim().startsWith('[{') || data.content.trim().startsWith('[{')) {
+  if (data.content.trim().startsWith('{"blocks"')) {
     try {
-      const blocks = JSON.parse(data.content) as { type: string; content: string; imageSize?: string }[];
-      contentHtml = blocks.map(block => {
-        if (block.type === 'text' && block.content.trim()) {
-          return block.content.split('\n').filter((l: string) => l.trim()).map((l: string) =>
-            `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
-          ).join('');
-        }
-        if (block.type === 'image' && block.content.trim()) {
-          const width = IMAGE_SIZE_MAP[block.imageSize || 'full'] || '100%';
-          return `<div style="margin:0 auto 14px;width:${width};text-align:center;">
+      const parsed = JSON.parse(data.content);
+      blocks = parsed.blocks || [];
+      if (parsed.font && FONT_CSS_MAP[parsed.font]) {
+        fontFamily = FONT_CSS_MAP[parsed.font];
+      }
+    } catch { /* fall through to legacy */ }
+  } else if (data.content.trim().startsWith('[{')) {
+    try {
+      const parsed = JSON.parse(data.content);
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].type) {
+        blocks = parsed;
+      }
+    } catch { /* fall through to legacy */ }
+  }
+
+  if (blocks.length > 0) {
+    contentHtml = blocks.map(block => {
+      if (block.type === 'text' && block.content.trim()) {
+        return block.content.split('\n').filter((l: string) => l.trim()).map((l: string) =>
+          `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;font-family:${fontFamily};">${l}</p>`
+        ).join('');
+      }
+      if (block.type === 'image' && block.content.trim()) {
+        const width = IMAGE_SIZE_MAP[block.imageSize || 'full'] || '100%';
+        return `<div style="margin:0 auto 14px;width:${width};text-align:center;">
             <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
               <img src="${block.content}" alt="Nieuwsbrief afbeelding" style="width:100%;height:auto;display:block;" />
             </div>
           </div>`;
-        }
-        return '';
-      }).join('');
-    } catch {
-      // Fallback to legacy if JSON parse fails
-      const lines = data.content.split('\n').filter(l => l.trim());
-      contentHtml = lines.map(l =>
-        `<p style="margin:0 0 14px;color:#0F172A;font-size:15px;line-height:1.7;">${l}</p>`
-      ).join('');
-    }
+      }
+      return '';
+    }).join('');
   } else {
     // Legacy plain text format
     const lines = data.content.split('\n').filter(l => l.trim());

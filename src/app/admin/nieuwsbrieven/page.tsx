@@ -69,7 +69,17 @@ function generateBlockId() {
 }
 
 function parseContentToBlocks(content: string, photos?: string[] | null): ContentBlock[] {
-  // New block format: content starts with [{ (JSON array of blocks)
+  // Wrapped format: {"blocks":[...],"font":"..."}
+  if (content.trim().startsWith('{"blocks"')) {
+    try {
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.blocks)) {
+        return parsed.blocks.map((b: ContentBlock) => ({ ...b, id: b.id || generateBlockId() }));
+      }
+    } catch { /* fall through */ }
+  }
+
+  // Block array format: [{...}]
   if (content.trim().startsWith('[{') || content.trim().startsWith('[{')) {
     try {
       const parsed = JSON.parse(content);
@@ -96,12 +106,23 @@ function parseContentToBlocks(content: string, photos?: string[] | null): Conten
   return blocks;
 }
 
-function blocksToContent(blocks: ContentBlock[]): string {
-  return JSON.stringify(blocks.map(b => ({
+function parseFontFromContent(content: string): string {
+  if (content.trim().startsWith('{"blocks"')) {
+    try { return JSON.parse(content).font || 'Inter'; } catch { return 'Inter'; }
+  }
+  return 'Inter';
+}
+
+function blocksToContent(blocks: ContentBlock[], font?: string): string {
+  const blockData = blocks.map(b => ({
     type: b.type,
     content: b.content,
     ...(b.type === 'image' ? { imageSize: b.imageSize || 'full' } : {}),
-  })));
+  }));
+  if (font && font !== 'Inter') {
+    return JSON.stringify({ blocks: blockData, font });
+  }
+  return JSON.stringify(blockData);
 }
 
 function blocksToPlainText(blocks: ContentBlock[]): string {
@@ -117,6 +138,15 @@ const IMAGE_SIZES = [
   { value: 'medium' as const, label: 'Medium', width: '60%' },
   { value: 'large' as const, label: 'Groot', width: '80%' },
   { value: 'full' as const, label: 'Volledig', width: '100%' },
+];
+
+const FONT_OPTIONS = [
+  { value: 'Inter', label: 'Inter', css: "'Inter', sans-serif" },
+  { value: 'Georgia', label: 'Georgia', css: "'Georgia', serif" },
+  { value: 'Merriweather', label: 'Merriweather', css: "'Merriweather', serif" },
+  { value: 'Playfair Display', label: 'Playfair', css: "'Playfair Display', serif" },
+  { value: 'Plus Jakarta Sans', label: 'Jakarta Sans', css: "'Plus Jakarta Sans', sans-serif" },
+  { value: 'Lora', label: 'Lora', css: "'Lora', serif" },
 ];
 
 const CATEGORY_DRAFTS: Record<string, { title: string; blocks: ContentBlock[] }> = {
@@ -330,7 +360,7 @@ function BlockEditor({ blocks, onChange, isNl }: { blocks: ContentBlock[]; onCha
 
 // ===== EMAIL PREVIEW COMPONENT =====
 
-function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateLocale, isNl, getCategoryInfo }: {
+function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateLocale, isNl, getCategoryInfo, font }: {
   title: string;
   category: string;
   eventDate: string;
@@ -339,9 +369,11 @@ function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateL
   dateLocale: string;
   isNl: boolean;
   getCategoryInfo: (cat: string) => { emoji: string; label: string };
+  font?: string;
 }) {
   const cat = getCategoryInfo(category);
   const hasContent = blocks.some(b => b.content.trim());
+  const fontCss = FONT_OPTIONS.find(f => f.value === font)?.css || FONT_OPTIONS[0].css;
 
   return (
     <div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
@@ -354,7 +386,7 @@ function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateL
       </div>
 
       {/* Email body */}
-      <div className="p-5 sm:p-6 max-w-[520px] mx-auto">
+      <div className="p-5 sm:p-6 max-w-[520px] mx-auto" style={{ fontFamily: fontCss }}>
         {/* Category badge */}
         <div className="text-center mb-4">
           <span className="inline-block bg-[#F0F9FF] text-[#0284C7] text-xs font-semibold px-3 py-1 rounded-full">
@@ -396,7 +428,7 @@ function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateL
         {blocks.map((block) => {
           if (block.type === 'text' && block.content.trim()) {
             return block.content.split('\n').filter(l => l.trim()).map((line, i) => (
-              <p key={`${block.id}-${i}`} className="text-sm text-foreground mb-3 leading-relaxed">{line}</p>
+              <p key={`${block.id}-${i}`} className="text-sm text-foreground mb-3 leading-relaxed" style={{ fontFamily: fontCss }}>{line}</p>
             ));
           }
           if (block.type === 'image' && block.content.trim()) {
@@ -446,15 +478,48 @@ function EmailPreview({ title, category, eventDate, eventLocation, blocks, dateL
 export default function AdminNieuwsbrieven() {
   const { t, ts, dateLocale } = useAdmin();
   const { toast } = useToast();
-  const CATEGORIES = [
+  const DEFAULT_CATEGORIES = [
     { value: 'algemeen', label: t('newsletters.generalNews'), emoji: '📣' },
     { value: 'activiteit', label: t('newsletters.activity'), emoji: '🎉' },
     { value: 'feestdag', label: t('newsletters.holiday'), emoji: '🎊' },
     { value: 'markt', label: t('newsletters.market'), emoji: '🛍️' },
     { value: 'evenement', label: t('newsletters.event'), emoji: '🎭' },
   ];
+
+  // Custom categories from localStorage
+  const [customCategories, setCustomCategories] = useState<{ value: string; label: string; emoji: string }[]>([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCatLabel, setNewCatLabel] = useState('');
+  const [newCatEmoji, setNewCatEmoji] = useState('📌');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('newsletter_custom_categories');
+      if (stored) setCustomCategories(JSON.parse(stored));
+    } catch { /* ignore */ }
+  }, []);
+
+  const CATEGORIES = [...DEFAULT_CATEGORIES, ...customCategories];
   const getCategoryInfo = (cat: string) => CATEGORIES.find(c => c.value === cat) || CATEGORIES[0];
   const isNl = !dateLocale || dateLocale === 'nl-NL';
+
+  const addCustomCategory = () => {
+    if (!newCatLabel.trim()) return;
+    const value = newCatLabel.trim().toLowerCase().replace(/[^a-z0-9\u00C0-\u024F]/g, '-').replace(/-+/g, '-');
+    if (CATEGORIES.some(c => c.value === value)) return;
+    const updated = [...customCategories, { value, label: newCatLabel.trim(), emoji: newCatEmoji || '📌' }];
+    setCustomCategories(updated);
+    localStorage.setItem('newsletter_custom_categories', JSON.stringify(updated));
+    setNewCatLabel('');
+    setNewCatEmoji('📌');
+    setShowAddCategory(false);
+  };
+
+  const removeCustomCategory = (value: string) => {
+    const updated = customCategories.filter(c => c.value !== value);
+    setCustomCategories(updated);
+    localStorage.setItem('newsletter_custom_categories', JSON.stringify(updated));
+  };
 
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -481,6 +546,7 @@ export default function AdminNieuwsbrieven() {
   const [formEventDate, setFormEventDate] = useState('');
   const [formEventLocation, setFormEventLocation] = useState('');
   const [formBlocks, setFormBlocks] = useState<ContentBlock[]>([{ id: generateBlockId(), type: 'text', content: '' }]);
+  const [formFont, setFormFont] = useState('Inter');
   const [formScheduleEnabled, setFormScheduleEnabled] = useState(false);
   const [formScheduleDate, setFormScheduleDate] = useState('');
   const [formScheduleTime, setFormScheduleTime] = useState('09:00');
@@ -518,7 +584,7 @@ export default function AdminNieuwsbrieven() {
 
   const filtered = newsletters.filter(n => {
     const q = search.toLowerCase();
-    const plainContent = n.content.startsWith('[{') ? blocksToPlainText(parseContentToBlocks(n.content)) : n.content;
+    const plainContent = (n.content.startsWith('[{') || n.content.startsWith('{"blocks"')) ? blocksToPlainText(parseContentToBlocks(n.content)) : n.content;
     const matchSearch = !q || n.title.toLowerCase().includes(q) || plainContent.toLowerCase().includes(q);
     const matchStatus = filterStatus === 'all' || n.status === filterStatus;
     const matchCategory = filterCategory === 'all' || n.category === filterCategory;
@@ -531,6 +597,7 @@ export default function AdminNieuwsbrieven() {
     setFormEventDate('');
     setFormEventLocation('');
     setFormBlocks([{ id: generateBlockId(), type: 'text', content: '' }]);
+    setFormFont('Inter');
     setFormScheduleEnabled(false);
     setFormScheduleDate('');
     setFormScheduleTime('09:00');
@@ -556,6 +623,7 @@ export default function AdminNieuwsbrieven() {
     setFormEventDate(n.event_date ? new Date(n.event_date).toISOString().split('T')[0] : '');
     setFormEventLocation(n.event_location || '');
     setFormBlocks(parseContentToBlocks(n.content, n.photos));
+    setFormFont(parseFontFromContent(n.content));
     if (n.scheduled_at) {
       setFormScheduleEnabled(true);
       const d = new Date(n.scheduled_at);
@@ -580,6 +648,7 @@ export default function AdminNieuwsbrieven() {
     setFormEventDate(n.event_date ? new Date(n.event_date).toISOString().split('T')[0] : '');
     setFormEventLocation(n.event_location || '');
     setFormBlocks(parseContentToBlocks(n.content, n.photos));
+    setFormFont(parseFontFromContent(n.content));
     setEditorMode('edit');
     setEditorOpen(true);
     setShowPreview(true);
@@ -625,7 +694,7 @@ export default function AdminNieuwsbrieven() {
 
       const payload = {
         title: formTitle,
-        content: blocksToContent(formBlocks),
+        content: blocksToContent(formBlocks, formFont),
         category: formCategory,
         eventDate: formEventDate || null,
         eventLocation: formEventLocation || null,
@@ -726,7 +795,7 @@ export default function AdminNieuwsbrieven() {
   };
 
   const getContentPreviewText = (n: Newsletter): string => {
-    if (n.content.startsWith('[{')) {
+    if (n.content.startsWith('[{') || n.content.startsWith('{"blocks"')) {
       return blocksToPlainText(parseContentToBlocks(n.content));
     }
     return n.content;
@@ -823,20 +892,72 @@ export default function AdminNieuwsbrieven() {
                 <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
                   {t('newsletters.categoryLabel')}
                 </label>
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {CATEGORIES.map(c => {
+                    const isCustom = customCategories.some(cc => cc.value === c.value);
+                    return (
+                      <div key={c.value} className="relative group/cat">
+                        <button type="button"
+                          onClick={() => {
+                            setFormCategory(c.value);
+                            if (editorMode === 'create' && !formTitle && !formBlocks.some(b => b.content.trim())) {
+                              const draft = CATEGORY_DRAFTS[c.value];
+                              if (draft) { setFormTitle(draft.title); setFormBlocks(draft.blocks.map(b => ({ ...b, id: generateBlockId() }))); }
+                            }
+                          }}
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                            formCategory === c.value ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'bg-[#FAFAF9] text-muted hover:text-foreground'
+                          }`}>
+                          {c.emoji} {c.label}
+                        </button>
+                        {isCustom && (
+                          <button type="button" onClick={() => removeCustomCategory(c.value)}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-100 text-red-500 hover:bg-red-200 flex items-center justify-center opacity-0 group-hover/cat:opacity-100 transition cursor-pointer">
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {showAddCategory ? (
+                    <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2 py-1">
+                      <input type="text" value={newCatEmoji} onChange={(e) => setNewCatEmoji(e.target.value)}
+                        className="w-8 text-center text-sm focus:outline-none" maxLength={2} />
+                      <input type="text" value={newCatLabel} onChange={(e) => setNewCatLabel(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomCategory(); } }}
+                        placeholder={isNl ? 'Naam...' : 'Name...'}
+                        className="w-24 text-xs focus:outline-none" autoFocus />
+                      <button type="button" onClick={addCustomCategory} disabled={!newCatLabel.trim()}
+                        className="text-primary hover:text-primary-dark disabled:opacity-40 cursor-pointer">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button type="button" onClick={() => { setShowAddCategory(false); setNewCatLabel(''); setNewCatEmoji('📌'); }}
+                        className="text-muted hover:text-foreground cursor-pointer">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setShowAddCategory(true)}
+                      className="w-7 h-7 rounded-lg border border-dashed border-gray-300 text-muted hover:text-primary hover:border-primary/40 flex items-center justify-center transition cursor-pointer">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Font */}
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
+                  {isNl ? 'Lettertype' : 'Font'}
+                </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {CATEGORIES.map(c => (
-                    <button key={c.value} type="button"
-                      onClick={() => {
-                        setFormCategory(c.value);
-                        if (editorMode === 'create' && !formTitle && !formBlocks.some(b => b.content.trim())) {
-                          const draft = CATEGORY_DRAFTS[c.value];
-                          if (draft) { setFormTitle(draft.title); setFormBlocks(draft.blocks.map(b => ({ ...b, id: generateBlockId() }))); }
-                        }
-                      }}
+                  {FONT_OPTIONS.map(f => (
+                    <button key={f.value} type="button" onClick={() => setFormFont(f.value)}
                       className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
-                        formCategory === c.value ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'bg-[#FAFAF9] text-muted hover:text-foreground'
-                      }`}>
-                      {c.emoji} {c.label}
+                        formFont === f.value ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'bg-[#FAFAF9] text-muted hover:text-foreground'
+                      }`}
+                      style={{ fontFamily: f.css }}>
+                      {f.label}
                     </button>
                   ))}
                 </div>
@@ -853,7 +974,7 @@ export default function AdminNieuwsbrieven() {
               </div>
 
               {/* Event details (optional) */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">
                     <Calendar className="w-3 h-3 inline -mt-0.5 mr-0.5" /> {t('newsletters.eventDate')}
@@ -938,6 +1059,7 @@ export default function AdminNieuwsbrieven() {
               dateLocale={dateLocale}
               isNl={isNl}
               getCategoryInfo={getCategoryInfo}
+              font={formFont}
             />
           </div>
         </div>
