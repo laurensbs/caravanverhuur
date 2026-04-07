@@ -10,7 +10,7 @@ import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings as staticCampingsData, type Camping } from '@/data/campings';
 import { destinations } from '@/data/destinations';
-import WeatherBar from './WeatherBar';
+
 import { useLanguage, localeFlags, type Locale } from '@/i18n/context';
 import { useData } from '@/lib/data-context';
 
@@ -125,10 +125,135 @@ export default function Header() {
   return (
     <>
     <div className="sticky top-0 z-50">
-      <WeatherBar />
+      {/* ===== TOP UTILITY BAR ===== */}
+      <div className="bg-foreground text-white text-[11px] sm:text-xs">
+        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+          <p className="font-semibold uppercase tracking-wide">
+            <span className="hidden sm:inline">{t('nav.season')}</span>
+            <span className="sm:hidden">{t('nav.seasonShort')}</span>
+          </p>
+          <div className="flex items-center">
+            {/* Language */}
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangDropdown(!langDropdown)}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Language"
+              >
+                <span className="text-sm leading-none">{localeFlags[locale]}</span>
+                <span className="hidden sm:inline">{locale.toUpperCase()}</span>
+                <ChevronDown size={10} />
+              </button>
+              <AnimatePresence>
+                {langDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl ring-1 ring-black/5 py-1.5 min-w-[160px] z-50"
+                  >
+                    {(['nl', 'en', 'es'] as Locale[]).map(l => (
+                      <button
+                        key={l}
+                        onClick={() => { setLocale(l); setLangDropdown(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors hover:bg-gray-50 ${locale === l ? 'text-primary font-semibold bg-primary/5' : 'text-foreground-light'}`}
+                      >
+                        <span className="text-lg leading-none">{localeFlags[l]}</span>
+                        <span>{l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}</span>
+                        {locale === l && <span className="ml-auto text-primary">✓</span>}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-        <header className="relative bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 sm:h-[72px]">
+            <div className="w-px h-3.5 bg-white/20 mx-1 hidden sm:block" />
+
+            {/* Account */}
+            <div className="relative" ref={accountRef} onMouseEnter={openAccount} onMouseLeave={closeAccount}>
+              {loggedInUser ? (
+                <button
+                  onClick={() => setAccountDropdown(!accountDropdown)}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-bold leading-none">
+                    {loggedInUser.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="hidden sm:inline">{locale === 'nl' ? 'Mijn Account' : locale === 'es' ? 'Mi Cuenta' : 'My Account'}</span>
+                  <ChevronDown size={10} className="hidden sm:block" />
+                </button>
+              ) : (
+                <Link href="/account" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                  <User size={14} />
+                  <span className="hidden sm:inline">{locale === 'nl' ? 'Inloggen' : locale === 'es' ? 'Iniciar sesión' : 'Sign in'}</span>
+                </Link>
+              )}
+              <AnimatePresence>
+                {accountDropdown && loggedInUser && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute right-0 top-full mt-1.5 bg-white rounded-2xl shadow-xl w-64 z-50 overflow-hidden"
+                  >
+                    <div className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-sm">
+                          {loggedInUser.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{loggedInUser.name}</p>
+                          <p className="text-xs text-muted truncate">{loggedInUser.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="py-1.5">
+                      {[
+                        { href: '/mijn-account', icon: <User size={15} />, label: t('nav.myDashboard') },
+                        { href: '/mijn-account?tab=boekingen', icon: <Calendar size={15} />, label: t('nav.myBookings') },
+                        { href: '/mijn-account?tab=betalingen', icon: <CreditCard size={15} />, label: t('nav.myPayments') },
+                        { href: '/mijn-account?tab=borg', icon: <Shield size={15} />, label: t('nav.myDeposit') },
+                        { href: '/mijn-account?tab=profiel', icon: <Settings size={15} />, label: t('nav.accountSettings') },
+                      ].map(item => (
+                        <Link key={item.href} href={item.href} onClick={() => setAccountDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-light hover:bg-gray-50 transition-colors">
+                          <span className="text-muted">{item.icon}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-gray-100 py-1.5">
+                      <button onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger/70 hover:bg-gray-50 transition-colors">
+                        <LogOut size={15} />
+                        {t('myAccount.logout')}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="w-px h-3.5 bg-white/20 mx-1 hidden sm:block" />
+
+            {/* Chat */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Chat"
+            >
+              <MessageCircle size={14} />
+              <span className="hidden sm:inline">Live Chat</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <header className="relative bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
@@ -147,120 +272,23 @@ export default function Header() {
             <div className="relative h-full flex items-center" onMouseEnter={() => openMega('bestemmingen')} onMouseLeave={closeMega}>
               <Link href="/bestemmingen" className={`flex items-center gap-1 ${navCls('/bestemmingen')}`}>
                 {t('nav.destinations')}
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} /> </Link> </div> <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link> <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link> <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link> {/* Language switcher */} <div className="relative" ref={langRef}> <button onClick={() => setLangDropdown(!langDropdown)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors" aria-label="Language"> <span className="text-xl leading-none">{localeFlags[locale]}</span> </button> <AnimatePresence> {langDropdown && ( <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl ring-1 ring-black/5 py-1.5 min-w-[160px] z-50"> {(['nl', 'en', 'es'] as Locale[]).map(l => ( <button key={l} onClick={() => { setLocale(l); setLangDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors hover:bg-gray-50 ${locale === l ? 'text-primary font-semibold bg-primary/5' : 'text-foreground-light'}`}>
-                        <span className="text-lg leading-none">{localeFlags[l]}</span>
-                        <span>{l === 'nl' ? 'Nederlands' : l === 'en' ? 'English' : 'Español'}</span>
-                        {locale === l && <span className="ml-auto text-primary">✓</span>}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${megaMenu === 'bestemmingen' ? 'rotate-180' : ''}`} />
+              </Link>
             </div>
+            <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link>
+            <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link>
+            <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link>
 
-            {/* Account dropdown */}
-            <div className="relative" ref={accountRef} onMouseEnter={openAccount} onMouseLeave={closeAccount}>
-              {loggedInUser ? (
-                <button
-                  onClick={() => setAccountDropdown(!accountDropdown)}
-                  className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-sm transition-colors"
-                >
-                  {loggedInUser.name.charAt(0).toUpperCase()}
-                </button>
-              ) : (
-                <Link href="/account" className="w-10 h-10 flex items-center justify-center rounded-full text-muted transition-colors" aria-label="Account">
-                  <User size={18} />
-                </Link>
-              )}
-              <AnimatePresence>
-                {accountDropdown && loggedInUser && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl w-64 z-50 overflow-hidden"
-                  >
-                    {/* User info */}
-                    <div className="px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-sm">
-                          {loggedInUser.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{loggedInUser.name}</p>
-                          <p className="text-xs text-muted truncate">{loggedInUser.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Quick links */}
-                    <div className="py-1.5">
-                      {[
-                        { href: '/mijn-account', icon: <User size={15} />, label: t('nav.myDashboard') },
-                        { href: '/mijn-account?tab=boekingen', icon: <Calendar size={15} />, label: t('nav.myBookings') },
-                        { href: '/mijn-account?tab=betalingen', icon: <CreditCard size={15} />, label: t('nav.myPayments') },
-                        { href: '/mijn-account?tab=borg', icon: <Shield size={15} />, label: t('nav.myDeposit') },
-                        { href: '/mijn-account?tab=profiel', icon: <Settings size={15} />, label: t('nav.accountSettings') },
-                      ].map(item => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setAccountDropdown(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-light transition-colors"
-                        >
-                          <span className="text-muted">{item.icon}</span>
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                    {/* Logout */}
-                    <div className="py-1.5">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger/70 transition-colors"
-                      >
-                        <LogOut size={15} />
-                        {t('myAccount.logout')}
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Chat button */}
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
-              className="w-10 h-10 flex items-center justify-center rounded-full text-muted hover:text-primary hover:bg-primary/5 transition-colors"
-              aria-label="Chat"
-            >
-              <MessageCircle size={18} />
-            </button>
-
-            <Link href="/boeken" className="ml-2 px-6 py-2.5 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
+            <Link href="/boeken" className="ml-3 px-6 py-2.5 bg-primary text-white text-sm font-bold tracking-tight rounded-lg transition-all flex items-center gap-1.5 hover:bg-primary-dark">
               {t('nav.bookNow')} <ArrowRight size={14} />
             </Link>
           </nav>
 
           {/* Mobile actions */}
-          <div className="lg:hidden flex items-center gap-1">
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-primary transition-colors"
-            aria-label="Chat"
-          >
-            <MessageCircle size={17} />
-          </button>
-          <Link href="/account" className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-primary transition-colors" aria-label="Account">
-            {loggedInUser ? (
-              <span className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">{loggedInUser.name.charAt(0).toUpperCase()}</span>
-            ) : (
-              <User size={17} />
-            )}
-          </Link>
-          <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
-            {t('nav.bookNow')} <ArrowRight size={11} />
-          </Link>
+          <div className="lg:hidden flex items-center gap-1.5">
+            <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
+              {t('nav.bookNow')} <ArrowRight size={11} />
+            </Link>
           <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
             <div className="relative w-[18px] h-3">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-0 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
@@ -514,22 +542,10 @@ export default function Header() {
             </nav>
 
             {/* Bottom CTA */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} className="px-4 pt-4 pb-6 space-y-3 border-t border-gray-100/80 bg-gray-50/60">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.3 }} className="px-4 pt-4 pb-6 border-t border-gray-100/80 bg-gray-50/60">
               <Link href="/boeken" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white font-bold rounded-xl text-[15px] shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
                 {t('nav.bookNow')} <ArrowRight size={15} />
               </Link>
-              <div className="flex items-center gap-3">
-                <Link href="/account" onClick={() => setMenuOpen(false)} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-gray-500 font-medium rounded-xl text-sm bg-white border border-gray-200 hover:border-gray-300 active:bg-gray-50 transition-all">
-                  <User size={14} /> {t('footer.myAccount')}
-                </Link>
-                <div className="flex items-center gap-1">
-                  {(['nl', 'en', 'es'] as Locale[]).map(l => (
-                    <button key={l} onClick={() => setLocale(l)} className={`w-9 h-9 rounded-full text-lg flex items-center justify-center transition-all active:scale-90 ${locale === l ? 'bg-primary/10 ring-2 ring-primary' : 'hover:bg-gray-100'}`}>
-                      {localeFlags[l]}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </motion.div>
           </motion.div>
         </>
