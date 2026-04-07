@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllTasks, ensureAllBookingTasks, updateTaskStatus, updateTaskAssignment, updateTaskNotes, setupDatabase } from '@/lib/db';
+import {
+  getAllTasks, ensureAllBookingTasks, updateTaskStatus, updateTaskAssignment, updateTaskNotes,
+  setupDatabase, getBorgChecklistsByBooking, createBorgChecklist, getBorgChecklistById, getBookingById,
+} from '@/lib/db';
+import { sendBorgChecklistEmail } from '@/lib/email';
 
 export async function GET() {
   try {
@@ -23,7 +27,7 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { taskId, status, completedBy, assignedTo, notes } = body;
+    const { taskId, status, completedBy, assignedTo, notes, sendEmail: shouldSendEmail, bookingId, taskType } = body;
 
     if (!taskId) {
       return NextResponse.json({ error: 'taskId is required' }, { status: 400 });
@@ -37,6 +41,38 @@ export async function PATCH(request: NextRequest) {
     }
     if (notes !== undefined) {
       await updateTaskNotes(taskId, notes);
+    }
+
+    // Send borg checklist email when completing CHECKIN or CHECKOUT
+    if (shouldSendEmail && status === 'DONE' && bookingId && (taskType === 'CHECKIN' || taskType === 'CHECKOUT')) {
+      try {
+        const borgType = taskType === 'CHECKIN' ? 'INCHECKEN' : 'UITCHECKEN';
+        let borgChecklists = await getBorgChecklistsByBooking(bookingId);
+        let checklist = borgChecklists.find((bc: Record<string, unknown>) => bc.type === borgType);
+
+        // Create borg checklist if it doesn't exist
+        if (!checklist) {
+          const result = await createBorgChecklist({ bookingId, type: borgType, staffName: completedBy });
+          checklist = await getBorgChecklistById(result.id);
+        }
+
+        if (checklist?.token) {
+          const booking = await getBookingById(bookingId);
+          if (booking?.guest_email) {
+            await sendBorgChecklistEmail({
+              to: booking.guest_email,
+              guestName: booking.guest_name,
+              reference: booking.reference,
+              type: borgType as 'INCHECKEN' | 'UITCHECKEN',
+              token: checklist.token as string,
+              checkIn: booking.check_in,
+              checkOut: booking.check_out,
+            }, booking.locale || 'nl');
+          }
+        }
+      } catch (emailErr) {
+        console.error('Failed to send borg email on task completion (non-fatal):', emailErr);
+      }
     }
 
     return NextResponse.json({ success: true });

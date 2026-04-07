@@ -24,6 +24,9 @@ import {
   Shield,
   ExternalLink,
   RefreshCw,
+  Mail,
+  Lock,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '@/i18n/admin-context';
@@ -90,6 +93,21 @@ const TASK_COLORS: Record<string, string> = {
   PICKUP: 'bg-blue-100 text-blue-700',
   INSPECTION: 'bg-purple-100 text-purple-700',
 };
+
+// Sequential order — each task requires the previous to be DONE before it can be started
+const TASK_SEQUENCE: TaskType[] = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'INSPECTION'];
+
+function isTaskLocked(task: BookingTask, allTasksForBooking: BookingTask[]): boolean {
+  const idx = TASK_SEQUENCE.indexOf(task.task_type);
+  if (idx <= 0) return false; // First task is never locked
+  // Check all preceding tasks in the sequence are DONE
+  for (let i = 0; i < idx; i++) {
+    const prevType = TASK_SEQUENCE[i];
+    const prevTask = allTasksForBooking.find(t => t.task_type === prevType);
+    if (prevTask && prevTask.status !== 'DONE') return true;
+  }
+  return false;
+}
 
 // ===== HELPERS =====
 
@@ -159,7 +177,7 @@ function getUrgencyBadge(daysUntil: number, status: TaskStatus): string {
 
 // ===== STATUS BUTTON =====
 
-function TaskStatusButton({ task, onToggle }: { task: BookingTask; onToggle: (task: BookingTask) => void }) {
+function TaskStatusButton({ task, onToggle, locked }: { task: BookingTask; onToggle: (task: BookingTask) => void; locked?: boolean }) {
   const nextStatus: Record<TaskStatus, TaskStatus> = { TODO: 'IN_PROGRESS', IN_PROGRESS: 'DONE', DONE: 'TODO' };
   const statusColors: Record<TaskStatus, string> = {
     TODO: 'border-gray-300 bg-white',
@@ -169,8 +187,10 @@ function TaskStatusButton({ task, onToggle }: { task: BookingTask; onToggle: (ta
   const Icon = task.status === 'DONE' ? Check : task.status === 'IN_PROGRESS' ? PlayCircle : Circle;
   return (
     <button
-      onClick={(e) => { e.stopPropagation(); onToggle({ ...task, status: nextStatus[task.status] }); }}
-      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-90 ${statusColors[task.status]}`}
+      onClick={(e) => { e.stopPropagation(); if (!locked) onToggle({ ...task, status: nextStatus[task.status] }); }}
+      disabled={locked}
+      title={locked ? 'Vorige taak nog niet afgerond' : undefined}
+      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${locked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer active:scale-90'} ${statusColors[task.status]}`}
     >
       <Icon className={`w-3.5 h-3.5 ${task.status === 'DONE' ? 'text-white' : task.status === 'IN_PROGRESS' ? 'text-amber-600' : 'text-gray-400'}`} />
     </button>
@@ -313,12 +333,13 @@ function TripCard({
                       {group.tasks.map(task => {
                         const TaskIcon = TASK_ICONS[task.task_type] || Wrench;
                         const daysUntil = task.due_date ? getDaysUntil(task.due_date) : null;
+                        const locked = isTaskLocked(task, trip.tasks);
                         return (
                           <div key={task.id}
-                            className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors ${task.status === 'DONE' ? 'bg-green-50/50' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                            <TaskStatusButton task={task} onToggle={onToggleTask} />
-                            <button onClick={() => onSelectTask(task)}
-                              className="flex-1 flex items-center gap-2 min-w-0 text-left cursor-pointer">
+                            className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors ${task.status === 'DONE' ? 'bg-green-50/50' : locked ? 'bg-gray-50/50 opacity-50' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                            <TaskStatusButton task={task} onToggle={onToggleTask} locked={locked} />
+                            <button onClick={() => !locked && onSelectTask(task)} disabled={locked}
+                              className={`flex-1 flex items-center gap-2 min-w-0 text-left ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                               <span className={`inline-flex items-center gap-1 text-xs font-medium ${task.status === 'DONE' ? 'text-green-600 line-through' : 'text-foreground'}`}>
                                 <TaskIcon className="w-3 h-3" />{getTaskLabel(task.task_type, locale)}
                               </span>
@@ -479,6 +500,213 @@ function TaskDetail({
   );
 }
 
+// ===== CHECK-IN / CHECK-OUT SHEET =====
+
+function CheckInOutSheet({
+  task, trip, onClose, onComplete, locale,
+}: {
+  task: BookingTask;
+  trip: TripData;
+  onClose: () => void;
+  onComplete: (task: BookingTask, sendEmail: boolean) => Promise<void>;
+  locale: string;
+}) {
+  const [completing, setCompleting] = useState(false);
+  const [sendEmail, setSendEmail] = useState(true);
+  const [borgLoading, setBorgLoading] = useState(true);
+  const [borgChecklist, setBorgChecklist] = useState<BorgChecklist & { token?: string; items?: unknown[] } | null>(null);
+  const [creatingBorg, setCreatingBorg] = useState(false);
+  const caravan = getBookingCaravan({ caravan_id: task.caravan_id } as Booking);
+  const camping = getBookingCamping({ camping_id: task.camping_id } as Booking);
+  const isNl = locale !== 'en';
+  const isCheckIn = task.task_type === 'CHECKIN';
+  const borgType = isCheckIn ? 'INCHECKEN' : 'UITCHECKEN';
+
+  // Fetch borg checklist for this booking
+  useEffect(() => {
+    setBorgLoading(true);
+    fetch(`/api/borg?booking_id=${task.booking_id}`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : [])
+      .then((checklists: BorgChecklist[]) => {
+        const match = checklists.find(bc => bc.type === borgType);
+        if (match) setBorgChecklist(match as BorgChecklist & { token?: string });
+      })
+      .catch(() => {})
+      .finally(() => setBorgLoading(false));
+  }, [task.booking_id, borgType]);
+
+  const handleCreateBorg = async () => {
+    setCreatingBorg(true);
+    try {
+      const res = await fetch('/api/borg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: task.booking_id, type: borgType }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBorgChecklist({ id: data.id, booking_id: task.booking_id, type: borgType, status: 'OPEN', token: data.token });
+      }
+    } catch { /* ignore */ }
+    setCreatingBorg(false);
+  };
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    await onComplete(task, sendEmail);
+    setCompleting(false);
+  };
+
+  const borgStatusLabel = (status: string) => {
+    const labels: Record<string, Record<string, string>> = {
+      nl: { OPEN: 'Open', IN_BEHANDELING: 'Bezig', AFGEROND: 'Afgerond', KLANT_AKKOORD: 'Klant akkoord', KLANT_BEZWAAR: 'Klant bezwaar' },
+      en: { OPEN: 'Open', IN_BEHANDELING: 'In progress', AFGEROND: 'Completed', KLANT_AKKOORD: 'Agreed', KLANT_BEZWAAR: 'Objected' },
+    };
+    return (labels[locale] || labels.nl)[status] || status;
+  };
+
+  const borgStatusColor = (status: string) => {
+    if (status === 'KLANT_AKKOORD') return 'bg-green-100 text-green-700';
+    if (status === 'AFGEROND') return 'bg-blue-100 text-blue-700';
+    if (status === 'KLANT_BEZWAAR') return 'bg-red-100 text-red-700';
+    if (status === 'IN_BEHANDELING') return 'bg-amber-100 text-amber-700';
+    return 'bg-gray-100 text-gray-600';
+  };
+
+  const isDone = task.status === 'DONE';
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
+      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="sticky top-0 bg-white rounded-t-2xl z-10 border-b border-gray-100">
+          <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-2 sm:hidden" />
+          <div className={`p-4 ${isCheckIn ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-orange-50 to-amber-50'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-xl ${isCheckIn ? 'bg-green-100' : 'bg-orange-100'}`}>
+                {isCheckIn ? <LogIn className="w-6 h-6 text-green-700" /> : <LogOut className="w-6 h-6 text-orange-700" />}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-foreground">
+                  {isCheckIn ? (isNl ? 'Inchecken' : 'Check-in') : (isNl ? 'Uitchecken' : 'Check-out')}
+                </h3>
+                <p className="text-sm text-muted">{task.guest_name} • {task.booking_ref}</p>
+              </div>
+              <button onClick={onClose} className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-muted" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Booking info */}
+          <div className="bg-surface rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2 text-sm"><CarFront className="w-4 h-4 text-muted" /><span className="font-medium">{caravan?.name || task.caravan_id}</span></div>
+            <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted" /><span>{camping?.name || task.camping_id}</span></div>
+            <div className="flex items-center gap-2 text-sm"><Calendar className="w-4 h-4 text-muted" /><span>{formatDate(task.check_in)} → {formatDate(task.check_out)}</span></div>
+            <div className="flex items-center gap-2 text-sm"><User className="w-4 h-4 text-muted" /><span>{task.guest_name}</span></div>
+          </div>
+
+          {/* Borg inspection section */}
+          <div className={`rounded-xl border-2 ${borgChecklist ? 'border-purple-200 bg-purple-50/50' : 'border-dashed border-gray-300 bg-gray-50'} p-4`}>
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-5 h-5 text-purple-600" />
+              <h4 className="font-semibold text-sm text-foreground">
+                {isCheckIn ? (isNl ? 'Incheck-inspectie (Borg)' : 'Check-in Inspection (Deposit)') : (isNl ? 'Uitcheck-inspectie (Borg)' : 'Check-out Inspection (Deposit)')}
+              </h4>
+            </div>
+
+            {borgLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" />{isNl ? 'Laden...' : 'Loading...'}</div>
+            ) : borgChecklist ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted">{isNl ? 'Status:' : 'Status:'}</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${borgStatusColor(borgChecklist.status)}`}>
+                    {borgStatusLabel(borgChecklist.status)}
+                  </span>
+                </div>
+                <a
+                  href={`/admin/inspectie/${borgChecklist.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-purple-600 text-white font-semibold rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  {borgChecklist.status === 'OPEN'
+                    ? (isNl ? 'Inspectie starten' : 'Start inspection')
+                    : (isNl ? 'Inspectie bekijken' : 'View inspection')}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-muted">{isNl ? 'Er is nog geen borgchecklist voor deze stap.' : 'No deposit checklist exists for this step yet.'}</p>
+                <button onClick={handleCreateBorg} disabled={creatingBorg}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-purple-600 text-white font-semibold rounded-xl text-sm hover:bg-purple-700 transition-colors cursor-pointer disabled:opacity-50">
+                  {creatingBorg ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+                  {isNl ? 'Borgchecklist aanmaken' : 'Create deposit checklist'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Task description */}
+          <div className="bg-blue-50 rounded-xl p-3">
+            <p className="text-xs text-blue-700 leading-relaxed">{getTaskDescription(task.task_type, locale)}</p>
+          </div>
+
+          {/* Completed info */}
+          {isDone && task.completed_at && (
+            <div className="bg-green-50 rounded-xl p-3">
+              <p className="text-xs text-green-700 font-medium flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" />{isNl ? 'Afgerond' : 'Completed'} {formatDate(task.completed_at)}
+                {task.completed_by && ` ${isNl ? 'door' : 'by'} ${task.completed_by}`}
+              </p>
+            </div>
+          )}
+
+          {/* Email toggle + complete button */}
+          {!isDone && (
+            <>
+              <label className="flex items-center gap-3 p-3 bg-surface rounded-xl cursor-pointer">
+                <input type="checkbox" checked={sendEmail} onChange={() => setSendEmail(!sendEmail)}
+                  className="w-4 h-4 rounded accent-primary cursor-pointer" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                    <Mail className="w-4 h-4 text-muted" />
+                    {isCheckIn
+                      ? (isNl ? 'Stuur klant incheck-mail met borglink' : 'Send customer check-in email with deposit link')
+                      : (isNl ? 'Stuur klant uitcheck-mail met borglink' : 'Send customer check-out email with deposit link')}
+                  </p>
+                  <p className="text-[11px] text-muted mt-0.5">
+                    {isNl ? 'Klant ontvangt een e-mail met een link naar het borgformulier' : 'Customer receives an email with a link to the deposit form'}
+                  </p>
+                </div>
+              </label>
+              <button onClick={handleComplete} disabled={completing}
+                className={`w-full py-3.5 font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 text-white ${
+                  isCheckIn ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'
+                }`}>
+                {completing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                {isCheckIn
+                  ? (isNl ? 'Inchecken voltooien' : 'Complete check-in')
+                  : (isNl ? 'Uitchecken voltooien' : 'Complete check-out')}
+              </button>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ===== MAIN COMPONENT =====
 
 export default function PlanningPage() {
@@ -559,6 +787,35 @@ export default function PlanningPage() {
       setSelectedTask(null);
       toast(t('common.saved'), 'success');
     } catch { toast(t('common.actionFailed'), 'error'); }
+  };
+
+  const handleCheckinCheckoutComplete = async (task: BookingTask, sendEmail: boolean) => {
+    const updatedTask = { ...task, status: 'DONE' as TaskStatus };
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'DONE' as TaskStatus } : t));
+    try {
+      await fetch('/api/admin/tasks', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: task.id,
+          status: 'DONE',
+          completedBy: 'Staff',
+          sendEmail,
+          bookingId: task.booking_id,
+          taskType: task.task_type,
+        }),
+      });
+      setSelectedTask(null);
+      toast(
+        task.task_type === 'CHECKIN'
+          ? (isNl ? 'Inchecken voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Check-in completed' + (sendEmail ? ' — email sent' : ''))
+          : (isNl ? 'Uitchecken voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Check-out completed' + (sendEmail ? ' — email sent' : '')),
+        'success'
+      );
+      fetchData();
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+      fetchData();
+    }
   };
 
   const toggleTrip = (bookingId: string) => {
@@ -815,14 +1072,18 @@ export default function PlanningPage() {
                         );
                       })()}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {item.tasks.map(task => (
-                          <div key={task.id} className="flex items-center gap-1.5">
-                            <TaskStatusButton task={task} onToggle={handleToggle} />
-                            <button onClick={() => setSelectedTask(task)} className="text-xs text-foreground-light hover:text-foreground cursor-pointer">
-                              {getTaskLabel(task.task_type, locale)}
-                            </button>
-                          </div>
-                        ))}
+                        {item.tasks.map(task => {
+                          const locked = isTaskLocked(task, item.trip.tasks);
+                          return (
+                            <div key={task.id} className={`flex items-center gap-1.5 ${locked ? 'opacity-40' : ''}`}>
+                              <TaskStatusButton task={task} onToggle={handleToggle} locked={locked} />
+                              <button onClick={() => !locked && setSelectedTask(task)} disabled={locked}
+                                className={`text-xs text-foreground-light hover:text-foreground ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                {getTaskLabel(task.task_type, locale)}
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                       {borgForMoment && (
                         <a href="/admin/borg" className="inline-flex items-center gap-1.5 mt-2 text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded-lg hover:bg-purple-100 transition-colors">
@@ -891,11 +1152,14 @@ export default function PlanningPage() {
                     <div className="flex flex-wrap gap-1">
                       {displayTrip.tasks.map(task => {
                         const TaskIcon = TASK_ICONS[task.task_type] || Wrench;
+                        const locked = isTaskLocked(task, displayTrip.tasks);
                         return (
-                          <button key={task.id} onClick={() => setSelectedTask(task)}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors cursor-pointer ${
-                              task.status === 'DONE' ? 'bg-green-100 text-green-700 line-through' : task.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          <button key={task.id} onClick={() => !locked && setSelectedTask(task)} disabled={locked}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                              locked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
+                              task.status === 'DONE' ? 'bg-green-100 text-green-700 line-through cursor-pointer' : task.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-700 cursor-pointer' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
                             }`}>
+                            {locked && <Lock className="w-2.5 h-2.5" />}
                             <TaskIcon className="w-3 h-3" />{getTaskLabel(task.task_type, locale)}
                           </button>
                         );
@@ -911,9 +1175,20 @@ export default function PlanningPage() {
         </div>
       )}
 
-      {/* Task detail */}
+      {/* Task detail / Check-in/out sheet */}
       <AnimatePresence>
-        {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} onToggle={handleToggle} onSave={handleSave} locale={locale} drivers={drivers} />}
+        {selectedTask && (selectedTask.task_type === 'CHECKIN' || selectedTask.task_type === 'CHECKOUT') ? (
+          <CheckInOutSheet
+            key={selectedTask.id}
+            task={selectedTask}
+            trip={trips.find(tr => tr.bookingId === selectedTask.booking_id) || { bookingId: selectedTask.booking_id, guestName: selectedTask.guest_name, bookingRef: selectedTask.booking_ref, caravanId: selectedTask.caravan_id, campingId: selectedTask.camping_id, checkIn: selectedTask.check_in, checkOut: selectedTask.check_out, bookingStatus: selectedTask.booking_status, tasks: [], borgChecklists: [] }}
+            onClose={() => setSelectedTask(null)}
+            onComplete={handleCheckinCheckoutComplete}
+            locale={locale}
+          />
+        ) : selectedTask ? (
+          <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} onToggle={handleToggle} onSave={handleSave} locale={locale} drivers={drivers} />
+        ) : null}
       </AnimatePresence>
     </div>
   );
