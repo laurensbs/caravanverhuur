@@ -453,8 +453,8 @@ export async function setupDatabase() {
   const existingRules = await sql`SELECT COUNT(*) as cnt FROM pricing_rules`;
   if (parseInt(existingRules.rows[0].cnt) === 0) {
     const rules = [
-      // Basisprijs: €550/week. Seizoenstoeslag juli via deze regel (+18% ≈ €650/week).
-      { id: 'pr-seed-hoog', name: 'Hoogseizoen juli (+18%)', type: 'seizoen', percentage: 18, start_date: '2026-07-01', end_date: '2026-07-31', days_before: null, min_nights: 7, priority: 10 },
+      // Basisprijs: €550/week. Seizoenstoeslag juli-aug via deze regel (+18% ≈ €650/week).
+      { id: 'pr-seed-hoog', name: 'Hoogseizoen jul-aug (+18%)', type: 'seizoen', percentage: 18, start_date: '2026-07-01', end_date: '2026-08-30', days_before: null, min_nights: 7, priority: 10 },
       { id: 'pr-seed-vroeg', name: 'Vroegboekkorting (>60 dagen)', type: 'vroegboek', percentage: -5, start_date: null, end_date: null, days_before: 60, min_nights: 7, priority: 5 },
       { id: 'pr-seed-last', name: 'Last minute (<14 dagen)', type: 'lastminute', percentage: -10, start_date: null, end_date: null, days_before: 14, min_nights: 7, priority: 5 },
     ];
@@ -465,6 +465,13 @@ export async function setupDatabase() {
       `;
     }
   }
+
+  // Migrate existing hoogseizoen rule: extend to August 30 if still ends July 31
+  await sql`
+    UPDATE pricing_rules
+    SET name = 'Hoogseizoen jul-aug (+18%)', end_date = '2026-08-30'
+    WHERE id = 'pr-seed-hoog' AND end_date = '2026-07-31'
+  `;
 
   return { success: true, message: 'Database tables created successfully' };
 }
@@ -2164,6 +2171,15 @@ export async function getActivityLogCount() {
 }
 
 // ===== PRICING RULES QUERIES =====
+
+export async function migratePricingRules() {
+  // Extend hoogseizoen to August 30 if still ends July 31
+  await sql`
+    UPDATE pricing_rules
+    SET name = 'Hoogseizoen jul-aug (+18%)', end_date = '2026-08-30'
+    WHERE id = 'pr-seed-hoog' AND end_date = '2026-07-31'
+  `;
+}
 
 export async function getAllPricingRules() {
   const result = await sql`SELECT * FROM pricing_rules ORDER BY priority DESC, created_at DESC`;

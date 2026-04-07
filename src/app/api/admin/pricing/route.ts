@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPricingRules, getActivePricingRules, createPricingRule, updatePricingRule, deletePricingRule, logActivity } from '@/lib/db';
+import { getAllPricingRules, getActivePricingRules, createPricingRule, updatePricingRule, deletePricingRule, logActivity, migratePricingRules } from '@/lib/db';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active') === 'true';
+
+    // Auto-migrate: extend hoogseizoen to Aug 30 if still ends Jul 31
+    await migratePricingRules().catch(() => {});
 
     const rules = activeOnly ? await getActivePricingRules() : await getAllPricingRules();
     return NextResponse.json({ rules });

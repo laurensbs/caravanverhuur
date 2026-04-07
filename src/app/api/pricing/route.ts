@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getActivePricingRules } from '@/lib/db';
+import { getActivePricingRules, migratePricingRules } from '@/lib/db';
 
 export async function GET() {
   try {
+    await migratePricingRules().catch(() => {});
     const rules = await getActivePricingRules();
     return NextResponse.json({ rules });
   } catch (error) {

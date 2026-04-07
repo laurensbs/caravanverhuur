@@ -582,13 +582,13 @@ function smartMatch(
   // ===== PRICING =====
   if (/prijs|kosten|kost|tarief|goedkoop|duur|euro|bedrag|per dag|per week|price|cost|cheap|rate|precio|cuesta|tarifa|hoeveel|budget/.test(lower)) {
     const pricingAnswers = isNl ? [
-      `Onze prijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Hoogseizoen juli**: toeslag via prijsregels\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\n📅 Vroeg boeken? Profiteer van **vroegboekkorting**!\n\nWil je meer weten over de betaling?`,
-      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag via prijsregels\n\n🔑 Geldt voor **alle caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nWil je meer weten over hoe boeken werkt?`,
-      `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Basisprijs**: **€550/week**\n☀️ **Juli**: hoogseizoen toeslag\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 10% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
+      `Onze prijzen gelden voor **alle caravans**${name}! 💰\n\n📅 **Voorseizoen** (t/m 30 juni): **€550/week**\n☀️ **Hoogseizoen** (1 juli - 30 aug): **€650/week**\n🍂 **Naseizoen** (vanaf 1 sept): **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 21% btw.\n\n🔑 Alles is **volledig ingericht** — beddengoed, servies, kookgerei erbij!\nEnige extra kosten: campingplaats (apart bij de camping).\n\n📅 Vroeg boeken? Profiteer van **vroegboekkorting**!\n\nWil je meer weten over de betaling?`,
+      `Dit zijn onze tarieven${name}! 💰\n\n📅 **Voorseizoen**: **€550/week**\n☀️ **Hoogseizoen** (juli-aug): **€650/week**\n🍂 **Naseizoen**: **€550/week**\n\n🔑 Geldt voor **alle caravans** — volledig ingericht met beddengoed, servies en kookgerei!\n\nDe campingplaats betaal je apart bij de camping.\n\nWil je meer weten over hoe boeken werkt?`,
+      `Goed dat je het vraagt${name}! Onze prijzen:\n\n📅 **Voorseizoen**: **€550/week**\n☀️ **Hoogseizoen** (juli-aug): **€650/week**\n🍂 **Naseizoen**: **€550/week**\n\nGebaseerd op 2 volwassenen + 2 kinderen, inclusief 21% btw.\n\n👉 **[Bekijk alle caravans](/caravans)**`,
     ] : isEs ? [
-      `Nuestros precios (todas las caravanas):\n\n📅 Precio base: **€550/semana**\n☀️ Temporada alta (julio): recargo según reglas de precios`,
+      `Nuestros precios (todas las caravanas):\n\n📅 Pretemporada: **€550/semana**\n☀️ Temporada alta (julio-agosto): **€650/semana**\n🍂 Postemporada: **€550/semana**`,
     ] : [
-      `Our prices (all caravans):\n\n📅 Base rate: **€550/week**\n☀️ High season (July): surcharge via pricing rules`,
+      `Our prices (all caravans):\n\n📅 Pre-season: **€550/week**\n☀️ High season (July-August): **€650/week**\n🍂 Post-season: **€550/week**`,
     ];
     return {
       answer: pick(pricingAnswers, asked),
@@ -1867,7 +1867,8 @@ function renderMarkdown(text: string): React.ReactNode {
 /*  Seasonal pricing helper                                            */
 /* ------------------------------------------------------------------ */
 function getSeasonalWeeklyRate(date: Date): number {
-  return date.getMonth() === 6 ? 650 : 550; // July = 650, rest = 550
+  const m = date.getMonth();
+  return (m === 6 || m === 7) ? 650 : 550; // July+August = 650, rest = 550
 }
 
 function calculateSeasonalPrice(checkInStr: string, nights: number): number {

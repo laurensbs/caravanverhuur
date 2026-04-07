@@ -71,17 +71,6 @@ export async function GET() {
         }
       }
 
-      // Remove DB campings not present in static data (keep only the 51 approved campings)
-      const staticSlugs = new Set(staticCampings.map(sc => sc.slug));
-      const staticNames = new Set(staticCampings.map(sc => sc.name.toLowerCase()));
-      for (const c of campings) {
-        const slug = c.slug as string;
-        const name = ((c.name as string) || '').toLowerCase();
-        if (!staticSlugs.has(slug) && !staticNames.has(name)) {
-          await deleteCamping(c.id as string);
-        }
-      }
-
       campings = await getAllCampings();
     }
 
