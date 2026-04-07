@@ -289,6 +289,25 @@ function TripCard({
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className={`text-xs font-semibold ${groupDone ? 'text-green-600' : 'text-foreground-light'}`}>{group.label}</span>
                       {groupDone && <Check className="w-3 h-3 text-green-500" />}
+                      {/* Show driver for delivery/pickup groups */}
+                      {(() => {
+                        const transportTask = group.tasks.find(t => t.task_type === 'TRANSPORT' || t.task_type === 'PICKUP');
+                        if (transportTask?.assigned_to) {
+                          return (
+                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ml-auto">
+                              <User className="w-2.5 h-2.5" />{transportTask.assigned_to}
+                            </span>
+                          );
+                        }
+                        if (transportTask && !groupDone) {
+                          return (
+                            <button onClick={() => onSelectTask(transportTask)} className="text-[10px] text-amber-600 font-medium ml-auto flex items-center gap-0.5 cursor-pointer hover:text-amber-800">
+                              <AlertCircle className="w-2.5 h-2.5" />{isNl ? 'Wijs chauffeur toe' : 'Assign driver'}
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     <div className="space-y-1">
                       {group.tasks.map(task => {
@@ -747,6 +766,54 @@ export default function PlanningPage() {
                       <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
                         <User className="w-3 h-3" />{item.trip.guestName} <span className="text-muted">({item.trip.bookingRef})</span>
                       </p>
+                      {/* Driver display / quick assign */}
+                      {(() => {
+                        const transportTask = item.tasks.find(t => t.task_type === 'TRANSPORT' || t.task_type === 'PICKUP');
+                        const assignedDriver = transportTask?.assigned_to;
+                        if (assignedDriver) {
+                          const driverInfo = drivers.find(d => d.name === assignedDriver);
+                          return (
+                            <div className="flex items-center gap-2 mt-1.5 bg-primary/5 rounded-lg px-2.5 py-1.5">
+                              <User className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="text-xs font-semibold text-primary">{assignedDriver}</span>
+                              {driverInfo?.phone && <span className="text-[10px] text-muted">({driverInfo.phone})</span>}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (transportTask) setSelectedTask(transportTask);
+                                }}
+                                className="ml-auto text-[10px] text-muted hover:text-foreground cursor-pointer"
+                              >
+                                ✏️
+                              </button>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="mt-1.5">
+                            {drivers.length > 0 ? (
+                              <select
+                                value=""
+                                onChange={async (e) => {
+                                  const driverName = e.target.value;
+                                  if (!driverName || !transportTask) return;
+                                  await handleSave(transportTask.id, { assignedTo: driverName, notes: transportTask.notes });
+                                }}
+                                className="w-full px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 font-medium focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+                              >
+                                <option value="">{isNl ? '⚠️ Geen chauffeur — wijs toe' : '⚠️ No driver — assign'}</option>
+                                {drivers.map(d => (
+                                  <option key={d.id} value={d.name}>{d.name}{d.phone ? ` (${d.phone})` : ''}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <p className="text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />{isNl ? 'Geen chauffeur toegewezen' : 'No driver assigned'}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {item.tasks.map(task => (
                           <div key={task.id} className="flex items-center gap-1.5">
