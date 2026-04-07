@@ -13,42 +13,44 @@ import { useLanguage } from '@/i18n/context';
 /* ------------------------------------------------------------------ */
 function CaravanPhotoCarousel({ photos, t }: { photos: string[]; t: (k: string) => string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const touchRef = useRef(false);
+  const pauseRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const mq = window.matchMedia('(max-width: 640px)');
-    if (!mq.matches) return;
 
     const iv = setInterval(() => {
-      if (touchRef.current) return;
+      if (pauseRef.current) return;
       const { scrollLeft, scrollWidth, clientWidth } = el;
       const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
       el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.82, behavior: 'smooth' });
     }, 3500);
 
-    const onTouchStart = () => { touchRef.current = true; };
-    const onTouchEnd = () => { setTimeout(() => { touchRef.current = false; }, 3000); };
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    const pause = () => { pauseRef.current = true; };
+    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
+    el.addEventListener('touchstart', pause, { passive: true });
+    el.addEventListener('touchend', resume, { passive: true });
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', resume);
 
     return () => {
       clearInterval(iv);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchstart', pause);
+      el.removeEventListener('touchend', resume);
+      el.removeEventListener('mouseenter', pause);
+      el.removeEventListener('mouseleave', resume);
     };
   }, []);
 
   return (
-    <div ref={ref} className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-4 sm:overflow-visible scrollbar-hide touch-pan-y">
+    <div ref={ref} className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide touch-pan-y">
       {photos.map((photo, i) => (
-        <div key={i} className="snap-center shrink-0 w-[72vw] sm:w-auto relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
+        <div key={i} className="snap-center shrink-0 w-[72vw] sm:w-[38vw] md:w-[30vw] lg:w-[23vw] relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
           <Image
             src={photo}
             alt={`Caravan foto ${i + 1}`}
             fill
-            sizes="(max-width: 640px) 72vw, (max-width: 1024px) 33vw, 25vw"
+            sizes="(max-width: 640px) 72vw, (max-width: 768px) 38vw, (max-width: 1024px) 30vw, 23vw"
             className="object-cover"
           />
           <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">

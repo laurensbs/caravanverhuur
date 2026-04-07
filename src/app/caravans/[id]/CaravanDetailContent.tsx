@@ -57,7 +57,8 @@ export default function CaravanDetailContent({ id }: { id: string }) {
   const isVideoSlide = (index: number) => gumletId !== null && index === 0;
   const photoIndexFor = (index: number) => gumletId ? index - 1 : index;
 
-  const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const pauseAutoRef = useRef(false);
+  const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; pauseAutoRef.current = true; };
   const handleTouchEnd = (e: TouchEvent) => {
     if (!caravan) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
@@ -65,7 +66,18 @@ export default function CaravanDetailContent({ id }: { id: string }) {
       if (diff > 0 && activePhoto < mediaCount - 1) setActivePhoto(p => p + 1);
       if (diff < 0 && activePhoto > 0) setActivePhoto(p => p - 1);
     }
+    setTimeout(() => { pauseAutoRef.current = false; }, 3000);
   };
+
+  // Auto-advance mobile gallery
+  useEffect(() => {
+    if (!mediaCount) return;
+    const iv = setInterval(() => {
+      if (pauseAutoRef.current) return;
+      setActivePhoto(p => (p + 1) % mediaCount);
+    }, 4000);
+    return () => clearInterval(iv);
+  }, [mediaCount]);
 
   if (!caravan) {
     if (loadingCustom) {

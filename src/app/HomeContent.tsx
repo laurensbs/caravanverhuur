@@ -70,31 +70,32 @@ const scaleIn = {
 /* ------------------------------------------------------------------ */
 function AutoSlideCarousel({ children, speed = 4000 }: { children: React.ReactNode; speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const touchRef = useRef(false);
+  const pauseRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Only auto-slide on mobile
-    const mq = window.matchMedia('(max-width: 640px)');
-    if (!mq.matches) return;
 
     const iv = setInterval(() => {
-      if (touchRef.current) return;
+      if (pauseRef.current) return;
       const { scrollLeft, scrollWidth, clientWidth } = el;
       const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
       el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.82, behavior: 'smooth' });
     }, speed);
 
-    const onTouchStart = () => { touchRef.current = true; };
-    const onTouchEnd = () => { setTimeout(() => { touchRef.current = false; }, 3000); };
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    const pause = () => { pauseRef.current = true; };
+    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
+    el.addEventListener('touchstart', pause, { passive: true });
+    el.addEventListener('touchend', resume, { passive: true });
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', resume);
 
     return () => {
       clearInterval(iv);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchstart', pause);
+      el.removeEventListener('touchend', resume);
+      el.removeEventListener('mouseenter', pause);
+      el.removeEventListener('mouseleave', resume);
     };
   }, [speed]);
 

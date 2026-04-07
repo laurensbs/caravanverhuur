@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -15,6 +16,39 @@ interface Props {
   destination: Destination;
   nearbyCampings: Camping[];
   otherDestinations: Destination[];
+}
+
+function AutoSlideGallery({ photos, altPrefix }: { photos: string[]; altPrefix: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const pauseRef = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const iv = setInterval(() => {
+      if (pauseRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+      el.scrollTo({ left: atEnd ? 0 : scrollLeft + clientWidth * 0.6, behavior: 'smooth' });
+    }, 3500);
+    const pause = () => { pauseRef.current = true; };
+    const resume = () => { setTimeout(() => { pauseRef.current = false; }, 3000); };
+    el.addEventListener('touchstart', pause, { passive: true });
+    el.addEventListener('touchend', resume, { passive: true });
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', resume);
+    return () => { clearInterval(iv); el.removeEventListener('touchstart', pause); el.removeEventListener('touchend', resume); el.removeEventListener('mouseenter', pause); el.removeEventListener('mouseleave', resume); };
+  }, []);
+
+  return (
+    <div ref={ref} className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+      {photos.map((photo, i) => (
+        <div key={i} className="relative w-36 h-24 sm:w-44 sm:h-30 md:w-52 md:h-36 rounded-xl overflow-hidden shrink-0 snap-center group">
+          <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function DestinationDetailContent({ destination, nearbyCampings, otherDestinations }: Props) {
@@ -88,22 +122,10 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               </div>
             </div>
 
-            {/* Gallery thumbnails - visible on all screens */}
+            {/* Gallery thumbnails - auto-sliding */}
             {galleryPhotos.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
-                  {galleryPhotos.map((photo, i) => (
-                    <div key={i} className="relative w-28 h-20 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
-                      <Image
-                        src={photo}
-                        alt={`${destination.name} foto ${i + 2}`}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        sizes="(max-width: 640px) 112px, (max-width: 768px) 160px, 192px"
-                      />
-                    </div>
-                  ))}
-                </div>
+                <AutoSlideGallery photos={galleryPhotos} altPrefix={destination.name} />
               </div>
             )}
           </div>
