@@ -35,6 +35,9 @@ export default function SignatureCanvas({ onSignature, label, clearLabel, width 
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.scale(dpr, dpr);
+      // Fill white background so canvas is visible
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, rect.width, rect.height);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.lineWidth = 2.5;
@@ -93,6 +96,8 @@ export default function SignatureCanvas({ onSignature, label, clearLabel, width 
     if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     setHasDrawn(false);
     onSignature(null);
   };
@@ -100,7 +105,7 @@ export default function SignatureCanvas({ onSignature, label, clearLabel, width 
   return (
     <div>
       {label && <label className="block text-xs font-semibold text-foreground mb-2">{label}</label>}
-      <div className="relative border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-white" style={{ touchAction: 'none' }}>
+      <div className="relative border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5" style={{ touchAction: 'none' }}>
         <canvas
           ref={canvasRef}
           style={{ width: '100%', height: `${height}px`, cursor: 'crosshair' }}
