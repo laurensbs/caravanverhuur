@@ -14,6 +14,10 @@ import {
   Send,
   RefreshCw,
   MessageCircle,
+  Trash2,
+  UserPlus,
+  X,
+  Link2,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -30,15 +34,23 @@ const STATUS_OPTIONS: ContactStatus[] = ['NIEUW', 'GELEZEN', 'BEANTWOORD'];
 function ContactDetail({
   contact,
   onUpdate,
+  onDelete,
 }: {
   contact: ContactSubmission;
   onUpdate: (updated: ContactSubmission) => void;
+  onDelete: (id: string) => void;
 }) {
   const { t } = useAdmin();
   const { toast } = useToast();
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false);
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [customerResults, setCustomerResults] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const handleReply = async () => {
     if (!reply.trim()) return;
@@ -71,6 +83,70 @@ function ContactDetail({
       toast(t('common.actionFailed'), 'error');
     }
     setMarkingRead(false);
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await fetch('/api/contacts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id }),
+      });
+      onDelete(contact.id);
+      toast(t('messages.deleted'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setDeleting(false);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleSearchCustomers = async (q: string) => {
+    setCustomerQuery(q);
+    if (q.length < 2) { setCustomerResults([]); return; }
+    setSearching(true);
+    try {
+      const res = await fetch('/api/contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id, action: 'search_customers', query: q }),
+      });
+      const data = await res.json();
+      setCustomerResults(data.customers || []);
+    } catch { /* ignore */ }
+    setSearching(false);
+  };
+
+  const handleAssign = async (customerId: string, customerName: string, customerEmail: string) => {
+    try {
+      await fetch('/api/contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id, action: 'assign_customer', customer_id: customerId }),
+      });
+      onUpdate({ ...contact, customer_id: customerId, customer_name: customerName, customer_email: customerEmail });
+      setShowCustomerSearch(false);
+      setCustomerQuery('');
+      setCustomerResults([]);
+      toast(t('messages.assigned'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+  };
+
+  const handleUnassign = async () => {
+    try {
+      await fetch('/api/contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: contact.id, action: 'assign_customer', customer_id: null }),
+      });
+      onUpdate({ ...contact, customer_id: undefined, customer_name: undefined, customer_email: undefined });
+      toast(t('messages.unassigned'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
   };
 
   return (
@@ -170,9 +246,93 @@ function ContactDetail({
         </div>
       )}
 
-      <p className="text-xs text-muted">
-        {t('messages.receivedOn')}{formatDateTime(contact.created_at)}
-      </p>
+      {/* Assigned customer */}
+      {contact.customer_id && (
+        <div className="flex items-center gap-2 bg-primary-light rounded-xl px-3 py-2">
+          <Link2 className="w-4 h-4 text-primary-dark" />
+          <span className="text-xs font-medium text-primary-dark">{t('messages.linkedCustomer')}:</span>
+          <span className="text-xs text-primary-dark">{contact.customer_name} ({contact.customer_email})</span>
+          <button onClick={handleUnassign} className="ml-auto p-1 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer">
+            <X className="w-3.5 h-3.5 text-primary-dark" />
+          </button>
+        </div>
+      )}
+
+      {/* Customer search */}
+      {showCustomerSearch && (
+        <div className="bg-white rounded-xl p-3 space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <input
+              type="text"
+              value={customerQuery}
+              onChange={(e) => handleSearchCustomers(e.target.value)}
+              placeholder={t('messages.searchCustomer')}
+              className="w-full pl-10 pr-4 py-2 bg-surface rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+              autoFocus
+            />
+          </div>
+          {searching && <Loader2 className="w-4 h-4 animate-spin text-muted mx-auto" />}
+          {customerResults.length > 0 && (
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {customerResults.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => handleAssign(c.id, c.name, c.email)}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-surface text-sm transition-colors cursor-pointer"
+                >
+                  <span className="font-medium">{c.name}</span>
+                  <span className="text-muted ml-2">{c.email}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Actions: timestamp, assign, delete */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted">
+          {t('messages.receivedOn')}{formatDateTime(contact.created_at)}
+        </p>
+        <div className="flex items-center gap-2">
+          {!contact.customer_id && (
+            <button
+              onClick={() => setShowCustomerSearch(!showCustomerSearch)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface hover:bg-surface-alt rounded-lg text-xs text-muted hover:text-foreground transition-colors cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              {t('messages.assignCustomer')}
+            </button>
+          )}
+          {showDeleteConfirm ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-danger">{t('messages.deleteConfirm')}</span>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-3 py-1.5 bg-danger text-white rounded-lg text-xs font-medium hover:bg-danger/90 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t('messages.deleteMessage')}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-3 py-1.5 bg-surface rounded-lg text-xs text-muted hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface hover:bg-danger/10 rounded-lg text-xs text-muted hover:text-danger transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {t('messages.deleteMessage')}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -200,6 +360,11 @@ export default function BerichtenPage() {
 
   const handleUpdate = (updated: ContactSubmission) => {
     setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  };
+
+  const handleDelete = (id: string) => {
+    setContacts((prev) => prev.filter((c) => c.id !== id));
+    setExpandedId(null);
   };
 
   const filtered = contacts
@@ -388,7 +553,7 @@ export default function BerichtenPage() {
 
               {isExpanded && (
                 <div className="px-3 pb-3 sm:px-5 sm:pb-5">
-                  <ContactDetail contact={contact} onUpdate={handleUpdate} />
+                  <ContactDetail contact={contact} onUpdate={handleUpdate} onDelete={handleDelete} />
                 </div>
               )}
             </div>

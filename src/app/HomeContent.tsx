@@ -442,36 +442,73 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
         </div>
       </section>
 
-      {/* ===== HERO IMAGE — car + caravan on the road ===== */}
-      <section className="relative overflow-hidden">
-        <div className="relative w-full aspect-[16/9] sm:aspect-[5/2]">
-          <Image
-            src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
-            alt="Auto met caravan onderweg naar de Costa Brava"
-            fill
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-12 max-w-7xl mx-auto">
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-white/90 text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight"
+      {/* ===== SPECIALIST SECTION ===== */}
+      <section className="py-14 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Photo */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative"
             >
-              {t('home.roadTripTitle')}
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-white/60 text-xs sm:text-sm mt-1"
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+                <Image
+                  src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
+                  alt="Auto met caravan onderweg naar de Costa Brava"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+              <div className="absolute -bottom-4 -right-4 sm:-bottom-5 sm:-right-5 bg-primary text-white rounded-2xl px-5 py-3 sm:px-6 sm:py-4 shadow-lg">
+                <p className="text-2xl sm:text-3xl font-extrabold leading-none">20+</p>
+                <p className="text-[11px] sm:text-xs font-medium text-white/80 mt-0.5">jaar ervaring</p>
+              </div>
+            </motion.div>
+
+            {/* Content */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-80px' }}
+              variants={stagger}
             >
-              {t('home.roadTripSubtitle')}
-            </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                custom={0}
+                className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight leading-tight"
+              >
+                {t('home.specialistTitle')}
+              </motion.h2>
+              <motion.p
+                variants={fadeUp}
+                custom={1}
+                className="mt-4 text-foreground-light text-sm sm:text-base leading-relaxed"
+              >
+                {t('home.specialistDesc')}
+              </motion.p>
+
+              <div className="mt-8 space-y-5">
+                {[
+                  { icon: <Clock className="w-5 h-5" />, title: t('home.specialistYears'), desc: t('home.specialistYearsDesc') },
+                  { icon: <MapPin className="w-5 h-5" />, title: t('home.specialistCampings'), desc: t('home.specialistCampingsDesc') },
+                  { icon: <Truck className="w-5 h-5" />, title: t('home.specialistDelivery'), desc: t('home.specialistDeliveryDesc') },
+                ].map((item, i) => (
+                  <motion.div key={i} variants={fadeUp} custom={i + 2} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-sm sm:text-base">{item.title}</p>
+                      <p className="text-foreground-light text-xs sm:text-sm">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

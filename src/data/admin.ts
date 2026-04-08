@@ -95,6 +95,9 @@ export interface ContactSubmission {
   message: string;
   admin_reply?: string;
   source: ContactSource;
+  customer_id?: string;
+  customer_name?: string;
+  customer_email?: string;
 }
 
 // ===== HELPERS =====

@@ -441,6 +441,15 @@ export const translations: Record<AdminLocale, Dict> = {
       sourceAll: 'Alle berichten',
       sourceContact: 'Contactformulier',
       sourceLivechat: 'Livechat',
+      deleteMessage: 'Verwijder bericht',
+      deleteConfirm: 'Dit bericht definitief verwijderen?',
+      deleted: 'Bericht verwijderd',
+      assignCustomer: 'Koppel aan klant',
+      unassignCustomer: 'Ontkoppel klant',
+      searchCustomer: 'Zoek klant op naam of e-mail...',
+      assigned: 'Gekoppeld aan klant',
+      unassigned: 'Klant ontkoppeld',
+      linkedCustomer: 'Gekoppelde klant',
     },
 
     /* ── caravans page ──────────────────── */
@@ -1213,6 +1222,15 @@ export const translations: Record<AdminLocale, Dict> = {
       sourceAll: 'All messages',
       sourceContact: 'Contact form',
       sourceLivechat: 'Live chat',
+      deleteMessage: 'Delete message',
+      deleteConfirm: 'Permanently delete this message?',
+      deleted: 'Message deleted',
+      assignCustomer: 'Link to customer',
+      unassignCustomer: 'Unlink customer',
+      searchCustomer: 'Search customer by name or email...',
+      assigned: 'Linked to customer',
+      unassigned: 'Customer unlinked',
+      linkedCustomer: 'Linked customer',
     },
 
     caravans: {

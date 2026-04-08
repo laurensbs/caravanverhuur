@@ -82,6 +82,11 @@ export async function setupDatabase() {
     ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'contact'
   `;
 
+  // Add customer_id column to contacts (migration)
+  await sql`
+    ALTER TABLE contacts ADD COLUMN IF NOT EXISTS customer_id TEXT
+  `;
+
   // Caravan settings table (availability, notes)
   await sql`
     CREATE TABLE IF NOT EXISTS caravan_settings (
@@ -814,7 +819,10 @@ export async function createContact(data: {
 
 export async function getAllContacts() {
   const result = await sql`
-    SELECT * FROM contacts ORDER BY created_at DESC
+    SELECT c.*, cu.name as customer_name, cu.email as customer_email
+    FROM contacts c
+    LEFT JOIN customers cu ON c.customer_id = cu.id
+    ORDER BY c.created_at DESC
   `;
   return result.rows;
 }
@@ -836,6 +844,14 @@ export async function replyToContact(id: string, reply: string) {
   await sql`
     UPDATE contacts SET status = 'BEANTWOORD', admin_reply = ${reply} WHERE id = ${id}
   `;
+}
+
+export async function deleteContact(id: string) {
+  await sql`DELETE FROM contacts WHERE id = ${id}`;
+}
+
+export async function assignContactToCustomer(contactId: string, customerId: string | null) {
+  await sql`UPDATE contacts SET customer_id = ${customerId} WHERE id = ${contactId}`;
 }
 
 // ===== DASHBOARD STATS =====

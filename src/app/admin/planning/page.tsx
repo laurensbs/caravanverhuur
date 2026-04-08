@@ -27,6 +27,9 @@ import {
   Mail,
   Lock,
   X,
+  CreditCard,
+  FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '@/i18n/admin-context';
@@ -70,6 +73,19 @@ interface BorgChecklist {
   booking_id: string;
   type: string;
   status: string;
+}
+
+interface BookingPayment {
+  id: string;
+  booking_id: string;
+  type: string;
+  amount: string;
+  status: string;
+  method: string;
+  holded_status?: string;
+  holded_marked_at?: string;
+  payment_link?: string;
+  paid_at?: string;
 }
 
 // ===== CONSTANTS =====
@@ -210,14 +226,16 @@ interface TripData {
   bookingStatus: string;
   tasks: BookingTask[];
   borgChecklists: BorgChecklist[];
+  payments: BookingPayment[];
 }
 
 function TripCard({
-  trip, onToggleTask, onSelectTask, locale, expanded, onToggleExpand,
+  trip, onToggleTask, onSelectTask, onHoldedToggle, locale, expanded, onToggleExpand,
 }: {
   trip: TripData;
   onToggleTask: (task: BookingTask) => void;
   onSelectTask: (task: BookingTask) => void;
+  onHoldedToggle: (paymentId: string, current: string | undefined) => void;
   locale: string;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -236,6 +254,9 @@ function TripCard({
   if (daysUntilCheckIn <= 0 && daysUntilCheckOut > 0) phase = 'active';
   else if (daysUntilCheckOut <= 0) phase = 'departing';
   if (allDone && daysUntilCheckOut < 0) phase = 'done';
+
+  const paidPayments = trip.payments.filter(p => p.status === 'BETAALD');
+  const holdedPending = paidPayments.filter(p => !p.holded_status || p.holded_status === 'NIET_AANGEMAAKT').length;
 
   const phaseColors = { upcoming: 'border-l-blue-500', active: 'border-l-green-500', departing: 'border-l-orange-500', done: 'border-l-gray-300' };
   const phaseLabels = {
@@ -292,6 +313,9 @@ function TripCard({
           </span>
           {urgentTask && (
             <span className="text-[10px] font-medium text-red-600 animate-pulse">⚠️ {getTaskLabel(urgentTask.task_type, locale)}</span>
+          )}
+          {holdedPending > 0 && (
+            <span className="text-[10px] font-medium text-amber-600">📋 Holded ({holdedPending})</span>
           )}
           <ChevronDown className={`w-4 h-4 text-muted transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </div>
@@ -382,6 +406,94 @@ function TripCard({
                   </div>
                 );
               })}
+
+              {/* ── Payment & Invoicing checklist ── */}
+              {(() => {
+                const deposit = trip.payments.find(p => p.type === 'AANBETALING');
+                const paidPayments = trip.payments.filter(p => p.status === 'BETAALD');
+                const depositPaid = deposit?.status === 'BETAALD';
+                const hasPaymentLink = !!deposit?.payment_link;
+                const holdedPending = paidPayments.filter(p => !p.holded_status || p.holded_status === 'NIET_AANGEMAAKT');
+                const allHoldedDone = paidPayments.length > 0 && holdedPending.length === 0;
+                const showWarning = paidPayments.length > 0 && !allHoldedDone;
+
+                return (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={`text-xs font-semibold ${allHoldedDone && depositPaid ? 'text-green-600' : showWarning ? 'text-amber-600' : 'text-foreground-light'}`}>
+                        {isNl ? '💰 Betaling & Facturatie' : '💰 Payment & Invoicing'}
+                      </span>
+                      {allHoldedDone && depositPaid && <Check className="w-3 h-3 text-green-500" />}
+                      {showWarning && (
+                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ml-auto">
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          {isNl ? 'Actie vereist' : 'Action required'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      {/* Payment link status */}
+                      <div className={`flex items-center gap-2.5 p-2 rounded-lg ${hasPaymentLink ? 'bg-green-50/50' : 'bg-gray-50'}`}>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${hasPaymentLink ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white'}`}>
+                          {hasPaymentLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Circle className="w-3.5 h-3.5 text-gray-400" />}
+                        </div>
+                        <span className={`text-xs font-medium flex-1 ${hasPaymentLink ? 'text-green-600 line-through' : 'text-foreground'}`}>
+                          <CreditCard className="w-3 h-3 inline mr-1" />
+                          {isNl ? 'Betaallink verstuurd' : 'Payment link sent'}
+                        </span>
+                        {!hasPaymentLink && (
+                          <a href={`/admin/boekingen`} className="text-[10px] text-blue-600 font-medium hover:text-blue-800">
+                            {isNl ? 'Naar boekingen →' : 'Go to bookings →'}
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Deposit paid status */}
+                      <div className={`flex items-center gap-2.5 p-2 rounded-lg ${depositPaid ? 'bg-green-50/50' : 'bg-gray-50'}`}>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${depositPaid ? 'border-green-500 bg-green-500' : 'border-gray-300 bg-white'}`}>
+                          {depositPaid ? <Check className="w-3.5 h-3.5 text-white" /> : <Circle className="w-3.5 h-3.5 text-gray-400" />}
+                        </div>
+                        <span className={`text-xs font-medium flex-1 ${depositPaid ? 'text-green-600 line-through' : 'text-foreground'}`}>
+                          <CreditCard className="w-3 h-3 inline mr-1" />
+                          {isNl ? 'Aanbetaling ontvangen' : 'Deposit received'}
+                          {deposit && ` — €${Number(deposit.amount).toFixed(0)}`}
+                        </span>
+                        {depositPaid && deposit?.paid_at && (
+                          <span className="text-[10px] text-muted">{formatDate(deposit.paid_at)}</span>
+                        )}
+                      </div>
+
+                      {/* Holded invoices — one per paid payment */}
+                      {paidPayments.map((p) => {
+                        const done = p.holded_status === 'HANDMATIG' || p.holded_status === 'IN_HOLDED';
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={(e) => { e.stopPropagation(); onHoldedToggle(p.id, p.holded_status); }}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors ${done ? 'bg-green-50/50 hover:bg-green-100/50' : 'bg-amber-50/50 hover:bg-amber-100/50'}`}
+                          >
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${done ? 'border-green-500 bg-green-500' : 'border-amber-400 bg-white'}`}>
+                              {done ? <Check className="w-3.5 h-3.5 text-white" /> : <Circle className="w-3.5 h-3.5 text-amber-400" />}
+                            </div>
+                            <span className={`text-xs font-medium flex-1 text-left ${done ? 'text-green-600 line-through' : 'text-foreground'}`}>
+                              <FileText className="w-3 h-3 inline mr-1" />
+                              Holded {isNl ? 'factuur' : 'invoice'} — {p.type.replace('_', ' ')} €{Number(p.amount).toFixed(0)}
+                            </span>
+                            {done && p.holded_marked_at && (
+                              <span className="text-[10px] text-muted">{formatDate(p.holded_marked_at)}</span>
+                            )}
+                            {!done && (
+                              <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
+                                {isNl ? 'Nog aanmaken' : 'Create'}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </motion.div>
         )}
@@ -716,6 +828,7 @@ export default function PlanningPage() {
 
   const [tasks, setTasks] = useState<BookingTask[]>([]);
   const [borgChecklists, setBorgChecklists] = useState<BorgChecklist[]>([]);
+  const [allPayments, setAllPayments] = useState<BookingPayment[]>([]);
   const [drivers, setDrivers] = useState<DriverOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -734,10 +847,11 @@ export default function PlanningPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [tasksRes, borgRes, driversRes] = await Promise.all([
+      const [tasksRes, borgRes, driversRes, paymentsRes] = await Promise.all([
         fetch('/api/admin/tasks'),
         fetch('/api/borg').catch(() => null),
         fetch('/api/admin/drivers?active=true').catch(() => null),
+        fetch('/api/payments').catch(() => null),
       ]);
       if (!tasksRes.ok) throw new Error('Tasks API error');
       const tasksData = await tasksRes.json();
@@ -755,6 +869,22 @@ export default function PlanningPage() {
         const driversData = await driversRes.json();
         setDrivers((driversData.drivers || []).map((d: Record<string, unknown>) => ({
           id: d.id as string, name: d.name as string, phone: d.phone as string | null,
+        })));
+      }
+
+      if (paymentsRes?.ok) {
+        const paymentsData = await paymentsRes.json();
+        setAllPayments((paymentsData.payments || []).map((p: Record<string, unknown>) => ({
+          id: p.id as string,
+          booking_id: p.booking_id as string,
+          type: p.type as string,
+          amount: p.amount as string,
+          status: p.status as string,
+          method: p.method as string,
+          holded_status: p.holded_status as string | undefined,
+          holded_marked_at: p.holded_marked_at as string | undefined,
+          payment_link: p.payment_link as string | undefined,
+          paid_at: p.paid_at as string | undefined,
         })));
       }
     } catch {
@@ -826,6 +956,25 @@ export default function PlanningPage() {
     });
   };
 
+  const handleHoldedToggle = async (paymentId: string, current: string | undefined) => {
+    const next = (!current || current === 'NIET_AANGEMAAKT') ? 'HANDMATIG' : 'NIET_AANGEMAAKT';
+    setAllPayments(prev => prev.map(p => p.id === paymentId
+      ? { ...p, holded_status: next, holded_marked_at: next === 'HANDMATIG' ? new Date().toISOString() : undefined }
+      : p
+    ));
+    try {
+      await fetch('/api/admin/holded', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, holdedStatus: next }),
+      });
+      toast(next === 'HANDMATIG' ? (isNl ? 'Holded factuur gemarkeerd' : 'Holded invoice marked') : (isNl ? 'Holded markering verwijderd' : 'Holded marking removed'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+      fetchData();
+    }
+  };
+
   // ===== COMPUTED =====
 
   const trips: TripData[] = useMemo(() => {
@@ -847,9 +996,10 @@ export default function PlanningPage() {
         bookingStatus: first.booking_status,
         tasks: bookingTasks.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || '')),
         borgChecklists: borgChecklists.filter(bc => bc.booking_id === bookingId),
+        payments: allPayments.filter(p => p.booking_id === bookingId),
       };
     }).sort((a, b) => a.checkIn.localeCompare(b.checkIn));
-  }, [tasks, borgChecklists]);
+  }, [tasks, borgChecklists, allPayments]);
 
   const filteredTrips = useMemo(() => {
     let result = trips.filter(t => t.bookingStatus !== 'GEANNULEERD');
@@ -975,7 +1125,7 @@ export default function PlanningPage() {
           ) : (
             filteredTrips.map(trip => (
               <TripCard key={trip.bookingId} trip={trip} onToggleTask={handleToggle} onSelectTask={setSelectedTask}
-                locale={locale} expanded={expandedTrips.has(trip.bookingId)} onToggleExpand={() => toggleTrip(trip.bookingId)} />
+                onHoldedToggle={handleHoldedToggle} locale={locale} expanded={expandedTrips.has(trip.bookingId)} onToggleExpand={() => toggleTrip(trip.bookingId)} />
             ))
           )}
         </div>
@@ -1181,7 +1331,7 @@ export default function PlanningPage() {
           <CheckInOutSheet
             key={selectedTask.id}
             task={selectedTask}
-            trip={trips.find(tr => tr.bookingId === selectedTask.booking_id) || { bookingId: selectedTask.booking_id, guestName: selectedTask.guest_name, bookingRef: selectedTask.booking_ref, caravanId: selectedTask.caravan_id, campingId: selectedTask.camping_id, checkIn: selectedTask.check_in, checkOut: selectedTask.check_out, bookingStatus: selectedTask.booking_status, tasks: [], borgChecklists: [] }}
+            trip={trips.find(tr => tr.bookingId === selectedTask.booking_id) || { bookingId: selectedTask.booking_id, guestName: selectedTask.guest_name, bookingRef: selectedTask.booking_ref, caravanId: selectedTask.caravan_id, campingId: selectedTask.camping_id, checkIn: selectedTask.check_in, checkOut: selectedTask.check_out, bookingStatus: selectedTask.booking_status, tasks: [], borgChecklists: [], payments: [] }}
             onClose={() => setSelectedTask(null)}
             onComplete={handleCheckinCheckoutComplete}
             locale={locale}

@@ -120,7 +120,7 @@ export default function Header() {
 
   const active = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
   const navCls = (href: string) =>
-    `px-3 py-2 text-[15px] font-semibold tracking-tight font-heading transition-colors relative ${active(href) ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full' : 'text-foreground-light hover:text-foreground'}`;
+    `px-3 py-2 text-[15px] font-semibold tracking-tight font-heading transition-colors ${active(href) ? 'text-foreground' : 'text-foreground-light hover:text-foreground'}`;
 
   return (
     <>
@@ -487,7 +487,7 @@ export default function Header() {
                               </Link>
                             </motion.div>
                           ))}
-                          <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1 text-xs text-primary font-semibold hover:underline">
+                          <Link href="/bestemmingen#campings" onClick={() => setMenuOpen(false)} className="block px-3 py-1 text-xs text-primary font-semibold">
                             Alle campings ({allCampings.length}) →
                           </Link>
                         </div>

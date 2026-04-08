@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById, getCustomerByEmail } from '@/lib/db';
+import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById, getCustomerByEmail, deleteContact, assignContactToCustomer, searchCustomersSimple, logActivity } from '@/lib/db';
 import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
 import { contactLimiter, getClientIp } from '@/lib/rate-limit';
 
@@ -67,10 +67,23 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, status, reply } = body;
+    const { id, status, reply, customer_id, action } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing contact id' }, { status: 400 });
+    }
+
+    if (action === 'assign_customer') {
+      await assignContactToCustomer(id, customer_id || null);
+      await logActivity({ actor: 'admin', role: 'admin', action: customer_id ? 'contact_assigned' : 'contact_unassigned', entityType: 'contact', entityId: id });
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'search_customers') {
+      const { query } = body;
+      if (!query || query.length < 2) return NextResponse.json({ customers: [] });
+      const customers = await searchCustomersSimple(query);
+      return NextResponse.json({ customers });
     }
 
     if (reply) {
@@ -92,5 +105,26 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('PATCH /api/contacts error:', error);
     return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const cookie = request.cookies.get('admin_session')?.value;
+  const authHeader = request.headers.get('authorization');
+  const token = cookie || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { id } = await request.json();
+    if (!id) return NextResponse.json({ error: 'Missing contact id' }, { status: 400 });
+
+    const contact = await getContactById(id);
+    await deleteContact(id);
+    await logActivity({ actor: 'admin', role: 'admin', action: 'contact_deleted', entityType: 'contact', entityId: id, entityLabel: contact?.name || id });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/contacts error:', error);
+    return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 });
   }
 }
