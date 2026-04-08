@@ -1480,22 +1480,13 @@ function AdminLayoutInner({
                 </button>
               </>
             ) : (
-              <div className="flex flex-col items-center gap-1">
-                <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
-                  alt="Caravanverhuur"
-                  width={36}
-                  height={36}
-                  className="w-9 h-9 object-contain rounded-lg"
-                />
-                <button
-                  onClick={toggleSidebar}
-                  className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-200/60 transition-colors cursor-pointer"
-                  title="Sidebar openen (Esc)"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
+              <button
+                onClick={toggleSidebar}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors cursor-pointer mx-auto"
+                title="Sidebar openen (Esc)"
+              >
+                <LayoutDashboard size={18} className="text-foreground/70" />
+              </button>
             )}
           </div>
         </div>
