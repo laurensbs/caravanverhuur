@@ -334,22 +334,6 @@ export default function CaravansPage() {
         </div>
       </section>
 
-      {/* ===== BOOK CTA ===== */}
-      <section className="py-14 sm:py-20 bg-surface">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mb-3">
-            {t('caravans.bookThisCaravan')}
-          </h2>
-          <p className="text-muted text-sm sm:text-base mb-6">{t('caravans.serviceNote')}</p>
-          <Link
-            href="/boeken"
-            className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm sm:text-base hover:bg-primary-dark shadow-lg"
-          >
-            {t('nav.bookNow')} <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
       <BookingCTA />
     </>
   );

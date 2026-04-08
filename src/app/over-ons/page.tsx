@@ -49,23 +49,6 @@ export default function OverOnsPage() {
 
   return (
     <>
-      {/* ===== PAGE HEADER ===== */}
-      <div className="bg-background border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-10 pb-6 sm:pb-8">
-          <nav className="flex items-center gap-1.5 text-muted text-xs mb-3">
-            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-            <span>/</span>
-            <span className="text-foreground">{t('about.heroSubtitle')}</span>
-          </nav>
-          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight mb-2">
-            {t('about.heroTitle')}
-          </h1>
-          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
-            {t('about.missionText')}
-          </p>
-        </div>
-      </div>
-
       {/* ===== ONS VERHAAL ===== */}
       <section className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">

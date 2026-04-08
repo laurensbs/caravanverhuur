@@ -870,24 +870,6 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               </motion.div>
             ))}
           </div>
-
-          {/* Google Review CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mt-10 sm:mt-14 text-center"
-          >
-            <a
-              href={GOOGLE_REVIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
-            >
-              {t('home.reviewCtaButton')} <ArrowRight size={14} />
-            </a>
-          </motion.div>
         </div>
       </section>
 
