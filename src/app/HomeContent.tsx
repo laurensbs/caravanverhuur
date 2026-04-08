@@ -597,7 +597,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
           </motion.div>
 
           {/* Region cards — 3 columns on desktop, scroll on mobile */}
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible scrollbar-hide touch-pan-y">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
             {[
               {
                 region: 'Baix Empordà',
@@ -623,7 +623,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
-                  className="snap-center shrink-0 w-[80vw] sm:w-auto"
+                  className="snap-start shrink-0 w-[75vw] sm:w-auto"
                 >
                   <Link href={`/bestemmingen#${item.region.toLowerCase().replace(/\s+/g, '-')}`} className="group block rounded-2xl overflow-hidden relative aspect-[4/3]">
                     <Image src={item.img} alt={item.region} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 80vw, 33vw" />
@@ -722,7 +722,7 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               </div>
               <Link
                 href="/boeken"
-                className="inline-flex items-center gap-2 mt-6 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
+                className="hidden sm:inline-flex items-center gap-2 mt-6 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm shadow-lg"
               >
                 {t('nav.bookNow')}
                 <ArrowRight size={16} />

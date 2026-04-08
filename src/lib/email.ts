@@ -251,7 +251,7 @@ export async function sendAdminNewBookingNotification(data: {
       </table>
       ${divider()}
       <div style="text-align:center;padding:15px 0;">
-        <a href="${SITE_URL}/admin/boekingen" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;">Bekijk in admin</a>
+        <a href="https://admin.caravanverhuurspanje.com/boekingen" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;">Bekijk in admin</a>
       </div>
     `),
   });

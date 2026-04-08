@@ -127,7 +127,7 @@ export default function Header() {
     <div className="sticky top-0 z-50">
       {/* ===== TOP UTILITY BAR ===== */}
       <div className="bg-foreground text-white text-[11px] sm:text-xs">
-        <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-center relative">
+        <div className="max-w-7xl mx-auto px-4 py-2 sm:py-1.5 flex items-center justify-center relative">
           <p className="font-semibold uppercase tracking-wide text-center">
             <span className="hidden sm:inline">{t('nav.season')}</span>
             <span className="sm:hidden">{t('nav.seasonShort')}</span>
@@ -137,10 +137,10 @@ export default function Header() {
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setLangDropdown(!langDropdown)}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Language"
               >
-                <span className="text-sm leading-none">{localeFlags[locale]}</span>
+                <span className="text-lg sm:text-sm leading-none">{localeFlags[locale]}</span>
                 <span className="hidden sm:inline">{locale.toUpperCase()}</span>
                 <ChevronDown size={10} />
               </button>
@@ -176,17 +176,17 @@ export default function Header() {
               {loggedInUser ? (
                 <button
                   onClick={() => setAccountDropdown(!accountDropdown)}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                  <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-bold leading-none">
+                  <span className="w-7 h-7 sm:w-5 sm:h-5 bg-white/20 rounded-full flex items-center justify-center text-xs sm:text-[10px] font-bold leading-none">
                     {loggedInUser.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="hidden sm:inline">{locale === 'nl' ? 'Mijn Account' : locale === 'es' ? 'Mi Cuenta' : 'My Account'}</span>
                   <ChevronDown size={10} className="hidden sm:block" />
                 </button>
               ) : (
-                <Link href="/account" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                  <User size={14} />
+                <Link href="/account" className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+                  <User size={18} className="sm:w-3.5 sm:h-3.5" />
                   <span className="hidden sm:inline">{locale === 'nl' ? 'Inloggen' : locale === 'es' ? 'Iniciar sesión' : 'Sign in'}</span>
                 </Link>
               )}
@@ -242,10 +242,10 @@ export default function Header() {
             {/* Chat */}
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('toggle-chatbot'))}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
               aria-label="Chat"
             >
-              <MessageCircle size={14} />
+              <MessageCircle size={18} className="sm:w-3.5 sm:h-3.5" />
               <span className="hidden sm:inline">Live Chat</span>
             </button>
           </div>

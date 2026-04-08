@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BookingCTA from '@/components/BookingCTA';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { CheckCircle, Tent, Package, Sparkles, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck } from 'lucide-react';
+import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -157,155 +157,195 @@ export default function CaravansPage() {
 
   return (
     <>
-      <section className="bg-background min-h-[80vh]">
-        {/* ── Hero ── */}
-        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-12 pb-6 sm:pb-8">
-          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
+      {/* ===== HERO ===== */}
+      <section className="relative bg-foreground text-white overflow-hidden">
+        <div className="absolute inset-0">
+          {allPhotos[0] && (
+            <Image
+              src={allPhotos[0]}
+              alt="Caravan Costa Brava"
+              fill
+              className="object-cover opacity-30"
+              sizes="100vw"
+              priority
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/80 to-foreground/60" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-20 sm:pt-28 pb-12 sm:pb-16">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4">
             {t('caravans.heroTitle')}
           </h1>
-          <p className="text-sm sm:text-base text-muted mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm sm:text-lg text-white/70 max-w-2xl leading-relaxed">
             {t('caravans.heroSubtitle')}
           </p>
+          <div className="flex flex-wrap gap-2 mt-6">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-xs">
+              <Info size={12} className="text-blue-300 shrink-0" />
+              <span>{t('termsPage.caravanDisclaimer')}</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-xs">
+              <Tent size={12} className="text-amber-300 shrink-0" />
+              <span>{t('caravans.campingFirstNote')}</span>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* ── Photo gallery marquee ── */}
-        <div className="pb-8 sm:pb-10">
-          <SlowMarquee>
-            {allPhotos.slice(0, 8).map((photo, i) => (
-              <div key={i} className="shrink-0 w-[65vw] sm:w-[32vw] md:w-[24vw] lg:w-[20vw] relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
-                <Image
-                  src={photo}
-                  alt={`Caravan foto ${i + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 65vw, (max-width: 768px) 32vw, (max-width: 1024px) 24vw, 20vw"
-                  className="object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-                <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                  <p className="text-[10px] text-white/80">{t('caravans.orSimilar')}</p>
+      {/* ===== PHOTO MARQUEE ===== */}
+      <section className="py-8 sm:py-12 bg-surface">
+        <SlowMarquee>
+          {allPhotos.slice(0, 8).map((photo, i) => (
+            <div key={i} className="shrink-0 w-[55vw] sm:w-[28vw] md:w-[22vw] lg:w-[18vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]">
+              <Image
+                src={photo}
+                alt={`Caravan foto ${i + 1}`}
+                fill
+                sizes="(max-width: 640px) 55vw, (max-width: 768px) 28vw, (max-width: 1024px) 22vw, 18vw"
+                className="object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                <p className="text-[10px] text-white/80">{t('caravans.orSimilar')}</p>
+              </div>
+            </div>
+          ))}
+        </SlowMarquee>
+      </section>
+
+      {/* ===== SERVICE & EXTRAS ===== */}
+      <section className="py-14 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              {t('caravans.serviceIncluded')}
+            </h2>
+            <p className="text-muted mt-3 text-sm sm:text-lg max-w-xl mx-auto">
+              {t('caravans.serviceNote')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-12 sm:mb-16">
+            {[
+              { label: t('caravans.serviceSetup'), icon: <Truck size={22} /> },
+              { label: t('caravans.serviceAwningUp'), icon: <Tent size={22} /> },
+              { label: t('caravans.servicePickup'), icon: <Truck size={22} /> },
+              { label: t('caravans.serviceAwningDown'), icon: <Tent size={22} /> },
+            ].map((item, i) => (
+              <div key={i} className="bg-surface rounded-2xl p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+                  {item.icon}
                 </div>
+                <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{item.label}</p>
               </div>
             ))}
-          </SlowMarquee>
+          </div>
+
+          <div className="text-center mb-10 sm:mb-14">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
+              {t('home.extrasTitle')}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            {[
+              { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={22} className="text-white" /> },
+              { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={22} className="text-white" /> },
+              { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={22} className="text-white" /> },
+              { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={22} className="text-white" /> },
+            ].map((extra, i) => (
+              <div key={i} className="bg-surface rounded-2xl p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-dark rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
+                  {extra.icon}
+                </div>
+                <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{extra.name}</p>
+                <p className="text-xs font-bold text-primary mt-1">{extra.price}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className="max-w-7xl mx-auto px-4 pb-12 sm:pb-16">
-          {/* ── Notices ── */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-8">
-            <div className="flex items-start gap-2.5 text-xs sm:text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5 flex-1">
-              <Info size={16} className="text-blue-500 shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{t('termsPage.caravanDisclaimer')}</span>
+      {/* ===== TRANSPORT VISUAL ===== */}
+      <section className="py-14 sm:py-24 bg-surface">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+              <Image
+                src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
+                alt="Transport caravan naar camping"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
-            <div className="flex items-start gap-2.5 text-xs sm:text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-2.5 sm:max-w-sm">
-              <Tent size={16} className="text-amber-500 shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{t('caravans.campingFirstNote')}</span>
-            </div>
-          </div>
-
-          {/* ── Two-column layout: Service + Extras side by side on desktop ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 sm:mb-12">
-            {/* Service included card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-base sm:text-lg font-bold text-foreground mb-4 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Truck size={16} className="text-primary" />
-                </div>
-                {t('caravans.serviceIncluded')}
+            <div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight leading-tight mb-4">
+                {t('home.roadTripTitle')}
               </h2>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-foreground-light text-sm sm:text-base leading-relaxed mb-6">
+                {t('home.roadTripSubtitle')}
+              </p>
+              <div className="space-y-4">
                 {[
-                  t('caravans.serviceSetup'),
-                  t('caravans.serviceAwningUp'),
-                  t('caravans.servicePickup'),
-                  t('caravans.serviceAwningDown'),
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2.5">
-                    <CheckCircle size={14} className="text-primary shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium text-foreground">{item}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs sm:text-sm text-primary font-semibold mt-3">{t('caravans.serviceNote')}</p>
-            </div>
-
-            {/* Extras for surcharge card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
-              <h2 className="text-base sm:text-lg font-bold text-foreground mb-4 flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles size={16} className="text-primary" />
-                </div>
-                {t('home.extrasTitle')}
-              </h2>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={18} className="text-primary" /> },
-                  { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={18} className="text-primary" /> },
-                  { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={18} className="text-primary" /> },
-                  { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={18} className="text-primary" /> },
-                ].map((extra) => (
-                  <div key={extra.name} className="flex items-center gap-2.5 bg-surface rounded-xl px-3 py-2.5">
-                    <div className="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center shrink-0">
-                      {extra.icon}
+                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceSetup') },
+                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceAwningUp') },
+                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.servicePickup') },
+                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceAwningDown') },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      {item.icon}
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-foreground text-xs sm:text-sm leading-tight">{extra.name}</p>
-                      <p className="text-xs font-bold text-primary">{extra.price}</p>
-                    </div>
+                    <span className="text-sm sm:text-base font-medium text-foreground">{item.text}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* ── Transport visual ── */}
-          <div className="relative rounded-2xl overflow-hidden mb-10 sm:mb-12 aspect-[3/1]">
-            <Image
-              src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
-              alt="Transport caravan naar camping"
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1280px) 100vw, 1280px"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
-            <div className="absolute bottom-0 left-0 p-4 sm:p-6">
-              <p className="text-white font-bold text-sm sm:text-lg">{t('home.roadTripTitle')}</p>
-              <p className="text-white/60 text-[11px] sm:text-xs mt-0.5">{t('home.roadTripSubtitle')}</p>
-            </div>
-          </div>
-
-          {/* ── Standard amenities ── */}
-          <div className="mb-10 sm:mb-12">
-            <h2 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <CheckCircle size={16} className="text-primary" />
-              </div>
+      {/* ===== INVENTORY ===== */}
+      <section className="py-14 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
               {t('home.inventoryTitle')}
             </h2>
-            <p className="text-xs sm:text-sm text-muted mb-4">{t('home.inventorySubtitle')}</p>
-
-            {/* Amenities as compact pill grid */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
-              {amenities.map(a => (
-                <span key={a} className="text-xs font-medium bg-primary/5 text-primary-dark px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                  <CheckCircle size={10} className="text-primary" />{a}
-                </span>
-              ))}
-            </div>
-
-            {/* Categorized inventory — collapsible */}
-            <CaravanInventoryCategories />
+            <p className="text-muted text-sm sm:text-lg mt-3 max-w-2xl mx-auto leading-relaxed">
+              {t('home.inventorySubtitle')}
+            </p>
           </div>
 
-          {/* ── Book CTA inline ── */}
+          {/* Amenities as compact pill grid */}
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-12">
+            {amenities.map(a => (
+              <span key={a} className="text-xs font-medium bg-primary/5 text-primary-dark px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                <CheckCircle size={10} className="text-primary" />{a}
+              </span>
+            ))}
+          </div>
+
+          {/* Categorized inventory — collapsible */}
+          <div className="max-w-2xl mx-auto">
+            <CaravanInventoryCategories />
+          </div>
+        </div>
+      </section>
+
+      {/* ===== BOOK CTA ===== */}
+      <section className="py-14 sm:py-20 bg-surface">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mb-3">
+            {t('caravans.bookThisCaravan')}
+          </h2>
+          <p className="text-muted text-sm sm:text-base mb-6">{t('caravans.serviceNote')}</p>
           <Link
             href="/boeken"
-            className="group flex items-center justify-between bg-foreground text-white rounded-2xl px-5 sm:px-8 py-4 sm:py-5 hover:bg-foreground/90 transition-all duration-200"
+            className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-primary text-white font-semibold rounded-full transition-all duration-300 text-sm sm:text-base hover:bg-primary-dark shadow-lg"
           >
-            <div>
-              <p className="font-bold text-sm sm:text-base">{t('caravans.bookThisCaravan')}</p>
-              <p className="text-xs text-white/60 mt-0.5">{t('caravans.serviceNote')}</p>
-            </div>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            {t('nav.bookNow')} <ArrowRight size={16} />
           </Link>
         </div>
       </section>
