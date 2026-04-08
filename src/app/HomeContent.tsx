@@ -442,6 +442,40 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
         </div>
       </section>
 
+      {/* ===== HERO IMAGE — car + caravan on the road ===== */}
+      <section className="relative overflow-hidden">
+        <div className="relative w-full aspect-[21/9] sm:aspect-[3/1]">
+          <Image
+            src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
+            alt="Auto met caravan onderweg naar de Costa Brava"
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-12 max-w-7xl mx-auto">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-white/90 text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight"
+            >
+              {t('home.roadTripTitle')}
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-white/60 text-xs sm:text-sm mt-1"
+            >
+              {t('home.roadTripSubtitle')}
+            </motion.p>
+          </div>
+        </div>
+      </section>
+
       {/* ===== OUR CARAVANS — playful photo gallery ===== */}
       <section className="py-14 sm:py-24 bg-surface relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
