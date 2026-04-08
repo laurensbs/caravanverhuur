@@ -64,6 +64,7 @@ interface Payment {
   amount: number;
   status: string;
   paid_at: string | null;
+  payment_link?: string | null;
 }
 
 interface BorgItem {
@@ -863,12 +864,15 @@ function MijnAccountContent() {
 
                             {/* Extras */}
                             {extras.length > 0 && (
-                              <div className="mt-3 pt-3 border-t border-border/40 flex flex-wrap gap-1.5">
-                                {extras.map((extra, i) => (
-                                  <span key={i} className="inline-flex items-center gap-1 text-xs bg-surface-alt text-foreground-light px-2 py-0.5 rounded-full">
-                                    {extra}
-                                  </span>
-                                ))}
+                              <div className="mt-3 pt-3 border-t border-border/40">
+                                <p className="text-xs font-semibold text-foreground-light mb-1.5 flex items-center gap-1">📦 {t('myAccount.extrasTitle')}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {extras.map((extra, i) => (
+                                    <span key={i} className="inline-flex items-center gap-1 text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full">
+                                      {extra}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             )}
 
@@ -969,17 +973,19 @@ function MijnAccountContent() {
                           <div className="text-right shrink-0">
                             <div className="font-bold text-sm text-foreground">{fp(Number(payment.amount))}</div>
                             {payment.status === 'OPENSTAAND' ? (
-                              <button
-                                onClick={() => handlePayment(payment.id)}
-                                disabled={payingId === payment.id}
-                                className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
-                              >
-                                {payingId === payment.id ? (
-                                  <><Loader2 size={12} className="animate-spin" /> {t('myAccount.pleaseWait')}</>
-                                ) : (
-                                  <><CreditCard size={12} /> {t('myAccount.payViaIdeal')}</>
-                                )}
-                              </button>
+                              payment.payment_link ? (
+                                <button
+                                  onClick={() => { window.location.href = payment.payment_link!; }}
+                                  disabled={payingId === payment.id}
+                                  className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  <CreditCard size={12} /> {t('myAccount.payViaIdeal')}
+                                </button>
+                              ) : (
+                                <span className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg">
+                                  <Clock size={12} /> {t('myAccount.linkBeingPrepared')}
+                                </span>
+                              )
                             ) : (
                               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColors[payment.status] || 'bg-surface-alt text-foreground-light'}`}>
                                 {statusLabelsNL[payment.status] || payment.status}
@@ -994,9 +1000,9 @@ function MijnAccountContent() {
                   {/* Payment instructions */}
                   {openPayments.length > 0 && (
                     <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
-                      <h3 className="text-sm font-semibold text-foreground mb-2">{t('myAccount.payViaIdealTitle')}</h3>
+                      <h3 className="text-sm font-semibold text-foreground mb-2">{t('myAccount.paymentInfoTitle')}</h3>
                       <p className="text-xs text-foreground-light leading-relaxed">
-                        {t('myAccount.payViaIdealDesc')}
+                        {t('myAccount.paymentInfoDesc')}
                       </p>
                       <div className="mt-3 p-3 bg-white rounded-xl">
                         <p className="text-xs text-muted leading-relaxed">

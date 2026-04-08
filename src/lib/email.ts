@@ -661,6 +661,46 @@ export async function sendPaymentLinkEmail(to: string, data: {
   });
 }
 
+export async function sendExtrasAddedEmail(to: string, data: {
+  guestName: string;
+  reference: string;
+  addedExtras: string;
+  newTotalPrice: number;
+}, locale?: string) {
+  const t = getEmailTranslations(locale);
+  const firstName = data.guestName.split(' ')[0];
+
+  const extrasSubject = locale === 'es' ? `Extras añadidos — ${data.reference}` : locale === 'en' ? `Extras added — ${data.reference}` : `Extra's bijgeboekt — ${data.reference}`;
+  const extrasHeading = locale === 'es' ? 'Extras añadidos a tu reserva' : locale === 'en' ? 'Extras added to your booking' : "Extra's toegevoegd aan je boeking";
+  const extrasText = locale === 'es'
+    ? `Hola ${firstName}, se han añadido los siguientes extras a tu reserva <strong>${data.reference}</strong>:`
+    : locale === 'en'
+    ? `Hi ${firstName}, the following extras have been added to your booking <strong>${data.reference}</strong>:`
+    : `Hoi ${firstName}, de volgende extra's zijn toegevoegd aan je boeking <strong>${data.reference}</strong>:`;
+  const newTotalLabel = locale === 'es' ? 'Nuevo precio total' : locale === 'en' ? 'New total price' : 'Nieuw totaalbedrag';
+  const viewBookingLabel = locale === 'es' ? 'Ver mi reserva' : locale === 'en' ? 'View my booking' : 'Bekijk mijn boeking';
+
+  const extrasList = data.addedExtras.split(' | ').map(e => `<li style="padding:6px 0;color:#334155;font-size:14px;">✅ ${e}</li>`).join('');
+
+  return sendEmail({
+    to,
+    subject: extrasSubject,
+    html: emailWrapper(`
+      ${badge('🛒', extrasHeading)}
+      ${heading(extrasHeading)}
+      ${subtext(extrasText)}
+
+      <ul style="list-style:none;padding:0;margin:16px 0;">${extrasList}</ul>
+
+      ${highlight(`<p style="margin:0;color:#0F172A;font-size:16px;font-weight:700;">${newTotalLabel}: ${formatPrice(data.newTotalPrice)}</p>`)}
+
+      ${button(viewBookingLabel, `${SITE_URL}/mijn-account`)}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
+    `, extrasSubject, locale),
+  });
+}
+
 export async function sendContactAcknowledgmentEmail(to: string, name: string, subject: string, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = name.split(' ')[0];

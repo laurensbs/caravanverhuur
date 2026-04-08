@@ -683,6 +683,12 @@ export async function updateBookingCaravan(id: string, caravanId: string | null)
   `;
 }
 
+export async function updateBookingExtras(id: string, specialRequests: string, totalPrice: number, depositAmount: number, remainingAmount: number, borgAmount: number) {
+  await sql`
+    UPDATE bookings SET special_requests = ${specialRequests}, total_price = ${totalPrice}, deposit_amount = ${depositAmount}, remaining_amount = ${remainingAmount}, borg_amount = ${borgAmount} WHERE id = ${id}
+  `;
+}
+
 export async function checkCaravanAvailability(caravanId: string, checkIn: string, checkOut: string, excludeBookingId?: string) {
   // Check total active bookings across ALL caravans for the date range (max 5 caravans total)
   const MAX_CARAVANS = 5;
@@ -1763,7 +1769,7 @@ export async function getTasksForBooking(bookingId: string) {
 
 export async function getAllTasks() {
   const result = await sql`
-    SELECT t.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status as booking_status
+    SELECT t.*, b.guest_name, b.reference as booking_ref, b.caravan_id, b.camping_id, b.check_in, b.check_out, b.status as booking_status, b.special_requests
     FROM booking_tasks t
     JOIN bookings b ON t.booking_id = b.id
     ORDER BY t.due_date ASC NULLS LAST, t.created_at ASC

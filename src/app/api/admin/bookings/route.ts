@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity, getBookingById, getPaymentById, updatePaymentStripeId, updatePaymentLink } from '@/lib/db';
+import { createBooking, getCustomerByEmail, createCustomer, createBorgChecklist, getAllCustomCaravans, getAllCampings, logActivity, getBookingById, getPaymentById, updatePaymentStripeId, updatePaymentLink, updateBookingExtras } from '@/lib/db';
 import { getStripe } from '@/lib/stripe';
-import { sendManualBookingEmail, sendPaymentLinkEmail } from '@/lib/email';
+import { sendManualBookingEmail, sendPaymentLinkEmail, sendExtrasAddedEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
 import { caravans as staticCaravans } from '@/data/caravans';
@@ -195,7 +195,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { action, bookingId } = body;
 
-    if (!bookingId || !['send-payment-link', 'save-payment-link'].includes(action)) {
+    if (!bookingId || !['send-payment-link', 'save-payment-link', 'add-extras'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action or missing bookingId' }, { status: 400 });
     }
 
@@ -203,6 +203,52 @@ export async function PUT(request: NextRequest) {
     const booking = await getBookingById(bookingId);
     if (!booking) {
       return NextResponse.json({ error: 'Boeking niet gevonden' }, { status: 404 });
+    }
+
+    // ── Add extras to booking ──
+    if (action === 'add-extras') {
+      const { extras, totalPrice, depositAmount, remainingAmount, borgAmount } = body;
+      if (!extras || typeof totalPrice !== 'number') {
+        return NextResponse.json({ error: 'Missing extras or totalPrice' }, { status: 400 });
+      }
+
+      // Build new special_requests string (append to existing)
+      const existingExtras = booking.special_requests || '';
+      const newExtras = extras as string; // pipe-separated string of new extras
+      const combined = existingExtras
+        ? `${existingExtras} | ${newExtras}`
+        : newExtras;
+
+      await updateBookingExtras(
+        bookingId,
+        combined,
+        totalPrice,
+        depositAmount ?? Number(booking.deposit_amount),
+        remainingAmount ?? Number(booking.remaining_amount),
+        borgAmount ?? Number(booking.borg_amount),
+      );
+
+      // Send email notification to customer
+      const customer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+      sendExtrasAddedEmail(booking.guest_email, {
+        guestName: booking.guest_name,
+        reference: booking.reference,
+        addedExtras: newExtras,
+        newTotalPrice: totalPrice,
+      }, customer?.locale).catch(err => console.error('Extras email failed:', err));
+
+      // Log activity
+      logActivity({
+        actor: session.user,
+        role: session.role,
+        action: 'extras_added',
+        entityType: 'booking',
+        entityId: booking.id,
+        entityLabel: booking.reference,
+        details: `Extra's toegevoegd: ${newExtras}`,
+      }).catch(() => {});
+
+      return NextResponse.json({ success: true, specialRequests: combined });
     }
 
     // ── Save manual payment link & send email ──

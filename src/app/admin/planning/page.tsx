@@ -64,6 +64,7 @@ interface BookingTask {
   check_in: string;
   check_out: string;
   booking_status: string;
+  special_requests?: string;
 }
 
 interface BorgChecklist {
@@ -214,6 +215,7 @@ interface TripData {
   checkIn: string;
   checkOut: string;
   bookingStatus: string;
+  specialRequests?: string;
   tasks: BookingTask[];
   borgChecklists: BorgChecklist[];
   payments: BookingPayment[];
@@ -294,6 +296,13 @@ function TripCard({
           <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(trip.checkIn)} → {formatDate(trip.checkOut)}</span>
           </div>
+          {trip.specialRequests && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {trip.specialRequests.split(' | ').filter(Boolean).map((extra, i) => (
+                <span key={i} className="inline-flex items-center text-[10px] font-semibold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">📦 {extra}</span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getUrgencyBadge(daysUntilCheckIn, allDone ? 'DONE' : 'TODO')}`}>
@@ -987,6 +996,7 @@ export default function PlanningPage() {
         checkIn: first.check_in,
         checkOut: first.check_out,
         bookingStatus: first.booking_status,
+        specialRequests: first.special_requests,
         tasks: bookingTasks.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || '')),
         borgChecklists: borgChecklists.filter(bc => bc.booking_id === bookingId),
         payments: allPayments.filter(p => p.booking_id === bookingId),
@@ -1345,7 +1355,7 @@ export default function PlanningPage() {
           <CheckInOutSheet
             key={selectedTask.id}
             task={selectedTask}
-            trip={trips.find(tr => tr.bookingId === selectedTask.booking_id) || { bookingId: selectedTask.booking_id, guestName: selectedTask.guest_name, bookingRef: selectedTask.booking_ref, caravanId: selectedTask.caravan_id, campingId: selectedTask.camping_id, checkIn: selectedTask.check_in, checkOut: selectedTask.check_out, bookingStatus: selectedTask.booking_status, tasks: [], borgChecklists: [], payments: [] }}
+            trip={trips.find(tr => tr.bookingId === selectedTask.booking_id) || { bookingId: selectedTask.booking_id, guestName: selectedTask.guest_name, bookingRef: selectedTask.booking_ref, caravanId: selectedTask.caravan_id, campingId: selectedTask.camping_id, checkIn: selectedTask.check_in, checkOut: selectedTask.check_out, bookingStatus: selectedTask.booking_status, specialRequests: selectedTask.special_requests, tasks: [], borgChecklists: [], payments: [] }}
             onClose={() => setSelectedTask(null)}
             onComplete={handleCheckinCheckoutComplete}
             locale={locale}

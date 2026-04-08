@@ -92,6 +92,16 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [editingLink, setEditingLink] = useState(false);
 
+  // Extras management state
+  const [showExtras, setShowExtras] = useState(false);
+  const [extraBedlinnen, setExtraBedlinnen] = useState(false);
+  const [extraFridge, setExtraFridge] = useState(false);
+  const [extraAirco, setExtraAirco] = useState(false);
+  const [extraBikes, setExtraBikes] = useState(0);
+  const [extraMountainbikes, setExtraMountainbikes] = useState(0);
+  const [savingExtras, setSavingExtras] = useState(false);
+  const [extrasSuccess, setExtrasSuccess] = useState(false);
+
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
 
   const handleConfirmDeposit = async () => {
@@ -274,9 +284,15 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
               <strong>{booking.adults}</strong> {t('bookings.adults')}, <strong>{booking.children}</strong> {t('bookings.children')}
             </p>
             {booking.special_requests && (
-              <div className="mt-1 flex items-start gap-1.5">
-                <FileText className="w-3 h-3 text-muted mt-0.5 shrink-0" />
-                <p className="text-xs text-muted italic">{booking.special_requests}</p>
+              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">📦 Extra&apos;s</p>
+                <div className="flex flex-wrap gap-1">
+                  {booking.special_requests.split(' | ').filter(Boolean).map((extra, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                      {extra}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -552,25 +568,6 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                     <div className="flex-1 h-px bg-gray-200" />
                   </div>
 
-                  {/* Auto-generate Stripe checkout */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={handleSendPaymentLink}
-                      disabled={sendingPaymentLink}
-                      className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      {sendingPaymentLink ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                      {sendingPaymentLink ? t('bookings.sendingPaymentLink') : t('bookings.orGenerateAutoLink')}
-                    </button>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="flex items-center gap-3 py-1">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs text-gray-400 uppercase font-medium">of</span>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-
                   {/* Manual confirm deposit (bank transfer etc) */}
                   <button
                     onClick={handleConfirmDeposit}
@@ -704,6 +701,150 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                 >
                   {discountSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
                   {t('bookings.applyDiscountBtn')}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ═══ EXTRAS MANAGEMENT ═══ */}
+      <div>
+        <button
+          onClick={() => { setShowExtras(!showExtras); setExtrasSuccess(false); }}
+          className="flex items-center gap-2 text-sm font-medium text-amber-700 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          {showExtras ? 'Annuleren' : "Extra's toevoegen"}
+        </button>
+        {showExtras && (
+          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4 space-y-3">
+            {extrasSuccess ? (
+              <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
+                <CheckCircle2 className="w-4 h-4" />
+                Extra&apos;s toegevoegd en klant is per e-mail geïnformeerd
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-amber-700 font-medium">Selecteer extra&apos;s om toe te voegen aan deze boeking:</p>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
+                    <input type="checkbox" checked={extraBedlinnen} onChange={e => setExtraBedlinnen(e.target.checked)} className="rounded" />
+                    <span className="text-sm flex-1">🛏️ Bedlinnen (4 sets)</span>
+                    <span className="text-xs font-semibold text-amber-700">€70/week</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
+                    <input type="checkbox" checked={extraFridge} onChange={e => setExtraFridge(e.target.checked)} className="rounded" />
+                    <span className="text-sm flex-1">🧊 Grote koelkast</span>
+                    <span className="text-xs font-semibold text-amber-700">€40/week</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
+                    <input type="checkbox" checked={extraAirco} onChange={e => setExtraAirco(e.target.checked)} className="rounded" />
+                    <span className="text-sm flex-1">❄️ Mobiele airco</span>
+                    <span className="text-xs font-semibold text-amber-700">€50/week</span>
+                  </label>
+                  <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
+                    <span className="text-sm flex-1">🚲 Fietsen</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setExtraBikes(Math.max(0, extraBikes - 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">-</button>
+                      <span className="text-sm font-medium w-4 text-center">{extraBikes}</span>
+                      <button onClick={() => setExtraBikes(Math.min(4, extraBikes + 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">+</button>
+                    </div>
+                    <span className="text-xs font-semibold text-amber-700">€50/fiets/week + €200 borg</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
+                    <span className="text-sm flex-1">🚵 Mountainbikes</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setExtraMountainbikes(Math.max(0, extraMountainbikes - 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">-</button>
+                      <span className="text-sm font-medium w-4 text-center">{extraMountainbikes}</span>
+                      <button onClick={() => setExtraMountainbikes(Math.min(4, extraMountainbikes + 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">+</button>
+                    </div>
+                    <span className="text-xs font-semibold text-amber-700">€50/bike/week + €200 borg</span>
+                  </div>
+                </div>
+                {(extraBedlinnen || extraFridge || extraAirco || extraBikes > 0 || extraMountainbikes > 0) && (() => {
+                  const weeks = Math.ceil(booking.nights / 7);
+                  let addedCost = 0;
+                  if (extraBedlinnen) addedCost += weeks * 70;
+                  if (extraFridge) addedCost += weeks * 40;
+                  if (extraAirco) addedCost += weeks * 50;
+                  addedCost += extraBikes * weeks * 50;
+                  addedCost += extraMountainbikes * weeks * 50;
+                  const addedBorg = (extraBikes + extraMountainbikes) * 200;
+                  const newTotal = Number(booking.total_price) + addedCost;
+                  const newDeposit = Math.round(newTotal * 0.25);
+                  const newRemaining = newTotal - newDeposit;
+                  const newBorg = Number(booking.borg_amount) + addedBorg;
+                  return (
+                    <div className="bg-white rounded-lg p-3 border border-amber-200 space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted">Extra kosten ({weeks} {weeks === 1 ? 'week' : 'weken'})</span>
+                        <span className="font-semibold text-amber-700">+{formatCurrency(addedCost)}</span>
+                      </div>
+                      {addedBorg > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted">Extra borg</span>
+                          <span className="font-semibold text-amber-700">+{formatCurrency(addedBorg)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm pt-1 border-t border-amber-100">
+                        <span className="font-medium">Nieuw totaal</span>
+                        <span className="font-bold text-foreground">{formatCurrency(newTotal)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                <button
+                  onClick={async () => {
+                    const selected = [];
+                    const weeks = Math.ceil(booking.nights / 7);
+                    let addedCost = 0;
+                    if (extraBedlinnen) { selected.push('Bedlinnen (4 sets)'); addedCost += weeks * 70; }
+                    if (extraFridge) { selected.push('Grote koelkast'); addedCost += weeks * 40; }
+                    if (extraAirco) { selected.push('Mobiele airco'); addedCost += weeks * 50; }
+                    if (extraBikes > 0) { selected.push(`${extraBikes}x Fiets`); addedCost += extraBikes * weeks * 50; }
+                    if (extraMountainbikes > 0) { selected.push(`${extraMountainbikes}x Mountainbike`); addedCost += extraMountainbikes * weeks * 50; }
+                    if (selected.length === 0) { toast('Selecteer minstens één extra', 'error'); return; }
+                    const addedBorg = (extraBikes + extraMountainbikes) * 200;
+                    const newTotal = Number(booking.total_price) + addedCost;
+                    const newDeposit = Math.round(newTotal * 0.25);
+                    const newRemaining = newTotal - newDeposit;
+                    const newBorg = Number(booking.borg_amount) + addedBorg;
+                    setSavingExtras(true);
+                    try {
+                      const res = await fetch('/api/admin/bookings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          action: 'add-extras',
+                          bookingId: booking.id,
+                          extras: selected.join(' | '),
+                          totalPrice: newTotal,
+                          depositAmount: newDeposit,
+                          remainingAmount: newRemaining,
+                          borgAmount: newBorg,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        setExtrasSuccess(true);
+                        toast("Extra's succesvol toegevoegd", 'success');
+                        // Reset selections
+                        setExtraBedlinnen(false); setExtraFridge(false); setExtraAirco(false);
+                        setExtraBikes(0); setExtraMountainbikes(0);
+                      } else {
+                        toast(data.error || "Extra's toevoegen mislukt", 'error');
+                      }
+                    } catch {
+                      toast("Extra's toevoegen mislukt", 'error');
+                    }
+                    setSavingExtras(false);
+                  }}
+                  disabled={savingExtras || (!extraBedlinnen && !extraFridge && !extraAirco && extraBikes === 0 && extraMountainbikes === 0)}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 transition-colors hover:bg-amber-700"
+                >
+                  {savingExtras ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  Toevoegen &amp; klant informeren
                 </button>
               </>
             )}
