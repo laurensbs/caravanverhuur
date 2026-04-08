@@ -809,39 +809,35 @@ function BoekenContent() {
 
                       {/* Person counters */}
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
-                        <div className="grid sm:grid-cols-2 gap-5">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-foreground">{t('booking.adultsLabel')}</p>
-                              <p className="text-xs text-muted">{t('booking.adultsAge')}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
-                                <Minus size={16} />
+                        <div className="grid grid-cols-2 gap-4 sm:gap-5">
+                          <div>
+                            <p className="font-semibold text-foreground text-sm sm:text-base">{t('booking.adultsLabel')}</p>
+                            <p className="text-[11px] sm:text-xs text-muted">{t('booking.adultsAge')}</p>
+                            <div className="flex items-center gap-2 sm:gap-3 mt-2">
+                              <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors cursor-pointer">
+                                <Minus size={14} />
                               </button>
-                              <span className="text-xl font-bold text-foreground w-8 text-center">{adults}</span>
-                              <button onClick={() => setAdults(Math.min(6, adults + 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
-                                <Plus size={16} />
+                              <span className="text-lg sm:text-xl font-bold text-foreground w-6 sm:w-8 text-center">{adults}</span>
+                              <button onClick={() => setAdults(Math.min(6, adults + 1))} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors cursor-pointer">
+                                <Plus size={14} />
                               </button>
                             </div>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-foreground">{t('booking.childrenLabel')}</p>
-                              <p className="text-xs text-muted">{t('booking.childrenAge')}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
-                                <Minus size={16} />
+                          <div>
+                            <p className="font-semibold text-foreground text-sm sm:text-base">{t('booking.childrenLabel')}</p>
+                            <p className="text-[11px] sm:text-xs text-muted">{t('booking.childrenAge')}</p>
+                            <div className="flex items-center gap-2 sm:gap-3 mt-2">
+                              <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors cursor-pointer">
+                                <Minus size={14} />
                               </button>
-                              <span className="text-xl font-bold text-foreground w-8 text-center">{children}</span>
-                              <button onClick={() => setChildren(Math.min(4, children + 1))} className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors">
-                                <Plus size={16} />
+                              <span className="text-lg sm:text-xl font-bold text-foreground w-6 sm:w-8 text-center">{children}</span>
+                              <button onClick={() => setChildren(Math.min(4, children + 1))} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-foreground-light transition-colors cursor-pointer">
+                                <Plus size={14} />
                               </button>
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 pt-4 flex items-center gap-2">
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
                           <Users size={16} className="text-primary" />
                           <span className="text-sm font-medium text-foreground-light">{t('booking.totalPersons')} {totalPersons} {totalPersons === 1 ? t('booking.person') : t('booking.persons')}</span>
                         </div>
