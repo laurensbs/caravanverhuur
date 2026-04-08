@@ -19,7 +19,6 @@ import {
   MapPin,
   Users,
   Star,
-  Sparkles,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
@@ -50,36 +49,35 @@ export default function OverOnsPage() {
 
   return (
     <>
-      {/* ===== HERO ===== */}
-      <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0">
+      {/* ===== PAGE HEADER ===== */}
+      <div className="bg-background border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-10 pb-6 sm:pb-8">
+          <nav className="flex items-center gap-1.5 text-muted text-xs mb-3">
+            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+            <span>/</span>
+            <span className="text-foreground">{t('about.heroSubtitle')}</span>
+          </nav>
+          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight mb-2">
+            {t('about.heroTitle')}
+          </h1>
+          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
+            {t('about.missionText')}
+          </p>
+        </div>
+      </div>
+
+      {/* ===== HERO IMAGE — car + caravan ===== */}
+      <section className="relative overflow-hidden">
+        <div className="relative w-full aspect-[21/9] sm:aspect-[3/1]">
           <Image
-            src="/images/destinations/tossa_a_rea.jpg"
-            alt="Costa Brava luchtfoto"
+            src="https://u.cubeupload.com/laurensbos/IMG3809.jpg"
+            alt="Auto met caravan onderweg naar de Costa Brava"
             fill
             className="object-cover"
+            sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 pb-10 sm:pb-14 w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="max-w-2xl"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/15 backdrop-blur-md text-white text-sm font-medium rounded-full mb-5">
-              <Sparkles size={16} />
-              {t('about.heroSubtitle')}
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold text-white tracking-tight mb-4 sm:mb-5">
-              {t('about.heroTitle')}
-            </h1>
-            <p className="text-white/85 text-base sm:text-xl leading-relaxed max-w-xl">
-              {t('about.missionText')}
-            </p>
-          </motion.div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
       </section>
 
