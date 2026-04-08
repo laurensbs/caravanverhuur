@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDriverById, setupDatabase } from '@/lib/db';
+import { getDriverById, updateDriver, setupDatabase } from '@/lib/db';
+import { hashPassword } from '@/lib/password';
 import { createDriverToken } from '@/lib/driver-auth';
-import { verifyPassword } from '@/lib/password';
 
 let dbReady = false;
 
@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
       dbReady = true;
     }
 
-    const { driverId, password } = await request.json();
-    if (!driverId || !password) {
-      return NextResponse.json({ error: 'Driver ID and password required' }, { status: 400 });
+    const { driverId, password, locale } = await request.json();
+    if (!driverId || !password || password.length < 4) {
+      return NextResponse.json({ error: 'Driver ID and password (min 4 chars) required' }, { status: 400 });
     }
 
     const driver = await getDriverById(driverId);
@@ -22,20 +22,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Driver not found' }, { status: 401 });
     }
 
-    if (!driver.password_hash) {
-      return NextResponse.json({ error: 'No password set' }, { status: 403 });
+    // Only allow setup if no password exists yet
+    if (driver.password_hash) {
+      return NextResponse.json({ error: 'Password already set' }, { status: 409 });
     }
 
-    const { valid } = await verifyPassword(password, driver.password_hash);
-    if (!valid) {
-      return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
-    }
+    const hash = await hashPassword(password);
+    await updateDriver(driverId, { password_hash: hash, locale: locale || 'nl' });
 
     const token = await createDriverToken(driver.id, driver.name);
 
     const response = NextResponse.json({
       success: true,
-      driver: { id: driver.id, name: driver.name, locale: driver.locale || 'nl' },
+      driver: { id: driver.id, name: driver.name, locale: locale || 'nl' },
     });
     response.cookies.set('driver_session', token, {
       httpOnly: true,
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Driver login error:', error);
-    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
+    console.error('Driver setup error:', error);
+    return NextResponse.json({ error: 'Setup failed' }, { status: 500 });
   }
 }

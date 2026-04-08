@@ -324,6 +324,7 @@ export async function setupDatabase() {
       name TEXT NOT NULL,
       phone TEXT,
       pin TEXT,
+      password_hash TEXT,
       locale TEXT DEFAULT 'nl',
       active BOOLEAN DEFAULT true,
       sort_order INTEGER DEFAULT 0,
@@ -331,9 +332,10 @@ export async function setupDatabase() {
     )
   `;
 
-  // Add pin & locale columns if missing (migration)
+  // Add pin & locale & password_hash columns if missing (migration)
   await sql`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS pin TEXT`;
   await sql`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS locale TEXT DEFAULT 'nl'`;
+  await sql`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS password_hash TEXT`;
 
   // Chat conversations table
   await sql`
@@ -1877,13 +1879,14 @@ export async function createDriver(name: string, phone?: string) {
   return { id };
 }
 
-export async function updateDriver(id: string, data: { name?: string; phone?: string; active?: boolean; sort_order?: number; pin?: string; locale?: string }) {
+export async function updateDriver(id: string, data: { name?: string; phone?: string; active?: boolean; sort_order?: number; pin?: string; locale?: string; password_hash?: string }) {
   if (data.name !== undefined) await sql`UPDATE drivers SET name = ${data.name} WHERE id = ${id}`;
   if (data.phone !== undefined) await sql`UPDATE drivers SET phone = ${data.phone || null} WHERE id = ${id}`;
   if (data.active !== undefined) await sql`UPDATE drivers SET active = ${data.active} WHERE id = ${id}`;
   if (data.sort_order !== undefined) await sql`UPDATE drivers SET sort_order = ${data.sort_order} WHERE id = ${id}`;
   if (data.pin !== undefined) await sql`UPDATE drivers SET pin = ${data.pin || null} WHERE id = ${id}`;
   if (data.locale !== undefined) await sql`UPDATE drivers SET locale = ${data.locale} WHERE id = ${id}`;
+  if (data.password_hash !== undefined) await sql`UPDATE drivers SET password_hash = ${data.password_hash || null} WHERE id = ${id}`;
 }
 
 export async function deleteDriver(id: string) {
