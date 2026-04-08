@@ -32,6 +32,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ongeldig e-mailadres of wachtwoord' }, { status: 401 });
     }
 
+    // Check email verification
+    if (!customer.email_verified) {
+      return NextResponse.json({
+        error: 'Verifieer eerst je e-mailadres. Controleer je inbox (en spam) voor de bevestigingsmail.',
+        needsVerification: true,
+        email: customer.email,
+      }, { status: 403 });
+    }
+
     // Transparently upgrade legacy SHA-256 hash to bcrypt
     if (needsRehash) {
       const newHash = await hashPassword(password);

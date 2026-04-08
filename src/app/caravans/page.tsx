@@ -153,7 +153,7 @@ export default function CaravansPage() {
   }, [customCaravans]);
 
   const amenities = staticCaravans[0]?.amenities || [];
-  const allPhotos = useMemo(() => caravans.flatMap(c => c.photos), [caravans]);
+  const allPhotos = useMemo(() => caravans.flatMap(c => c.photos).filter(p => p && p.startsWith('http')), [caravans]);
 
   return (
     <>
@@ -179,6 +179,7 @@ export default function CaravansPage() {
                   fill
                   sizes="(max-width: 640px) 65vw, (max-width: 768px) 32vw, (max-width: 1024px) 24vw, 20vw"
                   className="object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
                   <p className="text-[10px] text-white/80">{t('caravans.orSimilar')}</p>

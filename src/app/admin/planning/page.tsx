@@ -15,8 +15,6 @@ import {
   Truck,
   Wrench,
   ClipboardCheck,
-  LogIn,
-  LogOut,
   Search,
   AlertCircle,
   Filter,
@@ -92,26 +90,22 @@ interface BookingPayment {
 
 const TASK_ICONS: Record<string, React.ElementType> = {
   PREP: Wrench,
+  CHECKIN: ClipboardCheck,
   TRANSPORT: Truck,
-  SETUP: Wrench,
-  CHECKIN: LogIn,
-  CHECKOUT: LogOut,
   PICKUP: Truck,
   INSPECTION: ClipboardCheck,
 };
 
 const TASK_COLORS: Record<string, string> = {
   PREP: 'bg-amber-100 text-amber-700',
-  TRANSPORT: 'bg-blue-100 text-blue-700',
-  SETUP: 'bg-indigo-100 text-indigo-700',
   CHECKIN: 'bg-green-100 text-green-700',
-  CHECKOUT: 'bg-orange-100 text-orange-700',
-  PICKUP: 'bg-blue-100 text-blue-700',
+  TRANSPORT: 'bg-blue-100 text-blue-700',
+  PICKUP: 'bg-orange-100 text-orange-700',
   INSPECTION: 'bg-purple-100 text-purple-700',
 };
 
 // Sequential order — each task requires the previous to be DONE before it can be started
-const TASK_SEQUENCE: TaskType[] = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'INSPECTION'];
+const TASK_SEQUENCE: TaskType[] = ['PREP', 'CHECKIN', 'TRANSPORT', 'PICKUP', 'INSPECTION'];
 
 function isTaskLocked(task: BookingTask, allTasksForBooking: BookingTask[]): boolean {
   const idx = TASK_SEQUENCE.indexOf(task.task_type);
@@ -129,8 +123,8 @@ function isTaskLocked(task: BookingTask, allTasksForBooking: BookingTask[]): boo
 
 function getTaskLabel(taskType: string, locale: string): string {
   const labels: Record<string, Record<string, string>> = {
-    nl: { PREP: 'Klaarmaken', TRANSPORT: 'Bezorgen', SETUP: 'Opzetten', CHECKIN: 'Inchecken', CHECKOUT: 'Uitchecken', PICKUP: 'Ophalen', INSPECTION: 'Inspectie' },
-    en: { PREP: 'Prepare', TRANSPORT: 'Deliver', SETUP: 'Set up', CHECKIN: 'Check-in', CHECKOUT: 'Check-out', PICKUP: 'Pick up', INSPECTION: 'Inspect' },
+    nl: { PREP: 'Klaarmaken', CHECKIN: 'Borgcheck (intern)', TRANSPORT: 'Bezorgen • 15:00', PICKUP: 'Ophalen • 10:00', INSPECTION: 'Eindcontrole' },
+    en: { PREP: 'Prepare', CHECKIN: 'Deposit check (internal)', TRANSPORT: 'Deliver • 15:00', PICKUP: 'Pick up • 10:00', INSPECTION: 'Final inspection' },
   };
   return (labels[locale] || labels.nl)[taskType] || taskType;
 }
@@ -139,20 +133,16 @@ function getTaskDescription(taskType: string, locale: string): string {
   const descs: Record<string, Record<string, string>> = {
     nl: {
       PREP: 'Caravan schoonmaken, beddengoed, gasflessen en inventaris checken',
-      TRANSPORT: 'Caravan naar de camping rijden en op de juiste plek neerzetten',
-      SETUP: 'Luifel uitklappen, gasaansluiting, stroom aansluiten en koelkast aan',
-      CHECKIN: 'Gast ontvangen, sleutels overhandigen, borginspectie doen',
-      CHECKOUT: 'Sleutels innemen, uitcheck-inspectie doen, borg afhandelen',
-      PICKUP: 'Caravan opruimen, afkoppelen en terugrijden naar de stalling',
+      CHECKIN: 'Borgchecklist bekijken voor vertrek. Klant ontvangt borgmail.',
+      TRANSPORT: 'Caravan naar de camping rijden en op de juiste plek neerzetten (15:00). Luifel, gas en stroom aansluiten.',
+      PICKUP: 'Borgcheck met klant (10:00). Caravan opruimen, afkoppelen en terugrijden naar de stalling.',
       INSPECTION: 'Eindcontrole op schade en inventaris na terugkomst',
     },
     en: {
       PREP: 'Clean caravan, check bedding, gas bottles and inventory',
-      TRANSPORT: 'Drive caravan to campsite and place on the correct pitch',
-      SETUP: 'Set up awning, connect gas, electricity and turn on fridge',
-      CHECKIN: 'Welcome guest, hand over keys, perform deposit inspection',
-      CHECKOUT: 'Collect keys, perform check-out inspection, handle deposit',
-      PICKUP: 'Clear caravan, disconnect and drive back to storage',
+      CHECKIN: 'Review deposit checklist before departure. Customer receives deposit email.',
+      TRANSPORT: 'Drive caravan to campsite and place on the correct pitch (15:00). Set up awning, connect gas and electricity.',
+      PICKUP: 'Deposit check with customer (10:00). Clear caravan, disconnect and drive back to storage.',
       INSPECTION: 'Final check for damage and inventory after return',
     },
   };
@@ -270,12 +260,10 @@ function TripCard({
   const uitcheckBorg = trip.borgChecklists.find(bc => bc.type === 'UITCHECKEN');
   const urgentTask = trip.tasks.find(t => t.status !== 'DONE' && t.due_date && getDaysUntil(t.due_date) <= 1);
 
-  const deliveryTasks = trip.tasks.filter(t => ['PREP', 'TRANSPORT', 'SETUP'].includes(t.task_type));
-  const stayTasks = trip.tasks.filter(t => ['CHECKIN', 'CHECKOUT'].includes(t.task_type));
+  const deliveryTasks = trip.tasks.filter(t => ['PREP', 'CHECKIN', 'TRANSPORT'].includes(t.task_type));
   const pickupTasks = trip.tasks.filter(t => ['PICKUP', 'INSPECTION'].includes(t.task_type));
   const taskGroups = [
     { label: isNl ? '🚚 Bezorging' : '🚚 Delivery', tasks: deliveryTasks, borg: incheckBorg },
-    { label: isNl ? '🏕️ Verblijf' : '🏕️ Stay', tasks: stayTasks, borg: null },
     { label: isNl ? '🔙 Ophalen' : '🔙 Pickup', tasks: pickupTasks, borg: uitcheckBorg },
   ];
 
@@ -386,7 +374,7 @@ function TripCard({
                         className="flex items-center gap-2 mt-1.5 p-2 rounded-lg bg-purple-50/50 hover:bg-purple-100/50 transition-colors">
                         <Shield className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                         <span className="text-xs font-medium text-foreground flex-1">
-                          {group.borg.type === 'INCHECKEN' ? (isNl ? 'Incheck-inspectie' : 'Check-in inspection') : (isNl ? 'Uitcheck-inspectie' : 'Check-out inspection')}
+                          {group.borg.type === 'INCHECKEN' ? (isNl ? 'Borgchecklist (vertrek)' : 'Deposit checklist (departure)') : (isNl ? 'Borgcheck (ophaaldag)' : 'Deposit check (pick-up)')}
                         </span>
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                           group.borg.status === 'KLANT_AKKOORD' ? 'bg-green-100 text-green-700' :
@@ -701,11 +689,11 @@ function CheckInOutSheet({
           <div className={`p-4 ${isCheckIn ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-orange-50 to-amber-50'}`}>
             <div className="flex items-center gap-3">
               <div className={`p-3 rounded-xl ${isCheckIn ? 'bg-green-100' : 'bg-orange-100'}`}>
-                {isCheckIn ? <LogIn className="w-6 h-6 text-green-700" /> : <LogOut className="w-6 h-6 text-orange-700" />}
+                {isCheckIn ? <ClipboardCheck className="w-6 h-6 text-green-700" /> : <Truck className="w-6 h-6 text-orange-700" />}
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-lg text-foreground">
-                  {isCheckIn ? (isNl ? 'Inchecken' : 'Check-in') : (isNl ? 'Uitchecken' : 'Check-out')}
+                  {isCheckIn ? (isNl ? 'Borgcheck (intern)' : 'Deposit check (internal)') : (isNl ? 'Ophalen & Borgcheck' : 'Pick up & Deposit check')}
                 </h3>
                 <p className="text-sm text-muted">{task.guest_name} • {task.booking_ref}</p>
               </div>
@@ -730,7 +718,7 @@ function CheckInOutSheet({
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-purple-600" />
               <h4 className="font-semibold text-sm text-foreground">
-                {isCheckIn ? (isNl ? 'Incheck-inspectie (Borg)' : 'Check-in Inspection (Deposit)') : (isNl ? 'Uitcheck-inspectie (Borg)' : 'Check-out Inspection (Deposit)')}
+                {isCheckIn ? (isNl ? 'Borgchecklist voor vertrek' : 'Deposit checklist before departure') : (isNl ? 'Borgcheck ophaaldag' : 'Pick-up day deposit check')}
               </h4>
             </div>
 
@@ -794,8 +782,8 @@ function CheckInOutSheet({
                   <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                     <Mail className="w-4 h-4 text-muted" />
                     {isCheckIn
-                      ? (isNl ? 'Stuur klant incheck-mail met borglink' : 'Send customer check-in email with deposit link')
-                      : (isNl ? 'Stuur klant uitcheck-mail met borglink' : 'Send customer check-out email with deposit link')}
+                      ? (isNl ? 'Stuur klant borgmail voor vertrek' : 'Send customer deposit email before departure')
+                      : (isNl ? 'Stuur klant borgmail voor ophaaldag' : 'Send customer deposit email for pick-up day')}
                   </p>
                   <p className="text-[11px] text-muted mt-0.5">
                     {isNl ? 'Klant ontvangt een e-mail met een link naar het borgformulier' : 'Customer receives an email with a link to the deposit form'}
@@ -808,8 +796,8 @@ function CheckInOutSheet({
                 }`}>
                 {completing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 {isCheckIn
-                  ? (isNl ? 'Inchecken voltooien' : 'Complete check-in')
-                  : (isNl ? 'Uitchecken voltooien' : 'Complete check-out')}
+                  ? (isNl ? 'Borgcheck voltooien & mail versturen' : 'Complete deposit check & send email')
+                  : (isNl ? 'Ophalen voltooien' : 'Complete pick-up')}
               </button>
             </>
           )}
@@ -937,8 +925,8 @@ export default function PlanningPage() {
       setSelectedTask(null);
       toast(
         task.task_type === 'CHECKIN'
-          ? (isNl ? 'Inchecken voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Check-in completed' + (sendEmail ? ' — email sent' : ''))
-          : (isNl ? 'Uitchecken voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Check-out completed' + (sendEmail ? ' — email sent' : '')),
+          ? (isNl ? 'Borgcheck voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Deposit check completed' + (sendEmail ? ' — email sent' : ''))
+          : (isNl ? 'Ophalen voltooid' + (sendEmail ? ' — mail verstuurd' : '') : 'Pick-up completed' + (sendEmail ? ' — email sent' : '')),
         'success'
       );
       fetchData();
@@ -1025,7 +1013,7 @@ export default function PlanningPage() {
   const transportItems = useMemo(() => {
     const items: { type: 'delivery' | 'pickup'; date: string; trip: TripData; tasks: BookingTask[] }[] = [];
     filteredTrips.forEach(trip => {
-      const deliveryTasks = trip.tasks.filter(t => ['TRANSPORT', 'SETUP'].includes(t.task_type));
+      const deliveryTasks = trip.tasks.filter(t => t.task_type === 'TRANSPORT');
       const pickupTasks = trip.tasks.filter(t => t.task_type === 'PICKUP');
       if (deliveryTasks.length > 0 && !deliveryTasks.every(t => t.status === 'DONE')) {
         items.push({ type: 'delivery', date: deliveryTasks[0].due_date || trip.checkIn, trip, tasks: deliveryTasks });
@@ -1159,7 +1147,7 @@ export default function PlanningPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${item.type === 'delivery' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                          {item.type === 'delivery' ? (isNl ? '📦 Bezorgen' : '📦 Deliver') : (isNl ? '🔙 Ophalen' : '🔙 Pick up')}
+                          {item.type === 'delivery' ? (isNl ? '📦 Bezorgen • 15:00' : '📦 Deliver • 15:00') : (isNl ? '🔙 Ophalen • 10:00' : '🔙 Pick up • 10:00')}
                         </span>
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${getUrgencyBadge(daysUntil, allDone ? 'DONE' : 'TODO')}`}>
                           {getDueDateLabel(item.date, locale)}
@@ -1327,7 +1315,7 @@ export default function PlanningPage() {
 
       {/* Task detail / Check-in/out sheet */}
       <AnimatePresence>
-        {selectedTask && (selectedTask.task_type === 'CHECKIN' || selectedTask.task_type === 'CHECKOUT') ? (
+        {selectedTask && (selectedTask.task_type === 'CHECKIN' || selectedTask.task_type === 'PICKUP') ? (
           <CheckInOutSheet
             key={selectedTask.id}
             task={selectedTask}

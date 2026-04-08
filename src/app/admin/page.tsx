@@ -69,16 +69,16 @@ function StatCard({
     >
       <Link
         href={href}
-        className="block bg-white rounded-2xl p-3 sm:p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+        className="block bg-white rounded-xl p-2.5 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs sm:text-sm text-muted font-medium">{label}</p>
-            <p className="text-lg sm:text-2xl font-bold text-foreground mt-0.5 sm:mt-1">{value}</p>
-            {sub && <p className="text-xs text-muted mt-0.5 sm:mt-1">{sub}</p>}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className={`p-1.5 sm:p-2 rounded-lg ${color} group-hover:scale-110 transition-transform duration-200`}>
+            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
-          <div className={`p-2 sm:p-3 rounded-xl ${color} group-hover:scale-110 transition-transform duration-200`}>
-            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] sm:text-xs text-muted font-medium leading-tight">{label}</p>
+            <p className="text-base sm:text-lg font-bold text-foreground leading-tight">{value}</p>
+            {sub && <p className="text-[10px] sm:text-xs text-muted leading-tight">{sub}</p>}
           </div>
         </div>
       </Link>
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3">
         <StatCard
           label={t('dashboard.activeBookings')}
           value={String(activeBookings)}
@@ -232,20 +232,20 @@ export default function AdminDashboard() {
           index={0}
         />
         <StatCard
-          label={t('dashboard.received')}
-          value={formatCurrency(totalPaid)}
-          sub={t('dashboard.paymentsCount', { count: String(paidCount) })}
-          icon={TrendingUp}
-          color="bg-primary-light text-primary-dark"
+          label={t('dashboard.openPayments')}
+          value={String(openCount)}
+          sub={totalOpen > 0 ? formatCurrency(totalOpen) : undefined}
+          icon={CreditCard}
+          color="bg-primary-50 text-primary"
           href={p('/betalingen')}
           index={1}
         />
         <StatCard
-          label={t('dashboard.openPayments')}
-          value={formatCurrency(totalOpen)}
-          sub={t('dashboard.paymentsCount', { count: String(openCount) })}
-          icon={CreditCard}
-          color="bg-primary-50 text-primary"
+          label={t('dashboard.received')}
+          value={String(paidCount)}
+          sub={totalPaid > 0 ? formatCurrency(totalPaid) : undefined}
+          icon={TrendingUp}
+          color="bg-primary-light text-primary-dark"
           href={p('/betalingen')}
           index={2}
         />
@@ -266,12 +266,12 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}
-          className="bg-white rounded-2xl p-3 sm:p-5"
+          className="bg-white rounded-xl p-2.5 sm:p-4"
         >
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider mb-2 sm:mb-3">
+          <h3 className="text-[10px] sm:text-xs font-semibold text-muted uppercase tracking-wider mb-1.5 sm:mb-2">
             {t('dashboard.actionItems')}
           </h3>
-          <div className="space-y-1 sm:space-y-2">
+          <div className="space-y-0.5 sm:space-y-1">
             {newBookings > 0 && (
               <Link href={p('/boekingen')} className="flex items-center gap-2 sm:gap-3 text-sm p-2 rounded-lg hover:bg-primary-50 transition-colors text-primary-dark">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -444,6 +444,10 @@ export default function AdminDashboard() {
                     <p className="text-xs text-muted">
                       {formatDate(b.check_in)} – {formatDate(b.check_out)} ({b.nights} {t('common.nights')})
                     </p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">🚚 Deliver 15:00</span>
+                      <span className="text-[10px] font-medium text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">🔙 Pickup 10:00</span>
+                    </div>
                   </div>
                   <div className="shrink-0">
                     <span

@@ -83,6 +83,18 @@ function BoekenContent() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
+  // Auto-fill logged-in user data
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.ok ? r.json() : null).then(data => {
+      if (!data?.customer) return;
+      const c = data.customer;
+      if (c.name && !name) setName(c.name);
+      if (c.email && !email) setEmail(c.email);
+      if (c.phone && !phone) setPhone(c.phone);
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -856,7 +868,7 @@ function BoekenContent() {
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                             {availableCaravans.flatMap(c => c.photos).slice(0, 6).map((photo, idx) => (
                               <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
-                                <Image src={photo} alt={`Caravan foto ${idx + 1}`} fill className="object-cover" />
+                                <Image src={photo} alt={`Caravan foto ${idx + 1}`} fill className="object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                               </div>
                             ))}
                           </div>

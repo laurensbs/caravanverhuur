@@ -43,8 +43,8 @@ export async function PATCH(request: NextRequest) {
       await updateTaskNotes(taskId, notes);
     }
 
-    // Send borg checklist email when completing CHECKIN or CHECKOUT
-    if (shouldSendEmail && status === 'DONE' && bookingId && (taskType === 'CHECKIN' || taskType === 'CHECKOUT')) {
+    // Send borg checklist email when completing CHECKIN or PICKUP
+    if (shouldSendEmail && status === 'DONE' && bookingId && (taskType === 'CHECKIN' || taskType === 'PICKUP')) {
       try {
         const borgType = taskType === 'CHECKIN' ? 'INCHECKEN' : 'UITCHECKEN';
         let borgChecklists = await getBorgChecklistsByBooking(bookingId);

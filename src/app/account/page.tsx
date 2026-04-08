@@ -52,6 +52,9 @@ function AccountPageInner() {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   // Form fields
   const [email, setEmail] = useState('');
@@ -85,6 +88,7 @@ function AccountPageInner() {
     setLoading(true);
     setError('');
     setSuccess('');
+    setShowResendVerification(false);
 
     try {
       // Forgot password mode
@@ -147,7 +151,20 @@ function AccountPageInner() {
       const data = await res.json();
 
       if (!res.ok) {
+        // Show resend verification option when email not verified
+        if (data.needsVerification) {
+          setError(data.error || t('account.errorVerifyEmail'));
+          setShowResendVerification(true);
+          if (data.email) setResendEmail(data.email);
+          return;
+        }
         setError(data.error || t('account.errorGeneral'));
+        return;
+      }
+
+      // Registration: show verification message (no auto-login)
+      if (mode === 'register' && data.needsVerification) {
+        setSuccess(t('account.successRegisterVerify'));
         return;
       }
 
@@ -273,7 +290,7 @@ function AccountPageInner() {
                     className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       mode === 'register' ? 'bg-white text-primary shadow-sm' : 'text-muted'
                     }`} > {t('account.tabRegister')} </button> </div>
-                )} {/* Error / Success messages */} <AnimatePresence mode="wait"> {error && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border-danger/20" > <AlertCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{error}</span> </motion.div> )} {success && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border-primary-100" > <CheckCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{success}</span> </motion.div> )} </AnimatePresence> <form onSubmit={handleSubmit} className="space-y-3.5">
+                )} {/* Error / Success messages */} <AnimatePresence mode="wait"> {error && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="bg-danger/5 text-danger text-sm p-3.5 rounded-xl mb-4 border-danger/20" > <div className="flex items-start gap-2.5"><AlertCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{error}</span></div> {showResendVerification && ( <button type="button" onClick={async () => { setResendingVerification(true); try { await fetch('/api/auth/resend-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: resendEmail || email }) }); setError(''); setSuccess(t('account.verificationResent')); setShowResendVerification(false); } catch {} setResendingVerification(false); }} disabled={resendingVerification} className="mt-2 w-full py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50" > {resendingVerification ? t('account.resending') : t('account.resendVerification')} </button> )} </motion.div> )} {success && ( <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex items-start gap-2.5 bg-primary-50 text-primary-dark text-sm p-3.5 rounded-xl mb-4 border-primary-100" > <CheckCircle size={16} className="shrink-0 mt-0.5" /> <span className="leading-relaxed">{success}</span> </motion.div> )} </AnimatePresence> <form onSubmit={handleSubmit} className="space-y-3.5">
                   {/* Name (register only) */}
                   <AnimatePresence>
                     {mode === 'register' && (

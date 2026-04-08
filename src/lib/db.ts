@@ -1752,7 +1752,7 @@ export async function applyBookingDiscount(bookingId: string, discountCode: stri
 
 // ===== BOOKING TASKS (PLANNING) =====
 
-const TASK_TYPES = ['PREP', 'TRANSPORT', 'SETUP', 'CHECKIN', 'CHECKOUT', 'PICKUP', 'INSPECTION'] as const;
+const TASK_TYPES = ['PREP', 'CHECKIN', 'TRANSPORT', 'PICKUP', 'INSPECTION'] as const;
 
 export async function getTasksForBooking(bookingId: string) {
   const result = await sql`
@@ -1784,12 +1784,10 @@ export async function ensureTasksForBooking(bookingId: string, checkIn: string, 
 
   const dueDates: Record<string, Date> = {
     PREP: prepDate,
+    CHECKIN: transportDate,
     TRANSPORT: transportDate,
-    SETUP: transportDate,
-    CHECKIN: checkInDate,
-    CHECKOUT: checkOutDate,
-    PICKUP: new Date(checkOutDate.getTime() + 86400000),
-    INSPECTION: new Date(checkOutDate.getTime() + 2 * 86400000),
+    PICKUP: checkOutDate,
+    INSPECTION: new Date(checkOutDate.getTime() + 86400000),
   };
 
   for (const taskType of TASK_TYPES) {

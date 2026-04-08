@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCustomer, getCustomerByEmail, createCustomerSession, setupDatabase } from '@/lib/db';
+import { createCustomer, getCustomerByEmail, setupDatabase } from '@/lib/db';
 import { sendWelcomeEmail } from '@/lib/email';
 import { hashPassword } from '@/lib/password';
 import { registerLimiter, getClientIp } from '@/lib/rate-limit';
@@ -44,25 +44,13 @@ export async function POST(request: NextRequest) {
       locale: customerLocale,
     });
 
-    // Auto-login: create session
-    const session = await createCustomerSession(id);
-
-    // Send combined welcome + verification email (non-blocking)
+    // Send combined welcome + verification email (non-blocking) — NO auto-login
     createEmailVerificationToken(id).then(token => {
       const verifyUrl = `https://caravanverhuurspanje.com/api/auth/verify-email?token=${token}`;
       return sendWelcomeEmail(email.toLowerCase().trim(), name.trim(), customerLocale, verifyUrl);
     }).catch(err => console.error('Welcome email failed:', err));
 
-    const response = NextResponse.json({ success: true, customerId: id });
-    response.cookies.set('customer_session', session.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
-    });
-
-    return response;
+    return NextResponse.json({ success: true, needsVerification: true, customerId: id });
   } catch (error: unknown) {
     console.error('Register error:', error);
     // Auto-setup database tables if they don't exist
@@ -70,7 +58,6 @@ export async function POST(request: NextRequest) {
     if (msg.includes('does not exist') || msg.includes('relation')) {
       try {
         await setupDatabase();
-        // Retry not needed - user can try again
         return NextResponse.json({ error: 'Database was zojuist opgezet. Probeer het nogmaals.' }, { status: 503 });
       } catch (setupErr) {
         console.error('Auto-setup failed:', setupErr);
