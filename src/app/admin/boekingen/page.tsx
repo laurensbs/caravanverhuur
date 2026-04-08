@@ -728,39 +728,45 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           </div>
         )}
 
-        {/* Delete confirm */}
+        {/* Delete confirm modal */}
         {showDeleteConfirm && (
-          <div className="bg-red-50 rounded-xl p-3 space-y-2">
-            <div className="flex items-center gap-2 text-red-700">
-              <AlertTriangle className="w-4 h-4" />
-              <p className="text-xs font-semibold">{t('bookings.deleteConfirm')}</p>
-            </div>
-            <p className="text-[10px] text-red-600">{t('bookings.deleteWarning')}</p>
-            {deleteError && <p className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded-lg">{deleteError}</p>}
-            <div className="flex items-center gap-2">
-              <Lock className="w-3.5 h-3.5 text-red-400" />
-              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="flex-1 px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={async () => {
-                  if (!deletePassword) { setDeleteError(t('bookings.enterPassword')); return; }
-                  setDeleting(true); setDeleteError('');
-                  try {
-                    const res = await fetch('/api/bookings', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: booking.id, password: deletePassword }) });
-                    if (res.status === 403) { setDeleteError(t('bookings.wrongPassword')); setDeleting(false); return; }
-                    if (!res.ok) { setDeleteError(t('bookings.deleteFailed')); setDeleting(false); return; }
-                    onDelete(booking.id);
-                  } catch { setDeleteError(t('common.error')); }
-                  setDeleting(false);
-                }}
-                disabled={deleting}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 cursor-pointer disabled:opacity-50"
-              >
-                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                {t('bookings.permanentDelete')}
-              </button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="px-3 py-1.5 bg-white text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 cursor-pointer">{t('common.cancel')}</button>
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{t('bookings.deleteConfirm')}</p>
+                  <p className="text-xs text-red-600 mt-0.5">{t('bookings.deleteWarning')}</p>
+                </div>
+              </div>
+              {deleteError && <p className="text-xs text-red-700 bg-red-50 px-3 py-2 rounded-lg">{deleteError}</p>}
+              <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
+                <Lock className="w-4 h-4 text-red-400" />
+                <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="flex-1 bg-transparent text-sm focus:outline-none" autoFocus />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-medium hover:bg-gray-200 cursor-pointer">{t('common.cancel')}</button>
+                <button
+                  onClick={async () => {
+                    if (!deletePassword) { setDeleteError(t('bookings.enterPassword')); return; }
+                    setDeleting(true); setDeleteError('');
+                    try {
+                      const res = await fetch('/api/bookings', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: booking.id, password: deletePassword }) });
+                      if (res.status === 403) { setDeleteError(t('bookings.wrongPassword')); setDeleting(false); return; }
+                      if (!res.ok) { setDeleteError(t('bookings.deleteFailed')); setDeleting(false); return; }
+                      onDelete(booking.id);
+                    } catch { setDeleteError(t('common.error')); }
+                    setDeleting(false);
+                  }}
+                  disabled={deleting}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 cursor-pointer disabled:opacity-50"
+                >
+                  {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  {t('bookings.permanentDelete')}
+                </button>
+              </div>
             </div>
           </div>
         )}
