@@ -67,16 +67,18 @@ export default function OverOnsPage() {
       </div>
 
       {/* ===== HERO IMAGE — car + caravan ===== */}
-      <section className="relative overflow-hidden">
-        <div className="relative w-full aspect-[16/9] sm:aspect-[5/2]">
-          <Image
-            src="https://u.cubeupload.com/laurensbos/IMG3809.jpg"
-            alt="Auto met caravan onderweg naar de Costa Brava"
-            fill
-            className="object-cover object-center"
-            sizes="100vw"
-            priority
-          />
+      <section className="py-8 sm:py-12 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="relative rounded-2xl overflow-hidden aspect-[16/9] sm:aspect-[5/2]">
+            <Image
+              src="https://u.cubeupload.com/laurensbos/IMG3809.jpg"
+              alt="Auto met caravan onderweg naar de Costa Brava"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              priority
+            />
+          </div>
         </div>
       </section>
 
@@ -117,8 +119,8 @@ export default function OverOnsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4]">
                     <Image
-                      src="/images/campings/cala_d_aiguablava__begur.jpg"
-                      alt="Baai aan de Costa Brava"
+                      src="https://u.cubeupload.com/laurensbos/IMG3809.jpg"
+                      alt="Auto met caravan onderweg naar de Costa Brava"
                       fill
                       className="object-cover"
                     />
