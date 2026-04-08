@@ -477,7 +477,7 @@ export default function BerichtenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {filtered.length} {t('messages.messagesFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
+        {t('messages.messagesFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
       </p>
 
       {/* Messages list */}

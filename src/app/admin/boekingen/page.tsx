@@ -1238,7 +1238,7 @@ export default function BookingenPage() {
 
       <div className="flex items-center gap-2">
         <p className="text-xs text-muted flex-1">
-          {filtered.length} {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
+          {t('bookings.bookingsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })}
         </p>
         <button
           onClick={() => setShowLegend(!showLegend)}
