@@ -323,11 +323,17 @@ export async function setupDatabase() {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       phone TEXT,
+      pin TEXT,
+      locale TEXT DEFAULT 'nl',
       active BOOLEAN DEFAULT true,
       sort_order INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Add pin & locale columns if missing (migration)
+  await sql`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS pin TEXT`;
+  await sql`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS locale TEXT DEFAULT 'nl'`;
 
   // Chat conversations table
   await sql`
@@ -1871,15 +1877,41 @@ export async function createDriver(name: string, phone?: string) {
   return { id };
 }
 
-export async function updateDriver(id: string, data: { name?: string; phone?: string; active?: boolean; sort_order?: number }) {
+export async function updateDriver(id: string, data: { name?: string; phone?: string; active?: boolean; sort_order?: number; pin?: string; locale?: string }) {
   if (data.name !== undefined) await sql`UPDATE drivers SET name = ${data.name} WHERE id = ${id}`;
   if (data.phone !== undefined) await sql`UPDATE drivers SET phone = ${data.phone || null} WHERE id = ${id}`;
   if (data.active !== undefined) await sql`UPDATE drivers SET active = ${data.active} WHERE id = ${id}`;
   if (data.sort_order !== undefined) await sql`UPDATE drivers SET sort_order = ${data.sort_order} WHERE id = ${id}`;
+  if (data.pin !== undefined) await sql`UPDATE drivers SET pin = ${data.pin || null} WHERE id = ${id}`;
+  if (data.locale !== undefined) await sql`UPDATE drivers SET locale = ${data.locale} WHERE id = ${id}`;
 }
 
 export async function deleteDriver(id: string) {
   await sql`DELETE FROM drivers WHERE id = ${id}`;
+}
+
+export async function getDriverByPin(pin: string) {
+  const result = await sql`SELECT * FROM drivers WHERE pin = ${pin} AND active = true`;
+  return result.rows[0] || null;
+}
+
+export async function getDriverById(id: string) {
+  const result = await sql`SELECT * FROM drivers WHERE id = ${id}`;
+  return result.rows[0] || null;
+}
+
+export async function getTasksForDriver(driverName: string) {
+  const result = await sql`
+    SELECT t.*, b.guest_name, b.guest_email, b.guest_phone, b.reference as booking_ref,
+           b.caravan_id, b.camping_id, b.check_in, b.check_out, b.nights, b.status as booking_status,
+           b.special_requests, b.total_price, b.deposit_amount, b.remaining_amount, b.borg_amount,
+           b.adults, b.children, b.spot_number
+    FROM booking_tasks t
+    JOIN bookings b ON t.booking_id = b.id
+    WHERE t.assigned_to = ${driverName}
+    ORDER BY t.due_date ASC NULLS LAST, t.created_at ASC
+  `;
+  return result.rows;
 }
 
 // ===== CHAT CONVERSATIONS =====

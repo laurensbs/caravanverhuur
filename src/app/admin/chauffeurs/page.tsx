@@ -12,6 +12,8 @@ import {
   ToggleLeft,
   ToggleRight,
   Truck,
+  Lock,
+  ExternalLink,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
@@ -20,6 +22,8 @@ interface Driver {
   id: string;
   name: string;
   phone: string | null;
+  pin: string | null;
+  locale: string | null;
   active: boolean;
   sort_order: number;
   created_at: string;
@@ -37,6 +41,7 @@ export default function ChauffeurPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editPin, setEditPin] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -91,6 +96,7 @@ export default function ChauffeurPage() {
     setEditingId(driver.id);
     setEditName(driver.name);
     setEditPhone(driver.phone || '');
+    setEditPin(driver.pin || '');
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -100,9 +106,9 @@ export default function ChauffeurPage() {
       await fetch('/api/admin/drivers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: editName.trim(), phone: editPhone.trim() || undefined }),
+        body: JSON.stringify({ id, name: editName.trim(), phone: editPhone.trim() || undefined, pin: editPin.trim() || undefined }),
       });
-      setDrivers(prev => prev.map(d => d.id === id ? { ...d, name: editName.trim(), phone: editPhone.trim() || null } : d));
+      setDrivers(prev => prev.map(d => d.id === id ? { ...d, name: editName.trim(), phone: editPhone.trim() || null, pin: editPin.trim() || null } : d));
       setEditingId(null);
       toast(t('common.saved'), 'success');
     } catch {
@@ -164,6 +170,14 @@ export default function ChauffeurPage() {
         </p>
         <p className="text-xs text-blue-700 leading-relaxed">{t('drivers.explanation')}</p>
       </div>
+
+      {/* Driver portal link */}
+      <a href="/chauffeur" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-white rounded-xl p-3 sm:p-4 text-sm text-primary hover:bg-primary/5 transition">
+        <Lock className="w-4 h-4" />
+        <span className="font-medium">Chauffeur portaal</span>
+        <span className="text-xs text-muted">(PIN login)</span>
+        <ExternalLink className="w-3.5 h-3.5 ml-auto" />
+      </a>
 
       {/* Add button */}
       <div className="flex items-center justify-between">
@@ -269,6 +283,18 @@ export default function ChauffeurPage() {
                     className="flex-1 px-3 py-1.5 bg-surface rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(driver.id)}
                   />
+                  <div className="relative">
+                    <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={editPin}
+                      onChange={(e) => setEditPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                      placeholder="PIN (4+ cijfers)"
+                      className="w-28 pl-8 pr-3 py-1.5 bg-surface rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark font-mono"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(driver.id)}
+                    />
+                  </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => handleSaveEdit(driver.id)} disabled={savingId === driver.id}
                       className="p-1.5 rounded-lg bg-primary-dark text-white hover:bg-primary-dark/90 cursor-pointer disabled:opacity-50">
@@ -282,11 +308,22 @@ export default function ChauffeurPage() {
               ) : (
                 <button onClick={() => startEdit(driver)} className="flex-1 min-w-0 text-left cursor-pointer">
                   <p className="font-semibold text-sm text-foreground">{driver.name}</p>
-                  {driver.phone && (
-                    <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3" /> {driver.phone}
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3 mt-0.5">
+                    {driver.phone && (
+                      <p className="text-xs text-muted flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> {driver.phone}
+                      </p>
+                    )}
+                    {driver.pin ? (
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> PIN ingesteld
+                      </p>
+                    ) : (
+                      <p className="text-xs text-amber-500 flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> Geen PIN
+                      </p>
+                    )}
+                  </div>
                 </button>
               )}
 

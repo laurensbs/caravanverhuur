@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, name, phone, active, sort_order } = await request.json();
+    const { id, name, phone, active, sort_order, pin, locale } = await request.json();
     if (!id) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 });
     }
-    await updateDriver(id, { name, phone, active, sort_order });
+    await updateDriver(id, { name, phone, active, sort_order, pin, locale });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('PATCH /api/admin/drivers error:', error);
