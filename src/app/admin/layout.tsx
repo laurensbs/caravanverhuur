@@ -1350,14 +1350,14 @@ function AdminLayoutInner({
         !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16') : ''
       }`}>
         {/* Top bar */}
-        <header className="bg-white px-3 py-2.5 flex items-center gap-2 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
+        <header className="bg-white px-3 py-2 flex items-center gap-1.5 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
           {isMobile && (
             <button
               onClick={toggleSidebar}
-              className="p-2 -ml-1 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-foreground"
+              className="p-2.5 -ml-1 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-foreground"
               aria-label="Menu"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </button>
           )}
           <div className="flex-1 min-w-0">
@@ -1500,18 +1500,18 @@ function AdminLayoutInner({
           {/* Mobile search button */}
           <button
             onClick={() => { setSearchOpen(!searchOpen); }}
-            className="sm:hidden p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+            className="sm:hidden p-2.5 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-5 h-5 sm:w-5 sm:h-5" />
           </button>
 
           {/* Language toggle */}
           <button
             onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-2 sm:px-2 sm:py-1.5 rounded-xl sm:rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
             title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
           >
-            <Globe className="w-4 h-4" />
+            <Globe className="w-5 h-5 sm:w-4 sm:h-4" />
             {locale === 'nl' ? 'EN' : 'NL'}
           </button>
 
@@ -1560,26 +1560,26 @@ function AdminLayoutInner({
 
           {/* Mobile user menu */}
           {ctxUsername && ctxUsername !== 'staff' && (
-            <div className="sm:hidden flex items-center gap-1">
+            <div className="sm:hidden flex items-center gap-0.5">
               <button
                 onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
-                className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+                className="p-2.5 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
                 title={t('auth.changePassword')}
               >
-                <Lock className="w-4 h-4" />
+                <Lock className="w-5 h-5" />
               </button>
               <button
                 onClick={onLogout}
-                className="p-2 rounded-lg hover:bg-red-50 transition-colors cursor-pointer text-red-500"
+                className="p-2.5 rounded-xl hover:bg-red-50 transition-colors cursor-pointer text-red-500"
                 title={t('nav.logout')}
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
           )}
           <button
             onClick={toggleNotifications}
-            className={`relative p-2 rounded-lg transition-colors cursor-pointer ${
+            className={`relative p-2.5 sm:p-2 rounded-xl sm:rounded-lg transition-colors cursor-pointer ${
               notifEnabled
                 ? 'text-primary hover:bg-primary/10'
                 : 'text-muted hover:bg-surface-alt hover:text-foreground'
@@ -1595,7 +1595,7 @@ function AdminLayoutInner({
 
           <button
             onClick={() => setShowHelp(true)}
-            className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+            className="p-2.5 sm:p-2 rounded-xl sm:rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
             aria-label={locale === 'nl' ? 'Hulp' : 'Help'}
           >
             <HelpCircle className="w-5 h-5" />
