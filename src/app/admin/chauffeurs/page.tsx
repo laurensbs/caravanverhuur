@@ -24,6 +24,7 @@ interface Driver {
   phone: string | null;
   pin: string | null;
   password_hash: string | null;
+  password_plain: string | null;
   locale: string | null;
   active: boolean;
   sort_order: number;
@@ -143,9 +144,9 @@ export default function ChauffeurPage() {
       await fetch('/api/admin/drivers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, password_hash: null }),
+        body: JSON.stringify({ id, password_hash: null, password_plain: null }),
       });
-      setDrivers(prev => prev.map(d => d.id === id ? { ...d, password_hash: null } : d));
+      setDrivers(prev => prev.map(d => d.id === id ? { ...d, password_hash: null, password_plain: null } : d));
       toast(t('common.saved'), 'success');
     } catch {
       toast(t('common.error'), 'error');
@@ -319,7 +320,7 @@ export default function ChauffeurPage() {
                     )}
                     {driver.password_hash ? (
                       <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                        <Lock className="w-3 h-3" /> Wachtwoord ingesteld
+                        <Lock className="w-3 h-3" /> {driver.password_plain || 'Wachtwoord ingesteld'}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleResetPassword(driver.id); }}
                           disabled={resettingPwId === driver.id}

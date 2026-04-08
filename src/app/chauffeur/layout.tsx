@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, ReactNode, createContext, useContext } from 'react';
-import { Truck, LogOut, ChevronDown, Loader2, ArrowLeft, Lock, Check } from 'lucide-react';
+import { Truck, LogOut, ChevronDown, Loader2, ArrowLeft, Lock, Check, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { type DriverLocale, getDriverTranslation } from '@/i18n/driver-translations';
 
 interface DriverSession {
@@ -66,6 +66,11 @@ export default function DriverLayout({ children }: { children: ReactNode }) {
   const [pwLoading, setPwLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Onboarding
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const ONBOARDING_STEPS = 4;
+
   const t = getDriverTranslation(authenticated ? locale : loginLocale);
 
   // Check existing session
@@ -103,6 +108,23 @@ export default function DriverLayout({ children }: { children: ReactNode }) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Show onboarding on first login
+  useEffect(() => {
+    if (authenticated && driver) {
+      const key = `driver_onboarded_v1_${driver.id}`;
+      if (!localStorage.getItem(key)) {
+        setShowOnboarding(true);
+        setOnboardingStep(0);
+      }
+    }
+  }, [authenticated, driver]);
+
+  const finishOnboarding = () => {
+    if (driver) localStorage.setItem(`driver_onboarded_v1_${driver.id}`, 'true');
+    setShowOnboarding(false);
+    setOnboardingStep(0);
+  };
 
   const selectDriver = (d: DriverListItem) => {
     setSelectedDriver(d);
@@ -454,6 +476,59 @@ export default function DriverLayout({ children }: { children: ReactNode }) {
         <main className="max-w-lg mx-auto px-4 py-4">
           {children}
         </main>
+
+        {/* ═══ DRIVER ONBOARDING ═══ */}
+        {showOnboarding && (
+          <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={finishOnboarding}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="h-1.5 bg-blue-600" />
+              <div className="p-6">
+                {/* Progress */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {t('onboarding.step')} {onboardingStep + 1} / {ONBOARDING_STEPS}
+                  </span>
+                  <button onClick={finishOnboarding} className="text-xs text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                    {t('onboarding.skip')}
+                  </button>
+                </div>
+                <div className="w-full h-1 bg-gray-100 rounded-full mb-6 overflow-hidden">
+                  <div className="h-full bg-blue-600 rounded-full transition-all duration-400" style={{ width: `${((onboardingStep + 1) / ONBOARDING_STEPS) * 100}%` }} />
+                </div>
+
+                {/* Step content */}
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 mb-4">
+                    <span className="text-4xl">{['👋', '📋', '✅', '🔒'][onboardingStep]}</span>
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900 mb-2">{t(`onboarding.${onboardingStep + 1}.title`)}</h2>
+                  <p className="text-gray-600 text-sm leading-relaxed">{t(`onboarding.${onboardingStep + 1}.desc`)}</p>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-8">
+                  {onboardingStep > 0 ? (
+                    <button onClick={() => setOnboardingStep(s => s - 1)}
+                      className="flex items-center gap-1 px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl font-medium transition cursor-pointer">
+                      <ChevronLeft className="w-4 h-4" /> {t('onboarding.back')}
+                    </button>
+                  ) : <div />}
+                  {onboardingStep < ONBOARDING_STEPS - 1 ? (
+                    <button onClick={() => setOnboardingStep(s => s + 1)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold transition hover:bg-blue-700 cursor-pointer">
+                      {t('onboarding.next')} <ChevronRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button onClick={finishOnboarding}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold transition hover:bg-blue-700 cursor-pointer">
+                      {t('onboarding.done')} <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DriverContext.Provider>
   );

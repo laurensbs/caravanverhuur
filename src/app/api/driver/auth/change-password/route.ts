@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hash = await hashPassword(newPassword);
-    await updateDriver(session.id, { password_hash: hash });
+    await updateDriver(session.id, { password_hash: hash, password_plain: newPassword });
 
     return NextResponse.json({ success: true });
   } catch (error) {

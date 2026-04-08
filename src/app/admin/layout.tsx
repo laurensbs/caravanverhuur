@@ -109,6 +109,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [mainSiteUrl, setMainSiteUrl] = useState('/');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginLocale, setLoginLocale] = useState<AdminLocale>('nl');
+  const [showDriverLogin, setShowDriverLogin] = useState(false);
+  const [driverList, setDriverList] = useState<{id: string; name: string; hasPassword: boolean}[]>([]);
+  const [selectedDriver, setSelectedDriver] = useState<{id: string; name: string; hasPassword: boolean} | null>(null);
+  const [driverStep, setDriverStep] = useState<'select' | 'setup' | 'password'>('select');
+  const [driverPassword, setDriverPassword] = useState('');
+  const [driverConfirmPw, setDriverConfirmPw] = useState('');
+  const [driverSetupLocale, setDriverSetupLocale] = useState<'nl' | 'en' | 'es' | null>(null);
+  const [driverError, setDriverError] = useState('');
+  const [driverLoading, setDriverLoading] = useState(false);
   const pathname = usePathname();
 
   /* First-login flow states */
@@ -266,6 +275,86 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setShowLocaleSelect(false);
   };
 
+  /* ── Driver login from admin login page ── */
+  const openDriverLogin = async () => {
+    setShowDriverLogin(true);
+    setDriverStep('select');
+    setSelectedDriver(null);
+    setDriverPassword('');
+    setDriverConfirmPw('');
+    setDriverSetupLocale(null);
+    setDriverError('');
+    try {
+      const res = await fetch('/api/driver/auth/drivers');
+      const data = await res.json();
+      setDriverList(data.drivers || []);
+    } catch { setDriverList([]); }
+  };
+
+  const closeDriverLogin = () => {
+    setShowDriverLogin(false);
+    setSelectedDriver(null);
+    setDriverStep('select');
+    setDriverPassword('');
+    setDriverConfirmPw('');
+    setDriverSetupLocale(null);
+    setDriverError('');
+  };
+
+  const selectDriverForLogin = (d: {id: string; name: string; hasPassword: boolean}) => {
+    setSelectedDriver(d);
+    setDriverPassword('');
+    setDriverConfirmPw('');
+    setDriverSetupLocale(null);
+    setDriverError('');
+    setDriverStep(d.hasPassword ? 'password' : 'setup');
+  };
+
+  const handleDriverPasswordLogin = async () => {
+    if (!selectedDriver || !driverPassword.trim()) return;
+    setDriverLoading(true);
+    setDriverError('');
+    try {
+      const res = await fetch('/api/driver/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: selectedDriver.id, password: driverPassword.trim() }),
+      });
+      if (res.ok) {
+        window.location.href = '/chauffeur';
+      } else {
+        setDriverError(lt('auth.wrongCredentials'));
+      }
+    } catch {
+      setDriverError(lt('auth.wrongCredentials'));
+    }
+    setDriverLoading(false);
+  };
+
+  const handleDriverSetup = async () => {
+    if (!selectedDriver || !driverSetupLocale) return;
+    if (driverPassword.length < 4) { setDriverError(loginLocale === 'nl' ? 'Minimaal 4 tekens' : 'Minimum 4 characters'); return; }
+    if (driverPassword !== driverConfirmPw) { setDriverError(loginLocale === 'nl' ? 'Wachtwoorden komen niet overeen' : 'Passwords do not match'); return; }
+    setDriverLoading(true);
+    setDriverError('');
+    try {
+      const res = await fetch('/api/driver/auth/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId: selectedDriver.id, password: driverPassword, locale: driverSetupLocale }),
+      });
+      if (res.ok) {
+        window.location.href = '/chauffeur';
+      } else {
+        const data = await res.json();
+        setDriverError(data.error || 'Error');
+      }
+    } catch {
+      setDriverError('Error');
+    }
+    setDriverLoading(false);
+  };
+
   /* ── Loading state while checking auth ──────────── */
   if (checkingAuth) {
     return (
@@ -409,7 +498,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                           { id: 'helen', name: 'Helen', initials: 'HL', color: 'bg-purple-500' },
                           { id: 'dominique', name: 'Dominique', initials: 'DM', color: 'bg-amber-500' },
                           { id: 'laurens', name: 'Laurens', initials: 'LB', color: 'bg-rose-500' },
-                          { id: 'staff', name: 'Staff', initials: '👤', color: 'bg-gray-400' },
                         ].map((u) => (
                           <button
                             key={u.id}
@@ -427,6 +515,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                             {u.name}
                           </button>
                         ))}
+                        {/* Chauffeur portal entry */}
+                        <button
+                          type="button"
+                          onClick={openDriverLogin}
+                          className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border-2 border-transparent bg-surface text-muted hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                            <Truck className="w-4.5 h-4.5" />
+                          </div>
+                          Chauffeur
+                        </button>
                       </div>
                     </div>
 
@@ -513,6 +612,146 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </a>
               </div>
             </div>
+
+            {/* ═══ DRIVER LOGIN MODAL ═══ */}
+            <AnimatePresence>
+              {showDriverLogin && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                  onClick={closeDriverLogin}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="h-1.5 bg-blue-600" />
+                    <div className="p-6">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                            <Truck className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-lg font-bold text-foreground">Chauffeur Login</h2>
+                            <p className="text-xs text-muted">{loginLocale === 'nl' ? 'Selecteer je naam' : 'Select your name'}</p>
+                          </div>
+                        </div>
+                        <button onClick={closeDriverLogin} className="p-2 rounded-lg hover:bg-gray-100 transition cursor-pointer text-gray-400 hover:text-gray-600">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Step: Select driver */}
+                      {driverStep === 'select' && (
+                        <div className="space-y-2">
+                          {driverList.length === 0 ? (
+                            <p className="text-sm text-muted text-center py-6">{loginLocale === 'nl' ? 'Laden...' : 'Loading...'}</p>
+                          ) : driverList.map(d => (
+                            <button key={d.id} onClick={() => selectDriverForLogin(d)}
+                              className="w-full py-3 px-4 bg-gray-50 hover:bg-blue-50 rounded-xl text-left font-medium text-foreground transition cursor-pointer flex items-center justify-between group">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm font-bold">
+                                  {d.name.charAt(0)}
+                                </div>
+                                <span>{d.name}</span>
+                              </div>
+                              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-400 transition" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Step: Password login */}
+                      {driverStep === 'password' && selectedDriver && (
+                        <div className="space-y-4">
+                          <button onClick={() => { setDriverStep('select'); setSelectedDriver(null); setDriverError(''); }}
+                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition cursor-pointer">
+                            <ChevronLeft className="w-4 h-4" /> {loginLocale === 'nl' ? 'Terug' : 'Back'}
+                          </button>
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <Lock className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <p className="font-semibold text-foreground">{selectedDriver.name}</p>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{loginLocale === 'nl' ? 'Wachtwoord' : 'Password'}</label>
+                            <input type="password" value={driverPassword}
+                              onChange={e => setDriverPassword(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && handleDriverPasswordLogin()}
+                              placeholder={loginLocale === 'nl' ? 'Voer wachtwoord in' : 'Enter password'}
+                              className="w-full px-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none" autoFocus />
+                          </div>
+                          {driverError && <p className="text-sm text-red-600 text-center font-medium">{driverError}</p>}
+                          <button onClick={handleDriverPasswordLogin}
+                            disabled={driverLoading || !driverPassword.trim()}
+                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition cursor-pointer disabled:opacity-50">
+                            {driverLoading ? '...' : loginLocale === 'nl' ? 'Inloggen' : 'Log in'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Step: First-time setup */}
+                      {driverStep === 'setup' && selectedDriver && (
+                        <div className="space-y-4">
+                          <button onClick={() => { setDriverStep('select'); setSelectedDriver(null); setDriverError(''); }}
+                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition cursor-pointer">
+                            <ChevronLeft className="w-4 h-4" /> {loginLocale === 'nl' ? 'Terug' : 'Back'}
+                          </button>
+                          <div className="text-center">
+                            <p className="font-semibold text-foreground">{selectedDriver.name}</p>
+                            <p className="text-sm text-muted">{loginLocale === 'nl' ? 'Account instellen' : 'Account setup'}</p>
+                          </div>
+                          {/* Language selection */}
+                          <div>
+                            <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">{loginLocale === 'nl' ? 'Kies je taal' : 'Choose your language'}</p>
+                            <div className="flex gap-2">
+                              {([{code: 'nl' as const, flag: '🇳🇱', label: 'NL'}, {code: 'en' as const, flag: '🇬🇧', label: 'EN'}, {code: 'es' as const, flag: '🇪🇸', label: 'ES'}]).map(l => (
+                                <button key={l.code} onClick={() => setDriverSetupLocale(l.code)}
+                                  className={`flex-1 py-2.5 rounded-xl text-center transition cursor-pointer border-2 ${driverSetupLocale === l.code ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                  <span className="text-lg block">{l.flag}</span>
+                                  <span className="text-xs text-muted block mt-0.5">{l.label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {driverSetupLocale && (
+                            <>
+                              <div>
+                                <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{loginLocale === 'nl' ? 'Wachtwoord' : 'Password'}</label>
+                                <input type="password" value={driverPassword} onChange={e => setDriverPassword(e.target.value)}
+                                  placeholder={loginLocale === 'nl' ? 'Minimaal 4 tekens' : 'Min. 4 characters'}
+                                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none" autoFocus />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-muted mb-1.5 uppercase tracking-wide">{loginLocale === 'nl' ? 'Bevestig' : 'Confirm'}</label>
+                                <input type="password" value={driverConfirmPw} onChange={e => setDriverConfirmPw(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && handleDriverSetup()}
+                                  placeholder={loginLocale === 'nl' ? 'Herhaal wachtwoord' : 'Repeat password'}
+                                  className="w-full px-4 py-3 bg-surface rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none" />
+                              </div>
+                              {driverError && <p className="text-sm text-red-600 text-center font-medium">{driverError}</p>}
+                              <button onClick={handleDriverSetup}
+                                disabled={driverLoading || !driverPassword || !driverConfirmPw}
+                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition cursor-pointer disabled:opacity-50">
+                                {driverLoading ? '...' : loginLocale === 'nl' ? 'Account aanmaken' : 'Create account'}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -674,43 +913,45 @@ type OnboardingStep = { title: string; desc: string; icon: string };
 const ONBOARDING_ADMIN_NL: OnboardingStep[] = [
   { title: 'Welkom bij het beheerpaneel!', desc: 'We laten je in een paar stappen zien hoe alles werkt. Je hebt een persoonlijk account — zo kunnen we bijhouden wie wat aanpast en jouw voorkeuren onthouden.', icon: '👋' },
   { title: 'Dashboard — jouw startpunt', desc: 'Het dashboard geeft direct een overzicht van nieuwe boekingen, openstaande taken en de maandomzet. Klik op een kaart om naar de details te gaan.', icon: '📊' },
+  { title: 'Navigatie & Sidebar', desc: 'Links zie je de sidebar met alle menu-items. Sleep items om de volgorde aan te passen. Druk op Escape om de sidebar in/uit te klappen. Op mobiel open je het menu met de hamburger-knop.', icon: '📱' },
   { title: 'Boekingen & Planning', desc: 'Beheer alle boekingen en bekijk de visuele bezettingskalender. Via "Nieuwe boeking" kun je ook telefonische reserveringen aanmaken — de klant ontvangt automatisch een betaallink.', icon: '📅' },
   { title: 'Betalingen & Borg', desc: 'Volg betalingen en verwerk terugbetalingen via Stripe. Bij vertrek gebruik je "Mobiel Inspecteren" om samen met de klant de borgchecklist af te lopen.', icon: '💳' },
   { title: 'Klanten & Communicatie', desc: 'Bekijk klantgegevens, beantwoord contactberichten en reageer op live chats. Bij elke wijziging zie je subtiel wie de laatste aanpassing heeft gedaan.', icon: '👥' },
   { title: 'Caravans & Campings', desc: 'Beheer je caravanaanbod (prijzen, foto\'s, faciliteiten) en de campinglijst. Sleep campings om de volgorde op de website aan te passen.', icon: '🏕️' },
-  { title: 'Kortingscodes & Nieuwsbrieven', desc: 'Maak kortingscodes aan (bijv. ZOMER2025) en bekijk nieuwsbriefabonnees. Tip: stel altijd een vervaldatum in bij kortingscodes.', icon: '🏷️' },
-  { title: 'Hulp altijd binnen bereik', desc: 'Klik op het vraagteken (?) rechtsboven voor contextgevoelige hulp per pagina. Je taalvoorkeur wordt per account opgeslagen. Veel succes!', icon: '🚀' },
+  { title: 'Chauffeurs', desc: 'Beheer je chauffeurs via het chauffeurscherm. Chauffeurs loggen in via het loginscherm (klik op "Chauffeur"). Je kunt wachtwoorden resetten en chauffeurs deactiveren in het admin paneel.', icon: '🚐' },
+  { title: 'Sneltoetsen & Hulp', desc: 'Escape = sidebar in/uitklappen. ⌘K = zoeken. Klik op het vraagteken (?) voor hulp per pagina. Je taalvoorkeur wordt per account opgeslagen. Veel succes!', icon: '🚀' },
 ];
 
 const ONBOARDING_ADMIN_EN: OnboardingStep[] = [
   { title: 'Welcome to the admin panel!', desc: 'We\'ll walk you through how everything works in a few quick steps. You have a personal account — so we can track who changed what and remember your preferences.', icon: '👋' },
   { title: 'Dashboard — your starting point', desc: 'The dashboard gives you an instant overview of new bookings, open tasks, and monthly revenue. Click any card to go straight to the details.', icon: '📊' },
+  { title: 'Navigation & Sidebar', desc: 'The sidebar on the left shows all menu items. Drag items to reorder them. Press Escape to collapse/expand the sidebar. On mobile, open the menu with the hamburger button.', icon: '📱' },
   { title: 'Bookings & Planning', desc: 'Manage all bookings and view the visual occupancy calendar. Use "New booking" to create phone reservations — the customer automatically receives a payment link.', icon: '📅' },
   { title: 'Payments & Deposit', desc: 'Track payments and process refunds through Stripe. At check-out, use "Mobile Inspect" to walk through the deposit checklist together with the customer.', icon: '💳' },
   { title: 'Customers & Communication', desc: 'View customer data, answer contact form messages, and respond to live chats. Each change subtly shows who made the last modification.', icon: '👥' },
   { title: 'Caravans & Campings', desc: 'Manage your caravan inventory (prices, photos, facilities) and the camping list. Drag campings to reorder them on the website.', icon: '🏕️' },
-  { title: 'Discount Codes & Newsletters', desc: 'Create discount codes (e.g. SUMMER2025) and view newsletter subscribers. Tip: always set an expiry date on discount codes.', icon: '🏷️' },
-  { title: 'Help is always nearby', desc: 'Click the question mark (?) in the top-right for context-sensitive help per page. Your language preference is saved per account. Good luck!', icon: '🚀' },
+  { title: 'Drivers', desc: 'Manage your drivers from the drivers page. Drivers log in via the login screen (click "Chauffeur"). You can reset passwords and deactivate drivers from the admin panel.', icon: '🚐' },
+  { title: 'Keyboard Shortcuts & Help', desc: 'Escape = toggle sidebar. ⌘K = search. Click the question mark (?) in the top-right for context-sensitive help per page. Your language preference is saved per account. Good luck!', icon: '🚀' },
 ];
 
 const ONBOARDING_STAFF_NL: OnboardingStep[] = [
   { title: 'Welkom bij het portaal!', desc: 'Als staff-medewerker kun je boekingen beheren, chats beantwoorden en borginspecties uitvoeren. We laten je snel zien hoe alles werkt.', icon: '👋' },
   { title: 'Dashboard — jouw overzicht', desc: 'Het dashboard toont openstaande taken en recente boekingen. Controleer dit dagelijks zodat je niets mist.', icon: '📊' },
+  { title: 'Navigatie & Sidebar', desc: 'Links zie je het menu. Druk op Escape om de sidebar in/uit te klappen. Op mobiel open je het menu met de hamburger-knop linksboven.', icon: '📱' },
   { title: 'Boekingen beheren', desc: 'Bekijk alle boekingen, zoek op naam of referentie, en maak telefonische boekingen aan. De klant ontvangt automatisch een betaallink per e-mail.', icon: '📅' },
-  { title: 'Planning bekijken', desc: 'De planning toont de bezetting per caravan in een visuele kalender. Ideaal om snel beschikbaarheid te checken wanneer een klant belt.', icon: '🗓️' },
   { title: 'Borg & Inspectie', desc: 'Gebruik de mobiele inspectietool om samen met de klant de borgchecklist stap voor stap door te lopen. Maak foto\'s van eventuele schade als bewijs.', icon: '📋' },
   { title: 'Live Chat', desc: 'Beantwoord vragen van websitebezoekers via de live chat. Reageer zo snel mogelijk — bezoekers verwachten een snel antwoord.', icon: '💬' },
-  { title: 'Hulp & Taalinstellingen', desc: 'Klik op het vraagteken (?) rechtsboven voor hulp per pagina. Onderaan het menu wissel je de taal tussen NL en EN. Succes!', icon: '🚀' },
+  { title: 'Hulp & Sneltoetsen', desc: 'Escape = sidebar in/uitklappen. ⌘K = zoeken. Klik op het vraagteken (?) rechtsboven voor hulp per pagina. Succes!', icon: '🚀' },
 ];
 
 const ONBOARDING_STAFF_EN: OnboardingStep[] = [
   { title: 'Welcome to the portal!', desc: 'As a staff member, you can manage bookings, answer chats, and perform deposit inspections. Let\'s show you how everything works.', icon: '👋' },
   { title: 'Dashboard — your overview', desc: 'The dashboard shows open tasks and recent bookings. Check this daily so you don\'t miss anything.', icon: '📊' },
+  { title: 'Navigation & Sidebar', desc: 'The menu is on the left. Press Escape to collapse/expand the sidebar. On mobile, open the menu with the hamburger button top-left.', icon: '📱' },
   { title: 'Manage bookings', desc: 'View all bookings, search by name or reference, and create phone bookings. The customer automatically receives a payment link by email.', icon: '📅' },
-  { title: 'View planning', desc: 'The planning shows occupancy per caravan in a visual calendar. Perfect for quickly checking availability when a customer calls.', icon: '🗓️' },
   { title: 'Deposit & Inspection', desc: 'Use the mobile inspection tool to walk through the deposit checklist step by step with the customer. Take photos of any damage as evidence.', icon: '📋' },
   { title: 'Live Chat', desc: 'Answer questions from website visitors via live chat. Respond as quickly as possible — visitors expect a fast reply.', icon: '💬' },
-  { title: 'Help & Language settings', desc: 'Click the question mark (?) in the top-right for page-specific help. Switch between NL and EN at the bottom of the menu. Good luck!', icon: '🚀' },
+  { title: 'Help & Keyboard Shortcuts', desc: 'Escape = toggle sidebar. ⌘K = search. Click the question mark (?) in the top-right for page-specific help. Good luck!', icon: '🚀' },
 ];
 
 
@@ -1155,14 +1396,14 @@ function AdminLayoutInner({
 
   // Show onboarding on first login (or after tour update)
   useEffect(() => {
-    const key = `admin_onboarded_v3_${role}`;
+    const key = `admin_onboarded_v4_${role}`;
     if (!localStorage.getItem(key)) {
       setShowOnboarding(true);
     }
   }, [role]);
 
   const finishOnboarding = () => {
-    localStorage.setItem(`admin_onboarded_v3_${role}`, 'true');
+    localStorage.setItem(`admin_onboarded_v4_${role}`, 'true');
     setShowOnboarding(false);
     setOnboardingStep(0);
   };
@@ -1176,21 +1417,24 @@ function AdminLayoutInner({
     setShowOnboarding(true);
   };
 
-  // Close modals/sidebar on Escape
+  // Close modals/sidebar on Escape (toggle sidebar on desktop)
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (showOnboarding) finishOnboarding();
         else if (showHelp) setShowHelp(false);
-        else if (sidebarOpen && isMobile) {
-          setSidebarOpen(false);
-          localStorage.setItem('admin_sidebar_open', 'false');
+        else if (showSettingsPassword) setShowSettingsPassword(false);
+        else {
+          // Toggle sidebar on Escape (collapse/expand)
+          const next = !sidebarOpen;
+          setSidebarOpen(next);
+          localStorage.setItem('admin_sidebar_open', String(next));
         }
       }
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [showOnboarding, showHelp, sidebarOpen, isMobile]);
+  }, [showOnboarding, showHelp, showSettingsPassword, sidebarOpen]);
 
   return (
     <div className="min-h-screen bg-surface-alt flex">

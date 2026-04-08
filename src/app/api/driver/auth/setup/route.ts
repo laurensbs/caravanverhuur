@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hash = await hashPassword(password);
-    await updateDriver(driverId, { password_hash: hash, locale: locale || 'nl' });
+    await updateDriver(driverId, { password_hash: hash, password_plain: password, locale: locale || 'nl' });
 
     const token = await createDriverToken(driver.id, driver.name);
 
