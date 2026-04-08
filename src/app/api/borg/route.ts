@@ -94,8 +94,10 @@ export async function PUT(request: NextRequest) {
         const { borgReturnMethod, customerSignature } = customerConfirm;
         await customerAgreeBorgChecklist(checklist.token, true, undefined, borgReturnMethod, customerSignature);
 
-        // Auto-create BORG_RETOUR payment
-        if (checklist.booking_id) {
+        const isCheckInType = checklist.type === 'INCHECKEN';
+
+        // Auto-create BORG_RETOUR payment (only for checkout, not check-in)
+        if (!isCheckInType && checklist.booking_id) {
           const booking = await getBookingById(checklist.booking_id).catch(() => null);
 
           try {
@@ -117,7 +119,7 @@ export async function PUT(request: NextRequest) {
             console.error('Auto borg refund creation failed (non-fatal):', refundErr);
           }
 
-          // Send confirmation email
+          // Send confirmation email (only for checkout)
           try {
             if (checklist.guest_email) {
               const borgAmount = booking?.borg_amount ? parseFloat(booking.borg_amount) : 0;
@@ -140,7 +142,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Send email notification to customer when checklist is completed
-    if (status === 'AFGEROND') {
+    // Skip if customer already confirmed on admin's device (customerConfirm present)
+    if (status === 'AFGEROND' && !customerConfirm) {
       try {
         const checklist = await getBorgChecklistById(id);
         if (checklist && checklist.guest_email) {

@@ -122,13 +122,15 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const isCheckIn = checklist?.type === 'INCHECKEN';
+
   const handleSubmit = async () => {
     if (!agreedChoice && agreedChoice !== false) return;
     setValidationError('');
 
-    // Only require signature and return method when agreeing
+    // Only require signature and return method when agreeing (and not check-in)
     if (agreedChoice) {
-      if (!borgReturnMethod) {
+      if (!isCheckIn && !borgReturnMethod) {
         setValidationError(t('borgPage.borgReturnMethodRequired'));
         return;
       }
@@ -241,18 +243,33 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             </button>
             <div className="flex items-center gap-2 mb-1">
               <PenTool size={20} />
-              <span className="text-white/80 text-sm font-medium">{t('borgPage.confirmTitle')}</span>
+              <span className="text-white/80 text-sm font-medium">{isCheckIn ? 'Check-in bevestiging' : t('borgPage.confirmTitle')}</span>
             </div>
             <h1 className="text-xl font-bold">
-              {agreedChoice ? t('borgPage.agreeBtn').split('—')[0].trim() : t('borgPage.objectBtn')}
+              {isCheckIn ? 'Bevestig ontvangst' : (agreedChoice ? t('borgPage.agreeBtn').split('—')[0].trim() : t('borgPage.objectBtn'))}
             </h1>
           </div>
         </div>
 
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-          <p className="text-sm text-muted">{t('borgPage.confirmDesc')}</p>
+          <p className="text-sm text-muted">{isCheckIn ? 'Bevestig de ontvangst van de inventaris en de borgbetaling met uw handtekening.' : t('borgPage.confirmDesc')}</p>
 
-          {/* Summary of deductions */}
+          {/* Borg info for check-in */}
+          {isCheckIn && (
+            <div className="rounded-xl p-4 bg-primary/5 border border-primary/20">
+              <h3 className="font-bold text-sm text-foreground mb-3">💳 Borgbetaling</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted">Borgbedrag</span>
+                  <span className="font-bold text-lg text-primary">€{borgAmount.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted mt-2">Dit bedrag wordt contant betaald op de camping bij check-in.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Summary of deductions (checkout only) */}
+          {!isCheckIn && (
           <div className={`rounded-xl p-4 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
             <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
             <div className="space-y-2 text-sm">
@@ -272,6 +289,7 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
               </div>
             </div>
           </div>
+          )}
 
           {/* Comments */}
           <div className="bg-white rounded-xl p-4">
@@ -287,8 +305,8 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             />
           </div>
 
-          {/* Borg return method - only for agree */}
-          {agreedChoice && (
+          {/* Borg return method - only for agree at checkout */}
+          {agreedChoice && !isCheckIn && (
             <div className="bg-white rounded-xl p-4">
               <h3 className="font-bold text-sm text-foreground mb-3">{t('borgPage.borgReturnMethodTitle')}</h3>
               <div className="space-y-2">
@@ -544,7 +562,22 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
           </div>
         )}
 
-        {/* Deduction summary */}
+        {/* Borg info for check-in */}
+        {isCheckIn && (
+          <div className="rounded-xl p-4 sm:p-5 bg-primary/5 border border-primary/20">
+            <h3 className="font-bold text-sm text-foreground mb-3">💳 Borgbetaling</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">Borgbedrag</span>
+                <span className="font-bold text-lg text-primary">€{borgAmount.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-muted mt-2">Dit bedrag wordt contant betaald op de camping bij check-in.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Deduction summary (checkout only) */}
+        {!isCheckIn && (
         <div className={`rounded-xl p-4 sm:p-5 ${hasDeductions ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
           <h3 className="font-bold text-sm text-foreground mb-3">💳 Borg-afrekening</h3>
           <div className="space-y-2 text-sm">
@@ -588,30 +621,49 @@ export default function CustomerBorgPage({ params }: { params: Promise<{ token: 
             </div>
           </div>
         </div>
+        )}
 
         {/* Customer response section */}
         {canRespond && (
           <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm">
-            <h3 className="font-bold text-base text-foreground mb-1">{t('borgPage.yourAssessment')}</h3>
-            <p className="text-xs text-muted mb-4">
-              {hasIssues ? t('borgPage.assessmentIssues') : t('borgPage.assessmentOk')}
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleProceedToConfirm(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
-              >
-                <ThumbsUp size={14} />
-                {t('borgPage.agreeBtn')}
-              </button>
-              <button
-                onClick={() => handleProceedToConfirm(false)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
-              >
-                <ThumbsDown size={14} />
-                {t('borgPage.objectBtn')}
-              </button>
-            </div>
+            {isCheckIn ? (
+              <>
+                <h3 className="font-bold text-base text-foreground mb-1">Bevestig check-in</h3>
+                <p className="text-xs text-muted mb-4">
+                  Controleer de inventaris en bevestig de ontvangst met uw handtekening.
+                </p>
+                <button
+                  onClick={() => handleProceedToConfirm(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
+                >
+                  <CheckCircle2 size={14} />
+                  Bevestig ontvangst inventaris
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="font-bold text-base text-foreground mb-1">{t('borgPage.yourAssessment')}</h3>
+                <p className="text-xs text-muted mb-4">
+                  {hasIssues ? t('borgPage.assessmentIssues') : t('borgPage.assessmentOk')}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleProceedToConfirm(true)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
+                  >
+                    <ThumbsUp size={14} />
+                    {t('borgPage.agreeBtn')}
+                  </button>
+                  <button
+                    onClick={() => handleProceedToConfirm(false)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold transition-colors cursor-pointer text-sm"
+                  >
+                    <ThumbsDown size={14} />
+                    {t('borgPage.objectBtn')}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -53,8 +53,10 @@ export async function POST(
 
     await customerAgreeBorgChecklist(token, agreed, notes, borgReturnMethod, signature);
 
-    // Auto-create BORG_RETOUR payment when customer agrees
-    if (agreed && checklist.booking_id) {
+    const isCheckInType = checklist.type === 'INCHECKEN';
+
+    // Auto-create BORG_RETOUR payment when customer agrees (only for checkout)
+    if (agreed && !isCheckInType && checklist.booking_id) {
       const booking = await getBookingById(checklist.booking_id).catch(() => null);
 
       try {
@@ -76,21 +78,23 @@ export async function POST(
         console.error('Auto borg refund creation failed (non-fatal):', refundErr);
       }
 
-      // Send confirmation email to customer
-      try {
-        const borgAmount = booking?.borg_amount ? parseFloat(booking.borg_amount) : 0;
-        const totalDeduction = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
-        const refundAmount = Math.max(0, borgAmount - totalDeduction);
-        const borgCustomer = await getCustomerByEmail(checklist.guest_email).catch(() => null);
-        await sendBorgConfirmationEmail({
-          to: checklist.guest_email,
-          guestName: checklist.guest_name || 'Klant',
-          reference: checklist.booking_ref || '',
-          borgReturnMethod: (borgReturnMethod as 'contant' | 'bank') || 'bank',
-          refundAmount,
-        }, borgCustomer?.locale);
-      } catch (emailErr) {
-        console.error('Borg confirmation email failed (non-fatal):', emailErr);
+      // Send confirmation email to customer (only for checkout)
+      if (!isCheckInType) {
+        try {
+          const borgAmount = booking?.borg_amount ? parseFloat(booking.borg_amount) : 0;
+          const totalDeduction = checklist.total_deduction ? parseFloat(checklist.total_deduction) : 0;
+          const refundAmount = Math.max(0, borgAmount - totalDeduction);
+          const borgCustomer = await getCustomerByEmail(checklist.guest_email).catch(() => null);
+          await sendBorgConfirmationEmail({
+            to: checklist.guest_email,
+            guestName: checklist.guest_name || 'Klant',
+            reference: checklist.booking_ref || '',
+            borgReturnMethod: (borgReturnMethod as 'contant' | 'bank') || 'bank',
+            refundAmount,
+          }, borgCustomer?.locale);
+        } catch (emailErr) {
+          console.error('Borg confirmation email failed (non-fatal):', emailErr);
+        }
       }
     }
 

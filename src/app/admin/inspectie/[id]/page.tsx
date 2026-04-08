@@ -282,7 +282,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
       setCategoryIndex(categoryIndex + 1);
       setItemIndex(0);
     } else {
-      setStep('notes');
+      setStep(isCheckIn ? 'confirm' : 'notes');
     }
   };
 
@@ -297,10 +297,10 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
 
   const handleSave = async (complete: boolean, customerConfirm?: { borgReturnMethod: string; customerSignature: string }) => {
     setSaving(true);
-    // Calculate total deduction
-    const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
-    const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
-    const totalDed = itemDamageTotal + extraDamageTotal + cleaningDeduction;
+    // Calculate total deduction (only for checkout)
+    const itemDamageTotal = isCheckIn ? 0 : checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+    const extraDamageTotal = isCheckIn ? 0 : extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDed = isCheckIn ? 0 : itemDamageTotal + extraDamageTotal + cleaningDeduction;
     try {
       await fetch('/api/borg', {
         method: 'PUT',
@@ -618,8 +618,8 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
                   </div>
                 )}
 
-                {/* Damage amount input - when item is damaged or missing */}
-                {(currentItem.item.status === 'beschadigd' || currentItem.item.status === 'ontbreekt') && (
+                {/* Damage amount input - when item is damaged or missing (only at checkout) */}
+                {!isCheckIn && (currentItem.item.status === 'beschadigd' || currentItem.item.status === 'ontbreekt') && (
                   <div className="bg-white rounded-xl p-3 shadow-sm">
                     <label className="text-xs font-semibold text-gray-500 flex items-center gap-1 mb-1.5">
                       💰 Schadebedrag
@@ -947,15 +947,15 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
 
   // STEP: CONFIRM - Customer confirmation on admin's device
   if (step === 'confirm') {
-    const itemDamageTotal = checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
-    const extraDamageTotal = extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
-    const totalDed = itemDamageTotal + extraDamageTotal + cleaningDeduction;
+    const itemDamageTotal = isCheckIn ? 0 : checklist.items.reduce((sum, item) => sum + (item.damageAmount || 0), 0);
+    const extraDamageTotal = isCheckIn ? 0 : extraDamages.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalDed = isCheckIn ? 0 : itemDamageTotal + extraDamageTotal + cleaningDeduction;
     const borgAmount = checklist.borg_amount ? Number(checklist.borg_amount) : 400;
     const confirmRefund = Math.max(0, borgAmount - totalDed);
 
     const handleCustomerConfirm = async () => {
       setConfirmError('');
-      if (!customerBorgReturn) {
+      if (!isCheckIn && !customerBorgReturn) {
         setConfirmError(t('inspection.borgReturnRequired'));
         return;
       }
@@ -963,26 +963,26 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
         setConfirmError(t('inspection.signatureRequired'));
         return;
       }
-      await handleSave(true, { borgReturnMethod: customerBorgReturn, customerSignature });
+      await handleSave(true, { borgReturnMethod: isCheckIn ? 'n.v.t.' : customerBorgReturn, customerSignature });
     };
 
     return (
       <div className="fixed inset-0 z-[100] overflow-auto bg-[#FAFAF9]">
         <div className={`${isCheckIn ? 'bg-primary' : 'bg-emerald-600'} text-white`}>
           <div className="max-w-lg mx-auto px-5 py-6">
-            <button onClick={() => setStep('notes')} className="flex items-center gap-1 text-white/70 text-sm mb-4 hover:text-white transition cursor-pointer">
+            <button onClick={() => setStep(isCheckIn ? 'inspect' : 'notes')} className="flex items-center gap-1 text-white/70 text-sm mb-4 hover:text-white transition cursor-pointer">
               <ArrowLeft size={16} /> {t('common.back')}
             </button>
             <div className="flex items-center gap-2 mb-1">
               <PenTool size={20} />
-              <span className="text-white/80 text-sm font-medium">{t('inspection.customerConfirm')}</span>
+              <span className="text-white/80 text-sm font-medium">{isCheckIn ? 'Check-in bevestiging' : t('inspection.customerConfirm')}</span>
             </div>
             <h1 className="text-xl font-bold">{checklist.guest_name || t('inspection.guest')}</h1>
           </div>
         </div>
 
         <div className="max-w-lg mx-auto px-5 py-5 space-y-4">
-          <p className="text-sm text-gray-500">{t('inspection.customerConfirmDesc')}</p>
+          <p className="text-sm text-gray-500">{isCheckIn ? 'De klant bevestigt de ontvangst van de inventaris en de borgbetaling.' : t('inspection.customerConfirmDesc')}</p>
 
           {/* Summary cards */}
           <div className="grid grid-cols-3 gap-2">
@@ -1000,7 +1000,19 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          {/* Borg calculation */}
+          {/* Borg info for check-in */}
+          {isCheckIn && (
+            <div className="bg-white rounded-2xl p-5 shadow-sm border-2 border-primary/20">
+              <h3 className="text-sm font-bold text-gray-900 mb-3">💳 Borgbetaling</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-gray-500">Borgbedrag</span><span className="font-bold text-lg text-primary">€{borgAmount}</span></div>
+                <p className="text-xs text-gray-400 mt-2">Dit bedrag wordt contant betaald op de camping bij check-in.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Borg calculation (checkout only) */}
+          {!isCheckIn && (
           <div className={`bg-white rounded-2xl p-5 shadow-sm border-2 ${totalDed > 0 ? 'border-amber-200' : 'border-emerald-200'}`}>
             <h3 className="text-sm font-bold text-gray-900 mb-3">💳 Borg-afrekening</h3>
             <div className="space-y-2 text-sm">
@@ -1011,8 +1023,10 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               </div>
             </div>
           </div>
+          )}
 
-          {/* Borg return method */}
+          {/* Borg return method (checkout only) */}
+          {!isCheckIn && (
           <div className="bg-white rounded-2xl p-5 shadow-sm">
             <h3 className="text-sm font-bold text-gray-900 mb-3">{t('inspection.borgReturnMethod')}</h3>
             <div className="space-y-2">
@@ -1052,6 +1066,7 @@ export default function InspectiePage({ params }: { params: Promise<{ id: string
               </button>
             </div>
           </div>
+          )}
 
           {/* Signature */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">

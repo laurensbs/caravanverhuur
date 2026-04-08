@@ -796,7 +796,7 @@ function CheckInOutSheet({
                   <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                     <Mail className="w-4 h-4 text-muted" />
                     {isCheckIn
-                      ? (isNl ? 'Stuur klant borgmail voor vertrek' : 'Send customer deposit email before departure')
+                      ? (isNl ? 'Stuur klant check-in bevestigingsmail' : 'Send customer check-in confirmation email')
                       : (isNl ? 'Stuur klant borgmail voor ophaaldag' : 'Send customer deposit email for pick-up day')}
                   </p>
                   <p className="text-[11px] text-muted mt-0.5">
@@ -810,7 +810,7 @@ function CheckInOutSheet({
                 }`}>
                 {completing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 {isCheckIn
-                  ? (isNl ? 'Borgcheck voltooien & mail versturen' : 'Complete deposit check & send email')
+                  ? (isNl ? 'Check-in voltooien & mail versturen' : 'Complete check-in & send email')
                   : (isNl ? 'Ophalen voltooien' : 'Complete pick-up')}
               </button>
             </>

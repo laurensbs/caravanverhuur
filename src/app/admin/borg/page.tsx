@@ -1036,7 +1036,7 @@ export default function AdminBorgPage() {
                             {copiedToken === checklist.token ? t('common.copied') : t('deposit.copyLink')}
                           </button>
                           <a
-                            href={`/borg/${checklist.token}`}
+                            href={`https://caravanverhuurspanje.com/borg/${checklist.token}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface-alt transition-colors"
