@@ -245,11 +245,10 @@ export default function BestemmingenPage() {
 
   const totalBeaches = allBeaches.length;
 
-  const tabs: { key: Tab; icon: React.ReactNode; emoji: string; label: string; count: number; img: string }[] = [
+  const tabs: { key: Tab; icon: React.ReactNode; label: string; count: number; img: string }[] = [
     {
       key: 'stranden',
       icon: <Umbrella size={22} />,
-      emoji: '🏖️',
       label: t('destinations.tabBeaches'),
       count: totalBeaches,
       img: '/images/campings/begur_sa_tuna.jpg',
@@ -257,7 +256,6 @@ export default function BestemmingenPage() {
     {
       key: 'dorpen',
       icon: <MapPin size={22} />,
-      emoji: '🏘️',
       label: t('destinations.tabCities'),
       count: destinations.length,
       img: '/images/campings/els_masos_de_pals.jpg',
@@ -265,7 +263,6 @@ export default function BestemmingenPage() {
     {
       key: 'campings',
       icon: <Tent size={22} />,
-      emoji: '⛺',
       label: t('destinations.tabCampings'),
       count: allCampings.length,
       img: '/images/campings/cap_de_creus_landscape.jpg',
@@ -340,12 +337,9 @@ export default function BestemmingenPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 group-hover:from-black/85 transition-colors duration-500" />
 
                   <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
-                    <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2">
-                      <span className="text-3xl sm:text-4xl">{tab.emoji}</span>
-                      <div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-white">{tab.label}</h3>
-                        <p className="text-white/50 text-sm mt-0.5">{tab.count} {tab.label.toLowerCase()}</p>
-                      </div>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white">{tab.label}</h3>
+                      <p className="text-white/50 text-sm mt-0.5">{tab.count} {tab.label.toLowerCase()}</p>
                     </div>
                     <div className="flex items-center gap-1.5 mt-3 sm:mt-4 text-white/70 group-hover:text-white text-sm font-medium transition-colors">
                       {t('destinations.discover')}
@@ -357,17 +351,23 @@ export default function BestemmingenPage() {
             </div>
 
             {/* Quick stats row */}
-            <div className="mt-10 sm:mt-14 grid grid-cols-3 gap-4 max-w-lg mx-auto text-center">
-              {[
-                { value: '3', label: t('destinations.regionsLabel') },
-                { value: '14', label: t('destinations.placesLabel') },
-                { value: String(totalBeaches), label: t('destinations.beaches') },
-              ].map((s, i) => (
-                <div key={i}>
-                  <p className="text-2xl sm:text-3xl font-bold text-foreground">{s.value}</p>
-                  <p className="text-xs text-muted mt-0.5">{s.label}</p>
-                </div>
-              ))}
+            <div className="mt-10 sm:mt-14 flex justify-center">
+              <div className="inline-flex items-center bg-white rounded-2xl shadow-sm border border-gray-100 divide-x divide-gray-100">
+                {[
+                  { value: '3', label: t('destinations.regionsLabel'), icon: <MapPin size={14} className="text-primary" /> },
+                  { value: String(destinations.length), label: t('destinations.placesLabel'), icon: <Star size={14} className="text-amber-500" /> },
+                  { value: String(totalBeaches), label: t('destinations.beaches'), icon: <Umbrella size={14} className="text-cyan-500" /> },
+                  { value: String(allCampings.length), label: t('destinations.tabCampings'), icon: <Tent size={14} className="text-emerald-500" /> },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">{s.icon}</div>
+                    <div>
+                      <p className="text-lg sm:text-xl font-bold text-foreground leading-none">{s.value}</p>
+                      <p className="text-[10px] sm:text-xs text-muted mt-0.5">{s.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.section>
         )}
@@ -407,7 +407,7 @@ export default function BestemmingenPage() {
                           : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
-                      {tab.emoji} {tab.label}
+                      {tab.label}
                     </button>
                   ))}
                 </div>
