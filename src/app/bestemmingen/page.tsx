@@ -273,8 +273,8 @@ export default function BestemmingenPage() {
     <div className="min-h-screen bg-gray-50">
       {/* ═══ PAGE HEADER ═══ */}
       <div className="bg-background border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-10 pb-6 sm:pb-8">
-          <nav className="flex items-center gap-1.5 text-muted text-xs mb-4">
+        <div className="max-w-7xl mx-auto px-4 pt-6 sm:pt-8 pb-4 sm:pb-6">
+          <nav className="flex items-center gap-1.5 text-muted text-xs mb-3">
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
             <span>/</span>
             {activeTab ? (
@@ -288,16 +288,20 @@ export default function BestemmingenPage() {
             )}
           </nav>
 
-          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight mb-2">
-            {t('destinations.heroTitle')}
-          </h1>
-          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
-            {t('destinations.heroSubtitle')}
-          </p>
+          {activeTab && (
+            <>
+              <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight mb-1">
+                {t('destinations.heroTitle')}
+              </h1>
+              <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
+                {t('destinations.heroSubtitle')}
+              </p>
+            </>
+          )}
         </div>
       </div>
 
-      {/* ═══ CATEGORY SELECTOR — app-like cards ═══ */}
+      {/* ═══ CATEGORY SELECTOR ═══ */}
       <AnimatePresence mode="wait">
         {!activeTab && (
           <motion.section
@@ -306,17 +310,8 @@ export default function BestemmingenPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-7xl mx-auto px-4 py-8 sm:py-14"
+            className="max-w-7xl mx-auto px-4 py-6 sm:py-10"
           >
-            <div className="text-center mb-8 sm:mb-12">
-              <h2 className="text-xl sm:text-3xl font-bold text-foreground tracking-tight">
-                {t('destinations.chooseCategory')}
-              </h2>
-              <p className="text-sm text-muted mt-2 max-w-md mx-auto">
-                {t('destinations.heroSubtitle')}
-              </p>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               {tabs.map((tab, i) => (
                 <motion.button
