@@ -352,7 +352,7 @@ export default function BestemmingenPage() {
 
             {/* Quick stats row */}
             <div className="mt-10 sm:mt-14 flex justify-center">
-              <div className="inline-flex items-center bg-white rounded-2xl shadow-sm border border-gray-100 divide-x divide-gray-100">
+              <div className="grid grid-cols-2 sm:inline-flex sm:items-center bg-white rounded-2xl shadow-sm border border-gray-100 sm:divide-x divide-gray-100">
                 {[
                   { value: '3', label: t('destinations.regionsLabel'), icon: <MapPin size={14} className="text-primary" /> },
                   { value: String(destinations.length), label: t('destinations.placesLabel'), icon: <Star size={14} className="text-amber-500" /> },
@@ -389,19 +389,19 @@ export default function BestemmingenPage() {
             <section className="sticky top-[64px] sm:top-[72px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-200/80">
               <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3">
                 {/* Tab pills */}
-                <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-0.5 sm:pb-0">
                   <button
                     onClick={goBack}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap shrink-0"
                   >
                     ← {t('destinations.backToOverview')}
                   </button>
-                  <div className="flex-1" />
+                  <div className="flex-1 min-w-0" />
                   {tabs.map(tab => (
                     <button
                       key={tab.key}
                       onClick={() => selectTab(tab.key)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                         activeTab === tab.key
                           ? 'bg-foreground text-white shadow-sm'
                           : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
