@@ -54,6 +54,8 @@ export default function BetalingenPage() {
   const [linkInput, setLinkInput] = useState<Record<string, string>>({});
   const [savingLink, setSavingLink] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [holdedUrlInput, setHoldedUrlInput] = useState<Record<string, string>>({});
+  const [savingHoldedUrl, setSavingHoldedUrl] = useState<string | null>(null);
 
   const fetchPayments = () => {
     setLoading(true);
@@ -501,22 +503,60 @@ export default function BetalingenPage() {
                         <FileText size={10} /> Holded {t('payments.holdedInvoice')}
                       </label>
                       {payment.status === 'BETAALD' ? (
-                        <button
-                          onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
-                          disabled={holdedUpdating === payment.id}
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium ${
-                            payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                              ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                          }`}
-                        >
-                          <FileText size={12} />
-                          {holdedUpdating === payment.id
-                            ? '...'
-                            : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                              ? `✓ ${t('payments.invoiceCreated')}${payment.holded_marked_at ? ` — ${formatDateTime(payment.holded_marked_at)}` : ''}`
-                              : t('payments.markInvoiceCreated')}
-                        </button>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
+                            disabled={holdedUpdating === payment.id}
+                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium ${
+                              payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                                ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            }`}
+                          >
+                            <FileText size={12} />
+                            {holdedUpdating === payment.id
+                              ? '...'
+                              : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
+                                ? `✓ ${t('payments.invoiceCreated')}${payment.holded_marked_at ? ` — ${formatDateTime(payment.holded_marked_at)}` : ''}`
+                                : t('payments.markInvoiceCreated')}
+                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="url"
+                              value={holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? ''}
+                              onChange={(e) => setHoldedUrlInput(prev => ({ ...prev, [payment.id]: e.target.value }))}
+                              placeholder="https://app.holded.com/..."
+                              className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 truncate"
+                            />
+                            <button
+                              onClick={async () => {
+                                const url = holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? '';
+                                setSavingHoldedUrl(payment.id);
+                                try {
+                                  const status = (payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED') ? payment.holded_status : 'HANDMATIG';
+                                  const res = await fetch('/api/admin/holded', {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ paymentId: payment.id, holdedStatus: status, holdedInvoiceId: url }),
+                                  });
+                                  if (res.ok) {
+                                    setPayments(prev => prev.map(p => p.id === payment.id ? { ...p, holded_invoice_id: url, holded_status: status as HoldedStatus, holded_marked_at: new Date().toISOString() } : p));
+                                    toast(t('common.saved'), 'success');
+                                  } else { toast(t('common.actionFailed'), 'error'); }
+                                } catch { toast(t('common.actionFailed'), 'error'); }
+                                setSavingHoldedUrl(null);
+                              }}
+                              disabled={savingHoldedUrl === payment.id}
+                              className="px-2 py-1.5 bg-primary text-white rounded-lg text-[10px] font-medium hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              {savingHoldedUrl === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('common.save')}
+                            </button>
+                            {(holdedUrlInput[payment.id] ?? payment.holded_invoice_id) && (
+                              <a href={holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? ''} target="_blank" rel="noopener noreferrer"
+                                className="p-1.5 rounded-lg hover:bg-white text-muted" title="Openen in Holded"><ExternalLink size={12} /></a>
+                            )}
+                          </div>
+                        </div>
                       ) : (
                         <span className="text-xs text-muted">—</span>
                       )}

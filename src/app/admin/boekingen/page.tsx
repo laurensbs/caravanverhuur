@@ -450,6 +450,47 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           <div className="flex justify-between"><span className="text-muted">{t('bookings.totalPrice')}</span><span className="font-semibold">{formatCurrency(Number(booking.total_price))}</span></div>
           <div className="flex justify-between"><span className="text-muted">{t('bookings.deposit30')}</span><span>{formatCurrency(Number(booking.deposit_amount))}</span></div>
           <div className="flex justify-between"><span className="text-muted">{t('bookings.remainingAmount')}</span><span>{formatCurrency(Number(booking.remaining_amount))}</span></div>
+          {booking.special_requests && (() => {
+            const weeks = Math.ceil(booking.nights / 7);
+            const extras = booking.special_requests.split(' | ').filter(Boolean);
+            if (extras.length === 0) return null;
+            const extraPrices: { name: string; cost: number }[] = [];
+            for (const extra of extras) {
+              const lower = extra.toLowerCase();
+              if (lower.includes('bedlinnen')) extraPrices.push({ name: `🛏️ ${extra}`, cost: weeks * 70 });
+              else if (lower.includes('koelkast')) extraPrices.push({ name: `🧊 ${extra}`, cost: weeks * 40 });
+              else if (lower.includes('airco')) extraPrices.push({ name: `❄️ ${extra}`, cost: weeks * 50 });
+              else if (lower.includes('fiets') && !lower.includes('mountain')) {
+                const match = extra.match(/(\d+)x/);
+                const qty = match ? parseInt(match[1]) : 1;
+                extraPrices.push({ name: `🚲 ${extra}`, cost: qty * weeks * 50 });
+              } else if (lower.includes('mountainbike')) {
+                const match = extra.match(/(\d+)x/);
+                const qty = match ? parseInt(match[1]) : 1;
+                extraPrices.push({ name: `🚵 ${extra}`, cost: qty * weeks * 50 });
+              } else {
+                extraPrices.push({ name: `📦 ${extra}`, cost: 0 });
+              }
+            }
+            const totalExtras = extraPrices.reduce((sum, e) => sum + e.cost, 0);
+            return (
+              <div className="pt-1.5 border-t border-gray-100 space-y-1">
+                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Extra&apos;s ({weeks}w)</p>
+                {extraPrices.map((e, i) => (
+                  <div key={i} className="flex justify-between text-xs">
+                    <span className="text-muted">{e.name}</span>
+                    {e.cost > 0 && <span className="text-amber-700 font-medium">{formatCurrency(e.cost)}</span>}
+                  </div>
+                ))}
+                {totalExtras > 0 && (
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-muted">Totaal extra&apos;s</span>
+                    <span className="text-amber-700">{formatCurrency(totalExtras)}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div className="flex justify-between pt-1.5 border-t border-gray-100"><span className="text-muted">{t('bookings.securityDeposit')}</span><span>{formatCurrency(Number(booking.borg_amount))}</span></div>
           {(() => {
             const borgRetour = payments.find(p => p.type === 'BORG_RETOUR');
