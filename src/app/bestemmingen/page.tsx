@@ -274,54 +274,31 @@ export default function BestemmingenPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ═══ HERO ═══ */}
-      <section className="relative bg-foreground overflow-hidden">
-        <div className="absolute inset-0">
-          <Image src="/images/campings/els_masos_de_pals.jpg" alt="Costa Brava" fill className="object-cover opacity-25" sizes="100vw" priority />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/70 to-foreground/40" />
-        <div className="relative max-w-7xl mx-auto px-4 pt-24 sm:pt-28 pb-10 sm:pb-14">
-          <nav className="flex items-center gap-1.5 text-white/40 text-xs mb-6">
-            <Link href="/" className="hover:text-white/60 transition-colors">Home</Link>
+      {/* ═══ PAGE HEADER ═══ */}
+      <div className="bg-background border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-10 pb-6 sm:pb-8">
+          <nav className="flex items-center gap-1.5 text-muted text-xs mb-4">
+            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
             <span>/</span>
             {activeTab ? (
               <>
-                <button onClick={goBack} className="hover:text-white/60 transition-colors cursor-pointer">Costa Brava</button>
+                <button onClick={goBack} className="hover:text-foreground transition-colors cursor-pointer">Costa Brava</button>
                 <span>/</span>
-                <span className="text-white/70">{tabs.find(tb => tb.key === activeTab)?.label}</span>
+                <span className="text-foreground">{tabs.find(tb => tb.key === activeTab)?.label}</span>
               </>
             ) : (
-              <span className="text-white/70">Costa Brava</span>
+              <span className="text-foreground">Costa Brava</span>
             )}
           </nav>
 
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-4">
+          <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight mb-2">
             {t('destinations.heroTitle')}
           </h1>
-          <p className="text-white/60 text-sm sm:text-base max-w-xl leading-relaxed">
+          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed">
             {t('destinations.heroSubtitle')}
           </p>
-
-          {/* Stats */}
-          <div className="flex items-center gap-5 sm:gap-8 mt-8">
-            {tabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => selectTab(tab.key)}
-                className="flex items-center gap-2.5 group cursor-pointer"
-              >
-                <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white/70 group-hover:bg-white/20 transition-colors">
-                  {tab.icon}
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-white leading-none">{tab.count}</p>
-                  <p className="text-[11px] text-white/45 mt-0.5 group-hover:text-white/60 transition-colors">{tab.label}</p>
-                </div>
-              </button>
-            ))}
-          </div>
         </div>
-      </section>
+      </div>
 
       {/* ═══ CATEGORY SELECTOR — app-like cards ═══ */}
       <AnimatePresence mode="wait">
