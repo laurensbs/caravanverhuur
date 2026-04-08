@@ -52,6 +52,27 @@ const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
 ];
 
+function SectionToggle({ icon, label, sectionKey, openSection, toggle, children }: {
+  icon: React.ReactNode;
+  label: string;
+  sectionKey: string;
+  openSection: string | null;
+  toggle: (key: string) => void;
+  children: React.ReactNode;
+}) {
+  const isOpen = openSection === sectionKey;
+  return (
+    <div className="border-t border-gray-100">
+      <button onClick={() => toggle(sectionKey)} className="w-full flex items-center gap-2 px-3 sm:px-4 py-2.5 text-left hover:bg-gray-50/50 transition-colors cursor-pointer">
+        <span className="text-muted">{icon}</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted flex-1">{label}</span>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted" />}
+      </button>
+      {isOpen && <div className="px-3 sm:px-4 pb-3">{children}</div>}
+    </div>
+  );
+}
+
 function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCaravans, onCaravanChange }: {
   booking: Booking;
   onStatusChange: (id: string, status: BookingStatus) => void;
@@ -101,6 +122,10 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const [extraMountainbikes, setExtraMountainbikes] = useState(0);
   const [savingExtras, setSavingExtras] = useState(false);
   const [extrasSuccess, setExtrasSuccess] = useState(false);
+
+  // Collapsible sections
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const toggleSection = (key: string) => setOpenSection(prev => prev === key ? null : key);
 
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
 
@@ -262,11 +287,46 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-3 sm:p-5 mt-2 space-y-3 sm:space-y-5">
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <User className="w-4 h-4" /> {t('bookings.guestDetails')}
-        </h4>
+    <div className="bg-surface rounded-2xl mt-2 overflow-hidden">
+      {/* ── Compact Summary (always visible) ── */}
+      <div className="p-3 sm:p-4 space-y-2">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <User className="w-3.5 h-3.5 text-muted shrink-0" />
+            <span className="text-sm font-medium text-foreground truncate">{booking.guest_name}</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <CarFront className="w-3.5 h-3.5 text-muted shrink-0" />
+            <span className="text-sm text-foreground truncate">{caravan?.name || booking.caravan_id}</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="w-3.5 h-3.5 text-muted shrink-0" />
+            <span className="text-sm text-muted truncate">{camping?.name || booking.camping_id}</span>
+            {booking.spot_number && <span className="text-xs font-semibold text-primary">#{booking.spot_number}</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5 text-muted shrink-0" />
+            <span className="text-xs text-muted">{formatDate(booking.check_in)} → {formatDate(booking.check_out)} ({booking.nights}n)</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <span className="font-semibold">{formatCurrency(Number(booking.total_price))}</span>
+          <span className="text-muted">|</span>
+          <span className="text-muted">{t('bookings.deposit30')}: {formatCurrency(Number(booking.deposit_amount))}</span>
+          {depositAlreadyPaid && <span className="text-green-600 font-medium">✓ {t('bookings.depositAlreadyPaid')}</span>}
+        </div>
+        {booking.special_requests && (
+          <div className="flex flex-wrap gap-1">
+            {booking.special_requests.split(' | ').filter(Boolean).map((extra, i) => (
+              <span key={i} className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full">📦 {extra}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Accordion Sections ── */}
+      {/* GUEST DETAILS */}
+      <SectionToggle icon={<User className="w-4 h-4" />} label={t('bookings.guestDetails')} sectionKey="guest" openSection={openSection} toggle={toggleSection}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <p className="text-sm font-medium text-foreground">{booking.guest_name}</p>
@@ -283,26 +343,12 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
             <p className="text-xs text-muted">
               <strong>{booking.adults}</strong> {t('bookings.adults')}, <strong>{booking.children}</strong> {t('bookings.children')}
             </p>
-            {booking.special_requests && (
-              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">📦 Extra&apos;s</p>
-                <div className="flex flex-wrap gap-1">
-                  {booking.special_requests.split(' | ').filter(Boolean).map((extra, i) => (
-                    <span key={i} className="inline-flex items-center gap-1 text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                      {extra}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </div>
+      </SectionToggle>
 
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <Calendar className="w-4 h-4" /> {t('bookings.stay')}
-        </h4>
+      {/* STAY */}
+      <SectionToggle icon={<Calendar className="w-4 h-4" />} label={t('bookings.stay')} sectionKey="stay" openSection={openSection} toggle={toggleSection}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex items-start gap-2">
             <CarFront className="w-4 h-4 text-muted mt-0.5" />
@@ -358,7 +404,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 text-xs text-muted">
+        <div className="bg-white rounded-xl p-3 text-xs text-muted mt-3">
           <p className="flex flex-wrap gap-x-2 gap-y-0.5">
             <strong>{t('bookings.checkIn')}:</strong> {formatDate(booking.check_in)} &nbsp;|&nbsp;
             <strong>{t('bookings.checkOut')}:</strong> {formatDate(booking.check_out)} &nbsp;|&nbsp;
@@ -366,12 +412,10 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
             {booking.spot_number && (<>&nbsp;|&nbsp; <strong>{t('bookings.spotNumber')}:</strong> <span className="text-primary font-semibold">{booking.spot_number}</span></>)}
           </p>
         </div>
-      </div>
+      </SectionToggle>
 
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2 flex items-center gap-2">
-          <CreditCard className="w-4 h-4" /> {t('bookings.financial')}
-        </h4>
+      {/* FINANCIAL */}
+      <SectionToggle icon={<CreditCard className="w-4 h-4" />} label={t('bookings.financial')} sectionKey="financial" openSection={openSection} toggle={toggleSection}>
         {/* Payment progress tracker */}
         {!loadingPayments && (() => {
           const depositDone = depositAlreadyPaid || ['AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND'].includes(booking.status);
@@ -379,20 +423,20 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           const borgDone = payments.some(p => p.type === 'BORG' && p.status === 'BETAALD');
           const borgRetourDone = payments.some(p => p.type === 'BORG_RETOUR');
           const steps = [
-            { label: t('bookings.deposit30'), done: depositDone, desc: t('bookings.stepDepositDesc') },
-            { label: t('bookings.remainingAmount'), done: restDone, desc: t('bookings.stepRemainingDesc') },
-            { label: t('bookings.securityDeposit'), done: borgDone, desc: t('bookings.stepBorgDesc') },
-            { label: t('bookings.borgReturnLabel'), done: borgRetourDone, desc: t('bookings.stepBorgReturnDesc') },
+            { label: t('bookings.deposit30'), done: depositDone },
+            { label: t('bookings.remainingAmount'), done: restDone },
+            { label: t('bookings.securityDeposit'), done: borgDone },
+            { label: t('bookings.borgReturnLabel'), done: borgRetourDone },
           ];
           return (
-            <div className="flex items-center gap-0 mb-2 bg-white rounded-xl p-3 overflow-x-auto">
+            <div className="flex items-center gap-0 mb-3 bg-white rounded-xl p-3 overflow-x-auto">
               {steps.map((step, i) => (
                 <div key={i} className="flex items-center flex-1 min-w-0">
-                  <div className="flex flex-col items-center min-w-[56px]" title={step.desc}>
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${step.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                  <div className="flex flex-col items-center min-w-[56px]">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${step.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
                       {step.done ? '✓' : (i + 1)}
                     </div>
-                    <span className={`text-[10px] sm:text-xs mt-1 text-center leading-tight ${step.done ? 'text-green-600 font-medium' : 'text-muted'}`}>{step.label}</span>
+                    <span className={`text-[10px] mt-1 text-center leading-tight ${step.done ? 'text-green-600 font-medium' : 'text-muted'}`}>{step.label}</span>
                   </div>
                   {i < steps.length - 1 && (
                     <div className={`flex-1 h-0.5 -mt-4 ${step.done ? 'bg-green-400' : 'bg-gray-200'}`} />
@@ -402,271 +446,169 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
             </div>
           );
         })()}
-        <div className="bg-white rounded-xl p-3 sm:p-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted">{t('bookings.totalPrice')}</span>
-            <span className="font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted">{t('bookings.deposit30')}</span>
-            <span className="text-foreground">{formatCurrency(Number(booking.deposit_amount))}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted">{t('bookings.remainingAmount')}</span>
-            <span className="text-foreground">{formatCurrency(Number(booking.remaining_amount))}</span>
-          </div>
-          <div className="flex justify-between text-sm pt-2">
-            <span className="text-muted">{t('bookings.securityDeposit')}</span>
-            <span className="text-foreground">{formatCurrency(Number(booking.borg_amount))}</span>
-          </div>
-          {/* Borg payment status */}
+        <div className="bg-white rounded-xl p-3 space-y-1.5 text-sm">
+          <div className="flex justify-between"><span className="text-muted">{t('bookings.totalPrice')}</span><span className="font-semibold">{formatCurrency(Number(booking.total_price))}</span></div>
+          <div className="flex justify-between"><span className="text-muted">{t('bookings.deposit30')}</span><span>{formatCurrency(Number(booking.deposit_amount))}</span></div>
+          <div className="flex justify-between"><span className="text-muted">{t('bookings.remainingAmount')}</span><span>{formatCurrency(Number(booking.remaining_amount))}</span></div>
+          <div className="flex justify-between pt-1.5 border-t border-gray-100"><span className="text-muted">{t('bookings.securityDeposit')}</span><span>{formatCurrency(Number(booking.borg_amount))}</span></div>
           {(() => {
-            const borgPaid = payments.find(p => p.type === 'BORG' && p.status === 'BETAALD');
             const borgRetour = payments.find(p => p.type === 'BORG_RETOUR');
             if (borgRetour) {
               return (
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-emerald-600 text-xs font-medium">✅ Borg terug te ontvangen</span>
-                    <span className="text-emerald-600 text-xs font-semibold">€{Number(borgRetour.amount).toFixed(0)}</span>
-                  </div>
-                  {borgReturnMethod && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500 text-xs">Terugbetaling via</span>
-                      <span className={`text-xs font-medium ${borgReturnMethod === 'contant' ? 'text-orange-600' : 'text-blue-600'}`}>
-                        {borgReturnMethod === 'contant' ? '💵 Contant' : '🏦 Bank'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            if (borgPaid) {
-              return (
-                <div className="flex justify-between text-sm">
-                  <span className="text-amber-600 text-xs font-medium">⏳ Borg ontvangen, wacht op inspectie</span>
+                <div className="flex justify-between">
+                  <span className="text-emerald-600 text-xs font-medium">✅ Borg terug</span>
+                  <span className="text-emerald-600 text-xs font-semibold">€{Number(borgRetour.amount).toFixed(0)} {borgReturnMethod ? `(${borgReturnMethod === 'contant' ? '💵' : '🏦'})` : ''}</span>
                 </div>
               );
             }
             return null;
           })()}
         </div>
-        {/* Deposit confirmation */}
-        <div className="mt-3 p-3 bg-blue-50 rounded-xl space-y-2">
-          <p className="text-xs text-blue-700">{t('bookings.restOnCampingNote')}</p>
-        </div>
 
-        {/* ═══ AANBETALING STRIPE LINK SECTION ═══ */}
-        {!loadingPayments && (
+        {/* Deposit payment link section */}
+        {!loadingPayments && !depositAlreadyPaid && (
           <div className="mt-3 border border-blue-200 rounded-xl overflow-hidden">
-            {/* Header with explanation */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
-              <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                <div>
-                  <h5 className="text-sm font-semibold text-blue-900">{t('bookings.depositExplainTitle')}</h5>
-                  <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">{t('bookings.depositExplainText')}</p>
-                </div>
-              </div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 border-b border-blue-200">
+              <h5 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> {t('bookings.depositExplainTitle')}</h5>
             </div>
-
-            <div className="p-4 space-y-3">
-              {/* Deposit amount prominently displayed */}
-              <div className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100">
-                <span className="text-sm font-medium text-gray-700">{t('bookings.depositAmountToPay')}</span>
-                <span className="text-xl font-bold text-blue-700">{formatCurrency(Number(booking.deposit_amount))}</span>
+            <div className="p-3 space-y-2">
+              <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-blue-100">
+                <span className="text-xs font-medium text-gray-700">{t('bookings.depositAmountToPay')}</span>
+                <span className="text-base font-bold text-blue-700">{formatCurrency(Number(booking.deposit_amount))}</span>
               </div>
 
-              {depositAlreadyPaid ? (
-                /* ── Deposit already paid ── */
-                <div className="flex items-center gap-2 bg-green-50 text-green-700 rounded-lg px-4 py-3">
-                  <CheckCircle2 className="w-5 h-5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold">{t('bookings.depositAlreadyPaid')}</p>
-                    <p className="text-xs text-green-600">{t('bookings.paymentReceived')}</p>
+              {paymentLinkUrl && linkSent && !editingLink ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
+                    <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                    <p className="text-xs font-medium flex-1">{t('bookings.paymentLinkActive')}</p>
                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 truncate text-gray-600" />
+                    <button onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }} className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600 cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
+                    <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600"><ExternalLink className="w-3.5 h-3.5" /></a>
+                    <button onClick={() => setEditingLink(true)} className="text-[10px] text-blue-600 hover:text-blue-800 px-1.5 py-1 rounded hover:bg-blue-50 cursor-pointer">{t('bookings.editLink')}</button>
+                  </div>
+                  <button onClick={handleCheckPaymentStatus} disabled={checkingPayment} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50">
+                    {checkingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
+                  </button>
                 </div>
               ) : (
-                <>
-                  {/* ── Payment link input ── */}
-                  {paymentLinkUrl && linkSent && !editingLink ? (
-                    /* Link is set and sent */
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2.5">
-                        <RefreshCw className="w-4 h-4 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{t('bookings.paymentLinkActive')}</p>
-                          <p className="text-xs text-amber-600">{t('bookings.awaitingPayment')}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 truncate text-gray-600" />
-                        <button
-                          onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }}
-                          className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 cursor-pointer"
-                          title="Kopiëren"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                        <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-blue-100 text-blue-600" title="Openen">
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                        <button
-                          onClick={() => setEditingLink(true)}
-                          className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 cursor-pointer"
-                        >
-                          {t('bookings.editLink')}
-                        </button>
-                      </div>
-                      {/* Check payment status */}
-                      <button
-                        onClick={handleCheckPaymentStatus}
-                        disabled={checkingPayment}
-                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        {checkingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                        {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
-                      </button>
-                    </div>
-                  ) : (
-                    /* Input for new/edited link */
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="url"
-                          value={manualLinkInput}
-                          onChange={(e) => setManualLinkInput(e.target.value)}
-                          placeholder={t('bookings.enterStripeLink')}
-                          className="flex-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <button
-                          onClick={handleSaveManualLink}
-                          disabled={savingManualLink || !manualLinkInput.trim()}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          {savingManualLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                          {savingManualLink ? t('bookings.savingLink') : t('bookings.saveAndSendLink')}
-                        </button>
-                        {editingLink && (
-                          <button
-                            onClick={() => { setEditingLink(false); setManualLinkInput(paymentLinkUrl || ''); }}
-                            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-2 cursor-pointer"
-                          >
-                            {t('common.cancel')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Divider with OR */}
-                  <div className="flex items-center gap-3 py-1">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs text-gray-400 uppercase font-medium">of</span>
-                    <div className="flex-1 h-px bg-gray-200" />
+                <div className="space-y-2">
+                  <input type="url" value={manualLinkInput} onChange={(e) => setManualLinkInput(e.target.value)} placeholder={t('bookings.enterStripeLink')} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button onClick={handleSaveManualLink} disabled={savingManualLink || !manualLinkInput.trim()} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer disabled:opacity-50">
+                      {savingManualLink ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      {savingManualLink ? t('bookings.savingLink') : t('bookings.saveAndSendLink')}
+                    </button>
+                    {editingLink && <button onClick={() => { setEditingLink(false); setManualLinkInput(paymentLinkUrl || ''); }} className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 cursor-pointer">{t('common.cancel')}</button>}
                   </div>
-
-                  {/* Manual confirm deposit (bank transfer etc) */}
-                  <button
-                    onClick={handleConfirmDeposit}
-                    disabled={depositConfirming}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    {depositConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                    {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.manualConfirmDeposit')}
-                  </button>
-                </>
+                </div>
               )}
+
+              <div className="flex items-center gap-3 py-0.5"><div className="flex-1 h-px bg-gray-200" /><span className="text-[10px] text-gray-400 uppercase">of</span><div className="flex-1 h-px bg-gray-200" /></div>
+              <button onClick={handleConfirmDeposit} disabled={depositConfirming} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50">
+                {depositConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.manualConfirmDeposit')}
+              </button>
             </div>
           </div>
         )}
-      </div>
 
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">{t('bookings.paymentsTitle')}</h4>
+        {depositAlreadyPaid && (
+          <div className="mt-3 flex items-center gap-2 bg-green-50 text-green-700 rounded-lg px-3 py-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <p className="text-xs font-semibold">{t('bookings.depositAlreadyPaid')}</p>
+          </div>
+        )}
+      </SectionToggle>
+
+      {/* PAYMENTS */}
+      <SectionToggle icon={<FileText className="w-4 h-4" />} label={`${t('bookings.paymentsTitle')} (${payments.length})`} sectionKey="payments" openSection={openSection} toggle={toggleSection}>
         {loadingPayments ? (
           <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" /> {t('common.loading')}</div>
         ) : payments.length === 0 ? (
           <p className="text-sm text-muted">{t('bookings.noPayments')}</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {payments.map((p) => (
-              <div key={p.id} className="bg-white rounded-xl p-3 flex items-center justify-between text-sm">
+              <div key={p.id} className="bg-white rounded-lg p-2.5 flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium text-foreground">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
-                  <p className="text-xs text-muted">
+                  <p className="font-medium text-foreground text-xs">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
+                  <p className="text-[10px] text-muted">
                     {p.method === 'ideal' || p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
-                    {p.stripe_id && ` (${p.stripe_id})`}
+                    {p.paid_at && ` • ${formatDateTime(p.paid_at)}`}
                   </p>
-                  {p.paid_at && <p className="text-xs text-primary">{t('bookings.paidOn', { date: formatDateTime(p.paid_at) })}</p>}
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(p.status)}`}>{ts(p.status)}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getPaymentStatusColor(p.status)}`}>{ts(p.status)}</span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </SectionToggle>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
-          <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getStatusColor(newStatus).split(' ').filter(c => c.startsWith('bg-')).join(' ')}`} />
-            <select
-              value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value as BookingStatus)}
-              className="flex-1 px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s.replace('_', ' ')}</option>
-              ))}
-            </select>
+      {/* STATUS + NOTES + ACTIONS */}
+      <div className="p-3 sm:p-4 border-t border-gray-100 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getStatusColor(newStatus).split(' ').filter(c => c.startsWith('bg-')).join(' ')}`} />
+              <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as BookingStatus)} className="flex-1 px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark">
+                {STATUS_OPTIONS.map((s) => (<option key={s} value={s}>{s.replace('_', ' ')}</option>))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark" placeholder={t('bookings.notesPlaceholder')} />
           </div>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 bg-white rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark"
-            placeholder={t('bookings.notesPlaceholder')}
-          />
-        </div>
-      </div>
 
-      {/* Discount section */}
-      <div>
-        <button
-          onClick={() => { setShowDiscount(!showDiscount); setDiscountError(''); setDiscountSuccess(false); }}
-          className="flex items-center gap-2 text-sm font-medium text-primary cursor-pointer"
-        >
-          <Tag className="w-4 h-4" />
-          {showDiscount ? t('bookings.cancelDiscount') : t('bookings.applyDiscount')}
-        </button>
+        {/* Action row: save, discount, extras, delete */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {(newStatus !== booking.status || notes !== (booking.admin_notes || '')) && (
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-dark text-white rounded-lg text-xs font-medium hover:bg-[#1E40AF] cursor-pointer disabled:opacity-50">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              {t('common.save')}
+            </button>
+          )}
+          <button onClick={() => { setShowDiscount(!showDiscount); setDiscountError(''); setDiscountSuccess(false); }} className="flex items-center gap-1.5 text-xs font-medium text-primary cursor-pointer px-2 py-1.5 rounded-lg hover:bg-primary/5">
+            <Tag className="w-3.5 h-3.5" />
+            {t('bookings.applyDiscount')}
+          </button>
+          <button onClick={() => { setShowExtras(!showExtras); setExtrasSuccess(false); }} className="flex items-center gap-1.5 text-xs font-medium text-amber-700 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-amber-50">
+            <Plus className="w-3.5 h-3.5" />
+            Extra&apos;s
+          </button>
+          {role === 'admin' && (
+            <button onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }} className="flex items-center gap-1.5 px-2 py-1.5 text-red-500 rounded-lg text-xs font-medium hover:bg-red-50 cursor-pointer ml-auto">
+              <Trash2 className="w-3.5 h-3.5" />
+              {t('bookings.deleteBooking')}
+            </button>
+          )}
+        </div>
+
+        {/* Discount panel */}
         {showDiscount && (
-          <div className="mt-3 bg-primary/5 border border-primary/20 rounded-xl p-3 sm:p-4 space-y-3">
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 space-y-2">
             {discountSuccess ? (
               <div className="text-sm text-primary font-medium">{t('bookings.discountApplied')}</div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1">{t('bookings.discountAmount')}</label>
-                    <input type="number" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} placeholder="50"
-                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <label className="text-[10px] font-semibold text-muted block mb-1">{t('bookings.discountAmount')}</label>
+                    <input type="number" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} placeholder="50" className="w-full px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1">{t('bookings.discountReason')}</label>
-                    <input type="text" value={discountCode} onChange={e => setDiscountCode(e.target.value)} placeholder="ADMIN"
-                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <label className="text-[10px] font-semibold text-muted block mb-1">{t('bookings.discountReason')}</label>
+                    <input type="text" value={discountCode} onChange={e => setDiscountCode(e.target.value)} placeholder="ADMIN" className="w-full px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> {t('auth.password')}</label>
-                    <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder={t('dashboard.adminPassword')}
-                      className="w-full px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                    <label className="text-[10px] font-semibold text-muted block mb-1 flex items-center gap-1"><Lock className="w-3 h-3" /> {t('auth.password')}</label>
+                    <input type="password" value={discountPassword} onChange={e => setDiscountPassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
                 {discountError && <p className="text-xs text-red-500">{discountError}</p>}
@@ -678,88 +620,54 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                       const res = await fetch('/api/admin/discount-codes', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          password: discountPassword,
-                          action: 'applyToBooking',
-                          bookingId: booking.id,
-                          discountCode: discountCode || 'ADMIN',
-                          discountAmount: parseFloat(discountAmount),
-                        }),
+                        body: JSON.stringify({ password: discountPassword, action: 'applyToBooking', bookingId: booking.id, discountCode: discountCode || 'ADMIN', discountAmount: parseFloat(discountAmount) }),
                       });
                       if (res.status === 403) { setDiscountError(t('bookings.wrongPassword')); setDiscountSaving(false); return; }
                       if (!res.ok) { setDiscountError(t('bookings.discountFailed')); setDiscountSaving(false); return; }
                       setDiscountSuccess(true);
-                      // Refresh payments
                       fetch(`/api/payments?bookingId=${booking.id}`).then(r => r.json()).then(d => setPayments(d.payments || [])).catch((e) => console.error('Fetch error:', e));
-                    } catch {
-                      setDiscountError(t('common.error'));
-                    }
+                    } catch { setDiscountError(t('common.error')); }
                     setDiscountSaving(false);
                   }}
                   disabled={discountSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium cursor-pointer disabled:opacity-50"
                 >
-                  {discountSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
+                  {discountSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Tag className="w-3.5 h-3.5" />}
                   {t('bookings.applyDiscountBtn')}
                 </button>
               </>
             )}
           </div>
         )}
-      </div>
 
-      {/* ═══ EXTRAS MANAGEMENT ═══ */}
-      <div>
-        <button
-          onClick={() => { setShowExtras(!showExtras); setExtrasSuccess(false); }}
-          className="flex items-center gap-2 text-sm font-medium text-amber-700 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          {showExtras ? 'Annuleren' : "Extra's toevoegen"}
-        </button>
+        {/* Extras panel */}
         {showExtras && (
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4 space-y-3">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
             {extrasSuccess ? (
-              <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
-                <CheckCircle2 className="w-4 h-4" />
-                Extra&apos;s toegevoegd en klant is per e-mail geïnformeerd
-              </div>
+              <div className="flex items-center gap-2 text-xs text-green-700 font-medium"><CheckCircle2 className="w-3.5 h-3.5" />Extra&apos;s toegevoegd en klant is per e-mail geïnformeerd</div>
             ) : (
               <>
-                <p className="text-xs text-amber-700 font-medium">Selecteer extra&apos;s om toe te voegen aan deze boeking:</p>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
-                    <input type="checkbox" checked={extraBedlinnen} onChange={e => setExtraBedlinnen(e.target.checked)} className="rounded" />
-                    <span className="text-sm flex-1">🛏️ Bedlinnen (4 sets)</span>
-                    <span className="text-xs font-semibold text-amber-700">€70/week</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
-                    <input type="checkbox" checked={extraFridge} onChange={e => setExtraFridge(e.target.checked)} className="rounded" />
-                    <span className="text-sm flex-1">🧊 Grote koelkast</span>
-                    <span className="text-xs font-semibold text-amber-700">€40/week</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer hover:bg-amber-50/50">
-                    <input type="checkbox" checked={extraAirco} onChange={e => setExtraAirco(e.target.checked)} className="rounded" />
-                    <span className="text-sm flex-1">❄️ Mobiele airco</span>
-                    <span className="text-xs font-semibold text-amber-700">€50/week</span>
-                  </label>
-                  <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                    <span className="text-sm flex-1">🚲 Fietsen</span>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setExtraBikes(Math.max(0, extraBikes - 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">-</button>
-                      <span className="text-sm font-medium w-4 text-center">{extraBikes}</span>
-                      <button onClick={() => setExtraBikes(Math.min(4, extraBikes + 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">+</button>
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 p-1.5 bg-white rounded-lg cursor-pointer text-xs"><input type="checkbox" checked={extraBedlinnen} onChange={e => setExtraBedlinnen(e.target.checked)} className="rounded" /><span className="flex-1">🛏️ Bedlinnen (4 sets)</span><span className="font-semibold text-amber-700">€70/w</span></label>
+                  <label className="flex items-center gap-2 p-1.5 bg-white rounded-lg cursor-pointer text-xs"><input type="checkbox" checked={extraFridge} onChange={e => setExtraFridge(e.target.checked)} className="rounded" /><span className="flex-1">🧊 Grote koelkast</span><span className="font-semibold text-amber-700">€40/w</span></label>
+                  <label className="flex items-center gap-2 p-1.5 bg-white rounded-lg cursor-pointer text-xs"><input type="checkbox" checked={extraAirco} onChange={e => setExtraAirco(e.target.checked)} className="rounded" /><span className="flex-1">❄️ Mobiele airco</span><span className="font-semibold text-amber-700">€50/w</span></label>
+                  <div className="flex items-center gap-2 p-1.5 bg-white rounded-lg text-xs">
+                    <span className="flex-1">🚲 Fietsen</span>
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={() => setExtraBikes(Math.max(0, extraBikes - 1))} className="w-5 h-5 rounded bg-gray-100 text-gray-600 text-xs flex items-center justify-center cursor-pointer">-</button>
+                      <span className="font-medium w-3 text-center">{extraBikes}</span>
+                      <button onClick={() => setExtraBikes(Math.min(4, extraBikes + 1))} className="w-5 h-5 rounded bg-gray-100 text-gray-600 text-xs flex items-center justify-center cursor-pointer">+</button>
                     </div>
-                    <span className="text-xs font-semibold text-amber-700">€50/fiets/week + €200 borg</span>
+                    <span className="font-semibold text-amber-700">€50/w + €200 borg</span>
                   </div>
-                  <div className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                    <span className="text-sm flex-1">🚵 Mountainbikes</span>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setExtraMountainbikes(Math.max(0, extraMountainbikes - 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">-</button>
-                      <span className="text-sm font-medium w-4 text-center">{extraMountainbikes}</span>
-                      <button onClick={() => setExtraMountainbikes(Math.min(4, extraMountainbikes + 1))} className="w-6 h-6 rounded bg-gray-100 text-gray-600 text-sm flex items-center justify-center cursor-pointer hover:bg-gray-200">+</button>
+                  <div className="flex items-center gap-2 p-1.5 bg-white rounded-lg text-xs">
+                    <span className="flex-1">🚵 Mountainbikes</span>
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={() => setExtraMountainbikes(Math.max(0, extraMountainbikes - 1))} className="w-5 h-5 rounded bg-gray-100 text-gray-600 text-xs flex items-center justify-center cursor-pointer">-</button>
+                      <span className="font-medium w-3 text-center">{extraMountainbikes}</span>
+                      <button onClick={() => setExtraMountainbikes(Math.min(4, extraMountainbikes + 1))} className="w-5 h-5 rounded bg-gray-100 text-gray-600 text-xs flex items-center justify-center cursor-pointer">+</button>
                     </div>
-                    <span className="text-xs font-semibold text-amber-700">€50/bike/week + €200 borg</span>
+                    <span className="font-semibold text-amber-700">€50/w + €200 borg</span>
                   </div>
                 </div>
                 {(extraBedlinnen || extraFridge || extraAirco || extraBikes > 0 || extraMountainbikes > 0) && (() => {
@@ -772,25 +680,11 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                   addedCost += extraMountainbikes * weeks * 50;
                   const addedBorg = (extraBikes + extraMountainbikes) * 200;
                   const newTotal = Number(booking.total_price) + addedCost;
-                  const newDeposit = Math.round(newTotal * 0.25);
-                  const newRemaining = newTotal - newDeposit;
-                  const newBorg = Number(booking.borg_amount) + addedBorg;
                   return (
-                    <div className="bg-white rounded-lg p-3 border border-amber-200 space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted">Extra kosten ({weeks} {weeks === 1 ? 'week' : 'weken'})</span>
-                        <span className="font-semibold text-amber-700">+{formatCurrency(addedCost)}</span>
-                      </div>
-                      {addedBorg > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted">Extra borg</span>
-                          <span className="font-semibold text-amber-700">+{formatCurrency(addedBorg)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-sm pt-1 border-t border-amber-100">
-                        <span className="font-medium">Nieuw totaal</span>
-                        <span className="font-bold text-foreground">{formatCurrency(newTotal)}</span>
-                      </div>
+                    <div className="bg-white rounded-lg p-2 border border-amber-200 text-xs space-y-0.5">
+                      <div className="flex justify-between"><span className="text-muted">Extra kosten ({weeks}w)</span><span className="font-semibold text-amber-700">+{formatCurrency(addedCost)}</span></div>
+                      {addedBorg > 0 && <div className="flex justify-between"><span className="text-muted">Extra borg</span><span className="font-semibold text-amber-700">+{formatCurrency(addedBorg)}</span></div>}
+                      <div className="flex justify-between pt-1 border-t border-amber-100"><span className="font-medium">Nieuw totaal</span><span className="font-bold">{formatCurrency(newTotal)}</span></div>
                     </div>
                   );
                 })()}
@@ -815,120 +709,62 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                       const res = await fetch('/api/admin/bookings', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          action: 'add-extras',
-                          bookingId: booking.id,
-                          extras: selected.join(' | '),
-                          totalPrice: newTotal,
-                          depositAmount: newDeposit,
-                          remainingAmount: newRemaining,
-                          borgAmount: newBorg,
-                        }),
+                        body: JSON.stringify({ action: 'add-extras', bookingId: booking.id, extras: selected.join(' | '), totalPrice: newTotal, depositAmount: newDeposit, remainingAmount: newRemaining, borgAmount: newBorg }),
                       });
                       const data = await res.json();
-                      if (data.success) {
-                        setExtrasSuccess(true);
-                        toast("Extra's succesvol toegevoegd", 'success');
-                        // Reset selections
-                        setExtraBedlinnen(false); setExtraFridge(false); setExtraAirco(false);
-                        setExtraBikes(0); setExtraMountainbikes(0);
-                      } else {
-                        toast(data.error || "Extra's toevoegen mislukt", 'error');
-                      }
-                    } catch {
-                      toast("Extra's toevoegen mislukt", 'error');
-                    }
+                      if (data.success) { setExtrasSuccess(true); toast("Extra's succesvol toegevoegd", 'success'); setExtraBedlinnen(false); setExtraFridge(false); setExtraAirco(false); setExtraBikes(0); setExtraMountainbikes(0); }
+                      else { toast(data.error || "Extra's toevoegen mislukt", 'error'); }
+                    } catch { toast("Extra's toevoegen mislukt", 'error'); }
                     setSavingExtras(false);
                   }}
                   disabled={savingExtras || (!extraBedlinnen && !extraFridge && !extraAirco && extraBikes === 0 && extraMountainbikes === 0)}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50 transition-colors hover:bg-amber-700"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium cursor-pointer disabled:opacity-50 hover:bg-amber-700"
                 >
-                  {savingExtras ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {savingExtras ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   Toevoegen &amp; klant informeren
                 </button>
               </>
             )}
           </div>
         )}
-      </div>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        {(newStatus !== booking.status || notes !== (booking.admin_notes || '')) && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-[#1E40AF] transition-colors cursor-pointer disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {t('common.save')}
-          </button>
+        {/* Delete confirm */}
+        {showDeleteConfirm && (
+          <div className="bg-red-50 rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertTriangle className="w-4 h-4" />
+              <p className="text-xs font-semibold">{t('bookings.deleteConfirm')}</p>
+            </div>
+            <p className="text-[10px] text-red-600">{t('bookings.deleteWarning')}</p>
+            {deleteError && <p className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded-lg">{deleteError}</p>}
+            <div className="flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-red-400" />
+              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder={t('dashboard.adminPassword')} className="flex-1 px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  if (!deletePassword) { setDeleteError(t('bookings.enterPassword')); return; }
+                  setDeleting(true); setDeleteError('');
+                  try {
+                    const res = await fetch('/api/bookings', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: booking.id, password: deletePassword }) });
+                    if (res.status === 403) { setDeleteError(t('bookings.wrongPassword')); setDeleting(false); return; }
+                    if (!res.ok) { setDeleteError(t('bookings.deleteFailed')); setDeleting(false); return; }
+                    onDelete(booking.id);
+                  } catch { setDeleteError(t('common.error')); }
+                  setDeleting(false);
+                }}
+                disabled={deleting}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                {t('bookings.permanentDelete')}
+              </button>
+              <button onClick={() => setShowDeleteConfirm(false)} className="px-3 py-1.5 bg-white text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 cursor-pointer">{t('common.cancel')}</button>
+            </div>
+          </div>
         )}
-        {role === 'admin' && (<button
-          onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }}
-          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer ml-auto"
-        >
-          <Trash2 className="w-4 h-4" />
-          {t('bookings.deleteBooking')}
-        </button>)}
       </div>
-
-      {showDeleteConfirm && (
-        <div className="bg-red-50 rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle className="w-5 h-5" />
-            <p className="text-sm font-semibold">{t('bookings.deleteConfirm')}</p>
-          </div>
-          <p className="text-xs text-red-600">
-            {t('bookings.deleteWarning')}
-          </p>
-          {deleteError && (
-            <p className="text-xs text-red-700 bg-red-100 px-3 py-1.5 rounded-lg">{deleteError}</p>
-          )}
-          <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-red-400" />
-            <input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder={t('dashboard.adminPassword')}
-              className="flex-1 px-3 py-2 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                if (!deletePassword) { setDeleteError(t('bookings.enterPassword')); return; }
-                setDeleting(true);
-                setDeleteError('');
-                try {
-                  const res = await fetch('/api/bookings', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: booking.id, password: deletePassword }),
-                  });
-                  if (res.status === 403) { setDeleteError(t('bookings.wrongPassword')); setDeleting(false); return; }
-                  if (!res.ok) { setDeleteError(t('bookings.deleteFailed')); setDeleting(false); return; }
-                  onDelete(booking.id);
-                } catch {
-                  setDeleteError(t('common.error'));
-                }
-                setDeleting(false);
-              }}
-              disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-              {t('bookings.permanentDelete')}
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
