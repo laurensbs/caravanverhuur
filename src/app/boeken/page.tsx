@@ -1089,8 +1089,8 @@ function BoekenContent() {
                           </div>
 
                           <div className="pt-4 space-y-2">
-                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${(pricingAdjustments.length > 0 || discountApplied || extrasCost > 0) ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{totalPrice}</span></div>
-                            {pricingAdjustments.map((adj, i) => (
+                            <div className="flex justify-between"><span className="text-muted">{t('booking.totalPriceLabel')}</span><span className={`font-bold text-xl ${(pricingAdjustments.some(a => a.type !== 'seizoen') || discountApplied || extrasCost > 0) ? 'text-muted line-through text-base' : 'text-primary'}`}>&euro;{adjustedTotal}</span></div>
+                            {pricingAdjustments.filter(a => a.type !== 'seizoen').map((adj, i) => (
                               <div key={i} className="flex justify-between text-sm">
                                 <span className={`font-medium flex items-center gap-1.5 ${adj.amount < 0 ? 'text-green-600' : 'text-amber-600'}`}>
                                   {adj.type === 'seizoen' ? <Sun size={13} /> : adj.type === 'vroegboek' ? <Clock size={13} /> : <Sparkles size={13} />}
@@ -1111,7 +1111,7 @@ function BoekenContent() {
                                 <span className="font-medium text-primary">-€{discountApplied.amount}</span>
                               </div>
                             )}
-                            {(pricingAdjustments.length > 0 || discountApplied || extrasCost > 0) && (
+                            {(pricingAdjustments.some(a => a.type !== 'seizoen') || discountApplied || extrasCost > 0) && (
                               <div className="flex justify-between pt-1 border-t border-gray-100"><span className="font-semibold text-foreground">{t('booking.totalPriceLabel')}</span><span className="font-bold text-xl text-primary">&euro;{discountedTotal}</span></div>
                             )}
                           </div>
