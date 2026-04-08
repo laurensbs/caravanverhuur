@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 
 import { GOOGLE_REVIEW_URL } from '@/lib/constants';
@@ -87,23 +87,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-foreground text-white">
-      {/* CTA */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10 text-center">
-        <p className="font-heading font-extrabold text-lg sm:text-xl tracking-tight mb-4">
-          {t('footer.ctaText')}
-        </p>
-        <Link
-          href="/boeken"
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-foreground font-bold rounded-lg text-sm hover:bg-white/90 transition-colors"
-        >
-          {t('nav.bookNow')}
-          <ArrowRight size={14} />
-        </Link>
-      </div>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-4"><div className="border-t border-white/10" /></div>
-
       {/* Main grid */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
         <div className="flex flex-col gap-8 sm:grid sm:grid-cols-4 sm:gap-8">
