@@ -256,6 +256,22 @@ export default function CaravansPage() {
             </div>
           </div>
 
+          {/* ── Transport visual ── */}
+          <div className="relative rounded-2xl overflow-hidden mb-10 sm:mb-12 aspect-[3/1]">
+            <Image
+              src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
+              alt="Transport caravan naar camping"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 p-4 sm:p-6">
+              <p className="text-white font-bold text-sm sm:text-lg">{t('home.roadTripTitle')}</p>
+              <p className="text-white/60 text-[11px] sm:text-xs mt-0.5">{t('home.roadTripSubtitle')}</p>
+            </div>
+          </div>
+
           {/* ── Standard amenities ── */}
           <div className="mb-10 sm:mb-12">
             <h2 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2.5">
