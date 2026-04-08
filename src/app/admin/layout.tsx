@@ -45,6 +45,7 @@ import {
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
 import AdminHelpGuide from '@/components/AdminHelpGuide';
+import AdminAssistant from '@/components/AdminAssistant';
 import { ToastProvider, useToast } from '@/components/AdminToast';
 
 /* ── Credentials ─────────────────────────────────── */
@@ -1908,6 +1909,12 @@ function AdminLayoutInner({
         locale={locale as 'nl' | 'en'}
         pathname={pathname}
         onRestartTour={restartTour}
+      />
+
+      {/* ═══ SMART ASSISTANT ═══ */}
+      <AdminAssistant
+        locale={locale as 'nl' | 'en'}
+        pathname={pathname}
       />
     </div>
   );

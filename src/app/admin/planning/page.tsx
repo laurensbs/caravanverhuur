@@ -348,22 +348,27 @@ function TripCard({
                         const locked = isTaskLocked(task, trip.tasks);
                         return (
                           <div key={task.id}
-                            className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors ${task.status === 'DONE' ? 'bg-green-50/50' : locked ? 'bg-gray-50/50 opacity-50' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                            <TaskStatusButton task={task} onToggle={onToggleTask} locked={locked} />
+                            className={`flex items-start gap-2.5 p-2 rounded-lg transition-colors ${task.status === 'DONE' ? 'bg-green-50/50' : locked ? 'bg-gray-50/50 opacity-50' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                            <div className="mt-0.5"><TaskStatusButton task={task} onToggle={onToggleTask} locked={locked} /></div>
                             <button onClick={() => !locked && onSelectTask(task)} disabled={locked}
-                              className={`flex-1 flex items-center gap-2 min-w-0 text-left ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                              <span className={`inline-flex items-center gap-1 text-xs font-medium ${task.status === 'DONE' ? 'text-green-600 line-through' : 'text-foreground'}`}>
-                                <TaskIcon className="w-3 h-3" />{getTaskLabel(task.task_type, locale)}
-                              </span>
-                              {task.assigned_to && (
-                                <span className="text-[10px] text-primary flex items-center gap-0.5"><User className="w-2.5 h-2.5" />{task.assigned_to}</span>
+                              className={`flex-1 min-w-0 text-left ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center gap-1 text-xs font-medium ${task.status === 'DONE' ? 'text-green-600 line-through' : 'text-foreground'}`}>
+                                  <TaskIcon className="w-3 h-3" />{getTaskLabel(task.task_type, locale)}
+                                </span>
+                                {task.assigned_to && (
+                                  <span className="text-[10px] text-primary flex items-center gap-0.5"><User className="w-2.5 h-2.5" />{task.assigned_to}</span>
+                                )}
+                                {daysUntil !== null && task.status !== 'DONE' && (
+                                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ml-auto shrink-0 ${getUrgencyBadge(daysUntil, task.status)}`}>
+                                    {getDueDateLabel(task.due_date!, locale)}
+                                  </span>
+                                )}
+                              </div>
+                              {task.status !== 'DONE' && (
+                                <p className="text-[11px] text-muted mt-0.5 leading-snug">{getTaskDescription(task.task_type, locale)}</p>
                               )}
                             </button>
-                            {daysUntil !== null && task.status !== 'DONE' && (
-                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${getUrgencyBadge(daysUntil, task.status)}`}>
-                                {getDueDateLabel(task.due_date!, locale)}
-                              </span>
-                            )}
                           </div>
                         );
                       })}
@@ -1067,6 +1072,27 @@ export default function PlanningPage() {
             <p className="text-[10px] sm:text-xs font-medium">{stat.label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Workflow steps banner */}
+      <div className="bg-white rounded-xl p-3 shadow-sm">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          {TASK_SEQUENCE.map((type, i) => {
+            const Icon = TASK_ICONS[type] || Wrench;
+            const labels: Record<string, string> = isNl
+              ? { PREP: 'Klaarmaken', CHECKIN: 'Borgcheck', TRANSPORT: 'Bezorgen', PICKUP: 'Ophalen', INSPECTION: 'Eindcontrole' }
+              : { PREP: 'Prepare', CHECKIN: 'Deposit check', TRANSPORT: 'Deliver', PICKUP: 'Pick up', INSPECTION: 'Inspect' };
+            return (
+              <div key={type} className="flex items-center gap-1.5 shrink-0">
+                {i > 0 && <ArrowRight className="w-3 h-3 text-gray-300 shrink-0" />}
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium ${TASK_COLORS[type]}`}>
+                  <Icon className="w-3 h-3" />
+                  <span>{labels[type]}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* View tabs + search */}
