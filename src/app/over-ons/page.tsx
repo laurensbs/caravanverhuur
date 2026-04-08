@@ -68,16 +68,15 @@ export default function OverOnsPage() {
 
       {/* ===== HERO IMAGE — car + caravan ===== */}
       <section className="relative overflow-hidden">
-        <div className="relative w-full aspect-[21/9] sm:aspect-[3/1]">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[5/2]">
           <Image
             src="https://u.cubeupload.com/laurensbos/IMG3809.jpg"
             alt="Auto met caravan onderweg naar de Costa Brava"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
       </section>
 

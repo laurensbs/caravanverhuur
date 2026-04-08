@@ -444,15 +444,15 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
       {/* ===== HERO IMAGE — car + caravan on the road ===== */}
       <section className="relative overflow-hidden">
-        <div className="relative w-full aspect-[21/9] sm:aspect-[3/1]">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[5/2]">
           <Image
             src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
             alt="Auto met caravan onderweg naar de Costa Brava"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 lg:p-12 max-w-7xl mx-auto">
             <motion.p
               initial={{ opacity: 0, y: 10 }}
