@@ -198,7 +198,7 @@ export default function ChauffeurPage() {
       </div>
 
       {/* Driver portal link */}
-      <a href="/chauffeur" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-white rounded-xl p-3 sm:p-4 text-sm text-primary hover:bg-primary/5 transition">
+      <a href={typeof window !== 'undefined' && window.location.hostname.startsWith('admin.') ? `${window.location.protocol}//${window.location.hostname.replace('admin.', '')}/chauffeur` : '/chauffeur'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-white rounded-xl p-3 sm:p-4 text-sm text-primary hover:bg-primary/5 transition">
         <Lock className="w-4 h-4" />
         <span className="font-medium">Chauffeur portaal</span>
         <ExternalLink className="w-3.5 h-3.5 ml-auto" />
