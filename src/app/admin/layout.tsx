@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, ReactNode, useMemo, useRef, useCallback, createContext, useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -97,6 +97,22 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
 ];
+
+/* ── Page-level actions context (renders buttons next to page title) ── */
+const PageActionsContext = createContext<{
+  actions: ReactNode;
+  setActions: (a: ReactNode) => void;
+}>({ actions: null, setActions: () => {} });
+
+/** Pages call this hook to register action buttons (e.g. +New, Refresh) in the title bar. */
+export function usePageActions(actions: ReactNode) {
+  const { setActions } = useContext(PageActionsContext);
+  useEffect(() => {
+    setActions(actions);
+    return () => setActions(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actions]);
+}
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
@@ -1075,6 +1091,7 @@ function AdminLayoutInner({
   /* Use the admin context for translations */
   const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName, role: ctxRole } = useAdminCtx();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+  const [pageActions, setPageActions] = useState<ReactNode>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [settingsCurrentPw, setSettingsCurrentPw] = useState('');
@@ -1587,245 +1604,255 @@ function AdminLayoutInner({
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
         !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16') : ''
       }`}>
-        {/* Top bar */}
-        <header className="bg-white px-3 py-2 flex items-center gap-1.5 lg:px-6 lg:py-3 lg:gap-3 sticky top-0 z-30 border-b border-border">
-          {isMobile && (
-            <button
-              onClick={toggleSidebar}
-              className="p-2.5 -ml-1 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-foreground"
-              aria-label="Menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">
-              {allNavItems.find((n) => n.href === pathname)
-                ? t(allNavItems.find((n) => n.href === pathname)!.key)
-                : 'Admin'}
-            </h1>
-            {(() => {
-              const navItem = allNavItems.find((n) => n.href === pathname);
-              if (!navItem) return null;
-              const shortKey = navItem.key.replace('nav.', '');
-              const desc = t(`nav.desc.${shortKey}`);
-              return desc && desc !== `nav.desc.${shortKey}` ? (
-                <p className="text-xs text-muted truncate hidden sm:block">{desc}</p>
-              ) : null;
-            })()}
-          </div>
-
-          {/* Global search */}
-          <div ref={searchRef} className="relative hidden sm:block">
-            <div
-              className={`flex items-center gap-2 rounded-xl border transition-all duration-200 ${
-                searchOpen
-                  ? 'w-64 lg:w-80 border-foreground/20 bg-white shadow-md'
-                  : 'w-40 lg:w-52 border-border bg-surface hover:border-foreground/10 cursor-pointer'
-              }`}
-              onClick={() => { if (!searchOpen) setSearchOpen(true); }}
-            >
-              <Search size={15} className="ml-3 text-muted shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
-                onFocus={() => setSearchOpen(true)}
-                placeholder={locale === 'nl' ? 'Zoeken... ⌘K' : 'Search... ⌘K'}
-                className="flex-1 py-2 pr-3 text-sm bg-transparent outline-none placeholder:text-muted/60"
-              />
-              {searchQuery && (
-                <button onClick={() => { setSearchQuery(''); setSearchResults(null); }} className="pr-3 text-muted hover:text-foreground cursor-pointer">
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            {/* Search results dropdown */}
-            <AnimatePresence>
-              {searchOpen && searchQuery.length >= 2 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  className="absolute top-full right-0 mt-1.5 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
-                >
-                  {searchLoading ? (
-                    <div className="p-4 text-center text-sm text-muted">{t('common.loading')}</div>
-                  ) : !searchResults || (searchResults.bookings.length === 0 && searchResults.contacts.length === 0 && searchResults.customers.length === 0) ? (
-                    <div className="p-4 text-center text-sm text-muted">{t('common.noResults')}</div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {/* Bookings */}
-                      {searchResults.bookings.length > 0 && (
-                        <div>
-                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
-                            <CalendarCheck size={12} /> {t('nav.bookings')} ({searchResults.bookings.length})
-                          </div>
-                          {searchResults.bookings.slice(0, 5).map((b) => (
-                            <Link
-                              key={b.id as string}
-                              href={p('/boekingen')}
-                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
-                            >
-                              <CalendarCheck size={14} className="text-primary shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">{b.guest_name as string}</p>
-                                <p className="text-xs text-muted truncate">{b.reference as string} · {b.guest_email as string}</p>
-                              </div>
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                b.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                              }`}>{b.status as string}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                      {/* Contacts */}
-                      {searchResults.contacts.length > 0 && (
-                        <div>
-                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
-                            <Mail size={12} /> {t('nav.messages')} ({searchResults.contacts.length})
-                          </div>
-                          {searchResults.contacts.slice(0, 5).map((c) => (
-                            <Link
-                              key={c.id as string}
-                              href={p('/berichten')}
-                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
-                            >
-                              <Mail size={14} className="text-amber-500 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">{c.name as string}</p>
-                                <p className="text-xs text-muted truncate">{c.subject as string}</p>
-                              </div>
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                c.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                              }`}>{c.status as string}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                      {/* Customers */}
-                      {searchResults.customers.length > 0 && (
-                        <div>
-                          <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
-                            <Users size={12} /> {t('nav.customers')} ({searchResults.customers.length})
-                          </div>
-                          {searchResults.customers.slice(0, 5).map((cu) => (
-                            <Link
-                              key={cu.id as string}
-                              href={p('/klanten')}
-                              onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
-                            >
-                              <User size={14} className="text-green-600 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">{cu.name as string}</p>
-                                <p className="text-xs text-muted truncate">{cu.email as string} · {cu.phone as string}</p>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Mobile search button */}
-          <button
-            onClick={() => { setSearchOpen(!searchOpen); }}
-            className="sm:hidden p-2.5 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
-          >
-            <Search className="w-5 h-5 sm:w-5 sm:h-5" />
-          </button>
-
-          {/* Language toggle */}
-          <button
-            onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
-            className="flex items-center gap-1 px-2.5 py-2 sm:px-2 sm:py-1.5 rounded-xl sm:rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
-            title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
-          >
-            <Globe className="w-5 h-5 sm:w-4 sm:h-4" />
-            {locale === 'nl' ? 'EN' : 'NL'}
-          </button>
-
-          {/* User dropdown — desktop & mobile */}
-          {ctxUsername && ctxUsername !== 'staff' && (
-            <div className="relative" ref={userDropdownRef}>
+        {/* Top bar — utility row */}
+        <header className="bg-white sticky top-0 z-30 border-b border-border">
+          {/* Row 1: utility items */}
+          <div className="px-3 py-2 flex items-center gap-1.5 lg:px-6 lg:gap-3">
+            {isMobile && (
               <button
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-1.5 text-xs text-muted font-medium px-2 py-1.5 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
+                onClick={toggleSidebar}
+                className="p-2 -ml-1 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-foreground"
+                aria-label="Menu"
               >
-                <span className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground">
-                  {ctxDisplayName.charAt(0)}
-                </span>
-                <span className="hidden sm:inline">{ctxDisplayName}</span>
-                <span className="hidden sm:inline px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-                  {ctxRole}
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                <Menu className="w-5 h-5" />
               </button>
+            )}
+
+            <div className="flex-1 min-w-0" />
+
+            {/* Global search */}
+            <div ref={searchRef} className="relative hidden sm:block">
+              <div
+                className={`flex items-center gap-2 rounded-xl border transition-all duration-200 ${
+                  searchOpen
+                    ? 'w-64 lg:w-80 border-foreground/20 bg-white shadow-md'
+                    : 'w-40 lg:w-52 border-border bg-surface hover:border-foreground/10 cursor-pointer'
+                }`}
+                onClick={() => { if (!searchOpen) setSearchOpen(true); }}
+              >
+                <Search size={15} className="ml-3 text-muted shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                  onFocus={() => setSearchOpen(true)}
+                  placeholder={locale === 'nl' ? 'Zoeken... ⌘K' : 'Search... ⌘K'}
+                  className="flex-1 py-2 pr-3 text-sm bg-transparent outline-none placeholder:text-muted/60"
+                />
+                {searchQuery && (
+                  <button onClick={() => { setSearchQuery(''); setSearchResults(null); }} className="pr-3 text-muted hover:text-foreground cursor-pointer">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Search results dropdown */}
               <AnimatePresence>
-                {userDropdownOpen && (
+                {searchOpen && searchQuery.length >= 2 && (
                   <motion.div
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-border py-1 z-50"
+                    className="absolute top-full right-0 mt-1.5 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50 max-h-[70vh] overflow-y-auto"
                   >
-                    {/* Mobile-only: show name + role */}
-                    <div className="sm:hidden px-3 py-2 border-b border-border">
-                      <p className="text-sm font-medium text-foreground">{ctxDisplayName}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">{ctxRole}</p>
-                    </div>
-                    <button
-                      onClick={() => { setUserDropdownOpen(false); setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <Lock className="w-4 h-4 text-gray-400" />
-                      {t('auth.changePassword')}
-                    </button>
-                    <div className="h-px bg-border mx-2" />
-                    <button
-                      onClick={() => { setUserDropdownOpen(false); onLogout(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t('nav.logout')}
-                    </button>
+                    {searchLoading ? (
+                      <div className="p-4 text-center text-sm text-muted">{t('common.loading')}</div>
+                    ) : !searchResults || (searchResults.bookings.length === 0 && searchResults.contacts.length === 0 && searchResults.customers.length === 0) ? (
+                      <div className="p-4 text-center text-sm text-muted">{t('common.noResults')}</div>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {searchResults.bookings.length > 0 && (
+                          <div>
+                            <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                              <CalendarCheck size={12} /> {t('nav.bookings')} ({searchResults.bookings.length})
+                            </div>
+                            {searchResults.bookings.slice(0, 5).map((b) => (
+                              <Link
+                                key={b.id as string}
+                                href={p('/boekingen')}
+                                onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                                className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                              >
+                                <CalendarCheck size={14} className="text-primary shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{b.guest_name as string}</p>
+                                  <p className="text-xs text-muted truncate">{b.reference as string} · {b.guest_email as string}</p>
+                                </div>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                  b.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                }`}>{b.status as string}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                        {searchResults.contacts.length > 0 && (
+                          <div>
+                            <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                              <Mail size={12} /> {t('nav.messages')} ({searchResults.contacts.length})
+                            </div>
+                            {searchResults.contacts.slice(0, 5).map((c) => (
+                              <Link
+                                key={c.id as string}
+                                href={p('/berichten')}
+                                onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                                className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                              >
+                                <Mail size={14} className="text-amber-500 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{c.name as string}</p>
+                                  <p className="text-xs text-muted truncate">{c.subject as string}</p>
+                                </div>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                  c.status === 'NIEUW' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                }`}>{c.status as string}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                        {searchResults.customers.length > 0 && (
+                          <div>
+                            <div className="px-3 py-2 bg-gray-50 text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                              <Users size={12} /> {t('nav.customers')} ({searchResults.customers.length})
+                            </div>
+                            {searchResults.customers.slice(0, 5).map((cu) => (
+                              <Link
+                                key={cu.id as string}
+                                href={p('/klanten')}
+                                onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                                className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-colors"
+                              >
+                                <User size={14} className="text-green-600 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{cu.name as string}</p>
+                                  <p className="text-xs text-muted truncate">{cu.email as string} · {cu.phone as string}</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-          )}
-          <button
-            onClick={toggleNotifications}
-            className={`relative p-2.5 sm:p-2 rounded-xl sm:rounded-lg transition-colors cursor-pointer ${
-              notifEnabled
-                ? 'text-primary hover:bg-primary/10'
-                : 'text-muted hover:bg-surface-alt hover:text-foreground'
-            }`}
-            aria-label={t('common.notifications')}
-            title={notifEnabled ? t('common.notificationsEnabled') : t('common.enableNotifications')}
-          >
-            {notifEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-            {notifEnabled && (badges['nav.chat'] || badges['nav.messages']) ? (
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-            ) : null}
-          </button>
 
-          <button
-            onClick={() => setShowHelp(true)}
-            className="p-2.5 sm:p-2 rounded-xl sm:rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
-            aria-label={locale === 'nl' ? 'Hulp' : 'Help'}
-          >
-            <HelpCircle className="w-5 h-5" />
-          </button>
+            {/* Mobile search button */}
+            <button
+              onClick={() => { setSearchOpen(!searchOpen); }}
+              className="sm:hidden p-2 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+            >
+              <Search className="w-4.5 h-4.5" />
+            </button>
+
+            {/* Language toggle */}
+            <button
+              onClick={() => setLocale(locale === 'nl' ? 'en' : 'nl')}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold text-muted hover:bg-surface-alt hover:text-foreground transition-colors cursor-pointer"
+              title={locale === 'nl' ? 'Switch to English' : 'Wissel naar Nederlands'}
+            >
+              <Globe className="w-4 h-4" />
+              <span className="hidden sm:inline">{locale === 'nl' ? 'EN' : 'NL'}</span>
+            </button>
+
+            {/* User dropdown */}
+            {ctxUsername && ctxUsername !== 'staff' && (
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-1.5 text-xs text-muted font-medium px-2 py-1.5 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
+                >
+                  <span className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-[11px] font-bold text-foreground">
+                    {ctxDisplayName.charAt(0)}
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {userDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-border py-1 z-50"
+                    >
+                      <div className="px-3 py-2 border-b border-border">
+                        <p className="text-sm font-medium text-foreground">{ctxDisplayName}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary">{ctxRole}</p>
+                      </div>
+                      <button
+                        onClick={() => { setUserDropdownOpen(false); setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <Lock className="w-4 h-4 text-gray-400" />
+                        {t('auth.changePassword')}
+                      </button>
+                      <div className="h-px bg-border mx-2" />
+                      <button
+                        onClick={() => { setUserDropdownOpen(false); onLogout(); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        {t('nav.logout')}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Notifications */}
+            <button
+              onClick={toggleNotifications}
+              className={`relative p-2 rounded-lg transition-colors cursor-pointer ${
+                notifEnabled
+                  ? 'text-primary hover:bg-primary/10'
+                  : 'text-muted hover:bg-surface-alt hover:text-foreground'
+              }`}
+              aria-label={t('common.notifications')}
+              title={notifEnabled ? t('common.notificationsEnabled') : t('common.enableNotifications')}
+            >
+              {notifEnabled ? <Bell className="w-4.5 h-4.5" /> : <BellOff className="w-4.5 h-4.5" />}
+              {notifEnabled && (badges['nav.chat'] || badges['nav.messages']) ? (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+              ) : null}
+            </button>
+
+            {/* Help */}
+            <button
+              onClick={() => setShowHelp(true)}
+              className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
+              aria-label={locale === 'nl' ? 'Hulp' : 'Help'}
+            >
+              <HelpCircle className="w-4.5 h-4.5" />
+            </button>
+          </div>
+
+          {/* Row 2: page title + page actions */}
+          <div className="px-3 py-2 lg:px-6 flex items-center gap-3 border-t border-border/50">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
+                {allNavItems.find((n) => n.href === pathname)
+                  ? t(allNavItems.find((n) => n.href === pathname)!.key)
+                  : 'Admin'}
+              </h1>
+              {(() => {
+                const navItem = allNavItems.find((n) => n.href === pathname);
+                if (!navItem) return null;
+                const shortKey = navItem.key.replace('nav.', '');
+                const desc = t(`nav.desc.${shortKey}`);
+                return desc && desc !== `nav.desc.${shortKey}` ? (
+                  <p className="text-xs text-muted truncate hidden sm:block">{desc}</p>
+                ) : null;
+              })()}
+            </div>
+            {/* Page-level actions injected via usePageActions */}
+            {pageActions && (
+              <div className="flex items-center gap-1.5">
+                {pageActions}
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Mobile search bar */}
@@ -1907,7 +1934,9 @@ function AdminLayoutInner({
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="flex-1 p-3 lg:p-6 overflow-auto"
         >
-          {children}
+          <PageActionsContext.Provider value={{ actions: pageActions, setActions: setPageActions }}>
+            {children}
+          </PageActionsContext.Provider>
         </motion.main>
       </div>
 

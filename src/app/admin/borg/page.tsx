@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardCheck,
@@ -145,6 +146,19 @@ export default function AdminBorgPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={() => fetchData()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+          <RefreshCw size={16} />
+        </button>
+        <button onClick={() => setShowNewForm(true)} className="p-2 bg-primary-dark text-white rounded-xl hover:bg-primary-dark/90 transition-colors cursor-pointer" title={t('deposit.newChecklist')}>
+          <Plus size={16} />
+        </button>
+      </>
+    ), [fetchData, t])
+  );
 
   // Close booking dropdown on outside click
   useEffect(() => {
@@ -335,13 +349,6 @@ export default function AdminBorgPage() {
           className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
           title="Refresh">
           <RefreshCw size={16} />
-        </button>
-        <button
-          onClick={() => setShowNewForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
-        >
-          <Plus size={16} />
-          {t('deposit.newChecklist')}
         </button>
       </div>
 

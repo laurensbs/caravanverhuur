@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import {
   Search, Users, Calendar, CheckCircle2, Wrench, CalendarCheck, ChevronDown, ChevronUp,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAdmin } from "@/i18n/admin-context";
 import { useToast } from "@/components/AdminToast";
+import { usePageActions } from "@/app/admin/layout";
 import { type Caravan } from "@/data/caravans";
 import { formatCurrency, formatDate, getStatusColor, type Booking } from "@/data/admin";
 
@@ -556,6 +557,19 @@ export default function CaravansAdminPage() {
     fetchCaravans();
   }, [fetchCaravans]);
 
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={() => fetchCaravans()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+          <RefreshCw size={18} />
+        </button>
+        <button onClick={() => setShowNewModal(true)} className="p-2 bg-primary-dark text-white rounded-xl hover:bg-primary-dark/90 transition-colors cursor-pointer" title={t('caravans.newCaravan')}>
+          <Plus size={18} />
+        </button>
+      </>
+    ), [fetchCaravans, t])
+  );
+
   useEffect(() => {
     if (allCaravans.length === 0) return;
     Promise.all(
@@ -672,10 +686,6 @@ export default function CaravansAdminPage() {
           className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
           title="Refresh">
           <RefreshCw size={18} />
-        </button>
-        <button onClick={() => setShowNewModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm cursor-pointer">
-          <Plus size={18} />{t("caravans.newCaravan")}
         </button>
       </div>
 

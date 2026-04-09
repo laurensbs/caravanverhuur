@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Search,
   User,
@@ -28,6 +28,7 @@ import {
 
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import { useLastActivity, LastEditedBadge } from '@/components/LastEditedBy';
 
 interface Customer {
@@ -126,6 +127,31 @@ export default function AdminKlanten() {
     fetchCustomers();
   }, [fetchCustomers]);
 
+  const openCreateModal = useCallback(() => {
+    setFormName('');
+    setFormEmail('');
+    setFormPhone('');
+    setFormPassword('');
+    setShowPassword(false);
+    setError('');
+    setSuccess('');
+    setGeneratedPassword('');
+    setModal('create');
+  }, []);
+
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={() => fetchCustomers()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={isNl ? 'Vernieuwen' : 'Refresh'}>
+          <RefreshCw size={18} />
+        </button>
+        <button onClick={openCreateModal} className="p-2 bg-primary-dark text-white rounded-xl hover:bg-primary-dark/90 transition-colors cursor-pointer" title={isNl ? 'Nieuwe klant' : 'New customer'}>
+          <Plus size={18} />
+        </button>
+      </>
+    ), [fetchCustomers, openCreateModal, isNl])
+  );
+
   const openCustomerDetail = async (customer: Customer) => {
     setDetailCustomer(customer);
     setLoadingChats(true);
@@ -198,18 +224,6 @@ export default function AdminKlanten() {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
-
-  const openCreateModal = () => {
-    setFormName('');
-    setFormEmail('');
-    setFormPhone('');
-    setFormPassword('');
-    setShowPassword(false);
-    setError('');
-    setSuccess('');
-    setGeneratedPassword('');
-    setModal('create');
   };
 
   const openEditModal = (customer: Customer) => {
@@ -362,9 +376,6 @@ export default function AdminKlanten() {
       <div className="flex items-center gap-2">
         <button onClick={() => fetchCustomers()} className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={isNl ? 'Vernieuwen' : 'Refresh'}>
           <RefreshCw size={18} />
-        </button>
-        <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors shadow-sm">
-          <Plus size={18} /> {isNl ? 'Nieuwe klant' : 'New customer'}
         </button>
       </div> {/* Search */} <div className="relative max-w-md"> <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /> <input type="text" placeholder={t("customers.searchPlaceholder")} value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> {/* Stats cards */} <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4"> <div className="bg-white rounded-xl p-2.5 sm:p-4"> <div className="text-xl sm:text-2xl font-bold text-foreground">{customers.length}</div> <div className="text-xs text-muted mt-1">{t('customers.totalCustomers')}</div> </div> <div className="bg-white rounded-xl p-2.5 sm:p-4"> <div className="text-xl sm:text-2xl font-bold text-foreground"> {customers.filter(c => { if (!c.last_login) return false; const diff = Date.now() - new Date(c.last_login).getTime(); return diff < 7 * 24 * 60 * 60 * 1000; }).length} </div> <div className="text-xs text-muted mt-1">{t('customers.activeWeek')}</div> </div> <div className="bg-white rounded-xl p-2.5 sm:p-4"> <div className="text-xl sm:text-2xl font-bold text-foreground"> {customers.filter(c => c.phone).length} </div> <div className="text-xs text-muted mt-1">{t('customers.withPhone')}</div> </div> <div className="bg-white rounded-xl p-2.5 sm:p-4"> <div className="text-xl sm:text-2xl font-bold text-foreground"> {customers.filter(c => { const diff = Date.now() - new Date(c.created_at).getTime(); return diff < 30 * 24 * 60 * 60 * 1000; }).length} </div> <div className="text-xs text-muted mt-1">{t('customers.newMonth')}</div> </div> </div> {/* Table */} {filtered.length === 0 ? ( <div className="bg-white rounded-xl p-12 text-center"> <User size={48} className="mx-auto text-muted/50 mb-4" /> <p className="text-muted font-medium"> {search ?t('customers.noCustomers') : t('customers.noCustomersYet')}
           </p>

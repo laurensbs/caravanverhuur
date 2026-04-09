@@ -32,6 +32,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -898,6 +899,14 @@ export default function PlanningPage() {
 
   useEffect(() => { loadCustomData(); fetchData(); }, [fetchData]);
 
+  usePageActions(
+    useMemo(() => (
+      <button onClick={() => fetchData()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={isNl ? 'Vernieuwen' : 'Refresh'}>
+        <RefreshCw className="w-3.5 h-3.5" />
+      </button>
+    ), [fetchData, isNl])
+  );
+
   const handleToggle = async (task: BookingTask) => {
     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: task.status } : t));
     if (selectedTask?.id === task.id) setSelectedTask({ ...selectedTask, status: task.status });
@@ -1131,7 +1140,7 @@ export default function PlanningPage() {
             <Filter className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => fetchData()}
-            className="px-3 py-2 rounded-xl text-xs font-medium border border-gray-200 bg-white text-muted hover:text-primary transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl text-xs font-medium border border-gray-200 bg-white text-muted hover:text-primary transition-colors cursor-pointer hidden"
             title={isNl ? 'Vernieuwen' : 'Refresh'}>
             <RefreshCw className="w-3.5 h-3.5" />
           </button>

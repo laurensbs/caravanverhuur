@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Search,
   Loader2,
@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // ===== TYPES =====
@@ -576,6 +577,21 @@ export default function AdminNieuwsbrieven() {
 
   useEffect(() => { fetchNewsletters(); }, [fetchNewsletters]);
 
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={fetchNewsletters}
+          className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={isNl ? 'Vernieuwen' : 'Refresh'}>
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <button onClick={() => { resetForm(); setSelected(null); setEditorMode('create'); setEditorOpen(true); setShowPreview(false); }}
+          className="p-2 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors cursor-pointer" title={t('newsletters.newNewsletter')}>
+          <Plus className="w-4 h-4" />
+        </button>
+      </>
+    ), [fetchNewsletters, isNl, t])
+  );
+
   useEffect(() => {
     if (!modal && !editorOpen) return;
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') { if (modal) setModal(null); } };
@@ -1093,38 +1109,41 @@ export default function AdminNieuwsbrieven() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-            <input type="text" placeholder={t("newsletters.searchPlaceholder")} value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 w-48" />
-          </div>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
-            className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
-            <option value="all">{t('newsletters.allStatuses')}</option>
-            <option value="concept">{t('newsletters.draftsFilter')}</option>
-            <option value="ingepland">{t('newsletters.scheduledFilter')}</option>
-            <option value="verzonden">{t('newsletters.sentFilter')}</option>
-          </select>
-          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
-            <option value="all">{t('newsletters.allCategories')}</option>
-            {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>)}
-          </select>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <input type="text" placeholder={t("newsletters.searchPlaceholder")} value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => fetchNewsletters()}
-            className="p-2 bg-white rounded-lg text-muted hover:text-primary transition-colors cursor-pointer border border-gray-200"
-            title={isNl ? 'Vernieuwen' : 'Refresh'}>
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <button onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer text-sm">
-            <Plus className="w-4 h-4" />{t('newsletters.newNewsletter')}
-          </button>
-        </div>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+          className="hidden sm:block px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none">
+          <option value="all">{t('newsletters.allStatuses')}</option>
+          <option value="concept">{t('newsletters.draftsFilter')}</option>
+          <option value="ingepland">{t('newsletters.scheduledFilter')}</option>
+          <option value="verzonden">{t('newsletters.sentFilter')}</option>
+        </select>
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
+          className="hidden sm:block px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none">
+          <option value="all">{t('newsletters.allCategories')}</option>
+          {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>)}
+        </select>
+      </div>
+
+      {/* Mobile filters */}
+      <div className="flex sm:hidden gap-2">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+          className="flex-1 px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none">
+          <option value="all">{t('newsletters.allStatuses')}</option>
+          <option value="concept">{t('newsletters.draftsFilter')}</option>
+          <option value="ingepland">{t('newsletters.scheduledFilter')}</option>
+          <option value="verzonden">{t('newsletters.sentFilter')}</option>
+        </select>
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
+          className="flex-1 px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none">
+          <option value="all">{t('newsletters.allCategories')}</option>
+          {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>)}
+        </select>
       </div>
 
       {/* Empty state */}

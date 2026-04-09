@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -17,9 +17,11 @@ import {
   Send,
   ExternalLink,
   Copy,
+  Calendar,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import {
   getPaymentStatusColor,
   formatDateTime,
@@ -57,18 +59,18 @@ export default function BetalingenPage() {
   const [holdedUrlInput, setHoldedUrlInput] = useState<Record<string, string>>({});
   const [savingHoldedUrl, setSavingHoldedUrl] = useState<string | null>(null);
 
-  const fetchPayments = () => {
+  const fetchPayments = useCallback(() => {
     setLoading(true);
     Promise.all([
       fetch('/api/admin/caravans').then(res => res.json()).then(data => setCustomCaravans(data.caravans || [])),
       fetch('/api/payments').then(res => res.json()).then(data => setPayments(data.payments || [])),
     ]).catch((e) => console.error('Fetch error:', e))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     fetchPayments();
-  }, []);
+  }, [fetchPayments]);
 
   const handleMarkPaid = async (paymentId: string) => {
     setUpdatingId(paymentId);
@@ -220,6 +222,38 @@ export default function BetalingenPage() {
   const totalOpen = open.reduce((s, p) => s + Number(p.amount), 0);
   const totalRefunded = refunded.reduce((s, p) => s + Number(p.amount), 0);
 
+  const handleExportCsv = useCallback(() => {
+    const headers = ['Gast', 'Boeking', 'Type', 'Bedrag', 'Status', 'Methode', 'Datum', 'Holded'];
+    const rows = filtered.map(p => [
+      p.guest_name || '', p.booking_ref || '', ts(p.type),
+      Number(p.amount).toFixed(2), ts(p.status), p.method || '',
+      new Date(p.created_at).toLocaleDateString('nl-NL'),
+      p.holded_status === 'HANDMATIG' || p.holded_status === 'IN_HOLDED' ? 'Ja' : 'Nee',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `betalingen-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [filtered, ts]);
+
+  /* Register title-bar actions */
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={fetchPayments} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <button onClick={handleExportCsv} className="p-2 bg-white rounded-xl text-muted hover:text-foreground transition-colors cursor-pointer" title={t('payments.exportCsv')}>
+          <Download className="w-4 h-4" />
+        </button>
+      </>
+    ), [fetchPayments, handleExportCsv, t])
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -264,9 +298,9 @@ export default function BetalingenPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <div className="relative flex-1">
+      {/* Filters — compact single row */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
@@ -276,7 +310,7 @@ export default function BetalingenPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={statusFilter}
@@ -289,7 +323,7 @@ export default function BetalingenPage() {
             ))}
           </select>
         </div>
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={typeFilter}
@@ -302,50 +336,50 @@ export default function BetalingenPage() {
             ))}
           </select>
         </div>
-        <button onClick={() => fetchPayments()}
-          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-          title="Refresh">
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="relative shrink-0">
+          <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            title={t('payments.dateFrom')}
+            className="w-10 sm:w-auto pl-9 pr-1 sm:pr-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-transparent sm:text-muted [&:not(:placeholder-shown)]:sm:text-foreground cursor-pointer"
+          />
+        </div>
+        <div className="relative shrink-0">
+          <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            title={t('payments.dateTo')}
+            className="w-10 sm:w-auto pl-9 pr-1 sm:pr-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-transparent sm:text-muted [&:not(:placeholder-shown)]:sm:text-foreground cursor-pointer"
+          />
+        </div>
       </div>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          title={t('payments.dateFrom')}
-          className="px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          title={t('payments.dateTo')}
-          className="px-3 py-2 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
-        />
-        <button
-          onClick={() => {
-            const headers = ['Gast', 'Boeking', 'Type', 'Bedrag', 'Status', 'Methode', 'Datum', 'Holded'];
-            const rows = filtered.map(p => [
-              p.guest_name || '', p.booking_ref || '', ts(p.type),
-              Number(p.amount).toFixed(2), ts(p.status), p.method || '',
-              new Date(p.created_at).toLocaleDateString('nl-NL'),
-              p.holded_status === 'HANDMATIG' || p.holded_status === 'IN_HOLDED' ? 'Ja' : 'Nee',
-            ]);
-            const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `betalingen-${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-          }}
-          className="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
+
+      {/* Mobile filters */}
+      <div className="flex sm:hidden gap-2">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'ALLE')}
+          className="flex-1 px-3 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
         >
-          <Download size={14} />
-          {t('payments.exportCsv')}
-        </button>
+          <option value="ALLE">{t('status.allStatuses')}</option>
+          {PAYMENT_STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{ts(s)}</option>
+          ))}
+        </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as PaymentType | 'ALLE')}
+          className="flex-1 px-3 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+        >
+          <option value="ALLE">{t('status.allTypes')}</option>
+          {PAYMENT_TYPE_OPTIONS.map((t2) => (
+            <option key={t2} value={t2}>{ts(t2)}</option>
+          ))}
+        </select>
       </div>
 
       <p className="text-xs text-muted">

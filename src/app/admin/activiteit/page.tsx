@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   History,
@@ -21,6 +21,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import { usePageActions } from '@/app/admin/layout';
 
 interface ActivityEntry {
   id: string;
@@ -153,6 +154,14 @@ export default function ActivityPage() {
 
   useEffect(() => { fetchLog(); }, [fetchLog]);
 
+  usePageActions(
+    useMemo(() => (
+      <button onClick={() => fetchLog()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={locale === 'nl' ? 'Vernieuwen' : 'Refresh'}>
+        <RefreshCw size={16} />
+      </button>
+    ), [fetchLog, locale])
+  );
+
   const filteredEntries = filter === 'all'
     ? entries
     : filter === 'login'
@@ -191,11 +200,6 @@ export default function ActivityPage() {
               : `${total} activities tracked`}
           </p>
         </div>
-        <button onClick={() => fetchLog()}
-          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-          title={locale === 'nl' ? 'Vernieuwen' : 'Refresh'}>
-          <RefreshCw size={16} />
-        </button>
       </div>
 
       {/* Filters */}

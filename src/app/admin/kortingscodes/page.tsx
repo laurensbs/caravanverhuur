@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Tag,
   Plus,
@@ -34,6 +34,7 @@ interface DiscountCode {
 
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 
 export default function KortingscodesPage() {
   const { t } = useAdmin();
@@ -66,6 +67,19 @@ export default function KortingscodesPage() {
   }, []);
 
   useEffect(() => { fetchCodes(); }, [fetchCodes]);
+
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={() => fetchCodes()} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <button onClick={() => setShowCreate(v => !v)} className="p-2 bg-primary-dark text-white rounded-xl hover:bg-primary-dark/90 transition-colors cursor-pointer" title={t('discounts.newCode')}>
+          <Plus className="w-4 h-4" />
+        </button>
+      </>
+    ), [fetchCodes, t])
+  );
 
   const handleCreate = async () => {
     if (!newCode.trim() || !newValue) { setCreateError(t('discounts.codeValueRequired')); return; }
@@ -142,18 +156,11 @@ export default function KortingscodesPage() {
           <h2 className="text-lg font-bold text-foreground">{t('discounts.pageTitle')}</h2>
           <p className="text-sm text-muted">{t('discounts.codesCount', { count: String(codes.length) })}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => fetchCodes()}
-            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-            title="Refresh">
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setShowCreate(!showCreate)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold cursor-pointer transition-colors"
-          >
-            {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showCreate ? t('common.cancel') : t('discounts.newCode')} </button> </div> </div> {/* Create form */} {showCreate && ( <div className="bg-white rounded-2xl p-5 space-y-4"> <h3 className="font-semibold text-foreground flex items-center gap-2"><Tag className="w-4 h-4 text-primary" /> {t('discounts.newCodeTitle')}</h3> <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.code')}</label> <div className="relative"> <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" /> <input type="text" value={newCode} onChange={e => setNewCode(e.target.value.toUpperCase())} placeholder={t("discounts.codePlaceholder")} className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.type')}</label> <div className="flex gap-2"> <button onClick={() => setNewType('percentage')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${newType === 'percentage' ? 'border-primary bg-primary/5 text-primary' : 'text-muted'}`}> <Percent className="w-4 h-4"/> Percentage </button> <button onClick={() => setNewType('fixed')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${newType === 'fixed' ? 'border-primary bg-primary/5 text-primary' : 'text-muted'}`}> <DollarSign className="w-4 h-4" /> {t('discounts.fixedAmount')}
+        <button onClick={() => fetchCodes()}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title="Refresh">
+          <RefreshCw className="w-4 h-4" />
+        </button> </div> {/* Create form */} {showCreate && ( <div className="bg-white rounded-2xl p-5 space-y-4"> <h3 className="font-semibold text-foreground flex items-center gap-2"><Tag className="w-4 h-4 text-primary" /> {t('discounts.newCodeTitle')}</h3> <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.code')}</label> <div className="relative"> <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" /> <input type="text" value={newCode} onChange={e => setNewCode(e.target.value.toUpperCase())} placeholder={t("discounts.codePlaceholder")} className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" /> </div> </div> <div> <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1">{t('discounts.type')}</label> <div className="flex gap-2"> <button onClick={() => setNewType('percentage')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${newType === 'percentage' ? 'border-primary bg-primary/5 text-primary' : 'text-muted'}`}> <Percent className="w-4 h-4"/> Percentage </button> <button onClick={() => setNewType('fixed')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${newType === 'fixed' ? 'border-primary bg-primary/5 text-primary' : 'text-muted'}`}> <DollarSign className="w-4 h-4" /> {t('discounts.fixedAmount')}
                 </button>
               </div>
             </div>

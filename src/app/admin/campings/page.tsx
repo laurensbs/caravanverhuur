@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   Tent,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 
 interface Camping {
   id: string;
@@ -151,7 +152,7 @@ export default function AdminCampingsPage() {
   const [formWebsite, setFormWebsite] = useState('');
   const [formPhotos, setFormPhotos] = useState('');
 
-  const fetchCampings = async () => {
+  const fetchCampings = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/campings', { cache: 'no-store' });
       const data = await res.json();
@@ -161,9 +162,9 @@ export default function AdminCampingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchCampings(); }, []);
+  useEffect(() => { fetchCampings(); }, [fetchCampings]);
 
   // Close modals on Escape
   useEffect(() => {
@@ -320,6 +321,21 @@ export default function AdminCampingsPage() {
     }
   };
 
+  usePageActions(
+    useMemo(() => (
+      <>
+        <button onClick={() => { fetchCampings(); toast(isNl ? 'Vernieuwd' : 'Refreshed', 'success'); }}
+          className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title={isNl ? 'Vernieuwen' : 'Refresh'}>
+          <RefreshCw size={16} />
+        </button>
+        <button onClick={() => { resetForm(); setShowForm(true); }}
+          className="p-2 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors cursor-pointer" title={isNl ? 'Nieuwe camping' : 'New camping'}>
+          <PlusCircle size={16} />
+        </button>
+      </>
+    ), [fetchCampings, toast, isNl])
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -345,8 +361,8 @@ export default function AdminCampingsPage() {
       </div>
 
       {/* Search + Actions */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <div className="relative flex-1">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             type="text"
@@ -356,30 +372,16 @@ export default function AdminCampingsPage() {
             className="w-full pl-9 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
-        <div className="flex gap-2">
-          {campings.length === 0 && (
-            <button
-              onClick={handleImportStatic}
-              disabled={importingStatic}
-              className="flex items-center gap-2 px-4 py-2.5 bg-surface-alt text-foreground rounded-xl text-sm font-semibold hover:bg-surface transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {importingStatic ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              {isNl ? 'Importeer standaard' : 'Import defaults'}
-            </button>
-          )}
-          <button onClick={() => { fetchCampings(); toast(isNl ? 'Vernieuwd' : 'Refreshed', 'success'); }}
-            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-            title={isNl ? 'Vernieuwen' : 'Refresh'}>
-            <RefreshCw size={16} />
-          </button>
+        {campings.length === 0 && (
           <button
-            onClick={() => { resetForm(); setShowForm(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
+            onClick={handleImportStatic}
+            disabled={importingStatic}
+            className="flex items-center gap-2 px-4 py-2.5 bg-surface-alt text-foreground rounded-xl text-sm font-semibold hover:bg-surface transition-colors cursor-pointer disabled:opacity-50 shrink-0"
           >
-            <PlusCircle size={16} />
-            {isNl ? 'Nieuwe camping' : 'New camping'}
+            {importingStatic ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            <span className="hidden sm:inline">{isNl ? 'Importeer standaard' : 'Import defaults'}</span>
           </button>
-        </div>
+        )}
       </div>
 
       {/* Add/Edit form */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Search,
   Filter,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
+import { usePageActions } from '@/app/admin/layout';
 import {
   getContactStatusColor,
   formatDateTime,
@@ -346,17 +347,25 @@ export default function BerichtenPage() {
   const [sourceFilter, setSourceFilter] = useState<ContactSource | 'all'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const fetchContacts = () => {
+  const fetchContacts = useCallback(() => {
     fetch('/api/contacts')
       .then((res) => res.json())
       .then((data) => setContacts(data.contacts || []))
       .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     fetchContacts();
-  }, []);
+  }, [fetchContacts]);
+
+  usePageActions(
+    useMemo(() => (
+      <button onClick={fetchContacts} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+        <RefreshCw className="w-4 h-4" />
+      </button>
+    ), [fetchContacts])
+  );
 
   const handleUpdate = (updated: ContactSubmission) => {
     setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
@@ -441,8 +450,8 @@ export default function BerichtenPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
@@ -452,7 +461,7 @@ export default function BerichtenPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={statusFilter}
@@ -469,11 +478,20 @@ export default function BerichtenPage() {
             ))}
           </select>
         </div>
-        <button onClick={() => fetchContacts()}
-          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-          title="Refresh">
-          <RefreshCw className="w-4 h-4" />
-        </button>
+      </div>
+
+      {/* Mobile status filter */}
+      <div className="sm:hidden">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as ContactStatus | 'ALLE')}
+          className="w-full px-3 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+        >
+          <option value="ALLE">{t('status.allStatuses')}</option>
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
       </div>
 
       <p className="text-xs text-muted">
