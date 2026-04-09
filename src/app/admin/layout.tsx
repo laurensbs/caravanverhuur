@@ -1495,7 +1495,7 @@ function AdminLayoutInner({
                 className="flex items-center justify-center w-10 h-10 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors cursor-pointer mx-auto"
                 title="Sidebar openen (Esc)"
               >
-                <LayoutDashboard size={18} className="text-foreground/70" />
+                <ChevronRight size={18} className="text-foreground/70" />
               </button>
             )}
           </div>
