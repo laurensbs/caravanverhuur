@@ -27,7 +27,8 @@ import {
   ArrowRight,
   ClipboardList,
   MessageCircle,
-  Sparkles,
+  PanelRightOpen,
+  PanelRightClose,
   ChevronRight,
   ChevronLeft,
   Tent,
@@ -1817,14 +1818,14 @@ function AdminLayoutInner({
               ) : null}
             </button>
 
-            {/* Smart Suggestions */}
+            {/* Smart Suggestions toggle */}
             <button
               onClick={() => setShowAssistant(!showAssistant)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${showAssistant ? 'bg-violet-100 text-violet-700 border border-violet-200' : 'text-muted hover:bg-surface-alt hover:text-foreground border border-transparent'}`}
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${showAssistant ? 'bg-violet-100 text-violet-700' : 'text-muted hover:bg-surface-alt hover:text-foreground'}`}
               aria-label="Smart Suggestions"
+              title="Smart Suggestions"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline">Smart Suggestions</span>
+              {showAssistant ? <PanelRightClose className="w-4.5 h-4.5" /> : <PanelRightOpen className="w-4.5 h-4.5" />}
             </button>
           </div>
 
@@ -2162,7 +2163,6 @@ function AdminLayoutInner({
         pathname={pathname}
         open={showAssistant}
         onClose={() => setShowAssistant(false)}
-        onRestartTour={restartTour}
       />
     </div>
   );

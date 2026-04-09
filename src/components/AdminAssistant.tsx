@@ -1,35 +1,56 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  Lightbulb,
-  MessageCircle,
-  RotateCcw,
-  ChevronDown,
-  ChevronRight,
   AlertTriangle,
-  Info,
+  Clock,
+  CreditCard,
+  CalendarCheck,
+  CalendarX,
+  ClipboardCheck,
+  MessageCircle,
+  Mail,
+  TrendingUp,
+  RefreshCw,
+  ExternalLink,
+  ChevronDown,
+  Loader2,
+  AlertCircle,
   CheckCircle2,
-  Search,
+  ShieldAlert,
 } from 'lucide-react';
+import Link from 'next/link';
 
 /* ═══════════════════════════════════════════════════
    Types
    ═══════════════════════════════════════════════════ */
-type SmartAction = {
-  label: string;
-  urgency: 'high' | 'medium' | 'info';
-  description: string;
+type SuggestionData = {
+  newBookings: { count: number; items: Array<{ ref: string; guest: string; date: string }> };
+  overduePayments: { count: number; totalAmount: number; items: Array<{ ref: string; guest: string; amount: number; type: string; days: number }> };
+  upcomingCheckins: { count: number; items: Array<{ ref: string; guest: string; date: string; caravan: string; camping: string }> };
+  upcomingCheckouts: { count: number; items: Array<{ ref: string; guest: string; date: string }> };
+  pendingBorg: { count: number; items: Array<{ booking_ref: string; guest: string; type: string; status: string }> };
+  unansweredContacts: { count: number; items: Array<{ name: string; subject: string; email: string; age_hours: number }> };
+  activeChats: { count: number };
+  monthlyBookings: number;
+  monthlyRevenue: number;
+  openPayments: { count: number; total: number };
+  overdueRemaining: { count: number; items: Array<{ ref: string; guest: string; remaining: number; check_in: string }> };
+  borgDisputes: number;
 };
 
-type QA = { q: string; a: string };
-
-type PageKnowledge = {
-  intro: string;
-  actions: SmartAction[];
-  questions: QA[];
+type Suggestion = {
+  id: string;
+  urgency: 'critical' | 'warning' | 'info' | 'success';
+  title: string;
+  detail: string;
+  count?: number;
+  amount?: string;
+  href?: string;
+  items?: Array<{ label: string; sub: string }>;
+  relevantPages: string[];
 };
 
 type Props = {
@@ -37,396 +58,293 @@ type Props = {
   pathname: string;
   open: boolean;
   onClose: () => void;
-  onRestartTour: () => void;
 };
 
-/* ─── urgency colours ─── */
-const URGENCY = {
-  high: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: AlertTriangle, dot: 'bg-red-500' },
-  medium: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: Info, dot: 'bg-amber-500' },
-  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: CheckCircle2, dot: 'bg-blue-500' },
-};
-
-/* ═══════════════════════════════════════════════════
-   Knowledge base — DUTCH
-   ═══════════════════════════════════════════════════ */
-const KNOWLEDGE_NL: Record<string, PageKnowledge> = {
-  '/admin': {
-    intro: 'Het dashboard geeft een overzicht van alle belangrijke gegevens: openstaande boekingen, betalingen, berichten en recente activiteit.',
-    actions: [
-      { label: 'Controleer openstaande betalingen', urgency: 'high', description: 'Ga naar Betalingen en controleer of er onbetaalde facturen zijn. Stuur herinneringen voor facturen die meer dan 7 dagen openstaan.' },
-      { label: 'Bekijk nieuwe boekingen', urgency: 'medium', description: 'Controleer of nieuwe boekingen correct zijn aangemaakt en of locaties & data kloppen.' },
-      { label: 'Lees ongelezen berichten', urgency: 'medium', description: 'Beantwoord klantberichten binnen 24 uur voor een goede klanttevredenheid.' },
-      { label: 'Bekijk de planning voor komende week', urgency: 'info', description: 'Check aankomsten en vertrekken voor de komende 7 dagen ter voorbereiding.' },
-    ],
-    questions: [
-      { q: 'Hoe werkt het dashboard?', a: 'Het dashboard toont samenvattingen (boekingen, inkomsten, berichten). Klik op een kaart om naar de detailpagina te gaan.' },
-      { q: 'Wat betekenen de kleuren?', a: 'Groen = alles in orde, Oranje = aandacht nodig, Rood = urgent. De badges op de navigatie tonen aantallen.' },
-      { q: 'Hoe kan ik snel zoeken?', a: 'Gebruik de zoekbalk bovenin (Ctrl/Cmd+K) om snel boekingen, klanten of caravans te vinden.' },
-    ],
-  },
-
-  '/admin/planning': {
-    intro: 'De planning toont alle boekingen op een visuele tijdlijn per caravan. Gebruik het om beschikbaarheid te controleren en conflicten te voorkomen.',
-    actions: [
-      { label: 'Controleer overlappende boekingen', urgency: 'high', description: 'Zoek naar boekingen die overlappen op dezelfde caravan. Dit moet direct opgelost worden.' },
-      { label: 'Bevestig aanstaande aankomsten', urgency: 'medium', description: 'Controleer of alle voorbereidingen klaar zijn voor gasten die deze week aankomen.' },
-      { label: 'Bekijk schoonmaakplanning', urgency: 'info', description: 'Zorg dat er voldoende tijd zit tussen vertrek en aankomst voor schoonmaak (minimaal 1 dag).' },
-    ],
-    questions: [
-      { q: 'Hoe maak ik een boeking aan?', a: 'Ga naar Boekingen → Nieuwe boeking. Selecteer caravan, camping, data en vul klantgegevens in.' },
-      { q: 'Hoe wijzig ik een boeking?', a: 'Klik op een boeking in de planning of boekingslijst. Pas de gewenste velden aan en sla op.' },
-      { q: 'Wat als er een overlap is?', a: 'Het systeem waarschuwt bij overlappingen. Los het op door een boeking te verplaatsen of een andere caravan toe te wijzen.' },
-    ],
-  },
-
-  '/admin/boekingen': {
-    intro: 'Hier beheer je alle boekingen. Je kunt zoeken, filteren, en de voortgang van elke boeking volgen.',
-    actions: [
-      { label: 'Verwerk nieuwe boekingen', urgency: 'high', description: 'Nieuwe boekingen moeten bevestigd of geweigerd worden. Controleer beschikbaarheid en stuur een bevestigingsmail.' },
-      { label: 'Controleer incomplete boekingen', urgency: 'medium', description: 'Sommige boekingen missen mogelijk klantgegevens, camping-info of betalingen. Vul ontbrekende data aan.' },
-      { label: 'Check aankomende check-ins', urgency: 'medium', description: 'Boekingen met check-in deze week: stuur aankomstinformatie naar de gast (adres, sleutels, regels).' },
-      { label: 'Archiveer verlopen boekingen', urgency: 'info', description: 'Boekingen die volledig afgerond zijn (vertrokken + betaald + borg terug) kunnen gearchiveerd worden.' },
-    ],
-    questions: [
-      { q: 'Hoe maak ik een nieuwe boeking?', a: 'Klik op "Nieuwe boeking" rechtsboven. Vul alle verplichte velden in: caravan, camping, periode, klant.' },
-      { q: 'Hoe annuleer ik een boeking?', a: 'Open de boeking, klik op "Annuleren". Het systeem berekent automatisch de annuleringskosten volgens de voorwaarden.' },
-      { q: 'Hoe stuur ik een factuur?', a: 'In de boekingsdetails klik je op "Factuur versturen". De factuur wordt automatisch gegenereerd en verstuurd.' },
-      { q: 'Wat betekenen de statusopties?', a: 'Nieuw = nog niet bevestigd, Bevestigd = goedgekeurd, Betaald = volledige betaling ontvangen, Geannuleerd = geannuleerd, Afgerond = na vertrek.' },
-    ],
-  },
-
-  '/admin/betalingen': {
-    intro: 'Overzicht van alle betalingen, facturen en openstaande bedragen. Volg betalingen en stuur herinneringen.',
-    actions: [
-      { label: 'Stuur herinneringen voor openstaande facturen', urgency: 'high', description: 'Facturen die > 7 dagen openstaan moeten een herinnering krijgen. Check de vervaldatums.' },
-      { label: 'Markeer ontvangen betalingen', urgency: 'medium', description: 'Controleer je bankafschriften en markeer handmatig ontvangen betalingen als "betaald".' },
-      { label: 'Reconcilieer Stripe-betalingen', urgency: 'info', description: 'Online betalingen via Stripe worden automatisch bijgewerkt. Controleer of alles gesynchroniseerd is.' },
-    ],
-    questions: [
-      { q: 'Hoe registreer ik een handmatige betaling?', a: 'Bij de boeking kun je "Betaling toevoegen" kiezen. Vul het bedrag in en selecteer de betaalmethode (bank/contant).' },
-      { q: 'Hoe werkt Stripe?', a: 'Stripe verwerkt online betalingen automatisch. De status wordt bijgewerkt zodra de betaling is afgerond.' },
-      { q: 'Hoe maak ik een terugbetaling?', a: 'Bij Stripe-betalingen kun je via het Stripe-dashboard een terugbetaling initiëren. Voor handmatige betalingen registreer je dit handmatig.' },
-    ],
-  },
-
-  '/admin/borg': {
-    intro: 'Beheer waarborgkeuringen: stuur borgformulieren, bekijk schade-inspecties en verwerk borgretouren.',
-    actions: [
-      { label: 'Verwerk openstaande borginspecties', urgency: 'high', description: 'Na terugkomst van gasten moeten borginspecties zo snel mogelijk verwerkt worden.' },
-      { label: 'Stuur borgformulieren voor aanstaande boekingen', urgency: 'medium', description: 'Gasten die binnenkort aankomen moeten hun borgformulier al ontvangen hebben.' },
-      { label: 'Retourneer borg na goedkeuring', urgency: 'info', description: 'Als de inspectie in orde is, retourneer de borg binnen 14 dagen na vertrek.' },
-    ],
-    questions: [
-      { q: 'Hoe stuur ik een borgformulier?', a: 'Bij de boeking klik je op "Borgformulier verzenden". De gast ontvangt een e-mail met een link om de borg af te handelen.' },
-      { q: 'Wat bij schade?', a: 'Bij schade: documenteer met foto\'s in de inspectie, bereken het schadebedrag en trek dit af van de borg voordat je retourneert.' },
-    ],
-  },
-
-  '/admin/berichten': {
-    intro: 'Alle klantcommunicatie op één plek. Bekijk, beantwoord en beheer berichten.',
-    actions: [
-      { label: 'Beantwoord ongelezen berichten', urgency: 'high', description: 'Onbeantwoorde berichten ouder dan 24 uur moeten met spoed opgepakt worden.' },
-      { label: 'Check automatische mails', urgency: 'info', description: 'Verifieer dat automatische bevestigingsmails en herinneringen correct verzonden worden.' },
-    ],
-    questions: [
-      { q: 'Hoe beantwoord ik een bericht?', a: 'Klik op het bericht om het te openen en type je antwoord. Het wordt verstuurd naar het e-mailadres van de klant.' },
-      { q: 'Kan ik templates gebruiken?', a: 'Ja, veelgebruikte antwoorden kun je opslaan als template en hergebruiken bij vergelijkbare vragen.' },
-    ],
-  },
-
-  '/admin/chat': {
-    intro: 'Live chatberichten van de website. Beantwoord real-time vragen van bezoekers.',
-    actions: [
-      { label: 'Beantwoord actieve chats', urgency: 'high', description: 'Open chats wachten op een reactie. Reageer binnen 5 minuten voor de beste klantervaring.' },
-    ],
-    questions: [
-      { q: 'Hoe werkt de chat?', a: 'Bezoekers op de website kunnen een chatbericht sturen. Je ziet het hier in real-time verschijnen.' },
-      { q: 'Krijg ik meldingen?', a: 'Ja, als notificaties ingeschakeld zijn krijg je een melding bij nieuwe chatberichten.' },
-    ],
-  },
-
-  '/admin/caravans': {
-    intro: 'Beheer alle caravans: specificaties, foto\'s, beschikbaarheid en onderhoudsstatus.',
-    actions: [
-      { label: 'Controleer caravan-onderhoud', urgency: 'medium', description: 'Check of alle caravans up-to-date zijn qua onderhoud voor het komende seizoen.' },
-      { label: 'Update foto\'s en beschrijvingen', urgency: 'info', description: 'Zorg dat alle caravans actuele foto\'s en beschrijvingen hebben voor de website.' },
-    ],
-    questions: [
-      { q: 'Hoe voeg ik een caravan toe?', a: 'Klik op "Nieuwe caravan" en vul alle gegevens in: naam, type, capaciteit, voorzieningen, foto\'s.' },
-      { q: 'Hoe wijzig ik de beschikbaarheid?', a: 'In de caravan-instellingen kun je periodes blokkeren of vrijgeven.' },
-    ],
-  },
-
-  '/admin/campings': {
-    intro: 'Beheer campings waar de caravans geplaatst worden. Inclusief locatie, faciliteiten en contactgegevens.',
-    actions: [
-      { label: 'Verifieer campinggegevens', urgency: 'info', description: 'Controleer of alle campinggegevens actueel zijn: adres, contactpersoon, faciliteiten.' },
-    ],
-    questions: [
-      { q: 'Hoe voeg ik een camping toe?', a: 'Klik op "Nieuwe camping" en vul de gegevens in: naam, adres, faciliteiten, foto\'s, beschrijving.' },
-      { q: 'Kan ik campings koppelen aan caravans?', a: 'Ja, bij het aanmaken van een boeking selecteer je zowel de caravan als de camping.' },
-    ],
-  },
-
-  '/admin/klanten': {
-    intro: 'Klantenoverzicht met contactgegevens, boekingshistorie en communicatie.',
-    actions: [
-      { label: 'Controleer klantgegevens', urgency: 'info', description: 'Verifieer dat contactgegevens up-to-date zijn, vooral telefoonnummers en e-mailadressen.' },
-    ],
-    questions: [
-      { q: 'Hoe vind ik een klant?', a: 'Gebruik de zoekbalk om te zoeken op naam, e-mail of telefoonnummer.' },
-      { q: 'Kan ik klanten verwijderen?', a: 'Klanten die gekoppeld zijn aan boekingen of facturen in Holded kunnen niet verwijderd worden ter bescherming van de boekhouding.' },
-    ],
-  },
-
-  '/admin/kortingscodes': {
-    intro: 'Maak en beheer kortingscodes voor speciale aanbiedingen, early bird deals en terugkerende klanten.',
-    actions: [
-      { label: 'Check verlopen codes', urgency: 'info', description: 'Deactiveer kortingscodes die verlopen zijn om misbruik te voorkomen.' },
-    ],
-    questions: [
-      { q: 'Hoe maak ik een kortingscode?', a: 'Klik op "Nieuwe code", stel percentage of vast bedrag in, kies de geldigheidsperiode en eventuele beperkingen.' },
-      { q: 'Kan ik codes beperken?', a: 'Ja, je kunt codes beperken tot specifieke periodes, maximaal gebruik en minimaal boekingsbedrag.' },
-    ],
-  },
-
-  '/admin/nieuwsbrieven': {
-    intro: 'Verstuur nieuwsbrieven naar klanten en geïnteresseerden. Beheer de mailinglijst.',
-    actions: [
-      { label: 'Plan seizoensnieuwsbrief', urgency: 'info', description: 'Stuur een nieuwsbrief bij het begin van het seizoen met nieuwe bestemmingen/aanbiedingen.' },
-    ],
-    questions: [
-      { q: 'Hoe verstuur ik een nieuwsbrief?', a: 'Maak een nieuwe nieuwsbrief aan, schrijf de inhoud, selecteer ontvangers en klik op "Verzenden".' },
-      { q: 'Kan ik segmenteren?', a: 'Ja, je kunt filteren op eerdere boekingen, aanmeldperiode of specifieke interesses.' },
-    ],
-  },
-
-  '/admin/prijzen': {
-    intro: 'Stel seizoensprijzen in per caravan en periode. Beheer toeslagen en extra kosten.',
-    actions: [
-      { label: 'Stel prijzen in voor volgend seizoen', urgency: 'medium', description: 'Controleer of alle prijzen voor het komende seizoen correct zijn ingesteld.' },
-      { label: 'Check toeslagen', urgency: 'info', description: 'Verifieer dat extra kosten (schoonmaak, beddengoed, etc.) correct zijn geconfigureerd.' },
-    ],
-    questions: [
-      { q: 'Hoe stel ik prijzen in?', a: 'Selecteer een caravan en periode. Voer de weekprijs in. Eventuele toeslagen stel je apart in.' },
-      { q: 'Kan ik seizoensprijzen instellen?', a: 'Ja, je kunt hoogseizoen, tussenseizoen en laagseizoen apart configureren met verschillende prijzen.' },
-    ],
-  },
-
-  '/admin/activiteit': {
-    intro: 'Bekijk alle recente activiteit en wijzigingen in het systeem als auditlog.',
-    actions: [
-      { label: 'Review recente wijzigingen', urgency: 'info', description: 'Check of recente wijzigingen door medewerkers correct zijn uitgevoerd.' },
-    ],
-    questions: [
-      { q: 'Wat wordt gelogd?', a: 'Alle belangrijke acties: boekingswijzigingen, betalingen, klantwijzigingen, instellingen, inlogpogingen.' },
-      { q: 'Hoe ver gaat de log terug?', a: 'De activiteitenlog bewaard gegevens van de afgelopen 90 dagen.' },
-    ],
-  },
+/* ─── urgency config ─── */
+const URGENCY_CONFIG = {
+  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700', icon: AlertTriangle, dot: 'bg-red-500' },
+  warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700', icon: Clock, dot: 'bg-amber-500' },
+  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', icon: AlertCircle, dot: 'bg-blue-500' },
+  success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2, dot: 'bg-emerald-500' },
 };
 
 /* ═══════════════════════════════════════════════════
-   Knowledge base — ENGLISH
+   Build dynamic suggestions from live data
    ═══════════════════════════════════════════════════ */
-const KNOWLEDGE_EN: Record<string, PageKnowledge> = {
-  '/admin': {
-    intro: 'The dashboard gives an overview of key data: pending bookings, payments, messages, and recent activity.',
-    actions: [
-      { label: 'Check outstanding payments', urgency: 'high', description: 'Go to Payments and check for unpaid invoices. Send reminders for invoices overdue by more than 7 days.' },
-      { label: 'Review new bookings', urgency: 'medium', description: 'Check if new bookings are correctly created with proper locations & dates.' },
-      { label: 'Read unread messages', urgency: 'medium', description: 'Reply to customer messages within 24 hours for good customer satisfaction.' },
-      { label: 'View next week\'s schedule', urgency: 'info', description: 'Check arrivals and departures for the coming 7 days.' },
-    ],
-    questions: [
-      { q: 'How does the dashboard work?', a: 'The dashboard shows summaries (bookings, revenue, messages). Click a card to go to the detail page.' },
-      { q: 'What do the colors mean?', a: 'Green = all good, Orange = needs attention, Red = urgent. Navigation badges show counts.' },
-      { q: 'How can I search quickly?', a: 'Use the search bar at the top (Ctrl/Cmd+K) to quickly find bookings, customers, or caravans.' },
-    ],
-  },
+function buildSuggestions(data: SuggestionData, nl: boolean): Suggestion[] {
+  const suggestions: Suggestion[] = [];
+  const fmt = (n: number) => `€${n.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
+  const fmtDate = (d: string) => {
+    try { return new Date(d).toLocaleDateString(nl ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short' }); }
+    catch { return d; }
+  };
 
-  '/admin/planning': {
-    intro: 'The planning shows all bookings on a visual timeline per caravan.',
-    actions: [
-      { label: 'Check overlapping bookings', urgency: 'high', description: 'Look for bookings that overlap on the same caravan. This must be resolved immediately.' },
-      { label: 'Confirm upcoming arrivals', urgency: 'medium', description: 'Check if all preparations are ready for guests arriving this week.' },
-    ],
-    questions: [
-      { q: 'How do I create a booking?', a: 'Go to Bookings → New booking. Select caravan, campsite, dates, and fill in customer details.' },
-      { q: 'What if there\'s an overlap?', a: 'The system warns about overlaps. Resolve by moving a booking or assigning a different caravan.' },
-    ],
-  },
+  // 1. Overdue payments (critical)
+  if (data.overduePayments.count > 0) {
+    suggestions.push({
+      id: 'overdue-payments',
+      urgency: 'critical',
+      title: nl
+        ? `${data.overduePayments.count} achterstallige betaling${data.overduePayments.count > 1 ? 'en' : ''}`
+        : `${data.overduePayments.count} overdue payment${data.overduePayments.count > 1 ? 's' : ''}`,
+      detail: nl
+        ? `Totaal ${fmt(data.overduePayments.totalAmount)} openstaand, langer dan 3 dagen. Stuur herinneringen.`
+        : `Total ${fmt(data.overduePayments.totalAmount)} outstanding for over 3 days. Send reminders.`,
+      count: data.overduePayments.count,
+      amount: fmt(data.overduePayments.totalAmount),
+      href: '/admin/betalingen',
+      items: data.overduePayments.items.slice(0, 5).map(i => ({
+        label: `${i.ref} — ${i.guest}`,
+        sub: `${fmt(i.amount)} · ${i.days} ${nl ? 'dagen' : 'days'}`,
+      })),
+      relevantPages: ['/admin', '/admin/betalingen', '/admin/boekingen'],
+    });
+  }
 
-  '/admin/boekingen': {
-    intro: 'Manage all bookings. Search, filter, and track the progress of each booking.',
-    actions: [
-      { label: 'Process new bookings', urgency: 'high', description: 'New bookings need to be confirmed or declined. Check availability and send confirmation.' },
-      { label: 'Check incomplete bookings', urgency: 'medium', description: 'Some bookings may be missing customer details, campsite info, or payments.' },
-      { label: 'Review upcoming check-ins', urgency: 'medium', description: 'Bookings checking in this week: send arrival information to the guest.' },
-    ],
-    questions: [
-      { q: 'How do I create a booking?', a: 'Click "New booking" at the top right. Fill in all required fields: caravan, campsite, period, customer.' },
-      { q: 'How do I cancel a booking?', a: 'Open the booking and click "Cancel". The system calculates cancellation costs automatically.' },
-      { q: 'What do the statuses mean?', a: 'New = not confirmed, Confirmed = approved, Paid = full payment received, Cancelled = cancelled, Completed = after departure.' },
-    ],
-  },
+  // 2. Borg disputes (critical)
+  if (data.borgDisputes > 0) {
+    suggestions.push({
+      id: 'borg-disputes',
+      urgency: 'critical',
+      title: nl
+        ? `${data.borgDisputes} borg bezwaar${data.borgDisputes > 1 ? 'en' : ''}`
+        : `${data.borgDisputes} deposit dispute${data.borgDisputes > 1 ? 's' : ''}`,
+      detail: nl
+        ? 'Klanten hebben bezwaar gemaakt tegen de borginspectie. Behandel deze zo snel mogelijk.'
+        : 'Customers have disputed the deposit inspection. Handle these ASAP.',
+      count: data.borgDisputes,
+      href: '/admin/borg',
+      relevantPages: ['/admin', '/admin/borg'],
+    });
+  }
 
-  '/admin/betalingen': {
-    intro: 'Overview of all payments, invoices, and outstanding amounts.',
-    actions: [
-      { label: 'Send reminders for overdue invoices', urgency: 'high', description: 'Invoices overdue by > 7 days need a reminder.' },
-      { label: 'Mark received payments', urgency: 'medium', description: 'Check bank statements and manually mark received payments as "paid".' },
-    ],
-    questions: [
-      { q: 'How do I register a manual payment?', a: 'In the booking, choose "Add payment". Enter the amount and select payment method.' },
-      { q: 'How does Stripe work?', a: 'Stripe processes online payments automatically. Status updates when payment is completed.' },
-    ],
-  },
+  // 3. New unprocessed bookings (critical if any)
+  if (data.newBookings.count > 0) {
+    suggestions.push({
+      id: 'new-bookings',
+      urgency: data.newBookings.count >= 3 ? 'critical' : 'warning',
+      title: nl
+        ? `${data.newBookings.count} nieuwe boeking${data.newBookings.count > 1 ? 'en' : ''} wacht${data.newBookings.count === 1 ? '' : 'en'} op bevestiging`
+        : `${data.newBookings.count} new booking${data.newBookings.count > 1 ? 's' : ''} awaiting confirmation`,
+      detail: nl
+        ? 'Bevestig of wijs boekingen toe. Klanten wachten op antwoord.'
+        : 'Confirm or assign bookings. Customers are waiting for a response.',
+      count: data.newBookings.count,
+      href: '/admin/boekingen',
+      items: data.newBookings.items.slice(0, 5).map(i => ({
+        label: `${i.ref} — ${i.guest}`,
+        sub: fmtDate(i.date),
+      })),
+      relevantPages: ['/admin', '/admin/boekingen', '/admin/planning'],
+    });
+  }
 
-  '/admin/borg': {
-    intro: 'Manage deposit inspections: send deposit forms, review damage inspections, and process deposit returns.',
-    actions: [
-      { label: 'Process pending deposit inspections', urgency: 'high', description: 'After guests return, deposit inspections should be processed as soon as possible.' },
-      { label: 'Send deposit forms for upcoming bookings', urgency: 'medium', description: 'Guests arriving soon should have already received their deposit form.' },
-    ],
-    questions: [
-      { q: 'How do I send a deposit form?', a: 'In the booking, click "Send deposit form". The guest receives an email with a link.' },
-      { q: 'What about damage?', a: 'Document damage with photos in the inspection, calculate the damage amount, and deduct from the deposit.' },
-    ],
-  },
+  // 4. Remaining payments due before check-in (warning)
+  if (data.overdueRemaining.count > 0) {
+    suggestions.push({
+      id: 'remaining-due',
+      urgency: 'warning',
+      title: nl
+        ? `${data.overdueRemaining.count} boeking${data.overdueRemaining.count > 1 ? 'en' : ''} met openstaand restbedrag`
+        : `${data.overdueRemaining.count} booking${data.overdueRemaining.count > 1 ? 's' : ''} with remaining balance`,
+      detail: nl
+        ? 'Check-in komende 7 dagen, maar restbetaling nog niet ontvangen.'
+        : 'Check-in within 7 days but remaining payment not yet received.',
+      count: data.overdueRemaining.count,
+      href: '/admin/betalingen',
+      items: data.overdueRemaining.items.slice(0, 5).map(i => ({
+        label: `${i.ref} — ${i.guest}`,
+        sub: `${fmt(i.remaining)} · check-in ${fmtDate(i.check_in)}`,
+      })),
+      relevantPages: ['/admin', '/admin/betalingen', '/admin/boekingen'],
+    });
+  }
 
-  '/admin/berichten': {
-    intro: 'All customer communication in one place.',
-    actions: [
-      { label: 'Reply to unread messages', urgency: 'high', description: 'Unanswered messages older than 24 hours need urgent attention.' },
-    ],
-    questions: [
-      { q: 'How do I reply to a message?', a: 'Click on the message to open it and type your reply.' },
-    ],
-  },
+  // 5. Unanswered contacts (warning)
+  if (data.unansweredContacts.count > 0) {
+    suggestions.push({
+      id: 'unanswered-contacts',
+      urgency: 'warning',
+      title: nl
+        ? `${data.unansweredContacts.count} onbeantwoord bericht${data.unansweredContacts.count > 1 ? 'en' : ''}`
+        : `${data.unansweredContacts.count} unanswered message${data.unansweredContacts.count > 1 ? 's' : ''}`,
+      detail: nl
+        ? 'Contactberichten ouder dan 24 uur zonder reactie.'
+        : 'Contact messages older than 24 hours without a reply.',
+      count: data.unansweredContacts.count,
+      href: '/admin/berichten',
+      items: data.unansweredContacts.items.slice(0, 3).map(i => ({
+        label: `${i.name} — ${i.subject || i.email}`,
+        sub: `${i.age_hours}h ${nl ? 'geleden' : 'ago'}`,
+      })),
+      relevantPages: ['/admin', '/admin/berichten'],
+    });
+  }
 
-  '/admin/chat': {
-    intro: 'Live chat messages from the website.',
-    actions: [
-      { label: 'Answer active chats', urgency: 'high', description: 'Open chats are waiting for a response. Reply within 5 minutes for the best experience.' },
-    ],
-    questions: [
-      { q: 'How does chat work?', a: 'Website visitors can send a chat message. It appears here in real time.' },
-    ],
-  },
+  // 6. Active chats (warning)
+  if (data.activeChats.count > 0) {
+    suggestions.push({
+      id: 'active-chats',
+      urgency: 'warning',
+      title: nl
+        ? `${data.activeChats.count} actieve chat${data.activeChats.count > 1 ? 's' : ''}`
+        : `${data.activeChats.count} active chat${data.activeChats.count > 1 ? 's' : ''}`,
+      detail: nl
+        ? 'Live chatgesprekken wachten op een reactie.'
+        : 'Live chat conversations waiting for a response.',
+      count: data.activeChats.count,
+      href: '/admin/chat',
+      relevantPages: ['/admin', '/admin/chat'],
+    });
+  }
 
-  '/admin/caravans': {
-    intro: 'Manage all caravans: specifications, photos, availability, and maintenance status.',
-    actions: [
-      { label: 'Check caravan maintenance', urgency: 'medium', description: 'Ensure all caravans are up to date on maintenance.' },
-      { label: 'Update photos and descriptions', urgency: 'info', description: 'Make sure all caravans have current photos and descriptions.' },
-    ],
-    questions: [
-      { q: 'How do I add a caravan?', a: 'Click "New caravan" and fill in all details: name, type, capacity, amenities, photos.' },
-    ],
-  },
+  // 7. Pending borg inspections (warning)
+  if (data.pendingBorg.count > 0) {
+    suggestions.push({
+      id: 'pending-borg',
+      urgency: 'warning',
+      title: nl
+        ? `${data.pendingBorg.count} openstaande borginspectie${data.pendingBorg.count > 1 ? 's' : ''}`
+        : `${data.pendingBorg.count} pending deposit inspection${data.pendingBorg.count > 1 ? 's' : ''}`,
+      detail: nl
+        ? 'Deze inspecties moeten afgerond worden voordat de borg geretourneerd kan worden.'
+        : 'These inspections must be completed before deposits can be returned.',
+      count: data.pendingBorg.count,
+      href: '/admin/borg',
+      items: data.pendingBorg.items.slice(0, 5).map(i => ({
+        label: `${i.booking_ref} — ${i.guest}`,
+        sub: i.type === 'UITCHECKEN' ? (nl ? 'Uitcheck' : 'Check-out') : (nl ? 'Incheck' : 'Check-in'),
+      })),
+      relevantPages: ['/admin', '/admin/borg'],
+    });
+  }
 
-  '/admin/campings': {
-    intro: 'Manage campsites where caravans are placed.',
-    actions: [
-      { label: 'Verify campsite details', urgency: 'info', description: 'Check that all campsite information is up to date.' },
-    ],
-    questions: [
-      { q: 'How do I add a campsite?', a: 'Click "New campsite" and fill in the details.' },
-    ],
-  },
+  // 8. Upcoming check-ins (info)
+  if (data.upcomingCheckins.count > 0) {
+    suggestions.push({
+      id: 'upcoming-checkins',
+      urgency: 'info',
+      title: nl
+        ? `${data.upcomingCheckins.count} aankomst${data.upcomingCheckins.count > 1 ? 'en' : ''} komende 7 dagen`
+        : `${data.upcomingCheckins.count} arrival${data.upcomingCheckins.count > 1 ? 's' : ''} in the next 7 days`,
+      detail: nl
+        ? 'Controleer of alle voorbereidingen klaar zijn: schoonmaak, sleutels, informatie naar gast.'
+        : 'Verify all preparations are ready: cleaning, keys, guest information.',
+      count: data.upcomingCheckins.count,
+      href: '/admin/planning',
+      items: data.upcomingCheckins.items.slice(0, 5).map(i => ({
+        label: `${i.ref} — ${i.guest}`,
+        sub: fmtDate(i.date),
+      })),
+      relevantPages: ['/admin', '/admin/planning', '/admin/boekingen'],
+    });
+  }
 
-  '/admin/klanten': {
-    intro: 'Customer overview with contact details, booking history, and communication.',
-    actions: [
-      { label: 'Verify customer details', urgency: 'info', description: 'Check that contact details are up to date.' },
-    ],
-    questions: [
-      { q: 'How do I find a customer?', a: 'Use the search bar to search by name, email, or phone number.' },
-      { q: 'Can I delete customers?', a: 'Customers linked to bookings or Holded invoices cannot be deleted to protect accounting records.' },
-    ],
-  },
+  // 9. Upcoming check-outs (info)
+  if (data.upcomingCheckouts.count > 0) {
+    suggestions.push({
+      id: 'upcoming-checkouts',
+      urgency: 'info',
+      title: nl
+        ? `${data.upcomingCheckouts.count} vertrek${data.upcomingCheckouts.count > 1 ? 'ken' : ''} komende 7 dagen`
+        : `${data.upcomingCheckouts.count} departure${data.upcomingCheckouts.count > 1 ? 's' : ''} in the next 7 days`,
+      detail: nl
+        ? 'Plan borginspecties en schoonmaak voor vertrekkende gasten.'
+        : 'Schedule deposit inspections and cleaning for departing guests.',
+      count: data.upcomingCheckouts.count,
+      href: '/admin/planning',
+      items: data.upcomingCheckouts.items.slice(0, 5).map(i => ({
+        label: `${i.ref} — ${i.guest}`,
+        sub: fmtDate(i.date),
+      })),
+      relevantPages: ['/admin', '/admin/planning', '/admin/borg'],
+    });
+  }
 
-  '/admin/prijzen': {
-    intro: 'Set seasonal prices per caravan and period.',
-    actions: [
-      { label: 'Set next season prices', urgency: 'medium', description: 'Check that all prices for the coming season are correctly set.' },
-    ],
-    questions: [
-      { q: 'How do I set prices?', a: 'Select a caravan and period. Enter the weekly price. Additional surcharges are set separately.' },
-    ],
-  },
+  // 10. Open payments summary (info)
+  if (data.openPayments.count > 0) {
+    suggestions.push({
+      id: 'open-payments-summary',
+      urgency: 'info',
+      title: nl
+        ? `${fmt(data.openPayments.total)} openstaand over ${data.openPayments.count} betaling${data.openPayments.count > 1 ? 'en' : ''}`
+        : `${fmt(data.openPayments.total)} outstanding across ${data.openPayments.count} payment${data.openPayments.count > 1 ? 's' : ''}`,
+      detail: nl
+        ? 'Totaal openstaand bedrag. Bekijk de betalingenpagina voor details.'
+        : 'Total outstanding amount. See payments page for details.',
+      amount: fmt(data.openPayments.total),
+      href: '/admin/betalingen',
+      relevantPages: ['/admin', '/admin/betalingen'],
+    });
+  }
 
-  '/admin/activiteit': {
-    intro: 'View all recent activity and system changes as an audit log.',
-    actions: [
-      { label: 'Review recent changes', urgency: 'info', description: 'Check if recent changes by staff were executed correctly.' },
-    ],
-    questions: [
-      { q: 'What gets logged?', a: 'All important actions: booking changes, payments, customer changes, settings, login attempts.' },
-    ],
-  },
-};
+  // 11. Monthly summary (success/info)
+  if (data.monthlyRevenue > 0 || data.monthlyBookings > 0) {
+    suggestions.push({
+      id: 'monthly-summary',
+      urgency: 'success',
+      title: nl
+        ? `Deze maand: ${data.monthlyBookings} boekingen · ${fmt(data.monthlyRevenue)} ontvangen`
+        : `This month: ${data.monthlyBookings} bookings · ${fmt(data.monthlyRevenue)} received`,
+      detail: nl
+        ? 'Maandelijks overzicht van boekingen en ontvangen betalingen.'
+        : 'Monthly overview of bookings and received payments.',
+      href: '/admin',
+      relevantPages: ['/admin', '/admin/betalingen'],
+    });
+  }
 
-/* ═══════════════════════════════════════════════════
-   General FAQ (fallback)
-   ═══════════════════════════════════════════════════ */
-const FAQ_NL: QA[] = [
-  { q: 'Hoe kan ik mijn wachtwoord wijzigen?', a: 'Klik op het tandwiel-icoon linksboven → Wachtwoord wijzigen.' },
-  { q: 'Hoe wissel ik van taal?', a: 'Klik op het taalicoon (🌐) in de bovenste balk om te wisselen tussen NL en EN.' },
-  { q: 'Hoe werkt de zoekopdracht?', a: 'Gebruik Ctrl/Cmd+K of de zoekbalk bovenin. Je kunt zoeken op boekingsnummer, klantnaam, e-mail of caravan.' },
-  { q: 'Wat is de rolverdeling?', a: 'Admin heeft volledige toegang. Medewerker heeft beperkte toegang en ziet geen financiële gegevens of instellingen.' },
-  { q: 'Hoe pas ik de navigatie-volgorde aan?', a: 'Klik lang op een navigatie-item in de zijbalk en sleep het naar de gewenste positie.' },
-];
+  // 12. All clear!
+  if (suggestions.filter(s => s.urgency === 'critical' || s.urgency === 'warning').length === 0) {
+    suggestions.push({
+      id: 'all-clear',
+      urgency: 'success',
+      title: nl ? 'Alles op orde!' : 'All clear!',
+      detail: nl
+        ? 'Geen urgente zaken. Alle boekingen, betalingen en berichten zijn up-to-date.'
+        : 'No urgent matters. All bookings, payments, and messages are up-to-date.',
+      relevantPages: ['/admin'],
+    });
+  }
 
-const FAQ_EN: QA[] = [
-  { q: 'How do I change my password?', a: 'Click the gear icon at the top left → Change password.' },
-  { q: 'How do I switch languages?', a: 'Click the language icon (🌐) in the top bar to switch between NL and EN.' },
-  { q: 'How does search work?', a: 'Use Ctrl/Cmd+K or the search bar. You can search by booking number, customer name, email, or caravan.' },
-  { q: 'What are the roles?', a: 'Admin has full access. Staff has limited access and cannot see financial data or settings.' },
-  { q: 'How do I reorder navigation?', a: 'Long-press a navigation item in the sidebar and drag it to the desired position.' },
-];
+  return suggestions;
+}
 
 /* ═══════════════════════════════════════════════════
    Component
    ═══════════════════════════════════════════════════ */
-export default function AdminAssistant({ locale, pathname, open, onClose, onRestartTour }: Props) {
-  const [tab, setTab] = useState<'actions' | 'help'>('actions');
-  const [expandedAction, setExpandedAction] = useState<number | null>(null);
-  const [expandedQ, setExpandedQ] = useState<number | null>(null);
-  const [search, setSearch] = useState('');
+export default function AdminAssistant({ locale, pathname, open, onClose }: Props) {
+  const [data, setData] = useState<SuggestionData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'page'>('all');
   const panelRef = useRef<HTMLDivElement>(null);
 
   const nl = locale === 'nl';
-  const KB = nl ? KNOWLEDGE_NL : KNOWLEDGE_EN;
-  const faq = nl ? FAQ_NL : FAQ_EN;
 
-  // Find best matching page knowledge
-  const pageKey = useMemo(() => {
-    if (KB[pathname]) return pathname;
-    // Try parent path
-    const parent = pathname.replace(/\/[^/]+$/, '');
-    if (KB[parent]) return parent;
-    return '/admin';
-  }, [pathname, KB]);
+  // Fetch suggestions data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch('/api/admin/suggestions');
+      if (!res.ok) throw new Error();
+      setData(await res.json());
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const knowledge = KB[pageKey] || KB['/admin']!;
-
-  // Filter actions & questions by search
-  const filteredActions = useMemo(() => {
-    if (!search.trim()) return knowledge.actions;
-    const s = search.toLowerCase();
-    return knowledge.actions.filter(
-      (a) => a.label.toLowerCase().includes(s) || a.description.toLowerCase().includes(s)
-    );
-  }, [knowledge.actions, search]);
-
-  const filteredQuestions = useMemo(() => {
-    const allQ = [...knowledge.questions, ...faq];
-    if (!search.trim()) return allQ;
-    const s = search.toLowerCase();
-    return allQ.filter((q) => q.q.toLowerCase().includes(s) || q.a.toLowerCase().includes(s));
-  }, [knowledge.questions, faq, search]);
+  // Fetch on open
+  useEffect(() => {
+    if (open) {
+      fetchData();
+      setExpandedId(null);
+    }
+  }, [open, fetchData]);
 
   // Close on outside click
   useEffect(() => {
@@ -436,25 +354,25 @@ export default function AdminAssistant({ locale, pathname, open, onClose, onRest
         onClose();
       }
     };
-    // Delay to avoid closing immediately
-    const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 50);
+    const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 100);
     return () => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClick);
     };
   }, [open, onClose]);
 
-  // Reset state when opening or changing pages
-  useEffect(() => {
-    setExpandedAction(null);
-    setExpandedQ(null);
-    setSearch('');
-    setTab('actions');
-  }, [pathname, open]);
+  // Build suggestions
+  const suggestions = data ? buildSuggestions(data, nl) : [];
+
+  // Filter by current page relevance
+  const filtered = filter === 'page'
+    ? suggestions.filter(s => s.relevantPages.some(p => pathname.startsWith(p)))
+    : suggestions;
+
+  const criticalCount = suggestions.filter(s => s.urgency === 'critical').length;
+  const warningCount = suggestions.filter(s => s.urgency === 'warning').length;
 
   if (!open) return null;
-
-  const urgentCount = knowledge.actions.filter((a) => a.urgency === 'high').length;
 
   return (
     <AnimatePresence>
@@ -465,198 +383,176 @@ export default function AdminAssistant({ locale, pathname, open, onClose, onRest
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className="fixed top-14 right-3 sm:right-5 w-[340px] sm:w-[380px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-xl border border-border/60 z-[60] flex flex-col overflow-hidden"
+          className="fixed top-14 right-3 sm:right-5 w-[360px] sm:w-[400px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-xl border border-border/60 z-[60] flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-4.5 h-4.5" />
-              <span className="font-semibold text-sm">
-                {nl ? 'Smart Suggestions' : 'Smart Suggestions'}
-              </span>
-              {urgentCount > 0 && (
-                <span className="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
-                  {urgentCount} {nl ? 'urgent' : 'urgent'}
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="w-4.5 h-4.5" />
+              <span className="font-semibold text-sm">Smart Suggestions</span>
+              {criticalCount > 0 && (
+                <span className="bg-red-500/80 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                  {criticalCount}
+                </span>
+              )}
+              {warningCount > 0 && (
+                <span className="bg-amber-400/80 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                  {warningCount}
                 </span>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="p-1 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Page Intro */}
-          <div className="px-4 py-2.5 bg-violet-50/50 border-b border-border/30 text-xs text-muted leading-relaxed shrink-0">
-            {knowledge.intro}
-          </div>
-
-          {/* Tabs */}
-          <div className="flex border-b border-border/50 shrink-0">
-            <button
-              onClick={() => setTab('actions')}
-              className={`flex-1 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                tab === 'actions'
-                  ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-50/30'
-                  : 'text-muted hover:text-foreground'
-              }`}
-            >
-              <span className="flex items-center justify-center gap-1.5">
-                <Lightbulb className="w-3.5 h-3.5" />
-                {nl ? 'Acties' : 'Actions'}
-                {urgentCount > 0 && (
-                  <span className="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full font-semibold">
-                    {urgentCount}
-                  </span>
-                )}
-              </span>
-            </button>
-            <button
-              onClick={() => setTab('help')}
-              className={`flex-1 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                tab === 'help'
-                  ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-50/30'
-                  : 'text-muted hover:text-foreground'
-              }`}
-            >
-              <span className="flex items-center justify-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5" />
-                {nl ? 'Hulp & FAQ' : 'Help & FAQ'}
-              </span>
-            </button>
-          </div>
-
-          {/* Search */}
-          <div className="px-3 py-2 border-b border-border/30 shrink-0">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={nl ? 'Zoek acties of vragen...' : 'Search actions or questions...'}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-alt rounded-lg border border-border/50 focus:outline-none focus:ring-1 focus:ring-violet-500/30 text-foreground placeholder:text-muted"
-              />
+            <div className="flex items-center gap-1">
+              <button
+                onClick={fetchData}
+                disabled={loading}
+                className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                title={nl ? 'Vernieuw' : 'Refresh'}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex border-b border-border/50 shrink-0 bg-gray-50/50">
+            <button
+              onClick={() => setFilter('all')}
+              className={`flex-1 py-2 text-[11px] font-medium transition-colors cursor-pointer ${
+                filter === 'all' ? 'text-violet-700 border-b-2 border-violet-600' : 'text-muted hover:text-foreground'
+              }`}
+            >
+              {nl ? 'Alles' : 'All'} ({suggestions.length})
+            </button>
+            <button
+              onClick={() => setFilter('page')}
+              className={`flex-1 py-2 text-[11px] font-medium transition-colors cursor-pointer ${
+                filter === 'page' ? 'text-violet-700 border-b-2 border-violet-600' : 'text-muted hover:text-foreground'
+              }`}
+            >
+              {nl ? 'Deze pagina' : 'This page'} ({suggestions.filter(s => s.relevantPages.some(p => pathname.startsWith(p))).length})
+            </button>
           </div>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto overscroll-contain">
-            {tab === 'actions' && (
-              <div className="p-3 space-y-2">
-                {filteredActions.length === 0 && (
-                  <p className="text-xs text-muted text-center py-4">
-                    {nl ? 'Geen acties gevonden.' : 'No actions found.'}
-                  </p>
-                )}
-                {filteredActions.map((action, i) => {
-                  const u = URGENCY[action.urgency];
-                  const Icon = u.icon;
-                  const isExpanded = expandedAction === i;
+            {loading && !data && (
+              <div className="flex items-center justify-center gap-2 py-12 text-muted">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-xs">{nl ? 'Laden...' : 'Loading...'}</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="p-4 text-center text-xs text-red-600">
+                <AlertCircle className="w-5 h-5 mx-auto mb-2" />
+                {nl ? 'Kon suggesties niet laden.' : 'Could not load suggestions.'}
+                <button onClick={fetchData} className="block mx-auto mt-2 text-violet-600 underline cursor-pointer">
+                  {nl ? 'Opnieuw proberen' : 'Retry'}
+                </button>
+              </div>
+            )}
+
+            {!loading && !error && filtered.length === 0 && (
+              <div className="p-6 text-center text-xs text-muted">
+                <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-500" />
+                {nl ? 'Geen suggesties voor deze pagina.' : 'No suggestions for this page.'}
+              </div>
+            )}
+
+            {!error && filtered.length > 0 && (
+              <div className="p-2.5 space-y-1.5">
+                {filtered.map((s) => {
+                  const cfg = URGENCY_CONFIG[s.urgency];
+                  const Icon = cfg.icon;
+                  const isExpanded = expandedId === s.id;
+                  const hasDetails = s.items && s.items.length > 0;
+
                   return (
-                    <button
-                      key={i}
-                      onClick={() => setExpandedAction(isExpanded ? null : i)}
-                      className={`w-full text-left rounded-lg border ${u.border} ${u.bg} p-2.5 transition-all hover:shadow-sm cursor-pointer`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className={`mt-0.5 shrink-0 ${u.text}`}>
-                          <Icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs font-medium ${u.text}`}>
-                              {action.label}
-                            </span>
-                            <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
+                    <div key={s.id} className={`rounded-lg border ${cfg.border} ${cfg.bg} transition-all`}>
+                      <button
+                        onClick={() => hasDetails ? setExpandedId(isExpanded ? null : s.id) : undefined}
+                        className={`w-full text-left p-2.5 ${hasDetails ? 'cursor-pointer' : 'cursor-default'}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`mt-0.5 shrink-0 ${cfg.text}`}>
+                            <Icon className="w-3.5 h-3.5" />
                           </div>
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="overflow-hidden"
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-semibold ${cfg.text} leading-tight`}>
+                                {s.title}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-foreground/60 leading-relaxed">
+                              {s.detail}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                            {s.href && (
+                              <Link
+                                href={s.href}
+                                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                                className={`p-1 rounded hover:bg-white/60 transition-colors ${cfg.text}`}
+                                title={nl ? 'Ga naar' : 'Go to'}
                               >
-                                <p className="mt-1.5 text-[11px] text-foreground/70 leading-relaxed">
-                                  {action.description}
-                                </p>
-                              </motion.div>
+                                <ExternalLink className="w-3 h-3" />
+                              </Link>
                             )}
-                          </AnimatePresence>
+                            {hasDetails && (
+                              <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            )}
+                          </div>
                         </div>
-                        <ChevronDown
-                          className={`w-3.5 h-3.5 text-muted shrink-0 mt-0.5 transition-transform ${
-                            isExpanded ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      </button>
 
-            {tab === 'help' && (
-              <div className="p-3 space-y-2">
-                {filteredQuestions.length === 0 && (
-                  <p className="text-xs text-muted text-center py-4">
-                    {nl ? 'Geen vragen gevonden.' : 'No questions found.'}
-                  </p>
-                )}
-                {filteredQuestions.map((qa, i) => {
-                  const isExpanded = expandedQ === i;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => setExpandedQ(isExpanded ? null : i)}
-                      className="w-full text-left rounded-lg border border-border/50 bg-surface-alt/30 hover:bg-surface-alt p-2.5 transition-all cursor-pointer"
-                    >
-                      <div className="flex items-start gap-2">
-                        <ChevronRight
-                          className={`w-3.5 h-3.5 text-muted shrink-0 mt-0.5 transition-transform ${
-                            isExpanded ? 'rotate-90' : ''
-                          }`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium text-foreground">{qa.q}</span>
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="overflow-hidden"
-                              >
-                                <p className="mt-1.5 text-[11px] text-foreground/70 leading-relaxed">
-                                  {qa.a}
-                                </p>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                    </button>
+                      {/* Expanded detail items */}
+                      <AnimatePresence>
+                        {isExpanded && s.items && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-2.5 pb-2.5 pt-0">
+                              <div className="bg-white/60 rounded-md border border-white/80 divide-y divide-border/30">
+                                {s.items.map((item, j) => (
+                                  <div key={j} className="px-2.5 py-1.5 flex items-center justify-between">
+                                    <span className="text-[11px] font-medium text-foreground/80 truncate">{item.label}</span>
+                                    <span className="text-[10px] text-muted shrink-0 ml-2">{item.sub}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
               </div>
             )}
           </div>
 
-          {/* Footer: restart tour */}
-          <div className="px-3 py-2.5 border-t border-border/40 bg-gray-50/50 shrink-0">
-            <button
-              onClick={() => { onRestartTour(); onClose(); }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              {nl ? 'Tutorial opnieuw starten' : 'Restart tutorial'}
-            </button>
-          </div>
+          {/* Footer: last update + stats */}
+          {data && !error && (
+            <div className="px-3 py-2 border-t border-border/40 bg-gray-50/50 shrink-0 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-[10px] text-muted">
+                <span className="flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  {nl ? 'Deze maand' : 'This month'}: {data.monthlyBookings} {nl ? 'boekingen' : 'bookings'}
+                </span>
+              </div>
+              {loading && <Loader2 className="w-3 h-3 animate-spin text-muted" />}
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
