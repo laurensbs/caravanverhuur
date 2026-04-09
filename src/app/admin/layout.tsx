@@ -28,6 +28,7 @@ import {
   ClipboardList,
   MessageCircle,
   HelpCircle,
+  Sparkles,
   ChevronRight,
   ChevronLeft,
   Tent,
@@ -1103,6 +1104,7 @@ function AdminLayoutInner({
   const [settingsShowNew, setSettingsShowNew] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
   const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
   const [badges, setBadges] = useState<Record<string, number>>({});
   const prevBadgesRef = useRef<Record<string, number>>({});
@@ -1826,6 +1828,15 @@ function AdminLayoutInner({
             >
               <HelpCircle className="w-4.5 h-4.5" />
             </button>
+
+            {/* Smart Assistant */}
+            <button
+              onClick={() => setShowAssistant(!showAssistant)}
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${showAssistant ? 'bg-sky-100 text-sky-600' : 'text-muted hover:bg-surface-alt hover:text-foreground'}`}
+              aria-label={locale === 'nl' ? 'Assistent' : 'Assistant'}
+            >
+              <Sparkles className="w-4.5 h-4.5" />
+            </button>
           </div>
 
           {/* Row 2: page title + page actions */}
@@ -2169,6 +2180,8 @@ function AdminLayoutInner({
       <AdminAssistant
         locale={locale as 'nl' | 'en'}
         pathname={pathname}
+        open={showAssistant}
+        onClose={() => setShowAssistant(false)}
       />
     </div>
   );

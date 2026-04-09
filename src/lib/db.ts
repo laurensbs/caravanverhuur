@@ -18,7 +18,18 @@ function sql(strings: TemplateStringsArray, ...values: any[]) {
 
 // ===== DATABASE SETUP =====
 
+let _dbSetupDone = false;
+let _dbSetupPromise: Promise<unknown> | null = null;
+
 export async function setupDatabase() {
+  if (_dbSetupDone) return;
+  if (_dbSetupPromise) return _dbSetupPromise;
+  _dbSetupPromise = _setupDatabaseInner();
+  await _dbSetupPromise;
+  _dbSetupDone = true;
+}
+
+async function _setupDatabaseInner() {
   // Bookings table
   await sql`
     CREATE TABLE IF NOT EXISTS bookings (

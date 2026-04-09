@@ -182,6 +182,8 @@ const GENERAL_EN: QA[] = [
 type Props = {
   locale: 'nl' | 'en';
   pathname: string;
+  open: boolean;
+  onClose: () => void;
 };
 
 interface Message {
@@ -190,8 +192,7 @@ interface Message {
   text: string;
 }
 
-export default function AdminAssistant({ locale, pathname }: Props) {
-  const [open, setOpen] = useState(false);
+export default function AdminAssistant({ locale, pathname, open, onClose }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const msgEndRef = useRef<HTMLDivElement>(null);
@@ -292,22 +293,6 @@ export default function AdminAssistant({ locale, pathname }: Props) {
 
   return (
     <>
-      {/* Floating button */}
-      <AnimatePresence>
-        {!open && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            onClick={() => setOpen(true)}
-            className="fixed bottom-5 right-5 z-50 w-12 h-12 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center cursor-pointer active:scale-95 transition-shadow"
-            aria-label={labels.title}
-          >
-            <Sparkles className="w-5 h-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
       {/* Chat panel */}
       <AnimatePresence>
         {open && (
@@ -327,7 +312,7 @@ export default function AdminAssistant({ locale, pathname }: Props) {
                 <h3 className="text-white font-semibold text-sm">{labels.title}</h3>
                 <p className="text-white/70 text-[10px]">{isNl ? 'Hulp bij het adminportaal' : 'Admin portal help'}</p>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
