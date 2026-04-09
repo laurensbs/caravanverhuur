@@ -241,14 +241,6 @@ export default function DriverLayout({ children }: { children: ReactNode }) {
     setPwLoading(false);
   };
 
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
   if (!authenticated || !driver) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">

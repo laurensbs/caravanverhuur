@@ -44,9 +44,11 @@ import {
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
-import AdminHelpGuide from '@/components/AdminHelpGuide';
-import AdminAssistant from '@/components/AdminAssistant';
+import dynamic from 'next/dynamic';
 import { ToastProvider, useToast } from '@/components/AdminToast';
+
+const AdminHelpGuide = dynamic(() => import('@/components/AdminHelpGuide'), { ssr: false });
+const AdminAssistant = dynamic(() => import('@/components/AdminAssistant'), { ssr: false });
 
 /* ── Credentials ─────────────────────────────────── */
 // Credentials are now server-side only (src/lib/admin-auth.ts)
@@ -354,15 +356,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }
     setDriverLoading(false);
   };
-
-  /* ── Loading state while checking auth ──────────── */
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-foreground border-t-transparent" />
-      </div>
-    );
-  }
 
   /* ── Login Screen ───────────────────────────────── */
   if (!authenticated) {

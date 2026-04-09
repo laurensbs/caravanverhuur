@@ -33,10 +33,16 @@ export function LayoutWrapper({
   const pathname = usePathname();
 
   const isAdmin = pathname.startsWith('/admin') || isAdminSubdomain;
+  const isDriver = pathname.startsWith('/chauffeur');
   const isBorg = pathname.startsWith('/borg');
 
   // Admin pages: no header/footer/cookie, no LanguageProvider
   if (isAdmin) {
+    return <>{children}</>;
+  }
+
+  // Driver pages: own layout, no header/footer/cookie/dataProvider
+  if (isDriver) {
     return <>{children}</>;
   }
 
