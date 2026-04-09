@@ -1121,6 +1121,7 @@ function AdminLayoutInner({
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const hoverExpandedRef = useRef(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1267,6 +1268,19 @@ function AdminLayoutInner({
     const next = !sidebarOpen;
     setSidebarOpen(next);
     localStorage.setItem('admin_sidebar_open', String(next));
+    hoverExpandedRef.current = false;
+  };
+
+  const handleSidebarMouseEnter = () => {
+    if (isMobile || sidebarOpen) return;
+    hoverExpandedRef.current = true;
+    setSidebarOpen(true);
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (isMobile || !hoverExpandedRef.current) return;
+    hoverExpandedRef.current = false;
+    setSidebarOpen(false);
   };
 
   // Fetch badge counts periodically & trigger notifications on changes
@@ -1443,6 +1457,7 @@ function AdminLayoutInner({
           const next = !sidebarOpen;
           setSidebarOpen(next);
           localStorage.setItem('admin_sidebar_open', String(next));
+          hoverExpandedRef.current = false;
         }
       }
     };
@@ -1467,6 +1482,8 @@ function AdminLayoutInner({
 
       {/* Sidebar */}
       <aside
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
         className={`fixed inset-y-0 left-0 z-50 bg-[#F1F5F9] text-foreground flex flex-col h-screen transition-all duration-300 ease-in-out border-r border-border ${
           isMobile
             ? `w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
