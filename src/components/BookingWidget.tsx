@@ -314,9 +314,9 @@ export default function BookingWidget() {
           </button>
           <span className="w-10 text-center text-base font-bold tabular-nums">{adults}</span>
           <button
-            onClick={() => setAdults(Math.min(6, adults + 1))}
+            onClick={() => setAdults(Math.min(4 - children, adults + 1))}
             className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
-            disabled={adults >= 6}
+            disabled={adults + children >= 4}
           >
             <Plus size={14} />
           </button>
@@ -338,9 +338,9 @@ export default function BookingWidget() {
           </button>
           <span className="w-10 text-center text-base font-bold tabular-nums">{children}</span>
           <button
-            onClick={() => setChildren(Math.min(6, children + 1))}
+            onClick={() => setChildren(Math.min(4 - adults, children + 1))}
             className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center transition-colors hover:border-foreground disabled:opacity-30 disabled:hover:border-gray-200 cursor-pointer"
-            disabled={children >= 6}
+            disabled={adults + children >= 4}
           >
             <Plus size={14} />
           </button>
