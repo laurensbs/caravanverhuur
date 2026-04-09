@@ -1,437 +1,664 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageCircle,
   X,
-  Send,
-  Sparkles,
   Lightbulb,
-  ArrowRight,
+  MessageCircle,
+  RotateCcw,
+  ChevronDown,
   ChevronRight,
+  AlertTriangle,
+  Info,
+  CheckCircle2,
+  Search,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════
-   Knowledge base — contextual help per admin page
+   Types
    ═══════════════════════════════════════════════════ */
+type SmartAction = {
+  label: string;
+  urgency: 'high' | 'medium' | 'info';
+  description: string;
+};
 
 type QA = { q: string; a: string };
 
-const KNOWLEDGE_NL: Record<string, { intro: string; questions: QA[] }> = {
-  '/admin': {
-    intro: 'Dit is het dashboard — je startpagina met een overzicht van alles wat er speelt.',
-    questions: [
-      { q: 'Wat moet ik hier doen?', a: 'Controleer dagelijks de openstaande taken, nieuwe berichten en verlopen betalingen. Klik op een statistiekkaart om direct naar die pagina te gaan.' },
-      { q: 'Wat betekenen de rode badges?', a: 'Rode badges geven dringende acties aan — bijvoorbeeld onbeantwoorde berichten of betalingen die verlopen zijn. Pak deze als eerste op.' },
-      { q: 'Hoe exporteer ik data?', a: 'Klik op de "Exporteer" knop (alleen zichtbaar voor admin-accounts). Je kunt boekingen, betalingen en klantgegevens exporteren als CSV.' },
-      { q: 'Wat is het verschil tussen admin en staff?', a: 'Admin heeft volledige toegang (inclusief betalingen, caravans, campings, kortingscodes en export). Staff kan boekingen, planning, borg, berichten en chat beheren, maar geen financiële gegevens zien.' },
-    ],
-  },
-  '/admin/planning': {
-    intro: 'De planning toont alle boekingen als takenlijsten. Werk de 5 stappen per boeking in volgorde af.',
-    questions: [
-      { q: 'Wat zijn de 5 stappen?', a: '1. Klaarmaken — Caravan schoonmaken, beddengoed, gas en inventaris checken.\n2. Borgcheck (intern) — Checklist doorlopen vóór vertrek, klant krijgt borgmail.\n3. Bezorgen (15:00) — Caravan naar camping rijden, luifel/gas/stroom aansluiten.\n4. Ophalen (10:00) — Borgcheck met klant, caravan opruimen en terugrijden.\n5. Eindcontrole — Schade en inventaris controleren na terugkomst.' },
-      { q: 'Waarom kan ik een taak niet aanklikken?', a: 'Taken zijn vergrendeld (grijs) totdat de vorige stap is afgerond. Rond eerst de eerdere taak af door op het statusbolletje te klikken.' },
-      { q: 'Hoe wijs ik een chauffeur toe?', a: 'Klik op de taaknaam (bijv. "Bezorgen") om het detailscherm te openen. Daar kun je een chauffeur selecteren uit de lijst of handmatig invoeren.' },
-      { q: 'Wat is de Transport-weergave?', a: 'De Transport-tab toont alleen bezorgingen en ophaalacties, gesorteerd op datum. Ideaal om een dagplanning voor chauffeurs te maken.' },
-      { q: 'Wat is Holded?', a: 'Holded is het boekhoudsysteem. Bij elke betaalde betaling moet je een factuur aanmaken in Holded. Klik op het Holded-item om te markeren dat dit gedaan is.' },
-      { q: 'Wat betekent het ⚠️ icoon?', a: 'Een knipperend ⚠️ icoon betekent dat een taak vandaag af moet of al te laat is. Pak deze als eerste op.' },
-    ],
-  },
-  '/admin/boekingen': {
-    intro: 'Hier beheer je alle boekingen. Je kunt zoeken, filteren en telefonische boekingen aanmaken.',
-    questions: [
-      { q: 'Hoe maak ik een telefonische boeking?', a: 'Klik op "Nieuwe boeking" rechtsboven. Vul klantgegevens in, kies caravan + camping, selecteer data. Na aanmaken krijgt de klant een betaalmail. Heeft de klant geen account? Dat wordt automatisch aangemaakt.' },
-      { q: 'Wat betekenen de kleuren?', a: 'Groen = bevestigd (betaald), Oranje = in afwachting (nog niet betaald), Rood = geannuleerd.' },
-      { q: 'Hoe annuleer ik een boeking?', a: 'Open de boeking, scroll naar beneden en klik op "Annuleren". Bij annulering > 30 dagen voor aankomst krijgt de klant automatisch een volledige terugbetaling.' },
-      { q: 'Hoe deel ik de betaallink?', a: 'Open de boeking en kopieer de betaallink . Je kunt deze via WhatsApp of e-mail delen met de klant.' },
-    ],
-  },
-  '/admin/betalingen': {
-    intro: 'Overzicht van alle betalingen. Alleen zichtbaar voor admin-accounts.',
-    questions: [
-      { q: 'Hoe doe ik een terugbetaling?', a: 'Open de boeking via de boekingenpagina, scroll naar betalingen en klik op "Terugbetalen". Alleen betalingen met status BETAALD kunnen terugbetaald worden. Het bedrag wordt via Stripe verwerkt (5-10 werkdagen).' },
-      { q: 'Wat zijn de betalingstypen?', a: 'AANBETALING = 25% bij boeking via iDEAL/Wero. BORG = €400 borgsom op de camping. BORG_RETOUR = borg terugbetaling na inspectie.' },
-      { q: 'Wat als een betaling verlopen is?', a: 'Verlopen betalingen (rood) betekenen dat de klant niet op tijd heeft betaald. De boeking wordt automatisch geannuleerd. Je kunt via boekingen een nieuwe betaallink versturen.' },
-    ],
-  },
-  '/admin/borg': {
-    intro: 'Beheer borgchecklists en voer inspecties uit op locatie.',
-    questions: [
-      { q: 'Hoe voer ik een inspectie uit?', a: 'Klik op "Mobiel Inspecteren" bij de boeking. De wizard opent fullscreen op je telefoon. Loop alle items af, markeer als Goed/Beschadigd/Ontbreekt, maak foto\'s bij schade, en laat de klant tekenen.' },
-      { q: 'Wanneer doe ik een borgcheck?', a: 'Bij vertrek (voordat je de caravan wegbrengt) en bij ophalen (samen met de klant op de camping).' },
-      { q: 'Hoe betaal ik borg terug?', a: 'Na een goede inspectie kun je via de borgpagina de volledige borg terugbetalen. Bij schade kun je een gedeeltelijke terugbetaling doen en het schadebedrag inhouden.' },
-    ],
-  },
-  '/admin/berichten': {
-    intro: 'Inkomende berichten van het contactformulier op de website.',
-    questions: [
-      { q: 'Hoe beantwoord ik een bericht?', a: 'Kopieer het e-mailadres van de afzender en stuur direct een e-mail. Of bel de klant als er een telefoonnummer is vermeld.' },
-      { q: 'Wat is een campingaanvraag?', a: 'Als een klant een camping aanvraagt die niet in de lijst staat, komt dat hier binnen als "Campingaanvraag". Als de camping geschikt is, kun je deze toevoegen via de Campings-pagina.' },
-    ],
-  },
-  '/admin/chat': {
-    intro: 'Live chatgesprekken met bezoekers op de website.',
-    questions: [
-      { q: 'Hoe beantwoord ik een chat?', a: 'Klik op het gesprek links, typ je antwoord onderaan en druk op Enter. Bezoekers verwachten snel antwoord!' },
-      { q: 'Worden chats bewaard?', a: 'Ja, maar oude chats worden na 30 dagen automatisch verwijderd.' },
-    ],
-  },
-  '/admin/caravans': {
-    intro: 'Beheer de caravans voor verhuur. Alleen voor admin-accounts.',
-    questions: [
-      { q: 'Hoe voeg ik een caravan toe?', a: 'Klik op "Nieuwe caravan", vul naam, beschrijving, capaciteit en prijs in. Upload minstens 5 foto\'s. De eerste foto wordt de hoofdfoto op de website.' },
-      { q: 'Wat als ik een caravan tijdelijk wil uitschakelen?', a: 'Zet de caravan op "Inactief". De caravan verdwijnt van de website maar de data blijft behouden.' },
-    ],
-  },
-  '/admin/campings': {
-    intro: 'Beheer de campings waar caravans geplaatst worden. Alleen voor admin-accounts.',
-    questions: [
-      { q: 'Hoe wijzig ik de volgorde?', a: 'Sleep campings naar boven of beneden om de volgorde aan te passen. Dit is ook de volgorde op de website.' },
-      { q: 'Hoe importeer ik campings?', a: 'Bij eerste gebruik kun je de standaard 30 Costa Brava campings importeren met één klik.' },
-    ],
-  },
-  '/admin/kortingscodes': {
-    intro: 'Maak en beheer kortingscodes voor klanten. Alleen voor admin-accounts.',
-    questions: [
-      { q: 'Hoe maak ik een code aan?', a: 'Klik op "Nieuwe code", vul de code in (bijv. ZOMER2025), kies percentage of vast bedrag, stel optioneel een vervaldatum in, en sla op.' },
-    ],
-  },
-  '/admin/nieuwsbrieven': {
-    intro: 'Beheer nieuwsbrief-abonnees en verstuur nieuwsbrieven.',
-    questions: [
-      { q: 'Hoe verstuur ik een nieuwsbrief?', a: 'Klik op "Nieuwe nieuwsbrief", schrijf de inhoud, voeg optioneel foto\'s toe. Je kunt direct versturen of inplannen voor later. Tip: stuur maximaal 1-2 per maand.' },
-    ],
-  },
-  '/admin/prijzen': {
-    intro: 'Beheer seizoensprijzen, vroegboekkorting en last-minute deals. Alleen voor admin-accounts.',
-    questions: [
-      { q: 'Hoe werken seizoensprijzen?', a: 'Maak een regel met start/einddatum en percentage. Positief = toeslag (bijv. +20% hoogseizoen), negatief = korting (bijv. -10% laagseizoen). Regels worden automatisch toegepast.' },
-      { q: 'Kan ik meerdere regels combineren?', a: 'Ja! Seizoensprijzen, vroegboekkorting en last-minute kunnen tegelijk actief zijn. Hogere prioriteit wordt eerst toegepast.' },
-    ],
-  },
-  '/admin/activiteit': {
-    intro: 'Chronologisch overzicht van alle acties in het systeem.',
-    questions: [
-      { q: 'Wat wordt gelogd?', a: 'Nieuwe boekingen, statuswijzigingen, betalingen, terugbetalingen, borginspecties, wijzigingen aan caravans/campings, en admin/staff acties.' },
-    ],
-  },
-  '/admin/klanten': {
-    intro: 'Overzicht van alle klantaccounts.',
-    questions: [
-      { q: 'Worden accounts automatisch aangemaakt?', a: 'Ja, bij elke boeking (online of telefonisch) wordt automatisch een account aangemaakt als het e-mailadres nog niet bestaat.' },
-    ],
-  },
+type PageKnowledge = {
+  intro: string;
+  actions: SmartAction[];
+  questions: QA[];
 };
-
-const KNOWLEDGE_EN: Record<string, { intro: string; questions: QA[] }> = {
-  '/admin': {
-    intro: 'This is the dashboard — your home page with an overview of everything happening.',
-    questions: [
-      { q: 'What should I do here?', a: 'Check daily for open tasks, new messages and overdue payments. Click a stat card to go directly to that page.' },
-      { q: 'What do the red badges mean?', a: 'Red badges indicate urgent actions — for example unanswered messages or overdue payments. Handle these first.' },
-      { q: 'How do I export data?', a: 'Click the "Export" button (only visible for admin accounts). You can export bookings, payments, and customer data as CSV.' },
-    ],
-  },
-  '/admin/planning': {
-    intro: 'The planning shows all bookings as task lists. Complete 5 steps per booking in order.',
-    questions: [
-      { q: 'What are the 5 steps?', a: '1. Prepare — Clean caravan, check bedding, gas and inventory.\n2. Deposit check — Complete checklist before departure, customer gets deposit email.\n3. Deliver (15:00) — Drive caravan to campsite, set up awning/gas/electricity.\n4. Pick up (10:00) — Deposit check with customer, clear caravan and drive back.\n5. Final inspection — Check for damage and inventory after return.' },
-      { q: 'Why is a task greyed out?', a: 'Tasks are locked until the previous step is completed. Complete the earlier task first by clicking its status circle.' },
-      { q: 'How do I assign a driver?', a: 'Click the task name (e.g. "Deliver") to open the detail screen. There you can select a driver from the list or enter one manually.' },
-      { q: 'What is Holded?', a: 'Holded is the accounting system. For each paid payment, you need to create an invoice in Holded. Click the Holded item to mark it as done.' },
-    ],
-  },
-  '/admin/boekingen': {
-    intro: 'Manage all bookings. Search, filter, and create phone bookings.',
-    questions: [
-      { q: 'How do I create a phone booking?', a: 'Click "New booking" top-right. Fill in customer details, choose caravan + campsite, select dates. The customer will receive a payment email. No account? One is created automatically.' },
-      { q: 'What do the colors mean?', a: 'Green = confirmed (paid), Orange = pending (not yet paid), Red = cancelled.' },
-    ],
-  },
-  '/admin/borg': {
-    intro: 'Manage deposit checklists and perform inspections on location.',
-    questions: [
-      { q: 'How do I perform an inspection?', a: 'Click "Mobile Inspect" on the booking. The wizard opens fullscreen on your phone. Check all items, mark as Good/Damaged/Missing, take photos for damage, and have the customer sign.' },
-      { q: 'How do I refund a deposit?', a: 'After a good inspection, you can refund the full deposit via the deposit page. For damage, you can do a partial refund.' },
-    ],
-  },
-};
-
-/* ═══════════════════════════════════════════════════
-   General FAQ (not tied to a page)
-   ═══════════════════════════════════════════════════ */
-const GENERAL_NL: QA[] = [
-  { q: 'Hoe werkt het betalingssysteem?', a: 'Het systeem werkt met een aanbetaling van 25% bij boeking (via iDEAL/Wero). De borg (€400) wordt op de camping afgehandeld. De restbetaling (75%) volgt direct na ontvangst van de borg.' },
-  { q: 'Hoe sla ik het admin-paneel op als app?', a: 'iPhone: open in Safari → Deel-icoon → "Zet op beginscherm". Android: open in Chrome → ⋮ → "Toevoegen aan startscherm".' },
-  { q: 'Pagina laadt niet, wat nu?', a: 'Ververs de pagina (Cmd+R of Ctrl+R). Als het probleem aanhoudt, probeer de cache te legen of een ander apparaat.' },
-  { q: 'Hoe zoek ik snel iets?', a: 'Druk op Cmd+K (Mac) of Ctrl+K (Windows) om de globale zoekbalk te openen. Je kunt zoeken op pagina\'s, boekingen en meer.' },
-];
-
-const GENERAL_EN: QA[] = [
-  { q: 'How does the payment system work?', a: 'The system uses a 25% down payment at booking (via iDEAL/Wero). The deposit (€400) is handled at the campsite. The remaining payment (75%) follows directly after receiving the deposit.' },
-  { q: 'How do I save the admin panel as an app?', a: 'iPhone: open in Safari → Share icon → "Add to Home Screen". Android: open in Chrome → ⋮ → "Add to Home screen".' },
-  { q: 'Page won\'t load, what now?', a: 'Refresh the page (Cmd+R or Ctrl+R). If the problem persists, try clearing the cache or using a different device.' },
-];
-
-/* ═══════════════════════════════════════════════════
-   Component
-   ═══════════════════════════════════════════════════ */
 
 type Props = {
   locale: 'nl' | 'en';
   pathname: string;
   open: boolean;
   onClose: () => void;
+  onRestartTour: () => void;
 };
 
-interface Message {
-  id: number;
-  role: 'assistant' | 'user';
-  text: string;
-}
+/* ─── urgency colours ─── */
+const URGENCY = {
+  high: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: AlertTriangle, dot: 'bg-red-500' },
+  medium: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: Info, dot: 'bg-amber-500' },
+  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: CheckCircle2, dot: 'bg-blue-500' },
+};
 
-export default function AdminAssistant({ locale, pathname, open, onClose }: Props) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const msgEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const isNl = locale !== 'en';
+/* ═══════════════════════════════════════════════════
+   Knowledge base — DUTCH
+   ═══════════════════════════════════════════════════ */
+const KNOWLEDGE_NL: Record<string, PageKnowledge> = {
+  '/admin': {
+    intro: 'Het dashboard geeft een overzicht van alle belangrijke gegevens: openstaande boekingen, betalingen, berichten en recente activiteit.',
+    actions: [
+      { label: 'Controleer openstaande betalingen', urgency: 'high', description: 'Ga naar Betalingen en controleer of er onbetaalde facturen zijn. Stuur herinneringen voor facturen die meer dan 7 dagen openstaan.' },
+      { label: 'Bekijk nieuwe boekingen', urgency: 'medium', description: 'Controleer of nieuwe boekingen correct zijn aangemaakt en of locaties & data kloppen.' },
+      { label: 'Lees ongelezen berichten', urgency: 'medium', description: 'Beantwoord klantberichten binnen 24 uur voor een goede klanttevredenheid.' },
+      { label: 'Bekijk de planning voor komende week', urgency: 'info', description: 'Check aankomsten en vertrekken voor de komende 7 dagen ter voorbereiding.' },
+    ],
+    questions: [
+      { q: 'Hoe werkt het dashboard?', a: 'Het dashboard toont samenvattingen (boekingen, inkomsten, berichten). Klik op een kaart om naar de detailpagina te gaan.' },
+      { q: 'Wat betekenen de kleuren?', a: 'Groen = alles in orde, Oranje = aandacht nodig, Rood = urgent. De badges op de navigatie tonen aantallen.' },
+      { q: 'Hoe kan ik snel zoeken?', a: 'Gebruik de zoekbalk bovenin (Ctrl/Cmd+K) om snel boekingen, klanten of caravans te vinden.' },
+    ],
+  },
 
-  // Determine current page knowledge
-  const knowledge = isNl ? KNOWLEDGE_NL : KNOWLEDGE_EN;
-  const general = isNl ? GENERAL_NL : GENERAL_EN;
+  '/admin/planning': {
+    intro: 'De planning toont alle boekingen op een visuele tijdlijn per caravan. Gebruik het om beschikbaarheid te controleren en conflicten te voorkomen.',
+    actions: [
+      { label: 'Controleer overlappende boekingen', urgency: 'high', description: 'Zoek naar boekingen die overlappen op dezelfde caravan. Dit moet direct opgelost worden.' },
+      { label: 'Bevestig aanstaande aankomsten', urgency: 'medium', description: 'Controleer of alle voorbereidingen klaar zijn voor gasten die deze week aankomen.' },
+      { label: 'Bekijk schoonmaakplanning', urgency: 'info', description: 'Zorg dat er voldoende tijd zit tussen vertrek en aankomst voor schoonmaak (minimaal 1 dag).' },
+    ],
+    questions: [
+      { q: 'Hoe maak ik een boeking aan?', a: 'Ga naar Boekingen → Nieuwe boeking. Selecteer caravan, camping, data en vul klantgegevens in.' },
+      { q: 'Hoe wijzig ik een boeking?', a: 'Klik op een boeking in de planning of boekingslijst. Pas de gewenste velden aan en sla op.' },
+      { q: 'Wat als er een overlap is?', a: 'Het systeem waarschuwt bij overlappingen. Los het op door een boeking te verplaatsen of een andere caravan toe te wijzen.' },
+    ],
+  },
 
-  // Match current page — try exact match, then prefix match
-  const pageKey = Object.keys(knowledge).find(k => pathname === k || pathname.startsWith(k + '/')) || '/admin';
-  const pageKnowledge = knowledge[pageKey] || knowledge['/admin'];
+  '/admin/boekingen': {
+    intro: 'Hier beheer je alle boekingen. Je kunt zoeken, filteren, en de voortgang van elke boeking volgen.',
+    actions: [
+      { label: 'Verwerk nieuwe boekingen', urgency: 'high', description: 'Nieuwe boekingen moeten bevestigd of geweigerd worden. Controleer beschikbaarheid en stuur een bevestigingsmail.' },
+      { label: 'Controleer incomplete boekingen', urgency: 'medium', description: 'Sommige boekingen missen mogelijk klantgegevens, camping-info of betalingen. Vul ontbrekende data aan.' },
+      { label: 'Check aankomende check-ins', urgency: 'medium', description: 'Boekingen met check-in deze week: stuur aankomstinformatie naar de gast (adres, sleutels, regels).' },
+      { label: 'Archiveer verlopen boekingen', urgency: 'info', description: 'Boekingen die volledig afgerond zijn (vertrokken + betaald + borg terug) kunnen gearchiveerd worden.' },
+    ],
+    questions: [
+      { q: 'Hoe maak ik een nieuwe boeking?', a: 'Klik op "Nieuwe boeking" rechtsboven. Vul alle verplichte velden in: caravan, camping, periode, klant.' },
+      { q: 'Hoe annuleer ik een boeking?', a: 'Open de boeking, klik op "Annuleren". Het systeem berekent automatisch de annuleringskosten volgens de voorwaarden.' },
+      { q: 'Hoe stuur ik een factuur?', a: 'In de boekingsdetails klik je op "Factuur versturen". De factuur wordt automatisch gegenereerd en verstuurd.' },
+      { q: 'Wat betekenen de statusopties?', a: 'Nieuw = nog niet bevestigd, Bevestigd = goedgekeurd, Betaald = volledige betaling ontvangen, Geannuleerd = geannuleerd, Afgerond = na vertrek.' },
+    ],
+  },
 
-  // Reset messages when page changes
+  '/admin/betalingen': {
+    intro: 'Overzicht van alle betalingen, facturen en openstaande bedragen. Volg betalingen en stuur herinneringen.',
+    actions: [
+      { label: 'Stuur herinneringen voor openstaande facturen', urgency: 'high', description: 'Facturen die > 7 dagen openstaan moeten een herinnering krijgen. Check de vervaldatums.' },
+      { label: 'Markeer ontvangen betalingen', urgency: 'medium', description: 'Controleer je bankafschriften en markeer handmatig ontvangen betalingen als "betaald".' },
+      { label: 'Reconcilieer Stripe-betalingen', urgency: 'info', description: 'Online betalingen via Stripe worden automatisch bijgewerkt. Controleer of alles gesynchroniseerd is.' },
+    ],
+    questions: [
+      { q: 'Hoe registreer ik een handmatige betaling?', a: 'Bij de boeking kun je "Betaling toevoegen" kiezen. Vul het bedrag in en selecteer de betaalmethode (bank/contant).' },
+      { q: 'Hoe werkt Stripe?', a: 'Stripe verwerkt online betalingen automatisch. De status wordt bijgewerkt zodra de betaling is afgerond.' },
+      { q: 'Hoe maak ik een terugbetaling?', a: 'Bij Stripe-betalingen kun je via het Stripe-dashboard een terugbetaling initiëren. Voor handmatige betalingen registreer je dit handmatig.' },
+    ],
+  },
+
+  '/admin/borg': {
+    intro: 'Beheer waarborgkeuringen: stuur borgformulieren, bekijk schade-inspecties en verwerk borgretouren.',
+    actions: [
+      { label: 'Verwerk openstaande borginspecties', urgency: 'high', description: 'Na terugkomst van gasten moeten borginspecties zo snel mogelijk verwerkt worden.' },
+      { label: 'Stuur borgformulieren voor aanstaande boekingen', urgency: 'medium', description: 'Gasten die binnenkort aankomen moeten hun borgformulier al ontvangen hebben.' },
+      { label: 'Retourneer borg na goedkeuring', urgency: 'info', description: 'Als de inspectie in orde is, retourneer de borg binnen 14 dagen na vertrek.' },
+    ],
+    questions: [
+      { q: 'Hoe stuur ik een borgformulier?', a: 'Bij de boeking klik je op "Borgformulier verzenden". De gast ontvangt een e-mail met een link om de borg af te handelen.' },
+      { q: 'Wat bij schade?', a: 'Bij schade: documenteer met foto\'s in de inspectie, bereken het schadebedrag en trek dit af van de borg voordat je retourneert.' },
+    ],
+  },
+
+  '/admin/berichten': {
+    intro: 'Alle klantcommunicatie op één plek. Bekijk, beantwoord en beheer berichten.',
+    actions: [
+      { label: 'Beantwoord ongelezen berichten', urgency: 'high', description: 'Onbeantwoorde berichten ouder dan 24 uur moeten met spoed opgepakt worden.' },
+      { label: 'Check automatische mails', urgency: 'info', description: 'Verifieer dat automatische bevestigingsmails en herinneringen correct verzonden worden.' },
+    ],
+    questions: [
+      { q: 'Hoe beantwoord ik een bericht?', a: 'Klik op het bericht om het te openen en type je antwoord. Het wordt verstuurd naar het e-mailadres van de klant.' },
+      { q: 'Kan ik templates gebruiken?', a: 'Ja, veelgebruikte antwoorden kun je opslaan als template en hergebruiken bij vergelijkbare vragen.' },
+    ],
+  },
+
+  '/admin/chat': {
+    intro: 'Live chatberichten van de website. Beantwoord real-time vragen van bezoekers.',
+    actions: [
+      { label: 'Beantwoord actieve chats', urgency: 'high', description: 'Open chats wachten op een reactie. Reageer binnen 5 minuten voor de beste klantervaring.' },
+    ],
+    questions: [
+      { q: 'Hoe werkt de chat?', a: 'Bezoekers op de website kunnen een chatbericht sturen. Je ziet het hier in real-time verschijnen.' },
+      { q: 'Krijg ik meldingen?', a: 'Ja, als notificaties ingeschakeld zijn krijg je een melding bij nieuwe chatberichten.' },
+    ],
+  },
+
+  '/admin/caravans': {
+    intro: 'Beheer alle caravans: specificaties, foto\'s, beschikbaarheid en onderhoudsstatus.',
+    actions: [
+      { label: 'Controleer caravan-onderhoud', urgency: 'medium', description: 'Check of alle caravans up-to-date zijn qua onderhoud voor het komende seizoen.' },
+      { label: 'Update foto\'s en beschrijvingen', urgency: 'info', description: 'Zorg dat alle caravans actuele foto\'s en beschrijvingen hebben voor de website.' },
+    ],
+    questions: [
+      { q: 'Hoe voeg ik een caravan toe?', a: 'Klik op "Nieuwe caravan" en vul alle gegevens in: naam, type, capaciteit, voorzieningen, foto\'s.' },
+      { q: 'Hoe wijzig ik de beschikbaarheid?', a: 'In de caravan-instellingen kun je periodes blokkeren of vrijgeven.' },
+    ],
+  },
+
+  '/admin/campings': {
+    intro: 'Beheer campings waar de caravans geplaatst worden. Inclusief locatie, faciliteiten en contactgegevens.',
+    actions: [
+      { label: 'Verifieer campinggegevens', urgency: 'info', description: 'Controleer of alle campinggegevens actueel zijn: adres, contactpersoon, faciliteiten.' },
+    ],
+    questions: [
+      { q: 'Hoe voeg ik een camping toe?', a: 'Klik op "Nieuwe camping" en vul de gegevens in: naam, adres, faciliteiten, foto\'s, beschrijving.' },
+      { q: 'Kan ik campings koppelen aan caravans?', a: 'Ja, bij het aanmaken van een boeking selecteer je zowel de caravan als de camping.' },
+    ],
+  },
+
+  '/admin/klanten': {
+    intro: 'Klantenoverzicht met contactgegevens, boekingshistorie en communicatie.',
+    actions: [
+      { label: 'Controleer klantgegevens', urgency: 'info', description: 'Verifieer dat contactgegevens up-to-date zijn, vooral telefoonnummers en e-mailadressen.' },
+    ],
+    questions: [
+      { q: 'Hoe vind ik een klant?', a: 'Gebruik de zoekbalk om te zoeken op naam, e-mail of telefoonnummer.' },
+      { q: 'Kan ik klanten verwijderen?', a: 'Klanten die gekoppeld zijn aan boekingen of facturen in Holded kunnen niet verwijderd worden ter bescherming van de boekhouding.' },
+    ],
+  },
+
+  '/admin/kortingscodes': {
+    intro: 'Maak en beheer kortingscodes voor speciale aanbiedingen, early bird deals en terugkerende klanten.',
+    actions: [
+      { label: 'Check verlopen codes', urgency: 'info', description: 'Deactiveer kortingscodes die verlopen zijn om misbruik te voorkomen.' },
+    ],
+    questions: [
+      { q: 'Hoe maak ik een kortingscode?', a: 'Klik op "Nieuwe code", stel percentage of vast bedrag in, kies de geldigheidsperiode en eventuele beperkingen.' },
+      { q: 'Kan ik codes beperken?', a: 'Ja, je kunt codes beperken tot specifieke periodes, maximaal gebruik en minimaal boekingsbedrag.' },
+    ],
+  },
+
+  '/admin/nieuwsbrieven': {
+    intro: 'Verstuur nieuwsbrieven naar klanten en geïnteresseerden. Beheer de mailinglijst.',
+    actions: [
+      { label: 'Plan seizoensnieuwsbrief', urgency: 'info', description: 'Stuur een nieuwsbrief bij het begin van het seizoen met nieuwe bestemmingen/aanbiedingen.' },
+    ],
+    questions: [
+      { q: 'Hoe verstuur ik een nieuwsbrief?', a: 'Maak een nieuwe nieuwsbrief aan, schrijf de inhoud, selecteer ontvangers en klik op "Verzenden".' },
+      { q: 'Kan ik segmenteren?', a: 'Ja, je kunt filteren op eerdere boekingen, aanmeldperiode of specifieke interesses.' },
+    ],
+  },
+
+  '/admin/prijzen': {
+    intro: 'Stel seizoensprijzen in per caravan en periode. Beheer toeslagen en extra kosten.',
+    actions: [
+      { label: 'Stel prijzen in voor volgend seizoen', urgency: 'medium', description: 'Controleer of alle prijzen voor het komende seizoen correct zijn ingesteld.' },
+      { label: 'Check toeslagen', urgency: 'info', description: 'Verifieer dat extra kosten (schoonmaak, beddengoed, etc.) correct zijn geconfigureerd.' },
+    ],
+    questions: [
+      { q: 'Hoe stel ik prijzen in?', a: 'Selecteer een caravan en periode. Voer de weekprijs in. Eventuele toeslagen stel je apart in.' },
+      { q: 'Kan ik seizoensprijzen instellen?', a: 'Ja, je kunt hoogseizoen, tussenseizoen en laagseizoen apart configureren met verschillende prijzen.' },
+    ],
+  },
+
+  '/admin/activiteit': {
+    intro: 'Bekijk alle recente activiteit en wijzigingen in het systeem als auditlog.',
+    actions: [
+      { label: 'Review recente wijzigingen', urgency: 'info', description: 'Check of recente wijzigingen door medewerkers correct zijn uitgevoerd.' },
+    ],
+    questions: [
+      { q: 'Wat wordt gelogd?', a: 'Alle belangrijke acties: boekingswijzigingen, betalingen, klantwijzigingen, instellingen, inlogpogingen.' },
+      { q: 'Hoe ver gaat de log terug?', a: 'De activiteitenlog bewaard gegevens van de afgelopen 90 dagen.' },
+    ],
+  },
+};
+
+/* ═══════════════════════════════════════════════════
+   Knowledge base — ENGLISH
+   ═══════════════════════════════════════════════════ */
+const KNOWLEDGE_EN: Record<string, PageKnowledge> = {
+  '/admin': {
+    intro: 'The dashboard gives an overview of key data: pending bookings, payments, messages, and recent activity.',
+    actions: [
+      { label: 'Check outstanding payments', urgency: 'high', description: 'Go to Payments and check for unpaid invoices. Send reminders for invoices overdue by more than 7 days.' },
+      { label: 'Review new bookings', urgency: 'medium', description: 'Check if new bookings are correctly created with proper locations & dates.' },
+      { label: 'Read unread messages', urgency: 'medium', description: 'Reply to customer messages within 24 hours for good customer satisfaction.' },
+      { label: 'View next week\'s schedule', urgency: 'info', description: 'Check arrivals and departures for the coming 7 days.' },
+    ],
+    questions: [
+      { q: 'How does the dashboard work?', a: 'The dashboard shows summaries (bookings, revenue, messages). Click a card to go to the detail page.' },
+      { q: 'What do the colors mean?', a: 'Green = all good, Orange = needs attention, Red = urgent. Navigation badges show counts.' },
+      { q: 'How can I search quickly?', a: 'Use the search bar at the top (Ctrl/Cmd+K) to quickly find bookings, customers, or caravans.' },
+    ],
+  },
+
+  '/admin/planning': {
+    intro: 'The planning shows all bookings on a visual timeline per caravan.',
+    actions: [
+      { label: 'Check overlapping bookings', urgency: 'high', description: 'Look for bookings that overlap on the same caravan. This must be resolved immediately.' },
+      { label: 'Confirm upcoming arrivals', urgency: 'medium', description: 'Check if all preparations are ready for guests arriving this week.' },
+    ],
+    questions: [
+      { q: 'How do I create a booking?', a: 'Go to Bookings → New booking. Select caravan, campsite, dates, and fill in customer details.' },
+      { q: 'What if there\'s an overlap?', a: 'The system warns about overlaps. Resolve by moving a booking or assigning a different caravan.' },
+    ],
+  },
+
+  '/admin/boekingen': {
+    intro: 'Manage all bookings. Search, filter, and track the progress of each booking.',
+    actions: [
+      { label: 'Process new bookings', urgency: 'high', description: 'New bookings need to be confirmed or declined. Check availability and send confirmation.' },
+      { label: 'Check incomplete bookings', urgency: 'medium', description: 'Some bookings may be missing customer details, campsite info, or payments.' },
+      { label: 'Review upcoming check-ins', urgency: 'medium', description: 'Bookings checking in this week: send arrival information to the guest.' },
+    ],
+    questions: [
+      { q: 'How do I create a booking?', a: 'Click "New booking" at the top right. Fill in all required fields: caravan, campsite, period, customer.' },
+      { q: 'How do I cancel a booking?', a: 'Open the booking and click "Cancel". The system calculates cancellation costs automatically.' },
+      { q: 'What do the statuses mean?', a: 'New = not confirmed, Confirmed = approved, Paid = full payment received, Cancelled = cancelled, Completed = after departure.' },
+    ],
+  },
+
+  '/admin/betalingen': {
+    intro: 'Overview of all payments, invoices, and outstanding amounts.',
+    actions: [
+      { label: 'Send reminders for overdue invoices', urgency: 'high', description: 'Invoices overdue by > 7 days need a reminder.' },
+      { label: 'Mark received payments', urgency: 'medium', description: 'Check bank statements and manually mark received payments as "paid".' },
+    ],
+    questions: [
+      { q: 'How do I register a manual payment?', a: 'In the booking, choose "Add payment". Enter the amount and select payment method.' },
+      { q: 'How does Stripe work?', a: 'Stripe processes online payments automatically. Status updates when payment is completed.' },
+    ],
+  },
+
+  '/admin/borg': {
+    intro: 'Manage deposit inspections: send deposit forms, review damage inspections, and process deposit returns.',
+    actions: [
+      { label: 'Process pending deposit inspections', urgency: 'high', description: 'After guests return, deposit inspections should be processed as soon as possible.' },
+      { label: 'Send deposit forms for upcoming bookings', urgency: 'medium', description: 'Guests arriving soon should have already received their deposit form.' },
+    ],
+    questions: [
+      { q: 'How do I send a deposit form?', a: 'In the booking, click "Send deposit form". The guest receives an email with a link.' },
+      { q: 'What about damage?', a: 'Document damage with photos in the inspection, calculate the damage amount, and deduct from the deposit.' },
+    ],
+  },
+
+  '/admin/berichten': {
+    intro: 'All customer communication in one place.',
+    actions: [
+      { label: 'Reply to unread messages', urgency: 'high', description: 'Unanswered messages older than 24 hours need urgent attention.' },
+    ],
+    questions: [
+      { q: 'How do I reply to a message?', a: 'Click on the message to open it and type your reply.' },
+    ],
+  },
+
+  '/admin/chat': {
+    intro: 'Live chat messages from the website.',
+    actions: [
+      { label: 'Answer active chats', urgency: 'high', description: 'Open chats are waiting for a response. Reply within 5 minutes for the best experience.' },
+    ],
+    questions: [
+      { q: 'How does chat work?', a: 'Website visitors can send a chat message. It appears here in real time.' },
+    ],
+  },
+
+  '/admin/caravans': {
+    intro: 'Manage all caravans: specifications, photos, availability, and maintenance status.',
+    actions: [
+      { label: 'Check caravan maintenance', urgency: 'medium', description: 'Ensure all caravans are up to date on maintenance.' },
+      { label: 'Update photos and descriptions', urgency: 'info', description: 'Make sure all caravans have current photos and descriptions.' },
+    ],
+    questions: [
+      { q: 'How do I add a caravan?', a: 'Click "New caravan" and fill in all details: name, type, capacity, amenities, photos.' },
+    ],
+  },
+
+  '/admin/campings': {
+    intro: 'Manage campsites where caravans are placed.',
+    actions: [
+      { label: 'Verify campsite details', urgency: 'info', description: 'Check that all campsite information is up to date.' },
+    ],
+    questions: [
+      { q: 'How do I add a campsite?', a: 'Click "New campsite" and fill in the details.' },
+    ],
+  },
+
+  '/admin/klanten': {
+    intro: 'Customer overview with contact details, booking history, and communication.',
+    actions: [
+      { label: 'Verify customer details', urgency: 'info', description: 'Check that contact details are up to date.' },
+    ],
+    questions: [
+      { q: 'How do I find a customer?', a: 'Use the search bar to search by name, email, or phone number.' },
+      { q: 'Can I delete customers?', a: 'Customers linked to bookings or Holded invoices cannot be deleted to protect accounting records.' },
+    ],
+  },
+
+  '/admin/prijzen': {
+    intro: 'Set seasonal prices per caravan and period.',
+    actions: [
+      { label: 'Set next season prices', urgency: 'medium', description: 'Check that all prices for the coming season are correctly set.' },
+    ],
+    questions: [
+      { q: 'How do I set prices?', a: 'Select a caravan and period. Enter the weekly price. Additional surcharges are set separately.' },
+    ],
+  },
+
+  '/admin/activiteit': {
+    intro: 'View all recent activity and system changes as an audit log.',
+    actions: [
+      { label: 'Review recent changes', urgency: 'info', description: 'Check if recent changes by staff were executed correctly.' },
+    ],
+    questions: [
+      { q: 'What gets logged?', a: 'All important actions: booking changes, payments, customer changes, settings, login attempts.' },
+    ],
+  },
+};
+
+/* ═══════════════════════════════════════════════════
+   General FAQ (fallback)
+   ═══════════════════════════════════════════════════ */
+const FAQ_NL: QA[] = [
+  { q: 'Hoe kan ik mijn wachtwoord wijzigen?', a: 'Klik op het tandwiel-icoon linksboven → Wachtwoord wijzigen.' },
+  { q: 'Hoe wissel ik van taal?', a: 'Klik op het taalicoon (🌐) in de bovenste balk om te wisselen tussen NL en EN.' },
+  { q: 'Hoe werkt de zoekopdracht?', a: 'Gebruik Ctrl/Cmd+K of de zoekbalk bovenin. Je kunt zoeken op boekingsnummer, klantnaam, e-mail of caravan.' },
+  { q: 'Wat is de rolverdeling?', a: 'Admin heeft volledige toegang. Medewerker heeft beperkte toegang en ziet geen financiële gegevens of instellingen.' },
+  { q: 'Hoe pas ik de navigatie-volgorde aan?', a: 'Klik lang op een navigatie-item in de zijbalk en sleep het naar de gewenste positie.' },
+];
+
+const FAQ_EN: QA[] = [
+  { q: 'How do I change my password?', a: 'Click the gear icon at the top left → Change password.' },
+  { q: 'How do I switch languages?', a: 'Click the language icon (🌐) in the top bar to switch between NL and EN.' },
+  { q: 'How does search work?', a: 'Use Ctrl/Cmd+K or the search bar. You can search by booking number, customer name, email, or caravan.' },
+  { q: 'What are the roles?', a: 'Admin has full access. Staff has limited access and cannot see financial data or settings.' },
+  { q: 'How do I reorder navigation?', a: 'Long-press a navigation item in the sidebar and drag it to the desired position.' },
+];
+
+/* ═══════════════════════════════════════════════════
+   Component
+   ═══════════════════════════════════════════════════ */
+export default function AdminAssistant({ locale, pathname, open, onClose, onRestartTour }: Props) {
+  const [tab, setTab] = useState<'actions' | 'help'>('actions');
+  const [expandedAction, setExpandedAction] = useState<number | null>(null);
+  const [expandedQ, setExpandedQ] = useState<number | null>(null);
+  const [search, setSearch] = useState('');
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const nl = locale === 'nl';
+  const KB = nl ? KNOWLEDGE_NL : KNOWLEDGE_EN;
+  const faq = nl ? FAQ_NL : FAQ_EN;
+
+  // Find best matching page knowledge
+  const pageKey = useMemo(() => {
+    if (KB[pathname]) return pathname;
+    // Try parent path
+    const parent = pathname.replace(/\/[^/]+$/, '');
+    if (KB[parent]) return parent;
+    return '/admin';
+  }, [pathname, KB]);
+
+  const knowledge = KB[pageKey] || KB['/admin']!;
+
+  // Filter actions & questions by search
+  const filteredActions = useMemo(() => {
+    if (!search.trim()) return knowledge.actions;
+    const s = search.toLowerCase();
+    return knowledge.actions.filter(
+      (a) => a.label.toLowerCase().includes(s) || a.description.toLowerCase().includes(s)
+    );
+  }, [knowledge.actions, search]);
+
+  const filteredQuestions = useMemo(() => {
+    const allQ = [...knowledge.questions, ...faq];
+    if (!search.trim()) return allQ;
+    const s = search.toLowerCase();
+    return allQ.filter((q) => q.q.toLowerCase().includes(s) || q.a.toLowerCase().includes(s));
+  }, [knowledge.questions, faq, search]);
+
+  // Close on outside click
   useEffect(() => {
-    setMessages([]);
-  }, [pathname]);
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    // Delay to avoid closing immediately
+    const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 50);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [open, onClose]);
 
-  // Scroll to bottom on new messages
+  // Reset state when opening or changing pages
   useEffect(() => {
-    msgEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    setExpandedAction(null);
+    setExpandedQ(null);
+    setSearch('');
+    setTab('actions');
+  }, [pathname, open]);
 
-  // Focus input when opening
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 200);
-  }, [open]);
+  if (!open) return null;
 
-  const addAssistantMessage = useCallback((text: string) => {
-    setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', text }]);
-  }, []);
-
-  const handleQuestionClick = (qa: QA) => {
-    setMessages(prev => [
-      ...prev,
-      { id: Date.now(), role: 'user', text: qa.q },
-      { id: Date.now() + 1, role: 'assistant', text: qa.a },
-    ]);
-  };
-
-  const handleSend = () => {
-    const q = input.trim();
-    if (!q) return;
-    setInput('');
-    setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: q }]);
-
-    // Search for best matching answer
-    const allQA = [...(pageKnowledge?.questions || []), ...general];
-    // Also search other pages
-    const otherPages = Object.values(knowledge).flatMap(k => k.questions);
-    const allSearchable = [...allQA, ...otherPages];
-
-    const qLower = q.toLowerCase();
-    const words = qLower.split(/\s+/).filter(w => w.length > 2);
-
-    let bestMatch: QA | null = null;
-    let bestScore = 0;
-
-    for (const qa of allSearchable) {
-      const combined = (qa.q + ' ' + qa.a).toLowerCase();
-      let score = 0;
-      for (const word of words) {
-        if (combined.includes(word)) score += 1;
-      }
-      // Bonus for question match
-      for (const word of words) {
-        if (qa.q.toLowerCase().includes(word)) score += 0.5;
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = qa;
-      }
-    }
-
-    if (bestMatch && bestScore >= 1) {
-      setTimeout(() => {
-        addAssistantMessage(bestMatch!.a);
-      }, 300);
-    } else {
-      setTimeout(() => {
-        addAssistantMessage(
-          isNl
-            ? 'Ik kon geen exact antwoord vinden. Probeer een van de voorgestelde vragen hieronder, of klik op het ❓ icoon rechtsboven voor de volledige helpgids.'
-            : 'I couldn\'t find an exact answer. Try one of the suggested questions below, or click the ❓ icon top-right for the full help guide.'
-        );
-      }, 300);
-    }
-  };
-
-  // Suggested questions for current context
-  const suggestions = pageKnowledge?.questions.slice(0, 4) || [];
-  const shownSuggestions = messages.length === 0 ? suggestions : suggestions.filter(s => !messages.some(m => m.text === s.q));
-
-  const labels = isNl
-    ? { title: 'Assistent', placeholder: 'Stel een vraag...', intro: pageKnowledge?.intro, sugTitle: 'Snel antwoord', genTitle: 'Algemeen' }
-    : { title: 'Assistant', placeholder: 'Ask a question...', intro: pageKnowledge?.intro, sugTitle: 'Quick answer', genTitle: 'General' };
+  const urgentCount = knowledge.actions.filter((a) => a.urgency === 'high').length;
 
   return (
-    <>
-      {/* Chat panel */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-5 right-5 z-50 w-[340px] sm:w-[380px] max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 flex items-center gap-3 shrink-0">
-              <div className="p-1.5 bg-white/20 rounded-lg">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-white font-semibold text-sm">{labels.title}</h3>
-                <p className="text-white/70 text-[10px]">{isNl ? 'Hulp bij het adminportaal' : 'Admin portal help'}</p>
-              </div>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
-
-            {/* Messages area */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[calc(70vh-120px)]">
-              {/* Intro message */}
-              {messages.length === 0 && (
-                <div className="space-y-3">
-                  <div className="bg-sky-50 rounded-xl p-3">
-                    <p className="text-sm text-sky-800 leading-relaxed">
-                      {labels.intro}
-                    </p>
-                  </div>
-
-                  {/* Suggested questions */}
-                  {shownSuggestions.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted uppercase tracking-wide mb-2 flex items-center gap-1">
-                        <Lightbulb className="w-3 h-3" />{labels.sugTitle}
-                      </p>
-                      <div className="space-y-1.5">
-                        {shownSuggestions.map((qa, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleQuestionClick(qa)}
-                            className="w-full text-left p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group"
-                          >
-                            <span className="text-xs text-foreground font-medium flex items-center gap-2">
-                              <ChevronRight className="w-3 h-3 text-sky-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                              {qa.q}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* General questions */}
-                  {general.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted uppercase tracking-wide mb-2">{labels.genTitle}</p>
-                      <div className="space-y-1.5">
-                        {general.slice(0, 2).map((qa, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleQuestionClick(qa)}
-                            className="w-full text-left p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group"
-                          >
-                            <span className="text-xs text-foreground font-medium flex items-center gap-2">
-                              <ChevronRight className="w-3 h-3 text-gray-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                              {qa.q}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          ref={panelRef}
+          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.97 }}
+          transition={{ duration: 0.15 }}
+          className="fixed top-14 right-3 sm:right-5 w-[340px] sm:w-[380px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-xl border border-border/60 z-[60] flex flex-col overflow-hidden"
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4.5 h-4.5" />
+              <span className="font-semibold text-sm">
+                {nl ? 'Smart Suggestions' : 'Smart Suggestions'}
+              </span>
+              {urgentCount > 0 && (
+                <span className="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+                  {urgentCount} {nl ? 'urgent' : 'urgent'}
+                </span>
               )}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-              {/* Conversation messages */}
-              {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-sky-500 text-white rounded-br-md'
-                      : 'bg-gray-100 text-foreground rounded-bl-md'
-                  }`}>
-                    {msg.text.split('\n').map((line, i) => (
-                      <span key={i}>{line}{i < msg.text.split('\n').length - 1 && <br />}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          {/* Page Intro */}
+          <div className="px-4 py-2.5 bg-violet-50/50 border-b border-border/30 text-xs text-muted leading-relaxed shrink-0">
+            {knowledge.intro}
+          </div>
 
-              {/* Follow-up suggestions after messages */}
-              {messages.length > 0 && shownSuggestions.length > 0 && (
-                <div className="space-y-1">
-                  {shownSuggestions.slice(0, 3).map((qa, i) => (
+          {/* Tabs */}
+          <div className="flex border-b border-border/50 shrink-0">
+            <button
+              onClick={() => setTab('actions')}
+              className={`flex-1 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                tab === 'actions'
+                  ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-50/30'
+                  : 'text-muted hover:text-foreground'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5" />
+                {nl ? 'Acties' : 'Actions'}
+                {urgentCount > 0 && (
+                  <span className="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full font-semibold">
+                    {urgentCount}
+                  </span>
+                )}
+              </span>
+            </button>
+            <button
+              onClick={() => setTab('help')}
+              className={`flex-1 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                tab === 'help'
+                  ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-50/30'
+                  : 'text-muted hover:text-foreground'
+              }`}
+            >
+              <span className="flex items-center justify-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5" />
+                {nl ? 'Hulp & FAQ' : 'Help & FAQ'}
+              </span>
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="px-3 py-2 border-b border-border/30 shrink-0">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={nl ? 'Zoek acties of vragen...' : 'Search actions or questions...'}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-alt rounded-lg border border-border/50 focus:outline-none focus:ring-1 focus:ring-violet-500/30 text-foreground placeholder:text-muted"
+              />
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            {tab === 'actions' && (
+              <div className="p-3 space-y-2">
+                {filteredActions.length === 0 && (
+                  <p className="text-xs text-muted text-center py-4">
+                    {nl ? 'Geen acties gevonden.' : 'No actions found.'}
+                  </p>
+                )}
+                {filteredActions.map((action, i) => {
+                  const u = URGENCY[action.urgency];
+                  const Icon = u.icon;
+                  const isExpanded = expandedAction === i;
+                  return (
                     <button
                       key={i}
-                      onClick={() => handleQuestionClick(qa)}
-                      className="w-full text-left p-2 rounded-lg bg-sky-50 hover:bg-sky-100 transition-colors cursor-pointer"
+                      onClick={() => setExpandedAction(isExpanded ? null : i)}
+                      className={`w-full text-left rounded-lg border ${u.border} ${u.bg} p-2.5 transition-all hover:shadow-sm cursor-pointer`}
                     >
-                      <span className="text-[11px] text-sky-700 font-medium flex items-center gap-1.5">
-                        <ArrowRight className="w-3 h-3 shrink-0" />{qa.q}
-                      </span>
+                      <div className="flex items-start gap-2">
+                        <div className={`mt-0.5 shrink-0 ${u.text}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium ${u.text}`}>
+                              {action.label}
+                            </span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
+                          </div>
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden"
+                              >
+                                <p className="mt-1.5 text-[11px] text-foreground/70 leading-relaxed">
+                                  {action.description}
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-muted shrink-0 mt-0.5 transition-transform ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </div>
                     </button>
-                  ))}
-                </div>
-              )}
+                  );
+                })}
+              </div>
+            )}
 
-              <div ref={msgEndRef} />
-            </div>
+            {tab === 'help' && (
+              <div className="p-3 space-y-2">
+                {filteredQuestions.length === 0 && (
+                  <p className="text-xs text-muted text-center py-4">
+                    {nl ? 'Geen vragen gevonden.' : 'No questions found.'}
+                  </p>
+                )}
+                {filteredQuestions.map((qa, i) => {
+                  const isExpanded = expandedQ === i;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setExpandedQ(isExpanded ? null : i)}
+                      className="w-full text-left rounded-lg border border-border/50 bg-surface-alt/30 hover:bg-surface-alt p-2.5 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-start gap-2">
+                        <ChevronRight
+                          className={`w-3.5 h-3.5 text-muted shrink-0 mt-0.5 transition-transform ${
+                            isExpanded ? 'rotate-90' : ''
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium text-foreground">{qa.q}</span>
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden"
+                              >
+                                <p className="mt-1.5 text-[11px] text-foreground/70 leading-relaxed">
+                                  {qa.a}
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-            {/* Input */}
-            <div className="border-t border-gray-100 p-2.5 shrink-0">
-              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder={labels.placeholder}
-                  className="flex-1 px-3 py-2 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-sky-500/20 outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={!input.trim()}
-                  className="p-2 bg-sky-500 text-white rounded-xl disabled:opacity-30 hover:bg-sky-600 transition-colors cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+          {/* Footer: restart tour */}
+          <div className="px-3 py-2.5 border-t border-border/40 bg-gray-50/50 shrink-0">
+            <button
+              onClick={() => { onRestartTour(); onClose(); }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              {nl ? 'Tutorial opnieuw starten' : 'Restart tutorial'}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

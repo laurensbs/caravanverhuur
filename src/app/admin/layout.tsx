@@ -27,7 +27,6 @@ import {
   ArrowRight,
   ClipboardList,
   MessageCircle,
-  HelpCircle,
   Sparkles,
   ChevronRight,
   ChevronLeft,
@@ -48,7 +47,6 @@ import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translat
 import dynamic from 'next/dynamic';
 import { ToastProvider, useToast } from '@/components/AdminToast';
 
-const AdminHelpGuide = dynamic(() => import('@/components/AdminHelpGuide'), { ssr: false });
 const AdminAssistant = dynamic(() => import('@/components/AdminAssistant'), { ssr: false });
 
 /* ── Credentials ─────────────────────────────────── */
@@ -1103,7 +1101,6 @@ function AdminLayoutInner({
   const [settingsShowCurrent, setSettingsShowCurrent] = useState(false);
   const [settingsShowNew, setSettingsShowNew] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const [showHelp, setShowHelp] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
   const [navOrders, setNavOrders] = useState<Record<string, string[]>>({});
   const [badges, setBadges] = useState<Record<string, number>>({});
@@ -1434,7 +1431,7 @@ function AdminLayoutInner({
     const h = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (showOnboarding) finishOnboarding();
-        else if (showHelp) setShowHelp(false);
+        else if (showAssistant) setShowAssistant(false);
         else if (showSettingsPassword) setShowSettingsPassword(false);
         else {
           // Toggle sidebar on Escape (collapse/expand)
@@ -1446,7 +1443,7 @@ function AdminLayoutInner({
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [showOnboarding, showHelp, showSettingsPassword, sidebarOpen]);
+  }, [showOnboarding, showAssistant, showSettingsPassword, sidebarOpen]);
 
   return (
     <div className="min-h-screen bg-surface-alt flex">
@@ -1820,20 +1817,11 @@ function AdminLayoutInner({
               ) : null}
             </button>
 
-            {/* Help */}
-            <button
-              onClick={() => setShowHelp(true)}
-              className="p-2 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
-              aria-label={locale === 'nl' ? 'Hulp' : 'Help'}
-            >
-              <HelpCircle className="w-4.5 h-4.5" />
-            </button>
-
-            {/* Smart Assistant */}
+            {/* Smart Suggestions */}
             <button
               onClick={() => setShowAssistant(!showAssistant)}
-              className={`p-2 rounded-lg transition-colors cursor-pointer ${showAssistant ? 'bg-sky-100 text-sky-600' : 'text-muted hover:bg-surface-alt hover:text-foreground'}`}
-              aria-label={locale === 'nl' ? 'Assistent' : 'Assistant'}
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${showAssistant ? 'bg-violet-100 text-violet-600' : 'text-muted hover:bg-surface-alt hover:text-foreground'}`}
+              aria-label={locale === 'nl' ? 'Smart Suggestions' : 'Smart Suggestions'}
             >
               <Sparkles className="w-4.5 h-4.5" />
             </button>
@@ -2167,21 +2155,13 @@ function AdminLayoutInner({
         )}
       </AnimatePresence>
 
-      {/* ═══ HELP GUIDE ═══ */}
-      <AdminHelpGuide
-        show={showHelp}
-        onClose={() => setShowHelp(false)}
-        locale={locale as 'nl' | 'en'}
-        pathname={pathname}
-        onRestartTour={restartTour}
-      />
-
-      {/* ═══ SMART ASSISTANT ═══ */}
+      {/* ═══ SMART SUGGESTIONS ═══ */}
       <AdminAssistant
         locale={locale as 'nl' | 'en'}
         pathname={pathname}
         open={showAssistant}
         onClose={() => setShowAssistant(false)}
+        onRestartTour={restartTour}
       />
     </div>
   );
