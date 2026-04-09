@@ -19,13 +19,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, nights, totalPrice, borgAmount, spotNumber } = body;
 
-    if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut || !nights || !totalPrice) {
+    if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut || !nights || totalPrice == null) {
       return NextResponse.json({ error: 'Verplichte velden ontbreken' }, { status: 400 });
-    }
-
-    // Enforce minimum 7 nights
-    if (nights < 7) {
-      return NextResponse.json({ error: 'Minimaal 7 nachten vereist.' }, { status: 400 });
     }
 
     // 1. Check if customer account exists, otherwise create one

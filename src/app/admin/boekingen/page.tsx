@@ -1048,7 +1048,7 @@ export default function BookingenPage() {
         </button>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors shrink-0"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{t('bookings.createNew')}</span>
@@ -1235,7 +1235,7 @@ export default function BookingenPage() {
                 </div>
 
                 {/* Price summary */}
-                {cTotalPrice > 0 && (
+                {selectedCaravan && cNights > 0 && (
                   <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted">{t('bookings.totalPrice')}</span>
@@ -1259,13 +1259,13 @@ export default function BookingenPage() {
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2">
-                  <button onClick={resetCreateForm} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-muted hover:bg-gray-50 transition-colors">
+                  <button onClick={resetCreateForm} className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-muted hover:bg-gray-50 transition-colors cursor-pointer">
                     {t('bookings.cancel')}
                   </button>
                   <button
                     onClick={handleCreate}
                     disabled={creating || !cName || !cEmail || !cPhone || !cCaravanId || !cCampingId || !cCheckIn || !cCheckOut || cNights <= 0}
-                    className="flex-1 py-3 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                   >
                     {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     {creating ? t('bookings.creating') : t('bookings.createBooking')}
