@@ -1607,7 +1607,7 @@ function AdminLayoutInner({
         !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16') : ''
       }`}>
         {/* Top bar — utility row */}
-        <header className="bg-white sticky top-0 z-30 border-b border-border">
+        <header className="bg-[#F8FAFC] sticky top-0 z-30 border-b border-border">
           {/* Row 1: utility items */}
           <div className="px-3 py-2 flex items-center gap-1.5 lg:px-6 lg:gap-3">
             {isMobile && (
@@ -1840,7 +1840,7 @@ function AdminLayoutInner({
           </div>
 
           {/* Row 2: page title + page actions */}
-          <div className="px-3 py-2 lg:px-6 flex items-center gap-3 border-t border-border/50">
+          <div className="px-3 py-2 lg:px-6 flex items-center gap-3 border-t border-border/50 bg-white">
             <div className="flex-1 min-w-0">
               <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
                 {allNavItems.find((n) => n.href === pathname)
