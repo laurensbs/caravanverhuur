@@ -3,7 +3,7 @@
 import { useState, useEffect, ReactNode, useMemo, useRef, useCallback, createContext, useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -982,6 +982,7 @@ function SidebarNavItem({
   isMobile?: boolean;
   collapsed?: boolean;
 }) {
+  const router = useRouter();
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
   const Icon = item.icon;
@@ -1005,6 +1006,8 @@ function SidebarNavItem({
             e.preventDefault();
             return;
           }
+          e.preventDefault();
+          router.push(item.href);
           onNavigate();
         }}
         draggable={false}
@@ -1092,6 +1095,7 @@ function AdminLayoutInner({
   const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName, role: ctxRole } = useAdminCtx();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [pageActions, setPageActions] = useState<ReactNode>(null);
+  const pageActionsValue = useMemo(() => ({ actions: pageActions, setActions: setPageActions }), [pageActions]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [settingsCurrentPw, setSettingsCurrentPw] = useState('');
@@ -1935,7 +1939,7 @@ function AdminLayoutInner({
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="flex-1 p-3 lg:p-6 overflow-auto"
         >
-          <PageActionsContext.Provider value={{ actions: pageActions, setActions: setPageActions }}>
+          <PageActionsContext.Provider value={pageActionsValue}>
             {children}
           </PageActionsContext.Provider>
         </motion.main>

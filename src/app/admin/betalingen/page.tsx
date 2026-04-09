@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -187,7 +187,7 @@ export default function BetalingenPage() {
     return staticCaravans.find(c => c.id === caravanId)?.name || customCaravans.find(c => c.id === caravanId)?.name || caravanId;
   };
 
-  const filtered = payments
+  const filtered = useMemo(() => payments
     .filter((p) => {
       if (statusFilter !== 'ALLE' && p.status !== statusFilter) return false;
       if (typeFilter !== 'ALLE' && p.type !== typeFilter) return false;
@@ -204,7 +204,8 @@ export default function BetalingenPage() {
       }
       return true;
     })
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+  [payments, statusFilter, typeFilter, dateFrom, dateTo, search, customCaravans]);
 
   const ITEMS_PER_PAGE = 25;
   const [currentPage, setCurrentPage] = useState(1);

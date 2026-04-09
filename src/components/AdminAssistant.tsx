@@ -30,6 +30,9 @@ import {
   FileWarning,
   Send,
   BarChart3,
+  Copy,
+  Check,
+  ExternalLink,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════
@@ -65,6 +68,8 @@ type ActionItem = {
   label: string;
   sub?: string;
   href: string;
+  paymentId?: string;
+  email?: string;
 };
 
 type Suggestion = {
@@ -147,7 +152,7 @@ function buildSuggestions(data: SuggestionData, nl: boolean): Suggestion[] {
       title: nl ? `${fmt(data.overduePayments.totalAmount)} achterstallig` : `${fmt(data.overduePayments.totalAmount)} overdue`,
       detail: nl ? `${data.overduePayments.count} betaling${data.overduePayments.count > 1 ? 'en' : ''} > 3 dagen openstaand. Stuur herinneringen.` : `${data.overduePayments.count} payment${data.overduePayments.count > 1 ? 's' : ''} > 3 days overdue. Send reminders.`,
       href: '/admin/betalingen', actionLabel: nl ? 'Herinneringen sturen' : 'Send reminders',
-      items: data.overduePayments.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmt(i.amount)} · ${i.days}d`, href: `/admin/betalingen` })),
+      items: data.overduePayments.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmt(i.amount)} · ${i.days}d`, href: `/admin/betalingen`, paymentId: i.payment_id, email: i.email })),
     });
   }
 
@@ -329,6 +334,8 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [paymentLinkLoading, setPaymentLinkLoading] = useState<string | null>(null);
+  const [paymentLinkResult, setPaymentLinkResult] = useState<Record<string, { url?: string; error?: string }>>({});
   const panelRef = useRef<HTMLDivElement>(null);
   const nl = locale === 'nl';
 
@@ -347,7 +354,7 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
   }, []);
 
   useEffect(() => {
-    if (open) { fetchData(); setExpandedId(null); }
+    if (open) { fetchData(); setExpandedId(null); setPaymentLinkResult({}); setPaymentLinkLoading(null); }
   }, [open, fetchData]);
 
   useEffect(() => {
@@ -359,7 +366,44 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
     return () => { clearTimeout(t); document.removeEventListener('mousedown', h); };
   }, [open, onClose]);
 
-  const navigate = (href: string) => { onClose(); router.push(href); };
+  const navigate = (href: string) => { router.push(href); onClose(); };
+
+  const createPaymentLink = async (paymentId: string) => {
+    setPaymentLinkLoading(paymentId);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+      if (!res.ok) throw new Error();
+      const { url } = await res.json();
+      setPaymentLinkResult(prev => ({ ...prev, [paymentId]: { url } }));
+      // Copy to clipboard
+      if (url) await navigator.clipboard.writeText(url).catch(() => {});
+    } catch {
+      setPaymentLinkResult(prev => ({ ...prev, [paymentId]: { error: nl ? 'Fout bij aanmaken' : 'Failed to create' } }));
+    } finally {
+      setPaymentLinkLoading(null);
+    }
+  };
+
+  const sendReminder = async (paymentId: string) => {
+    setPaymentLinkLoading(paymentId);
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentId, action: 'send-reminder' }),
+      });
+      if (!res.ok) throw new Error();
+      setPaymentLinkResult(prev => ({ ...prev, [paymentId]: { url: '__reminder_sent__' } }));
+    } catch {
+      setPaymentLinkResult(prev => ({ ...prev, [paymentId]: { error: nl ? 'Fout bij versturen' : 'Failed to send' } }));
+    } finally {
+      setPaymentLinkLoading(null);
+    }
+  };
 
   const suggestions = data ? buildSuggestions(data, nl) : [];
   const criticalCount = suggestions.filter(x => x.urgency === 'critical').length;
@@ -458,15 +502,59 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
                         {isExpanded && sg.items && (
                           <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
                             <div className="px-3 pb-2 space-y-1">
-                              {sg.items.map((item, j) => (
-                                <button key={j} onClick={() => navigate(item.href)} className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/70 hover:bg-white border border-white/80 hover:border-border/40 transition-all cursor-pointer group text-left">
-                                  <div className="flex-1 min-w-0">
-                                    <span className="text-[11px] font-medium text-foreground/80 block truncate">{item.label}</span>
-                                    {item.sub && <span className="text-[10px] text-muted">{item.sub}</span>}
+                              {sg.items.map((item, j) => {
+                                const pid = item.paymentId;
+                                const result = pid ? paymentLinkResult[pid] : null;
+                                const isLoading = pid ? paymentLinkLoading === pid : false;
+                                const hasPaymentActions = !!pid && (sg.id === 'overdue-payments' || sg.id === 'remaining-due');
+
+                                return (
+                                  <div key={j} className="rounded-lg bg-white/70 border border-white/80 hover:border-border/40 transition-all">
+                                    <button onClick={() => navigate(item.href)} className="w-full flex items-center gap-2 px-2.5 py-2 cursor-pointer group text-left">
+                                      <div className="flex-1 min-w-0">
+                                        <span className="text-[11px] font-medium text-foreground/80 block truncate">{item.label}</span>
+                                        {item.sub && <span className="text-[10px] text-muted">{item.sub}</span>}
+                                      </div>
+                                      <ArrowRight className="w-3 h-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                    </button>
+                                    {hasPaymentActions && (
+                                      <div className="px-2.5 pb-2 flex items-center gap-1.5">
+                                        {result?.url && result.url !== '__reminder_sent__' ? (
+                                          <div className="flex items-center gap-1.5 w-full">
+                                            <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3" />{nl ? 'Link gekopieerd!' : 'Link copied!'}</span>
+                                            <a href={result.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-[10px] text-violet-600 hover:text-violet-700 flex items-center gap-0.5">
+                                              <ExternalLink className="w-3 h-3" />{nl ? 'Openen' : 'Open'}
+                                            </a>
+                                          </div>
+                                        ) : result?.url === '__reminder_sent__' ? (
+                                          <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1"><Check className="w-3 h-3" />{nl ? 'Herinnering verstuurd!' : 'Reminder sent!'}</span>
+                                        ) : result?.error ? (
+                                          <span className="text-[10px] text-red-500 font-medium">{result.error}</span>
+                                        ) : (
+                                          <>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); createPaymentLink(pid!); }}
+                                              disabled={isLoading}
+                                              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                                            >
+                                              {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
+                                              {nl ? 'Betaallink' : 'Payment link'}
+                                            </button>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); sendReminder(pid!); }}
+                                              disabled={isLoading}
+                                              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                                            >
+                                              {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                                              {nl ? 'Herinnering' : 'Reminder'}
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
-                                  <ArrowRight className="w-3 h-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                </button>
-                              ))}
+                                );
+                              })}
                             </div>
                             {/* Action button */}
                             <div className="px-3 pb-3">

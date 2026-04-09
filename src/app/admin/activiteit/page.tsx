@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   History,
@@ -140,9 +140,12 @@ export default function ActivityPage() {
     return labels[locale]?.[action] || action.replace(/_/g, ' ');
   }, [locale]);
 
+  const pageRef = useRef(page);
+  pageRef.current = page;
+
   const fetchLog = useCallback(() => {
     setLoading(true);
-    fetch(`/api/admin/activity?limit=${pageSize}&offset=${page * pageSize}`)
+    fetch(`/api/admin/activity?limit=${pageSize}&offset=${pageRef.current * pageSize}`)
       .then(r => r.ok ? r.json() : { log: [], total: 0 })
       .then(data => {
         setEntries(data.log || []);
@@ -150,9 +153,9 @@ export default function ActivityPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page]);
+  }, []);
 
-  useEffect(() => { fetchLog(); }, [fetchLog]);
+  useEffect(() => { fetchLog(); }, [fetchLog, page]);
 
   usePageActions(
     useMemo(() => (

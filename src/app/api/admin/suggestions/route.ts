@@ -46,7 +46,7 @@ export async function GET() {
       // Overdue payments (open > 3 days)
       sql`SELECT COUNT(*) as count,
            COALESCE(SUM(amount), 0) as total_amount,
-           json_agg(json_build_object('id', b.id, 'ref', b.reference, 'guest', b.guest_name, 'amount', p.amount, 'type', p.type, 'days', EXTRACT(DAY FROM NOW() - p.created_at)::int) ORDER BY p.created_at ASC) FILTER (WHERE b.reference IS NOT NULL) as items
+           json_agg(json_build_object('id', b.id, 'payment_id', p.id, 'ref', b.reference, 'guest', b.guest_name, 'email', b.guest_email, 'amount', p.amount, 'type', p.type, 'days', EXTRACT(DAY FROM NOW() - p.created_at)::int) ORDER BY p.created_at ASC) FILTER (WHERE b.reference IS NOT NULL) as items
            FROM payments p LEFT JOIN bookings b ON p.booking_id = b.id
            WHERE p.status = 'OPENSTAAND' AND p.created_at < ${threeDaysAgo}`,
 
