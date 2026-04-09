@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -14,43 +15,67 @@ import {
   Mail,
   TrendingUp,
   RefreshCw,
-  ExternalLink,
   ChevronDown,
   Loader2,
   AlertCircle,
   CheckCircle2,
   ShieldAlert,
+  ArrowRight,
+  Users,
+  Truck,
+  Car,
+  ClipboardList,
+  Banknote,
+  CircleDot,
+  FileWarning,
+  Send,
+  BarChart3,
 } from 'lucide-react';
-import Link from 'next/link';
 
 /* ═══════════════════════════════════════════════════
    Types
    ═══════════════════════════════════════════════════ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyItem = Record<string, any>;
+
+type CountItems = { count: number; items: AnyItem[] };
+
 type SuggestionData = {
-  newBookings: { count: number; items: Array<{ ref: string; guest: string; date: string }> };
-  overduePayments: { count: number; totalAmount: number; items: Array<{ ref: string; guest: string; amount: number; type: string; days: number }> };
-  upcomingCheckins: { count: number; items: Array<{ ref: string; guest: string; date: string; caravan: string; camping: string }> };
-  upcomingCheckouts: { count: number; items: Array<{ ref: string; guest: string; date: string }> };
-  pendingBorg: { count: number; items: Array<{ booking_ref: string; guest: string; type: string; status: string }> };
-  unansweredContacts: { count: number; items: Array<{ name: string; subject: string; email: string; age_hours: number }> };
-  activeChats: { count: number };
+  newBookings: CountItems;
+  overduePayments: CountItems & { totalAmount: number };
+  upcomingCheckins: CountItems;
+  upcomingCheckouts: CountItems;
+  pendingBorg: CountItems;
+  unansweredContacts: CountItems;
+  activeChats: CountItems;
   monthlyBookings: number;
   monthlyRevenue: number;
   openPayments: { count: number; total: number };
-  overdueRemaining: { count: number; items: Array<{ ref: string; guest: string; remaining: number; check_in: string }> };
-  borgDisputes: number;
+  overdueRemaining: CountItems;
+  borgDisputes: CountItems;
+  incompleteBookings: CountItems;
+  pendingTasks: CountItems;
+  noBorgSent: CountItems;
+  activeBookings: CountItems;
+  todayCheckins: CountItems;
+  todayCheckouts: CountItems;
+};
+
+type ActionItem = {
+  label: string;
+  sub?: string;
+  href: string;
 };
 
 type Suggestion = {
   id: string;
   urgency: 'critical' | 'warning' | 'info' | 'success';
+  icon: typeof AlertTriangle;
   title: string;
   detail: string;
-  count?: number;
-  amount?: string;
-  href?: string;
-  items?: Array<{ label: string; sub: string }>;
-  relevantPages: string[];
+  href: string;
+  actionLabel: string;
+  items?: ActionItem[];
 };
 
 type Props = {
@@ -61,269 +86,252 @@ type Props = {
 };
 
 /* ─── urgency config ─── */
-const URGENCY_CONFIG = {
-  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700', icon: AlertTriangle, dot: 'bg-red-500' },
-  warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700', icon: Clock, dot: 'bg-amber-500' },
-  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', icon: AlertCircle, dot: 'bg-blue-500' },
-  success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2, dot: 'bg-emerald-500' },
+const U = {
+  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', btnBg: 'bg-red-600 hover:bg-red-700', dot: 'bg-red-500' },
+  warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', btnBg: 'bg-amber-600 hover:bg-amber-700', dot: 'bg-amber-500' },
+  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', btnBg: 'bg-blue-600 hover:bg-blue-700', dot: 'bg-blue-500' },
+  success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', btnBg: 'bg-emerald-600 hover:bg-emerald-700', dot: 'bg-emerald-500' },
 };
 
+const fmt = (n: number) => `€${n.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
+const fmtDate = (d: string, nl: boolean) => {
+  try {
+    const date = new Date(d);
+    const today = new Date();
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    if (date.toDateString() === today.toDateString()) return nl ? 'Vandaag' : 'Today';
+    if (date.toDateString() === tomorrow.toDateString()) return nl ? 'Morgen' : 'Tomorrow';
+    return date.toLocaleDateString(nl ? 'nl-NL' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  } catch { return d; }
+};
+
+const TASK_LABELS_NL: Record<string, string> = { PREP: 'Voorbereiding', TRANSPORT: 'Transport', SETUP: 'Opbouw', CHECKIN: 'Incheck', CHECKOUT: 'Uitcheck', PICKUP: 'Ophalen', CLEANING: 'Schoonmaak', INSPECTION: 'Inspectie' };
+const TASK_LABELS_EN: Record<string, string> = { PREP: 'Preparation', TRANSPORT: 'Transport', SETUP: 'Setup', CHECKIN: 'Check-in', CHECKOUT: 'Check-out', PICKUP: 'Pickup', CLEANING: 'Cleaning', INSPECTION: 'Inspection' };
+const MISSING_NL: Record<string, string> = { caravan: 'Geen caravan', camping: 'Geen camping', email: 'Geen e-mail', prijs: 'Geen prijs' };
+const MISSING_EN: Record<string, string> = { caravan: 'No caravan', camping: 'No campsite', email: 'No email', prijs: 'No price' };
+
 /* ═══════════════════════════════════════════════════
-   Build dynamic suggestions from live data
+   Build suggestions from live data
    ═══════════════════════════════════════════════════ */
 function buildSuggestions(data: SuggestionData, nl: boolean): Suggestion[] {
-  const suggestions: Suggestion[] = [];
-  const fmt = (n: number) => `€${n.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
-  const fmtDate = (d: string) => {
-    try { return new Date(d).toLocaleDateString(nl ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short' }); }
-    catch { return d; }
-  };
+  const s: Suggestion[] = [];
+  const taskLabels = nl ? TASK_LABELS_NL : TASK_LABELS_EN;
+  const missingLabels = nl ? MISSING_NL : MISSING_EN;
 
-  // 1. Overdue payments (critical)
+  // ── TODAY's check-ins ──
+  if (data.todayCheckins.count > 0) {
+    s.push({
+      id: 'today-checkins', urgency: 'critical', icon: CalendarCheck,
+      title: nl ? `${data.todayCheckins.count} aankomst${data.todayCheckins.count > 1 ? 'en' : ''} vandaag` : `${data.todayCheckins.count} arrival${data.todayCheckins.count > 1 ? 's' : ''} today`,
+      detail: nl ? 'Gasten komen vandaag aan. Zorg dat alles klaar staat.' : 'Guests arriving today. Make sure everything is ready.',
+      href: '/admin/planning', actionLabel: nl ? 'Bekijk planning' : 'View planning',
+      items: data.todayCheckins.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: i.caravan || '', href: `/admin/boekingen` })),
+    });
+  }
+
+  // ── TODAY's check-outs ──
+  if (data.todayCheckouts.count > 0) {
+    s.push({
+      id: 'today-checkouts', urgency: 'critical', icon: CalendarX,
+      title: nl ? `${data.todayCheckouts.count} vertrek${data.todayCheckouts.count > 1 ? 'ken' : ''} vandaag` : `${data.todayCheckouts.count} departure${data.todayCheckouts.count > 1 ? 's' : ''} today`,
+      detail: nl ? 'Plan borginspectie en schoonmaak voor vertrekkende gasten.' : 'Schedule deposit inspection and cleaning for departing guests.',
+      href: '/admin/borg', actionLabel: nl ? 'Naar borginspecties' : 'Go to inspections',
+      items: data.todayCheckouts.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, href: `/admin/boekingen` })),
+    });
+  }
+
+  // ── Overdue payments ──
   if (data.overduePayments.count > 0) {
-    suggestions.push({
-      id: 'overdue-payments',
-      urgency: 'critical',
-      title: nl
-        ? `${data.overduePayments.count} achterstallige betaling${data.overduePayments.count > 1 ? 'en' : ''}`
-        : `${data.overduePayments.count} overdue payment${data.overduePayments.count > 1 ? 's' : ''}`,
-      detail: nl
-        ? `Totaal ${fmt(data.overduePayments.totalAmount)} openstaand, langer dan 3 dagen. Stuur herinneringen.`
-        : `Total ${fmt(data.overduePayments.totalAmount)} outstanding for over 3 days. Send reminders.`,
-      count: data.overduePayments.count,
-      amount: fmt(data.overduePayments.totalAmount),
-      href: '/admin/betalingen',
-      items: data.overduePayments.items.slice(0, 5).map(i => ({
-        label: `${i.ref} — ${i.guest}`,
-        sub: `${fmt(i.amount)} · ${i.days} ${nl ? 'dagen' : 'days'}`,
-      })),
-      relevantPages: ['/admin', '/admin/betalingen', '/admin/boekingen'],
+    s.push({
+      id: 'overdue-payments', urgency: 'critical', icon: Banknote,
+      title: nl ? `${fmt(data.overduePayments.totalAmount)} achterstallig` : `${fmt(data.overduePayments.totalAmount)} overdue`,
+      detail: nl ? `${data.overduePayments.count} betaling${data.overduePayments.count > 1 ? 'en' : ''} > 3 dagen openstaand. Stuur herinneringen.` : `${data.overduePayments.count} payment${data.overduePayments.count > 1 ? 's' : ''} > 3 days overdue. Send reminders.`,
+      href: '/admin/betalingen', actionLabel: nl ? 'Herinneringen sturen' : 'Send reminders',
+      items: data.overduePayments.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmt(i.amount)} · ${i.days}d`, href: `/admin/betalingen` })),
     });
   }
 
-  // 2. Borg disputes (critical)
-  if (data.borgDisputes > 0) {
-    suggestions.push({
-      id: 'borg-disputes',
-      urgency: 'critical',
-      title: nl
-        ? `${data.borgDisputes} borg bezwaar${data.borgDisputes > 1 ? 'en' : ''}`
-        : `${data.borgDisputes} deposit dispute${data.borgDisputes > 1 ? 's' : ''}`,
-      detail: nl
-        ? 'Klanten hebben bezwaar gemaakt tegen de borginspectie. Behandel deze zo snel mogelijk.'
-        : 'Customers have disputed the deposit inspection. Handle these ASAP.',
-      count: data.borgDisputes,
-      href: '/admin/borg',
-      relevantPages: ['/admin', '/admin/borg'],
+  // ── Borg disputes ──
+  if (data.borgDisputes.count > 0) {
+    s.push({
+      id: 'borg-disputes', urgency: 'critical', icon: ShieldAlert,
+      title: nl ? `${data.borgDisputes.count} borg bezwaar${data.borgDisputes.count > 1 ? 'en' : ''}` : `${data.borgDisputes.count} deposit dispute${data.borgDisputes.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Klant(en) hebben bezwaar gemaakt. Bekijk en behandel direct.' : 'Customer(s) disputed inspection. Review and handle immediately.',
+      href: '/admin/borg', actionLabel: nl ? 'Bezwaren bekijken' : 'View disputes',
+      items: data.borgDisputes.items.slice(0, 5).map(i => ({ label: `${i.booking_ref} — ${i.guest}`, sub: i.notes ? `"${(i.notes as string).slice(0, 40)}..."` : '', href: `/admin/borg` })),
     });
   }
 
-  // 3. New unprocessed bookings (critical if any)
+  // ── New bookings ──
   if (data.newBookings.count > 0) {
-    suggestions.push({
-      id: 'new-bookings',
-      urgency: data.newBookings.count >= 3 ? 'critical' : 'warning',
-      title: nl
-        ? `${data.newBookings.count} nieuwe boeking${data.newBookings.count > 1 ? 'en' : ''} wacht${data.newBookings.count === 1 ? '' : 'en'} op bevestiging`
-        : `${data.newBookings.count} new booking${data.newBookings.count > 1 ? 's' : ''} awaiting confirmation`,
-      detail: nl
-        ? 'Bevestig of wijs boekingen toe. Klanten wachten op antwoord.'
-        : 'Confirm or assign bookings. Customers are waiting for a response.',
-      count: data.newBookings.count,
-      href: '/admin/boekingen',
-      items: data.newBookings.items.slice(0, 5).map(i => ({
-        label: `${i.ref} — ${i.guest}`,
-        sub: fmtDate(i.date),
-      })),
-      relevantPages: ['/admin', '/admin/boekingen', '/admin/planning'],
+    s.push({
+      id: 'new-bookings', urgency: data.newBookings.count >= 3 ? 'critical' : 'warning', icon: ClipboardList,
+      title: nl ? `${data.newBookings.count} nieuwe boeking${data.newBookings.count > 1 ? 'en' : ''}` : `${data.newBookings.count} new booking${data.newBookings.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Wachtend op bevestiging. Controleer gegevens en bevestig.' : 'Awaiting confirmation. Check details and confirm.',
+      href: '/admin/boekingen', actionLabel: nl ? 'Boekingen bekijken' : 'View bookings',
+      items: data.newBookings.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmtDate(i.date, nl)} · ${fmt(i.total || 0)}`, href: `/admin/boekingen` })),
     });
   }
 
-  // 4. Remaining payments due before check-in (warning)
+  // ── Remaining payments before check-in ──
   if (data.overdueRemaining.count > 0) {
-    suggestions.push({
-      id: 'remaining-due',
-      urgency: 'warning',
-      title: nl
-        ? `${data.overdueRemaining.count} boeking${data.overdueRemaining.count > 1 ? 'en' : ''} met openstaand restbedrag`
-        : `${data.overdueRemaining.count} booking${data.overdueRemaining.count > 1 ? 's' : ''} with remaining balance`,
-      detail: nl
-        ? 'Check-in komende 7 dagen, maar restbetaling nog niet ontvangen.'
-        : 'Check-in within 7 days but remaining payment not yet received.',
-      count: data.overdueRemaining.count,
-      href: '/admin/betalingen',
-      items: data.overdueRemaining.items.slice(0, 5).map(i => ({
-        label: `${i.ref} — ${i.guest}`,
-        sub: `${fmt(i.remaining)} · check-in ${fmtDate(i.check_in)}`,
-      })),
-      relevantPages: ['/admin', '/admin/betalingen', '/admin/boekingen'],
+    s.push({
+      id: 'remaining-due', urgency: 'warning', icon: CreditCard,
+      title: nl ? `${data.overdueRemaining.count} restbetaling${data.overdueRemaining.count > 1 ? 'en' : ''} nog open` : `${data.overdueRemaining.count} remaining payment${data.overdueRemaining.count > 1 ? 's' : ''} due`,
+      detail: nl ? 'Check-in binnen 7 dagen maar restbedrag niet ontvangen.' : 'Check-in within 7 days but balance not received.',
+      href: '/admin/betalingen', actionLabel: nl ? 'Betalingen bekijken' : 'View payments',
+      items: data.overdueRemaining.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmt(i.remaining)} · ${fmtDate(i.check_in, nl)}`, href: `/admin/betalingen` })),
     });
   }
 
-  // 5. Unanswered contacts (warning)
+  // ── Incomplete bookings ──
+  if (data.incompleteBookings.count > 0) {
+    s.push({
+      id: 'incomplete', urgency: 'warning', icon: FileWarning,
+      title: nl ? `${data.incompleteBookings.count} onvolledige boeking${data.incompleteBookings.count > 1 ? 'en' : ''}` : `${data.incompleteBookings.count} incomplete booking${data.incompleteBookings.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Boekingen missen belangrijke gegevens (caravan, camping, e-mail of prijs).' : 'Bookings missing key data (caravan, campsite, email or price).',
+      href: '/admin/boekingen', actionLabel: nl ? 'Aanvullen' : 'Complete',
+      items: data.incompleteBookings.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: missingLabels[i.missing] || i.missing, href: `/admin/boekingen` })),
+    });
+  }
+
+  // ── Pending tasks ──
+  if (data.pendingTasks.count > 0) {
+    s.push({
+      id: 'pending-tasks', urgency: 'warning', icon: Truck,
+      title: nl ? `${data.pendingTasks.count} openstaande ${data.pendingTasks.count > 1 ? 'taken' : 'taak'}` : `${data.pendingTasks.count} pending task${data.pendingTasks.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Transport, schoonmaak of voorbereidingstaken die nog gedaan moeten worden.' : 'Transport, cleaning or preparation tasks that need to be done.',
+      href: '/admin/planning', actionLabel: nl ? 'Taken bekijken' : 'View tasks',
+      items: data.pendingTasks.items.slice(0, 5).map(i => ({
+        label: `${taskLabels[i.type] || i.type} — ${i.ref}`,
+        sub: i.assigned ? i.assigned : (nl ? 'Niet toegewezen' : 'Unassigned'),
+        href: `/admin/planning`,
+      })),
+    });
+  }
+
+  // ── Unanswered contacts ──
   if (data.unansweredContacts.count > 0) {
-    suggestions.push({
-      id: 'unanswered-contacts',
-      urgency: 'warning',
-      title: nl
-        ? `${data.unansweredContacts.count} onbeantwoord bericht${data.unansweredContacts.count > 1 ? 'en' : ''}`
-        : `${data.unansweredContacts.count} unanswered message${data.unansweredContacts.count > 1 ? 's' : ''}`,
-      detail: nl
-        ? 'Contactberichten ouder dan 24 uur zonder reactie.'
-        : 'Contact messages older than 24 hours without a reply.',
-      count: data.unansweredContacts.count,
-      href: '/admin/berichten',
-      items: data.unansweredContacts.items.slice(0, 3).map(i => ({
-        label: `${i.name} — ${i.subject || i.email}`,
-        sub: `${i.age_hours}h ${nl ? 'geleden' : 'ago'}`,
-      })),
-      relevantPages: ['/admin', '/admin/berichten'],
+    s.push({
+      id: 'unanswered', urgency: 'warning', icon: Mail,
+      title: nl ? `${data.unansweredContacts.count} onbeantwoord${data.unansweredContacts.count > 1 ? 'e berichten' : ' bericht'}` : `${data.unansweredContacts.count} unanswered message${data.unansweredContacts.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Ouder dan 24 uur zonder reactie.' : 'Over 24 hours without a reply.',
+      href: '/admin/berichten', actionLabel: nl ? 'Beantwoorden' : 'Reply',
+      items: data.unansweredContacts.items.slice(0, 3).map(i => ({ label: `${i.name}`, sub: `${i.age_hours}h — ${i.subject || i.email}`, href: `/admin/berichten` })),
     });
   }
 
-  // 6. Active chats (warning)
+  // ── Active chats ──
   if (data.activeChats.count > 0) {
-    suggestions.push({
-      id: 'active-chats',
-      urgency: 'warning',
-      title: nl
-        ? `${data.activeChats.count} actieve chat${data.activeChats.count > 1 ? 's' : ''}`
-        : `${data.activeChats.count} active chat${data.activeChats.count > 1 ? 's' : ''}`,
-      detail: nl
-        ? 'Live chatgesprekken wachten op een reactie.'
-        : 'Live chat conversations waiting for a response.',
-      count: data.activeChats.count,
-      href: '/admin/chat',
-      relevantPages: ['/admin', '/admin/chat'],
+    s.push({
+      id: 'chats', urgency: 'warning', icon: MessageCircle,
+      title: nl ? `${data.activeChats.count} actieve chat${data.activeChats.count > 1 ? 's' : ''}` : `${data.activeChats.count} active chat${data.activeChats.count > 1 ? 's' : ''}`,
+      detail: nl ? 'Bezoekers wachten op antwoord in de live chat.' : 'Visitors waiting for a reply in live chat.',
+      href: '/admin/chat', actionLabel: nl ? 'Chat openen' : 'Open chat',
+      items: data.activeChats.items?.slice(0, 3).map(i => ({ label: i.visitor, sub: i.needs_human ? (nl ? 'Vraagt om medewerker' : 'Needs human') : '', href: `/admin/chat` })),
     });
   }
 
-  // 7. Pending borg inspections (warning)
+  // ── Pending borg inspections ──
   if (data.pendingBorg.count > 0) {
-    suggestions.push({
-      id: 'pending-borg',
-      urgency: 'warning',
-      title: nl
-        ? `${data.pendingBorg.count} openstaande borginspectie${data.pendingBorg.count > 1 ? 's' : ''}`
-        : `${data.pendingBorg.count} pending deposit inspection${data.pendingBorg.count > 1 ? 's' : ''}`,
-      detail: nl
-        ? 'Deze inspecties moeten afgerond worden voordat de borg geretourneerd kan worden.'
-        : 'These inspections must be completed before deposits can be returned.',
-      count: data.pendingBorg.count,
-      href: '/admin/borg',
-      items: data.pendingBorg.items.slice(0, 5).map(i => ({
-        label: `${i.booking_ref} — ${i.guest}`,
-        sub: i.type === 'UITCHECKEN' ? (nl ? 'Uitcheck' : 'Check-out') : (nl ? 'Incheck' : 'Check-in'),
-      })),
-      relevantPages: ['/admin', '/admin/borg'],
+    s.push({
+      id: 'pending-borg', urgency: 'warning', icon: ClipboardCheck,
+      title: nl ? `${data.pendingBorg.count} borginspectie${data.pendingBorg.count > 1 ? 's' : ''} open` : `${data.pendingBorg.count} deposit inspection${data.pendingBorg.count > 1 ? 's' : ''} open`,
+      detail: nl ? 'Rond inspecties af zodat borg geretourneerd kan worden.' : 'Complete inspections so deposits can be returned.',
+      href: '/admin/borg', actionLabel: nl ? 'Inspecties bekijken' : 'View inspections',
+      items: data.pendingBorg.items.slice(0, 5).map(i => ({ label: `${i.booking_ref} — ${i.guest}`, sub: i.type === 'UITCHECKEN' ? (nl ? 'Uitcheck' : 'Check-out') : (nl ? 'Incheck' : 'Check-in'), href: `/admin/borg` })),
     });
   }
 
-  // 8. Upcoming check-ins (info)
+  // ── No borg sent for upcoming arrivals ──
+  if (data.noBorgSent.count > 0) {
+    s.push({
+      id: 'no-borg', urgency: 'warning', icon: Send,
+      title: nl ? `${data.noBorgSent.count} aankomst${data.noBorgSent.count > 1 ? 'en' : ''} zonder borgformulier` : `${data.noBorgSent.count} arrival${data.noBorgSent.count > 1 ? 's' : ''} without deposit form`,
+      detail: nl ? 'Stuur borgformulier naar gasten vóór aankomst.' : 'Send deposit form to guests before arrival.',
+      href: '/admin/borg', actionLabel: nl ? 'Borgformulieren versturen' : 'Send deposit forms',
+      items: data.noBorgSent.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: fmtDate(i.date, nl), href: `/admin/boekingen` })),
+    });
+  }
+
+  // ── Upcoming check-ins ──
   if (data.upcomingCheckins.count > 0) {
-    suggestions.push({
-      id: 'upcoming-checkins',
-      urgency: 'info',
-      title: nl
-        ? `${data.upcomingCheckins.count} aankomst${data.upcomingCheckins.count > 1 ? 'en' : ''} komende 7 dagen`
-        : `${data.upcomingCheckins.count} arrival${data.upcomingCheckins.count > 1 ? 's' : ''} in the next 7 days`,
-      detail: nl
-        ? 'Controleer of alle voorbereidingen klaar zijn: schoonmaak, sleutels, informatie naar gast.'
-        : 'Verify all preparations are ready: cleaning, keys, guest information.',
-      count: data.upcomingCheckins.count,
-      href: '/admin/planning',
-      items: data.upcomingCheckins.items.slice(0, 5).map(i => ({
-        label: `${i.ref} — ${i.guest}`,
-        sub: fmtDate(i.date),
-      })),
-      relevantPages: ['/admin', '/admin/planning', '/admin/boekingen'],
+    s.push({
+      id: 'checkins', urgency: 'info', icon: CalendarCheck,
+      title: nl ? `${data.upcomingCheckins.count} aankomst${data.upcomingCheckins.count > 1 ? 'en' : ''} komende 7 dagen` : `${data.upcomingCheckins.count} arrival${data.upcomingCheckins.count > 1 ? 's' : ''} next 7 days`,
+      detail: nl ? 'Controleer voorbereidingen: caravan, schoonmaak, sleutels, gastinfo.' : 'Check preparations: caravan, cleaning, keys, guest info.',
+      href: '/admin/planning', actionLabel: nl ? 'Planning bekijken' : 'View planning',
+      items: data.upcomingCheckins.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${fmtDate(i.date, nl)} · ${i.caravan || ''}`, href: `/admin/boekingen` })),
     });
   }
 
-  // 9. Upcoming check-outs (info)
+  // ── Upcoming check-outs ──
   if (data.upcomingCheckouts.count > 0) {
-    suggestions.push({
-      id: 'upcoming-checkouts',
-      urgency: 'info',
-      title: nl
-        ? `${data.upcomingCheckouts.count} vertrek${data.upcomingCheckouts.count > 1 ? 'ken' : ''} komende 7 dagen`
-        : `${data.upcomingCheckouts.count} departure${data.upcomingCheckouts.count > 1 ? 's' : ''} in the next 7 days`,
-      detail: nl
-        ? 'Plan borginspecties en schoonmaak voor vertrekkende gasten.'
-        : 'Schedule deposit inspections and cleaning for departing guests.',
-      count: data.upcomingCheckouts.count,
-      href: '/admin/planning',
-      items: data.upcomingCheckouts.items.slice(0, 5).map(i => ({
-        label: `${i.ref} — ${i.guest}`,
-        sub: fmtDate(i.date),
-      })),
-      relevantPages: ['/admin', '/admin/planning', '/admin/borg'],
+    s.push({
+      id: 'checkouts', urgency: 'info', icon: CalendarX,
+      title: nl ? `${data.upcomingCheckouts.count} vertrek${data.upcomingCheckouts.count > 1 ? 'ken' : ''} komende 7 dagen` : `${data.upcomingCheckouts.count} departure${data.upcomingCheckouts.count > 1 ? 's' : ''} next 7 days`,
+      detail: nl ? 'Plan borginspecties en schoonmaak.' : 'Schedule inspections and cleaning.',
+      href: '/admin/planning', actionLabel: nl ? 'Planning bekijken' : 'View planning',
+      items: data.upcomingCheckouts.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: fmtDate(i.date, nl), href: `/admin/boekingen` })),
     });
   }
 
-  // 10. Open payments summary (info)
+  // ── Active stays ──
+  if (data.activeBookings.count > 0) {
+    s.push({
+      id: 'active-stays', urgency: 'info', icon: Car,
+      title: nl ? `${data.activeBookings.count} gast${data.activeBookings.count > 1 ? 'en' : ''} momenteel op locatie` : `${data.activeBookings.count} guest${data.activeBookings.count > 1 ? 's' : ''} currently on site`,
+      detail: nl ? 'Actieve verblijven op dit moment.' : 'Active stays right now.',
+      href: '/admin/planning', actionLabel: nl ? 'Planning bekijken' : 'View planning',
+      items: data.activeBookings.items.slice(0, 5).map(i => ({ label: `${i.ref} — ${i.guest}`, sub: `${nl ? 'Vertrek' : 'Checkout'} ${fmtDate(i.checkout, nl)}`, href: `/admin/boekingen` })),
+    });
+  }
+
+  // ── Open payments ──
   if (data.openPayments.count > 0) {
-    suggestions.push({
-      id: 'open-payments-summary',
-      urgency: 'info',
-      title: nl
-        ? `${fmt(data.openPayments.total)} openstaand over ${data.openPayments.count} betaling${data.openPayments.count > 1 ? 'en' : ''}`
-        : `${fmt(data.openPayments.total)} outstanding across ${data.openPayments.count} payment${data.openPayments.count > 1 ? 's' : ''}`,
-      detail: nl
-        ? 'Totaal openstaand bedrag. Bekijk de betalingenpagina voor details.'
-        : 'Total outstanding amount. See payments page for details.',
-      amount: fmt(data.openPayments.total),
-      href: '/admin/betalingen',
-      relevantPages: ['/admin', '/admin/betalingen'],
+    s.push({
+      id: 'open-payments', urgency: 'info', icon: CreditCard,
+      title: nl ? `${fmt(data.openPayments.total)} openstaand` : `${fmt(data.openPayments.total)} outstanding`,
+      detail: nl ? `Verdeeld over ${data.openPayments.count} betaling${data.openPayments.count > 1 ? 'en' : ''}.` : `Across ${data.openPayments.count} payment${data.openPayments.count > 1 ? 's' : ''}.`,
+      href: '/admin/betalingen', actionLabel: nl ? 'Naar betalingen' : 'Go to payments',
     });
   }
 
-  // 11. Monthly summary (success/info)
+  // ── Monthly summary ──
   if (data.monthlyRevenue > 0 || data.monthlyBookings > 0) {
-    suggestions.push({
-      id: 'monthly-summary',
-      urgency: 'success',
-      title: nl
-        ? `Deze maand: ${data.monthlyBookings} boekingen · ${fmt(data.monthlyRevenue)} ontvangen`
-        : `This month: ${data.monthlyBookings} bookings · ${fmt(data.monthlyRevenue)} received`,
-      detail: nl
-        ? 'Maandelijks overzicht van boekingen en ontvangen betalingen.'
-        : 'Monthly overview of bookings and received payments.',
-      href: '/admin',
-      relevantPages: ['/admin', '/admin/betalingen'],
+    s.push({
+      id: 'monthly', urgency: 'success', icon: BarChart3,
+      title: nl ? `${data.monthlyBookings} boekingen · ${fmt(data.monthlyRevenue)} ontvangen` : `${data.monthlyBookings} bookings · ${fmt(data.monthlyRevenue)} received`,
+      detail: nl ? `Overzicht van deze maand.` : `This month's overview.`,
+      href: '/admin', actionLabel: nl ? 'Dashboard bekijken' : 'View dashboard',
     });
   }
 
-  // 12. All clear!
-  if (suggestions.filter(s => s.urgency === 'critical' || s.urgency === 'warning').length === 0) {
-    suggestions.push({
-      id: 'all-clear',
-      urgency: 'success',
-      title: nl ? 'Alles op orde!' : 'All clear!',
-      detail: nl
-        ? 'Geen urgente zaken. Alle boekingen, betalingen en berichten zijn up-to-date.'
-        : 'No urgent matters. All bookings, payments, and messages are up-to-date.',
-      relevantPages: ['/admin'],
+  // ── All clear ──
+  if (s.filter(x => x.urgency === 'critical' || x.urgency === 'warning').length === 0) {
+    s.push({
+      id: 'all-clear', urgency: 'success', icon: CheckCircle2,
+      title: nl ? 'Alles onder controle!' : 'Everything under control!',
+      detail: nl ? 'Geen urgente zaken. Boekingen, betalingen en berichten zijn up-to-date.' : 'No urgent matters. Bookings, payments and messages are up to date.',
+      href: '/admin', actionLabel: nl ? 'Naar dashboard' : 'Go to dashboard',
     });
   }
 
-  return suggestions;
+  return s;
 }
 
 /* ═══════════════════════════════════════════════════
    Component
    ═══════════════════════════════════════════════════ */
 export default function AdminAssistant({ locale, pathname, open, onClose }: Props) {
+  const router = useRouter();
   const [data, setData] = useState<SuggestionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'page'>('all');
   const panelRef = useRef<HTMLDivElement>(null);
-
   const nl = locale === 'nl';
 
-  // Fetch suggestions data
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(false);
@@ -338,39 +346,24 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
     }
   }, []);
 
-  // Fetch on open
   useEffect(() => {
-    if (open) {
-      fetchData();
-      setExpandedId(null);
-    }
+    if (open) { fetchData(); setExpandedId(null); }
   }, [open, fetchData]);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose();
-      }
+    const h = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
     };
-    const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 100);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handleClick);
-    };
+    const t = setTimeout(() => document.addEventListener('mousedown', h), 100);
+    return () => { clearTimeout(t); document.removeEventListener('mousedown', h); };
   }, [open, onClose]);
 
-  // Build suggestions
+  const navigate = (href: string) => { onClose(); router.push(href); };
+
   const suggestions = data ? buildSuggestions(data, nl) : [];
-
-  // Filter by current page relevance
-  const filtered = filter === 'page'
-    ? suggestions.filter(s => s.relevantPages.some(p => pathname.startsWith(p)))
-    : suggestions;
-
-  const criticalCount = suggestions.filter(s => s.urgency === 'critical').length;
-  const warningCount = suggestions.filter(s => s.urgency === 'warning').length;
+  const criticalCount = suggestions.filter(x => x.urgency === 'critical').length;
+  const warningCount = suggestions.filter(x => x.urgency === 'warning').length;
 
   if (!open) return null;
 
@@ -383,68 +376,46 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
           transition={{ duration: 0.15 }}
-          className="fixed top-14 right-3 sm:right-5 w-[360px] sm:w-[400px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-xl border border-border/60 z-[60] flex flex-col overflow-hidden"
+          className="fixed top-14 right-3 sm:right-5 w-[370px] sm:w-[420px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-2xl border border-border/60 z-[60] flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <ShieldAlert className="w-4.5 h-4.5" />
+              <CircleDot className="w-4 h-4" />
               <span className="font-semibold text-sm">Smart Suggestions</span>
               {criticalCount > 0 && (
-                <span className="bg-red-500/80 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">
-                  {criticalCount}
-                </span>
+                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold animate-pulse">{criticalCount}</span>
               )}
               {warningCount > 0 && (
-                <span className="bg-amber-400/80 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                  {warningCount}
-                </span>
+                <span className="bg-amber-400 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{warningCount}</span>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <button
-                onClick={fetchData}
-                disabled={loading}
-                className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer disabled:opacity-50"
-                title={nl ? 'Vernieuw' : 'Refresh'}
-              >
+              <button onClick={fetchData} disabled={loading} className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer disabled:opacity-50" title={nl ? 'Vernieuwen' : 'Refresh'}>
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               </button>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer"
-              >
+              <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-md transition-colors cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Filter tabs */}
-          <div className="flex border-b border-border/50 shrink-0 bg-gray-50/50">
-            <button
-              onClick={() => setFilter('all')}
-              className={`flex-1 py-2 text-[11px] font-medium transition-colors cursor-pointer ${
-                filter === 'all' ? 'text-violet-700 border-b-2 border-violet-600' : 'text-muted hover:text-foreground'
-              }`}
-            >
-              {nl ? 'Alles' : 'All'} ({suggestions.length})
-            </button>
-            <button
-              onClick={() => setFilter('page')}
-              className={`flex-1 py-2 text-[11px] font-medium transition-colors cursor-pointer ${
-                filter === 'page' ? 'text-violet-700 border-b-2 border-violet-600' : 'text-muted hover:text-foreground'
-              }`}
-            >
-              {nl ? 'Deze pagina' : 'This page'} ({suggestions.filter(s => s.relevantPages.some(p => pathname.startsWith(p))).length})
-            </button>
-          </div>
+          {/* Summary bar */}
+          {data && !error && (
+            <div className="px-4 py-2 bg-gradient-to-r from-violet-50 to-indigo-50 border-b border-border/30 flex items-center gap-4 text-[10px] text-muted shrink-0">
+              <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3 text-violet-500" />{fmt(data.monthlyRevenue)} {nl ? 'deze maand' : 'this month'}</span>
+              <span>{data.monthlyBookings} {nl ? 'boekingen' : 'bookings'}</span>
+              {data.activeBookings.count > 0 && <span className="text-emerald-600 font-medium">{data.activeBookings.count} {nl ? 'actief' : 'active'}</span>}
+              {loading && <Loader2 className="w-3 h-3 animate-spin ml-auto" />}
+            </div>
+          )}
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto overscroll-contain">
             {loading && !data && (
               <div className="flex items-center justify-center gap-2 py-12 text-muted">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-xs">{nl ? 'Laden...' : 'Loading...'}</span>
+                <span className="text-xs">{nl ? 'Analyseren...' : 'Analyzing...'}</span>
               </div>
             )}
 
@@ -452,84 +423,57 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
               <div className="p-4 text-center text-xs text-red-600">
                 <AlertCircle className="w-5 h-5 mx-auto mb-2" />
                 {nl ? 'Kon suggesties niet laden.' : 'Could not load suggestions.'}
-                <button onClick={fetchData} className="block mx-auto mt-2 text-violet-600 underline cursor-pointer">
-                  {nl ? 'Opnieuw proberen' : 'Retry'}
-                </button>
+                <button onClick={fetchData} className="block mx-auto mt-2 text-violet-600 underline cursor-pointer">{nl ? 'Opnieuw' : 'Retry'}</button>
               </div>
             )}
 
-            {!loading && !error && filtered.length === 0 && (
-              <div className="p-6 text-center text-xs text-muted">
-                <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-500" />
-                {nl ? 'Geen suggesties voor deze pagina.' : 'No suggestions for this page.'}
-              </div>
-            )}
-
-            {!error && filtered.length > 0 && (
-              <div className="p-2.5 space-y-1.5">
-                {filtered.map((s) => {
-                  const cfg = URGENCY_CONFIG[s.urgency];
-                  const Icon = cfg.icon;
-                  const isExpanded = expandedId === s.id;
-                  const hasDetails = s.items && s.items.length > 0;
+            {!error && suggestions.length > 0 && (
+              <div className="p-2.5 space-y-2">
+                {suggestions.map((sg) => {
+                  const cfg = U[sg.urgency];
+                  const Icon = sg.icon;
+                  const isExpanded = expandedId === sg.id;
+                  const hasItems = sg.items && sg.items.length > 0;
 
                   return (
-                    <div key={s.id} className={`rounded-lg border ${cfg.border} ${cfg.bg} transition-all`}>
-                      <button
-                        onClick={() => hasDetails ? setExpandedId(isExpanded ? null : s.id) : undefined}
-                        className={`w-full text-left p-2.5 ${hasDetails ? 'cursor-pointer' : 'cursor-default'}`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className={`mt-0.5 shrink-0 ${cfg.text}`}>
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
+                    <div key={sg.id} className={`rounded-xl border ${cfg.border} ${cfg.bg} overflow-hidden transition-all`}>
+                      {/* Main suggestion row */}
+                      <div className="p-3" role="button" tabIndex={0} onClick={() => hasItems ? setExpandedId(isExpanded ? null : sg.id) : navigate(sg.href)} onKeyDown={(e) => e.key === 'Enter' && (hasItems ? setExpandedId(isExpanded ? null : sg.id) : navigate(sg.href))} className-extra="cursor-pointer">
+                        <div className="flex items-start gap-2.5 cursor-pointer">
+                          <div className={`mt-0.5 shrink-0 ${cfg.text}`}><Icon className="w-4 h-4" /></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs font-semibold ${cfg.text} leading-tight`}>
-                                {s.title}
-                              </span>
-                            </div>
-                            <p className="mt-0.5 text-[11px] text-foreground/60 leading-relaxed">
-                              {s.detail}
-                            </p>
+                            <span className={`text-xs font-bold ${cfg.text} leading-tight block`}>{sg.title}</span>
+                            <p className="mt-0.5 text-[11px] text-foreground/55 leading-relaxed">{sg.detail}</p>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0 mt-0.5">
-                            {s.href && (
-                              <Link
-                                href={s.href}
-                                onClick={(e) => { e.stopPropagation(); onClose(); }}
-                                className={`p-1 rounded hover:bg-white/60 transition-colors ${cfg.text}`}
-                                title={nl ? 'Ga naar' : 'Go to'}
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                              </Link>
-                            )}
-                            {hasDetails && (
-                              <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                            )}
-                          </div>
+                          {hasItems ? (
+                            <ChevronDown className={`w-4 h-4 ${cfg.text} shrink-0 mt-0.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          ) : (
+                            <ArrowRight className={`w-3.5 h-3.5 ${cfg.text} shrink-0 mt-0.5`} />
+                          )}
                         </div>
-                      </button>
+                      </div>
 
-                      {/* Expanded detail items */}
+                      {/* Expanded items — each individually clickable */}
                       <AnimatePresence>
-                        {isExpanded && s.items && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-2.5 pb-2.5 pt-0">
-                              <div className="bg-white/60 rounded-md border border-white/80 divide-y divide-border/30">
-                                {s.items.map((item, j) => (
-                                  <div key={j} className="px-2.5 py-1.5 flex items-center justify-between">
-                                    <span className="text-[11px] font-medium text-foreground/80 truncate">{item.label}</span>
-                                    <span className="text-[10px] text-muted shrink-0 ml-2">{item.sub}</span>
+                        {isExpanded && sg.items && (
+                          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
+                            <div className="px-3 pb-2 space-y-1">
+                              {sg.items.map((item, j) => (
+                                <button key={j} onClick={() => navigate(item.href)} className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/70 hover:bg-white border border-white/80 hover:border-border/40 transition-all cursor-pointer group text-left">
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-[11px] font-medium text-foreground/80 block truncate">{item.label}</span>
+                                    {item.sub && <span className="text-[10px] text-muted">{item.sub}</span>}
                                   </div>
-                                ))}
-                              </div>
+                                  <ArrowRight className="w-3 h-3 text-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                </button>
+                              ))}
+                            </div>
+                            {/* Action button */}
+                            <div className="px-3 pb-3">
+                              <button onClick={() => navigate(sg.href)} className={`w-full py-2 rounded-lg text-[11px] font-semibold text-white ${cfg.btnBg} transition-colors cursor-pointer flex items-center justify-center gap-1.5`}>
+                                {sg.actionLabel}
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
                             </div>
                           </motion.div>
                         )}
@@ -540,19 +484,6 @@ export default function AdminAssistant({ locale, pathname, open, onClose }: Prop
               </div>
             )}
           </div>
-
-          {/* Footer: last update + stats */}
-          {data && !error && (
-            <div className="px-3 py-2 border-t border-border/40 bg-gray-50/50 shrink-0 flex items-center justify-between">
-              <div className="flex items-center gap-3 text-[10px] text-muted">
-                <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {nl ? 'Deze maand' : 'This month'}: {data.monthlyBookings} {nl ? 'boekingen' : 'bookings'}
-                </span>
-              </div>
-              {loading && <Loader2 className="w-3 h-3 animate-spin text-muted" />}
-            </div>
-          )}
         </motion.div>
       )}
     </AnimatePresence>
