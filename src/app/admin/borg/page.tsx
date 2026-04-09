@@ -329,29 +329,20 @@ export default function AdminBorgPage() {
 
   return (
     <div className="space-y-3 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            {t('deposit.title')}
-          </h1>
-          <p className="text-xs sm:text-sm text-muted mt-0.5 sm:mt-1">{t('deposit.subtitle')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => fetchData()}
-            className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-            title="Refresh">
-            <RefreshCw size={16} />
-          </button>
-          <button
-            onClick={() => setShowNewForm(!showNewForm)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
-          >
-            <Plus size={16} />
-            {t('deposit.newChecklist')}
-          </button>
-        </div>
+      {/* Toolbar */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => fetchData()}
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title="Refresh">
+          <RefreshCw size={16} />
+        </button>
+        <button
+          onClick={() => setShowNewForm(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer"
+        >
+          <Plus size={16} />
+          {t('deposit.newChecklist')}
+        </button>
       </div>
 
       {/* Stats */}
@@ -482,144 +473,153 @@ export default function AdminBorgPage() {
         );
       })()}
 
-      {/* New Checklist Form */}
+      {/* New Checklist Modal */}
       <AnimatePresence>
         {showNewForm && (
-          <motion.form
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            onSubmit={handleCreate}
-            className="bg-white rounded-xl p-3 sm:p-5 overflow-hidden"
-          >
-            <h3 className="font-semibold text-foreground mb-3 sm:mb-4">{t('deposit.createTitle')}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.booking')}</label>
-                <div ref={bookingDropdownRef} className="relative">
-                  <div
-                    className="w-full px-3 py-2.5 rounded-lg text-sm focus-within:border-primary flex items-center gap-2 bg-white cursor-pointer border border-gray-200"
-                    onClick={() => setBookingDropdownOpen(true)}
-                  >
-                    <Search size={14} className="text-muted shrink-0" />
-                    <input
-                      type="text"
-                      value={bookingSearch}
-                      onChange={(e) => {
-                        setBookingSearch(e.target.value);
-                        setBookingDropdownOpen(true);
-                        if (!e.target.value) setNewBookingId('');
-                      }}
-                      onFocus={() => setBookingDropdownOpen(true)}
-                      placeholder={newBookingId ? bookings.find(b => b.id === newBookingId)?.reference + ' — ' + bookings.find(b => b.id === newBookingId)?.guest_name : t('deposit.selectBooking')}
-                      className="flex-1 bg-transparent outline-none text-sm min-w-0 placeholder:text-muted"
-                    />
-                    {newBookingId && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setNewBookingId(''); setBookingSearch(''); }}
-                        className="text-muted hover:text-foreground cursor-pointer shrink-0"
-                      >
-                        <XCircle size={14} />
-                      </button>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-8 sm:pt-16 px-4 overflow-y-auto">
+            <motion.form
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onSubmit={handleCreate}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mb-8"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                <h3 className="text-lg font-bold text-foreground">{t('deposit.createTitle')}</h3>
+                <button type="button" onClick={() => setShowNewForm(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 cursor-pointer">
+                  <XCircle size={18} />
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.booking')}</label>
+                  <div ref={bookingDropdownRef} className="relative">
+                    <div
+                      className="w-full px-3 py-2.5 rounded-lg text-sm focus-within:border-primary flex items-center gap-2 bg-white cursor-pointer border border-gray-200"
+                      onClick={() => setBookingDropdownOpen(true)}
+                    >
+                      <Search size={14} className="text-muted shrink-0" />
+                      <input
+                        type="text"
+                        value={bookingSearch}
+                        onChange={(e) => {
+                          setBookingSearch(e.target.value);
+                          setBookingDropdownOpen(true);
+                          if (!e.target.value) setNewBookingId('');
+                        }}
+                        onFocus={() => setBookingDropdownOpen(true)}
+                        placeholder={newBookingId ? bookings.find(b => b.id === newBookingId)?.reference + ' — ' + bookings.find(b => b.id === newBookingId)?.guest_name : t('deposit.selectBooking')}
+                        className="flex-1 bg-transparent outline-none text-sm min-w-0 placeholder:text-muted"
+                      />
+                      {newBookingId && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setNewBookingId(''); setBookingSearch(''); }}
+                          className="text-muted hover:text-foreground cursor-pointer shrink-0"
+                        >
+                          <XCircle size={14} />
+                        </button>
+                      )}
+                    </div>
+                    {bookingDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto z-50">
+                        {bookings
+                          .filter(b => b.status !== 'GEANNULEERD')
+                          .filter(b => {
+                            if (!bookingSearch) return true;
+                            const q = bookingSearch.toLowerCase();
+                            return (
+                              b.reference?.toLowerCase().includes(q) ||
+                              b.guest_name?.toLowerCase().includes(q) ||
+                              b.caravan_id?.toLowerCase().includes(q)
+                            );
+                          })
+                          .length === 0 ? (
+                            <div className="px-3 py-3 text-sm text-muted text-center">
+                              {t('common.noResults') || 'Geen resultaten'}
+                            </div>
+                          ) : (
+                            bookings
+                              .filter(b => b.status !== 'GEANNULEERD')
+                              .filter(b => {
+                                if (!bookingSearch) return true;
+                                const q = bookingSearch.toLowerCase();
+                                return (
+                                  b.reference?.toLowerCase().includes(q) ||
+                                  b.guest_name?.toLowerCase().includes(q) ||
+                                  b.caravan_id?.toLowerCase().includes(q)
+                                );
+                              })
+                              .map(b => (
+                                <button
+                                  key={b.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setNewBookingId(b.id);
+                                    setBookingSearch('');
+                                    setBookingDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors cursor-pointer flex items-center gap-3 ${
+                                    newBookingId === b.id ? 'bg-primary/10' : ''
+                                  }`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-medium text-foreground">{b.reference} — {b.guest_name}</div>
+                                    <div className="text-xs text-muted mt-0.5">
+                                      {b.caravan_id} · {b.check_in ? new Date(b.check_in).toLocaleDateString('nl-NL') : ''} - {b.check_out ? new Date(b.check_out).toLocaleDateString('nl-NL') : ''}
+                                    </div>
+                                  </div>
+                                  {newBookingId === b.id && <CheckCircle2 size={14} className="text-primary shrink-0" />}
+                                </button>
+                              ))
+                          )}
+                      </div>
                     )}
                   </div>
-                  {bookingDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto z-50">
-                      {bookings
-                        .filter(b => b.status !== 'GEANNULEERD')
-                        .filter(b => {
-                          if (!bookingSearch) return true;
-                          const q = bookingSearch.toLowerCase();
-                          return (
-                            b.reference?.toLowerCase().includes(q) ||
-                            b.guest_name?.toLowerCase().includes(q) ||
-                            b.caravan_id?.toLowerCase().includes(q)
-                          );
-                        })
-                        .length === 0 ? (
-                          <div className="px-3 py-3 text-sm text-muted text-center">
-                            {t('common.noResults') || 'Geen resultaten'}
-                          </div>
-                        ) : (
-                          bookings
-                            .filter(b => b.status !== 'GEANNULEERD')
-                            .filter(b => {
-                              if (!bookingSearch) return true;
-                              const q = bookingSearch.toLowerCase();
-                              return (
-                                b.reference?.toLowerCase().includes(q) ||
-                                b.guest_name?.toLowerCase().includes(q) ||
-                                b.caravan_id?.toLowerCase().includes(q)
-                              );
-                            })
-                            .map(b => (
-                              <button
-                                key={b.id}
-                                type="button"
-                                onClick={() => {
-                                  setNewBookingId(b.id);
-                                  setBookingSearch('');
-                                  setBookingDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors cursor-pointer flex items-center gap-3 ${
-                                  newBookingId === b.id ? 'bg-primary/10' : ''
-                                }`}
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium text-foreground">{b.reference} — {b.guest_name}</div>
-                                  <div className="text-xs text-muted mt-0.5">
-                                    {b.caravan_id} · {b.check_in ? new Date(b.check_in).toLocaleDateString('nl-NL') : ''} - {b.check_out ? new Date(b.check_out).toLocaleDateString('nl-NL') : ''}
-                                  </div>
-                                </div>
-                                {newBookingId === b.id && <CheckCircle2 size={14} className="text-primary shrink-0" />}
-                              </button>
-                            ))
-                        )}
-                    </div>
-                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.checklistType')}</label>
+                    <select
+                      value={newType}
+                      onChange={(e) => setNewType(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary border border-gray-200"
+                    >
+                      <option value="INCHECKEN">{ts('INCHECKEN')}</option>
+                      <option value="UITCHECKEN">{ts('UITCHECKEN')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.employee')}</label>
+                    <input
+                      type="text"
+                      value={newStaffName}
+                      onChange={(e) => setNewStaffName(e.target.value)}
+                      placeholder={t("deposit.employeePlaceholder")}
+                      className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary border border-gray-200"
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.checklistType')}</label>
-                <select
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
+              <div className="flex gap-2 p-5 border-t border-gray-100">
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  <option value="INCHECKEN">{ts('INCHECKEN')}</option>
-                  <option value="UITCHECKEN">{ts('UITCHECKEN')}</option>
-                </select>
+                  {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  {t('common.create')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewForm(false)}
+                  className="px-4 py-2.5 text-sm text-muted font-medium hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {t('common.cancel')}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">{t('deposit.employee')}</label>
-                <input
-                  type="text"
-                  value={newStaffName}
-                  onChange={(e) => setNewStaffName(e.target.value)}
-                  placeholder={t("deposit.employeePlaceholder")}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
-              <button
-                type="submit"
-                disabled={creating}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                {t('common.create')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowNewForm(false)}
-                className="px-4 py-2 bg-surface-alt text-muted rounded-lg text-sm font-medium hover:bg-surface-alt transition-colors cursor-pointer"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </motion.form>
+            </motion.form>
+          </div>
         )}
       </AnimatePresence>
 

@@ -209,50 +209,57 @@ export default function ChauffeurPage() {
         </button>
       </div>
 
-      {/* Add form */}
+      {/* Add driver modal */}
       {showAdd && (
-        <div className="bg-white rounded-2xl p-4 space-y-3 border-2 border-primary/20">
-          <h3 className="font-semibold text-sm text-foreground">{t('drivers.addTitle')}</h3>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="flex-1 relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder={t('drivers.namePlaceholder')}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              />
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-8 sm:pt-16 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-foreground">{t('drivers.addTitle')}</h3>
+              <button onClick={() => { setShowAdd(false); setNewName(''); setNewPhone(''); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <div className="flex-1 relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-              <input
-                type="tel"
-                value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
-                placeholder={t('drivers.phonePlaceholder')}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              />
+            <div className="p-5 space-y-3">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder={t('drivers.namePlaceholder')}
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <input
+                  type="tel"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  placeholder={t('drivers.phonePlaceholder')}
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleAdd}
-              disabled={adding || !newName.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-primary-dark/90 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              {t('drivers.addBtn')}
-            </button>
-            <button
-              onClick={() => { setShowAdd(false); setNewName(''); setNewPhone(''); }}
-              className="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
-            >
-              {t('common.cancel')}
-            </button>
+            <div className="flex gap-2 p-5 border-t border-gray-100">
+              <button
+                onClick={handleAdd}
+                disabled={adding || !newName.trim()}
+                className="flex items-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-medium hover:bg-primary-dark/90 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {t('drivers.addBtn')}
+              </button>
+              <button
+                onClick={() => { setShowAdd(false); setNewName(''); setNewPhone(''); }}
+                className="px-4 py-2.5 text-sm text-muted font-medium hover:text-foreground transition-colors cursor-pointer"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -994,8 +994,9 @@ export default function BookingenPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <div className="relative flex-1">
+      {/* Filter row */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
@@ -1005,7 +1006,7 @@ export default function BookingenPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark"
           />
         </div>
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <select
             value={statusFilter}
@@ -1018,36 +1019,54 @@ export default function BookingenPage() {
             ))}
           </select>
         </div>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          title={t('bookings.dateFrom')}
-          placeholder={t('bookings.dateFrom')}
-          className="px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          title={t('bookings.dateTo')}
-          placeholder={t('bookings.dateTo')}
-          className="px-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-muted [&:not(:placeholder-shown)]:text-foreground"
-        />
+        <div className="relative shrink-0">
+          <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            title={t('bookings.dateFrom')}
+            className="w-10 sm:w-auto pl-9 pr-1 sm:pr-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-transparent sm:text-muted [&:not(:placeholder-shown)]:sm:text-foreground cursor-pointer"
+          />
+        </div>
+        <div className="relative shrink-0">
+          <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            title={t('bookings.dateTo')}
+            className="w-10 sm:w-auto pl-9 pr-1 sm:pr-3 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark text-transparent sm:text-muted [&:not(:placeholder-shown)]:sm:text-foreground cursor-pointer"
+          />
+        </div>
         <button
           onClick={() => { fetchBookings(); }}
-          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          className="p-2.5 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer shrink-0"
           title="Refresh"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-dark text-white rounded-xl text-sm font-semibold hover:bg-primary-dark/90 transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
-          {t('bookings.createNew')}
+          <span className="hidden sm:inline">{t('bookings.createNew')}</span>
         </button>
+      </div>
+
+      {/* Mobile status filter */}
+      <div className="sm:hidden">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as BookingStatus | 'ALLE')}
+          className="w-full px-3 py-2.5 bg-white rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-dark"
+        >
+          <option value="ALLE">{t('status.allStatuses')}</option>
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>{s.replace('_', ' ')}</option>
+          ))}
+        </select>
       </div>
 
       {/* ===== CREATE BOOKING MODAL ===== */}

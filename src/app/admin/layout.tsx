@@ -1073,7 +1073,7 @@ function AdminLayoutInner({
   children: ReactNode;
 }) {
   /* Use the admin context for translations */
-  const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName } = useAdminCtx();
+  const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName, role: ctxRole } = useAdminCtx();
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
@@ -1753,9 +1753,9 @@ function AdminLayoutInner({
             {locale === 'nl' ? 'EN' : 'NL'}
           </button>
 
-          {/* User dropdown */}
+          {/* User dropdown — desktop & mobile */}
           {ctxUsername && ctxUsername !== 'staff' && (
-            <div className="relative hidden sm:block" ref={userDropdownRef}>
+            <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 className="flex items-center gap-1.5 text-xs text-muted font-medium px-2 py-1.5 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
@@ -1763,7 +1763,10 @@ function AdminLayoutInner({
                 <span className="w-5 h-5 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground">
                   {ctxDisplayName.charAt(0)}
                 </span>
-                {ctxDisplayName}
+                <span className="hidden sm:inline">{ctxDisplayName}</span>
+                <span className="hidden sm:inline px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+                  {ctxRole}
+                </span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
@@ -1775,6 +1778,11 @@ function AdminLayoutInner({
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-border py-1 z-50"
                   >
+                    {/* Mobile-only: show name + role */}
+                    <div className="sm:hidden px-3 py-2 border-b border-border">
+                      <p className="text-sm font-medium text-foreground">{ctxDisplayName}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">{ctxRole}</p>
+                    </div>
                     <button
                       onClick={() => { setUserDropdownOpen(false); setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -1793,26 +1801,6 @@ function AdminLayoutInner({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-          )}
-
-          {/* Mobile user menu */}
-          {ctxUsername && ctxUsername !== 'staff' && (
-            <div className="sm:hidden flex items-center gap-0.5">
-              <button
-                onClick={() => { setShowSettingsPassword(true); setSettingsPwError(''); setSettingsCurrentPw(''); setSettingsNewPw(''); setSettingsConfirmPw(''); }}
-                className="p-2.5 rounded-xl hover:bg-surface-alt transition-colors cursor-pointer text-muted hover:text-foreground"
-                title={t('auth.changePassword')}
-              >
-                <Lock className="w-5 h-5" />
-              </button>
-              <button
-                onClick={onLogout}
-                className="p-2.5 rounded-xl hover:bg-red-50 transition-colors cursor-pointer text-red-500"
-                title={t('nav.logout')}
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
             </div>
           )}
           <button

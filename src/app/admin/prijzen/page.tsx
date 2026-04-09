@@ -214,29 +214,18 @@ export default function PrijzenPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-            <Tag size={20} className="text-primary" />
-            {isNL ? 'Prijsregels' : 'Pricing Rules'}
-          </h1>
-          <p className="text-xs text-muted mt-0.5">
-            {isNL ? 'Seizoensprijzen, vroegboekkorting en last-minute deals' : 'Seasonal pricing, early bird & last-minute deals'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => fetchRules()}
-            className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
-            title={isNL ? 'Vernieuwen' : 'Refresh'}>
-            <RefreshCw size={14} />
-          </button>
-          <button onClick={() => openCreate()}
-            className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer">
-            <Plus size={14} />
-            <span className="hidden sm:inline">{isNL ? 'Nieuwe regel' : 'New rule'}</span>
-          </button>
-        </div>
+      {/* Toolbar */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => fetchRules()}
+          className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
+          title={isNL ? 'Vernieuwen' : 'Refresh'}>
+          <RefreshCw size={14} />
+        </button>
+        <button onClick={() => openCreate()}
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer">
+          <Plus size={14} />
+          <span className="hidden sm:inline">{isNL ? 'Nieuwe regel' : 'New rule'}</span>
+        </button>
       </div>
 
       {/* Quick presets — only show when no rules exist or always as suggestions */}

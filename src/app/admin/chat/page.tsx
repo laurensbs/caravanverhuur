@@ -406,16 +406,12 @@ export default function AdminChatPage() {
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-primary" />
-              {isNl ? 'Live Chat' : 'Live Chat'}
+            <div className="flex items-center gap-1.5">
               {needsHumanCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                   {needsHumanCount}
                 </span>
               )}
-            </h1>
-            <div className="flex items-center gap-1.5">
               <button onClick={() => fetchConversations()}
                 className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                 title={isNl ? 'Vernieuwen' : 'Refresh'}>
