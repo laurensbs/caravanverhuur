@@ -1820,10 +1820,11 @@ function AdminLayoutInner({
             {/* Smart Suggestions */}
             <button
               onClick={() => setShowAssistant(!showAssistant)}
-              className={`p-2 rounded-lg transition-colors cursor-pointer ${showAssistant ? 'bg-violet-100 text-violet-600' : 'text-muted hover:bg-surface-alt hover:text-foreground'}`}
-              aria-label={locale === 'nl' ? 'Smart Suggestions' : 'Smart Suggestions'}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${showAssistant ? 'bg-violet-100 text-violet-700 border border-violet-200' : 'text-muted hover:bg-surface-alt hover:text-foreground border border-transparent'}`}
+              aria-label="Smart Suggestions"
             >
-              <Sparkles className="w-4.5 h-4.5" />
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden sm:inline">Smart Suggestions</span>
             </button>
           </div>
 
