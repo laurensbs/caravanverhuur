@@ -1264,7 +1264,10 @@ function AdminLayoutInner({
     }
   }, []);
 
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const toggleSidebar = () => {
+    if (hoverTimerRef.current) { clearTimeout(hoverTimerRef.current); hoverTimerRef.current = null; }
     const next = !sidebarOpen;
     setSidebarOpen(next);
     localStorage.setItem('admin_sidebar_open', String(next));
@@ -1273,14 +1276,22 @@ function AdminLayoutInner({
 
   const handleSidebarMouseEnter = () => {
     if (isMobile || sidebarOpen) return;
-    hoverExpandedRef.current = true;
-    setSidebarOpen(true);
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      hoverExpandedRef.current = true;
+      setSidebarOpen(true);
+      hoverTimerRef.current = null;
+    }, 300);
   };
 
   const handleSidebarMouseLeave = () => {
+    if (hoverTimerRef.current) { clearTimeout(hoverTimerRef.current); hoverTimerRef.current = null; }
     if (isMobile || !hoverExpandedRef.current) return;
-    hoverExpandedRef.current = false;
-    setSidebarOpen(false);
+    hoverTimerRef.current = setTimeout(() => {
+      hoverExpandedRef.current = false;
+      setSidebarOpen(false);
+      hoverTimerRef.current = null;
+    }, 200);
   };
 
   // Fetch badge counts periodically & trigger notifications on changes
