@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import { LayoutWrapper } from "@/components/LayoutWrapper";
 import { headers } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-heading",
@@ -140,6 +141,7 @@ export default async function RootLayout({
         >
           {children}
         </LayoutWrapper>
+        <Analytics />
       </body>
     </html>
   );
