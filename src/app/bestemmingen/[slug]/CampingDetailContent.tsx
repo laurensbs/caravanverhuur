@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import BookingCTA from '@/components/BookingCTA';
@@ -10,6 +9,7 @@ import {
   Dumbbell, CheckCircle, Navigation, Sun, Droplets,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { useData } from '@/lib/data-context';
 import { type Camping } from '@/data/campings';
 import { type Destination } from '@/data/destinations';
 
@@ -49,53 +49,13 @@ interface Props {
   otherCampings: Camping[];
 }
 
-/* Slow-motion marquee — continuous CSS scroll, premium feel */
-function SlowMarquee({ children }: { children: React.ReactNode }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [dur, setDur] = useState(40);
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const contentW = el.scrollWidth / 2;
-    setDur(contentW / 35);
-  }, [children]);
-  return (
-    <div className="overflow-hidden">
-      <div
-        ref={trackRef}
-        className="flex gap-3 w-max hover:[animation-play-state:paused] active:[animation-play-state:paused]"
-        style={{ animation: `marquee-scroll ${dur}s linear infinite` }}
-        onTouchStart={e => { e.currentTarget.style.animationPlayState = 'paused'; }}
-        onTouchEnd={e => { e.currentTarget.style.animationPlayState = 'running'; }}
-      >
-        {children}
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function AutoSlideGallery({ photos, altPrefix, useImg }: { photos: string[]; altPrefix: string; useImg?: boolean }) {
-  return (
-    <SlowMarquee>
-      {photos.map((photo, i) => (
-        <div key={i} className="relative w-32 h-22 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
-          {useImg ? (
-            <img src={photo} alt={`${altPrefix} foto ${i + 2}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          ) : (
-            <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px" />
-          )}
-        </div>
-      ))}
-    </SlowMarquee>
-  );
-}
-
 export default function CampingDetailContent({ camping, nearbyDestinations, otherCampings }: Props) {
   const { t } = useLanguage();
+  const { campings: dbCampings } = useData();
 
-  const photos = camping.photos || [];
-  const galleryPhotos = photos.slice(1);
+  // Use DB camping data (admin-uploaded photos) when available, fall back to static
+  const dbCamping = dbCampings.find(c => c.id === camping.id || c.slug === camping.slug);
+  const photos = (dbCamping?.photos?.length ? dbCamping.photos : camping.photos) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -145,7 +105,7 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
         </div>
       </section>
 
-      {/* Stats + Gallery */}
+      {/* Stats */}
       <section className="relative z-10 -mt-6 sm:-mt-8">
         <div className="max-w-6xl mx-auto px-3 sm:px-4">
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
@@ -165,12 +125,6 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               </div>
             </div>
 
-            {/* Gallery thumbnails - auto-sliding */}
-            {galleryPhotos.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <AutoSlideGallery photos={galleryPhotos} altPrefix={camping.name} useImg />
-              </div>
-            )}
           </div>
         </div>
       </section>
