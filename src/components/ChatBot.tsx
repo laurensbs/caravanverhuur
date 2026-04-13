@@ -2603,14 +2603,25 @@ export default function ChatBot() {
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1"><CalendarDays size={11} /> {isNl ? 'Aankomst' : isEs ? 'Llegada' : 'Check-in'}</label>
-                            <input type="date" value={bookingFlow.checkIn} onChange={e => setBookingFlow(p => ({ ...p, checkIn: e.target.value }))}
+                            <input type="date" value={bookingFlow.checkIn} onChange={e => {
+                              const ci = e.target.value;
+                              setBookingFlow(p => {
+                                const updated = { ...p, checkIn: ci };
+                                if (ci) {
+                                  const minOut = new Date(new Date(ci + 'T00:00:00').getTime() + 7 * 86400000);
+                                  const minOutStr = minOut.toISOString().split('T')[0];
+                                  if (!p.checkOut || p.checkOut < minOutStr) updated.checkOut = minOutStr;
+                                }
+                                return updated;
+                              });
+                            }}
                               min={new Date().toISOString().split('T')[0]}
                               className="w-full px-2.5 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                           </div>
                           <div>
                             <label className="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1"><CalendarDays size={11} /> {isNl ? 'Vertrek' : isEs ? 'Salida' : 'Check-out'}</label>
                             <input type="date" value={bookingFlow.checkOut} onChange={e => setBookingFlow(p => ({ ...p, checkOut: e.target.value }))}
-                              min={bookingFlow.checkIn || new Date().toISOString().split('T')[0]}
+                              min={bookingFlow.checkIn ? new Date(new Date(bookingFlow.checkIn + 'T00:00:00').getTime() + 7 * 86400000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                               className="w-full px-2.5 py-2 bg-gray-50 rounded-lg text-[13px] border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                           </div>
                         </div>
@@ -2621,7 +2632,7 @@ export default function ChatBot() {
                           ) : null;
                         })()}
                         <button onClick={handleBookingDatesConfirm}
-                          disabled={!bookingFlow.checkIn || !bookingFlow.checkOut || Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000) <= 0}
+                          disabled={!bookingFlow.checkIn || !bookingFlow.checkOut || Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000) < 7}
                           className="w-full py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
                           {isNl ? 'Bevestig datums' : isEs ? 'Confirmar fechas' : 'Confirm dates'} <ArrowRight size={14} />
                         </button>
