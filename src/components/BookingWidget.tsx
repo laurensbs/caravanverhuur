@@ -391,7 +391,15 @@ export default function BookingWidget() {
                   ref={checkInRef}
                   type="date"
                   value={checkIn}
-                  onChange={e => setCheckIn(e.target.value)}
+                  onChange={e => {
+                    const ci = e.target.value;
+                    setCheckIn(ci);
+                    if (ci) {
+                      const d = new Date(new Date(ci + 'T00:00:00').getTime() + 7 * 86400000);
+                      const minOut = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      if (!checkOut || checkOut < minOut) setCheckOut(minOut);
+                    }
+                  }}
                   min={today || undefined} className="w-full bg-transparent text-[13px] font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Divider */} <div className="hidden lg:block w-px h-8 bg-gray-200" /> {/* Check-out */} <div onClick={openCheckOut} className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.departureLabel')}</span>
               <div className="flex items-center gap-2">
                 <CalendarDays size={15} className="text-primary shrink-0" />
@@ -400,7 +408,7 @@ export default function BookingWidget() {
                   type="date"
                   value={checkOut}
                   onChange={e => setCheckOut(e.target.value)}
-                  min={checkIn || today || undefined} className="w-full bg-transparent text-[13px] font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Divider */} <div className="hidden lg:block w-px h-8 bg-gray-200" /> {/* Camping selector */} <div className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 relative cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" ref={campingRef} onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }} > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.widgetCamping')}</span>
+                  min={checkIn ? (() => { const d = new Date(new Date(checkIn + 'T00:00:00').getTime() + 7 * 86400000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })() : (today || undefined)} className="w-full bg-transparent text-[13px] font-medium text-foreground outline-none cursor-pointer" /> </div> </div> {/* Divider */} <div className="hidden lg:block w-px h-8 bg-gray-200" /> {/* Camping selector */} <div className="flex-1 px-3 lg:px-4 py-2 lg:py-2.5 relative cursor-pointer rounded-xl hover:bg-gray-50 transition-colors" ref={campingRef} onClick={() => { setCampingOpen(!campingOpen); setGuestsOpen(false); }} > <span className="text-[10px] font-bold text-muted uppercase tracking-wider block mb-0.5">{t('booking.widgetCamping')}</span>
               <button className="flex items-center gap-2 w-full text-left min-w-0">
                 <MapPin size={15} className="text-primary shrink-0" />
                 <span className={`text-[13px] font-medium flex-1 min-w-0 ${selectedCamping ? 'text-foreground' : 'text-muted'}`}>

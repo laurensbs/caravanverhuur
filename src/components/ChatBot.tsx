@@ -988,8 +988,8 @@ function smartMatch(
   if (/wanneer|hoe lang|hoelang|how long|duration|duur|minimaal|minimum/.test(lower)) {
     return {
       answer: isNl
-        ? `Er is geen minimale huurduur${name}! Je kunt vanaf 1 dag boeken. 📅\n\nSeizoensprijzen (alle caravans):\n📅 Voorseizoen (t/m 30 juni): €550/week\n☀️ Hoogseizoen (1-31 juli): €650/week\n🍂 Naseizoen (vanaf 1 aug): €550/week\n\nHet seizoen loopt van mei t/m september 2026.\n\n👉 **[Bekijk beschikbaarheid](/boeken)**`
-        : 'No minimum rental! From 1 day. Season: May-September.',
+        ? `De minimale huurperiode is 7 nachten${name}. 📅\n\nSeizoensprijzen (alle caravans):\n📅 Voorseizoen (t/m 30 juni): €550/week\n☀️ Hoogseizoen (1-31 juli): €650/week\n🍂 Naseizoen (vanaf 1 aug): €550/week\n\nHet seizoen loopt van mei t/m september 2026.\n\n👉 **[Bekijk beschikbaarheid](/boeken)**`
+        : 'The minimum rental period is 7 nights. Season: May-September.',
       followUp: isNl ? ['Wat kost het?', 'Hoe boek ik?', 'Welke caravans?'] : ['Cost?', 'How to book?'],
       confidence: 0.8,
       topic: 'duration',
@@ -2172,7 +2172,7 @@ export default function ChatBot() {
   const handleBookingDatesConfirm = useCallback(() => {
     if (!bookingFlow.checkIn || !bookingFlow.checkOut) return;
     const nights = Math.round((new Date(bookingFlow.checkOut).getTime() - new Date(bookingFlow.checkIn).getTime()) / 86400000);
-    if (nights <= 0) return;
+    if (nights < 7) return;
     setBookingFlow(prev => ({ ...prev, nights }));
     const userText = isNl
       ? `📅 ${bookingFlow.checkIn} – ${bookingFlow.checkOut} (${nights} ${nights === 1 ? 'nacht' : 'nachten'})`
