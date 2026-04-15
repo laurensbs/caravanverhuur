@@ -1,12 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import BookingCTA from '@/components/BookingCTA';
 import {
   MapPin, ArrowRight, ChevronRight, Tent, Globe, ExternalLink,
   Waves, Users, Heart, TreePine, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, CheckCircle, Navigation, Sun, Droplets,
+  Dumbbell, CheckCircle, Navigation, Sun, Droplets, Mountain, Clock,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { useData } from '@/lib/data-context';
@@ -52,6 +53,21 @@ interface Props {
 export default function CampingDetailContent({ camping, nearbyDestinations, otherCampings }: Props) {
   const { t } = useLanguage();
   const { campings: dbCampings } = useData();
+  const [trails, setTrails] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loc = camping.location.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    fetch('/api/trails').then(r => r.json())
+      .then(data => {
+        const all = data.trails || [];
+        const nearby = all.filter((t: any) =>
+          t.tags?.includes(loc) ||
+          t.location?.toLowerCase() === camping.location.toLowerCase()
+        );
+        setTrails(nearby);
+      })
+      .catch(() => {});
+  }, [camping.location]);
 
   // Use DB camping data (admin-uploaded photos + edited text) when available, fall back to static
   const dbCamping = dbCampings.find(c => c.id === camping.id || c.slug === camping.slug);
@@ -179,6 +195,60 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Wandelroutes in de buurt */}
+            {trails.length > 0 && (
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                  <span className="flex items-center gap-2.5"><Mountain size={20} className="text-emerald-600" /> Wandelroutes bij {camping.name}</span>
+                </h2>
+                <p className="text-gray-500 text-sm mb-4 sm:mb-5">Ontdek wandelpaden in de omgeving</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {trails.slice(0, 4).map(trail => (
+                    <div key={trail.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-gray-900 text-sm leading-tight">{trail.name}</h3>
+                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1"><MapPin size={12} /> {trail.location}</p>
+                        </div>
+                        {trail.difficulty && (
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ml-2 ${trail.difficulty === 'easy' ? 'bg-green-100 text-green-700' : trail.difficulty === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                            {trail.difficulty}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 leading-relaxed line-clamp-2 mb-3">{trail.description}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          {trail.distanceKm && <span>{trail.distanceKm} km</span>}
+                          {trail.durationMinutes && (
+                            <span className="flex items-center gap-0.5"><Clock size={11} /> {Math.floor(trail.durationMinutes / 60)}u{trail.durationMinutes % 60 > 0 ? `${trail.durationMinutes % 60}m` : ''}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {trail.alltrailsUrl && (
+                            <a href={trail.alltrailsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-medium hover:bg-emerald-100 transition-colors">
+                              <ExternalLink size={10} /> AllTrails
+                            </a>
+                          )}
+                          {trail.googleMapsUrl && (
+                            <a href={trail.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-[11px] font-medium hover:bg-blue-100 transition-colors">
+                              <MapPin size={10} /> Maps
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/wandelroutes"
+                  className="flex items-center justify-center gap-1.5 w-full mt-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition-colors"
+                >
+                  Alle wandelroutes bekijken <ArrowRight size={14} />
+                </Link>
               </div>
             )}
 
