@@ -67,7 +67,7 @@ function getAllBeaches(dests: typeof staticDestinations) {
 }
 
 /* ── Camping card component ───────────────── */
-function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => string }) {
+function CampingCard({ camping, t, destinations }: { camping: Camping; t: (k: string) => string; destinations: typeof staticDestinations }) {
   const nearDests = destinations.filter(d => camping.nearestDestinations?.includes(d.slug));
 
   return (
@@ -671,7 +671,7 @@ export default function BestemmingenPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                    {filteredCampings.map(c => <CampingCard key={c.id} camping={c} t={t} />)}
+                    {filteredCampings.map(c => <CampingCard key={c.id} camping={c} t={t} destinations={destinations} />)}
                   </div>
                 )}
               </section>
