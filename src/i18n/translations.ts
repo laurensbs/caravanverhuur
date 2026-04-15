@@ -246,6 +246,9 @@ const nl: Dict = {
     trustRating: '4.8/5 beoordeling',
     trustGuests: '100+ tevreden gasten',
     trustExperience: '20+ jaar ervaring',
+    // Instagram
+    instagramTitle: 'Volg ons op Instagram',
+    followInstagram: 'Volg ons',
     // WhatsApp
     whatsappTooltip: 'WhatsApp ons!',
   },
@@ -1691,6 +1694,9 @@ const en: Dict = {
     trustRating: '4.8/5 rating',
     trustGuests: '100+ satisfied guests',
     trustExperience: '20+ years experience',
+    // Instagram
+    instagramTitle: 'Follow us on Instagram',
+    followInstagram: 'Follow us',
     whatsappTooltip: 'WhatsApp us!',
   },
   caravans: {
@@ -3113,6 +3119,9 @@ const es: Dict = {
     trustRating: '4.8/5 valoración',
     trustGuests: '100+ huéspedes satisfechos',
     trustExperience: '20+ años de experiencia',
+    // Instagram
+    instagramTitle: 'Síguenos en Instagram',
+    followInstagram: 'Síguenos',
     whatsappTooltip: '¡Escríbenos por WhatsApp!',
   },
   caravans: {
