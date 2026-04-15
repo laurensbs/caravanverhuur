@@ -277,7 +277,6 @@ export default function Header() {
               </Link>
             </div>
             <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link>
-            <Link href="/wandelroutes" className={navCls('/wandelroutes')}>{t('nav.trails')}</Link>
             <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link>
             <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link>
 
@@ -392,16 +391,28 @@ export default function Header() {
                       </div>
                     </div>
 
-                    {/* Column 4: Featured image */}
-                    <div className="relative rounded-xl overflow-hidden">
-                      <Image src={featuredCamping.photos?.[0] || '/og-image.jpg'} alt={featuredCamping.name} fill className="object-cover" sizes="250px" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{featuredCamping.region}</p>
-                        <p className="text-white font-bold text-sm mb-3">{featuredCamping.name}</p>
-                        <Link href={`/bestemmingen/${featuredCamping.slug}`} className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full text-xs font-semibold transition-colors">
-                          {t('home.explore')} <ArrowRight size={11} />
-                        </Link>
+                    {/* Column 4: Wandelroutes + Featured */}
+                    <div className="flex flex-col gap-4">
+                      <Link href="/wandelroutes" className="group flex items-center gap-3 p-3 -m-1 rounded-xl bg-emerald-50/80 hover:bg-emerald-50 transition-colors">
+                        <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                          <span className="text-emerald-700 text-sm">🥾</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-800">{t('nav.trails')}</p>
+                          <p className="text-[11px] text-emerald-600/70">35 routes aan de Costa Brava</p>
+                        </div>
+                        <ArrowRight size={14} className="ml-auto text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+                      </Link>
+                      <div className="relative rounded-xl overflow-hidden flex-1 min-h-[140px]">
+                        <Image src={featuredCamping.photos?.[0] || '/og-image.jpg'} alt={featuredCamping.name} fill className="object-cover" sizes="250px" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{featuredCamping.region}</p>
+                          <p className="text-white font-bold text-sm mb-2">{featuredCamping.name}</p>
+                          <Link href={`/bestemmingen/${featuredCamping.slug}`} className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-full text-xs font-semibold transition-colors">
+                            {t('home.explore')} <ArrowRight size={11} />
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -511,6 +522,18 @@ export default function Header() {
                           ))}
                         </div>
 
+                        {/* Wandelroutes */}
+                        <Link href="/wandelroutes" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 mx-2 mt-3 mb-2 px-3 py-2.5 bg-emerald-50 rounded-xl active:bg-emerald-100 transition-colors">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                            <span className="text-sm">🥾</span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="block text-[13px] font-semibold text-emerald-800">{t('nav.trails')}</span>
+                            <span className="block text-[10px] text-emerald-600/70">35 wandelroutes</span>
+                          </div>
+                          <ChevronRight size={14} className="text-emerald-400" />
+                        </Link>
+
                         {/* Bezienswaardigheden */}
                         <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Bezienswaardigheden</p>
                         <div className="space-y-0.5">
@@ -539,12 +562,9 @@ export default function Header() {
                   <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.155 }}>
-                  <MobLink href="/wandelroutes" label={t('nav.trails')} on={active('/wandelroutes')} close={() => setMenuOpen(false)} />
-                </motion.div>
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.17 }}>
                   <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.20 }}>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.17 }}>
                   <MobLink href="/contact" label={t('nav.contact')} on={active('/contact')} close={() => setMenuOpen(false)} />
                 </motion.div>
               </div>

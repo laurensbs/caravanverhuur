@@ -349,6 +349,10 @@ const nl: Dict = {
     maxPersonsLabel: 'Max. personen',
     backToOverview: 'Terug naar overzicht',
     custom: 'NIEUW',
+    campingsTitle: 'Campings aan de Costa Brava',
+    campingsSubtitle: 'Wij plaatsen de caravan op jouw favoriete camping',
+    allCampings: 'Alle campings',
+    viewAllCampings: 'Alle campings bekijken',
   },
   destinations: {
     heroTitle: 'Costa Brava — Campings, Dorpen & Stranden',
@@ -1788,6 +1792,10 @@ const en: Dict = {
     maxPersonsLabel: 'Max. persons',
     backToOverview: 'Back to overview',
     custom: 'NEW',
+    campingsTitle: 'Campings on the Costa Brava',
+    campingsSubtitle: 'We place the caravan at your favourite campsite',
+    allCampings: 'All campings',
+    viewAllCampings: 'View all campings',
   },
   destinations: {
     heroTitle: 'Costa Brava — Campings, Towns & Beaches',
@@ -3206,6 +3214,10 @@ const es: Dict = {
     maxPersonsLabel: 'Máx. personas',
     backToOverview: 'Volver al resumen',
     custom: 'NUEVO',
+    campingsTitle: 'Campings en la Costa Brava',
+    campingsSubtitle: 'Colocamos la caravana en tu camping favorito',
+    allCampings: 'Todos los campings',
+    viewAllCampings: 'Ver todos los campings',
   },
   destinations: {
     heroTitle: 'Costa Brava — Campings, Pueblos y Playas',

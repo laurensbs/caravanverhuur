@@ -4,10 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BookingCTA from '@/components/BookingCTA';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck } from 'lucide-react';
+import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, ChevronRight, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck, MapPin } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
+import { useData } from '@/lib/data-context';
 
 /* ------------------------------------------------------------------ */
 /*  Slow-motion marquee — continuous CSS scroll, premium feel          */
@@ -138,6 +139,7 @@ function CaravanInventoryCategories() {
 
 export default function CaravansPage() {
   const { t } = useLanguage();
+  const { campings: allCampings } = useData();
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
 
   useEffect(() => {
@@ -157,56 +159,43 @@ export default function CaravansPage() {
 
   return (
     <>
-      {/* ===== HERO ===== */}
-      <section className="relative bg-foreground text-white overflow-hidden">
-        <div className="absolute inset-0">
-          {allPhotos[0] && (
-            <Image
-              src={allPhotos[0]}
-              alt="Caravan Costa Brava"
-              fill
-              className="object-cover opacity-30"
-              sizes="100vw"
-              priority
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/80 to-foreground/60" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-20 sm:pt-28 pb-12 sm:pb-16">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4">
+      {/* ===== COMPACT HEADER ===== */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-12 pb-6 sm:pb-8">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight leading-[1.1] mb-3">
             {t('caravans.heroTitle')}
           </h1>
-          <p className="text-sm sm:text-lg text-white/70 max-w-2xl leading-relaxed">
+          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed mb-4">
             {t('caravans.heroSubtitle')}
           </p>
-          <div className="flex flex-wrap gap-2 mt-6">
-            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-xs">
-              <Info size={12} className="text-blue-300 shrink-0" />
-              <span>{t('termsPage.caravanDisclaimer')}</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-xs">
-              <Tent size={12} className="text-amber-300 shrink-0" />
-              <span>{t('caravans.campingFirstNote')}</span>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-full text-blue-700 text-xs font-medium">
+              <Info size={12} className="shrink-0" />
+              {t('termsPage.caravanDisclaimer')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full text-amber-700 text-xs font-medium">
+              <Tent size={12} className="shrink-0" />
+              {t('caravans.campingFirstNote')}
+            </span>
           </div>
         </div>
       </section>
 
-      {/* ===== PHOTO MARQUEE ===== */}
-      <section className="py-8 sm:py-12 bg-surface">
+      {/* ===== PHOTO STRIP ===== */}
+      <section className="py-5 sm:py-8 bg-gray-50">
         <SlowMarquee>
           {allPhotos.slice(0, 8).map((photo, i) => (
-            <div key={i} className="shrink-0 w-[55vw] sm:w-[28vw] md:w-[22vw] lg:w-[18vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]">
+            <div key={i} className="shrink-0 w-[45vw] sm:w-[24vw] md:w-[18vw] lg:w-[15vw] relative rounded-xl overflow-hidden shadow-sm aspect-[4/3]">
               <Image
                 src={photo}
                 alt={`Caravan foto ${i + 1}`}
                 fill
-                sizes="(max-width: 640px) 55vw, (max-width: 768px) 28vw, (max-width: 1024px) 22vw, 18vw"
+                sizes="(max-width: 640px) 45vw, (max-width: 768px) 24vw, (max-width: 1024px) 18vw, 15vw"
                 className="object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-              <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                <p className="text-[10px] text-white/80">{t('caravans.orSimilar')}</p>
+              <div className="absolute bottom-1.5 left-1.5 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                <p className="text-[9px] text-white/80">{t('caravans.orSimilar')}</p>
               </div>
             </div>
           ))}
@@ -331,6 +320,57 @@ export default function CaravansPage() {
           </div>
         </div>
       </section>
+
+      {/* ===== CAMPINGS ===== */}
+      {allCampings.length > 0 && (
+        <section className="py-12 sm:py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-end justify-between mb-6 sm:mb-8">
+              <div>
+                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                  {t('caravans.campingsTitle')}
+                </h2>
+                <p className="text-muted text-sm mt-1.5">{t('caravans.campingsSubtitle')}</p>
+              </div>
+              <Link href="/bestemmingen" className="hidden sm:flex items-center gap-1 text-sm text-primary font-semibold hover:underline">
+                {t('caravans.allCampings')} <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Mobile: horizontal scroll, Desktop: grid */}
+            <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {allCampings.slice(0, 8).map(c => (
+                <Link
+                  key={c.id}
+                  href={`/bestemmingen/${c.slug}`}
+                  className="snap-start shrink-0 w-[70vw] sm:w-auto group"
+                >
+                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-2">
+                    {(c.photos?.[0] || '').startsWith('http') ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.photos![0]} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 70vw, (max-width: 1024px) 50vw, 25vw" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-semibold text-foreground">
+                      {c.region}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground truncate">{c.name}</h3>
+                  <p className="text-xs text-muted flex items-center gap-1 mt-0.5"><MapPin size={11} /> {c.location}</p>
+                </Link>
+              ))}
+            </div>
+
+            <div className="sm:hidden mt-4 text-center">
+              <Link href="/bestemmingen" className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold">
+                {t('caravans.viewAllCampings')} <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <BookingCTA />
     </>

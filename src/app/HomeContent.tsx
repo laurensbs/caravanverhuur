@@ -653,8 +653,8 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
 
           {/* Featured destinations — compact row */}
           <div className="mt-8 sm:mt-12">
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4">
+              {t('home.popularPlaces')}
             </h3>
             <SlowMarquee>
               {campings.slice(0, 10).map((c) => (
