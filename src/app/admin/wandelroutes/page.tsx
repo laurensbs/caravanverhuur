@@ -38,7 +38,7 @@ const DIFFICULTIES = [
 export default function AdminTrailsPage() {
   const { t, locale } = useAdmin();
   const isNl = locale === 'nl';
-  const toast = useToast();
+  const { toast } = useToast();
 
   const [trails, setTrails] = useState<Trail[]>([]);
   const [loading, setLoading] = useState(true);
