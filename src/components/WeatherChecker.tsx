@@ -36,7 +36,7 @@ export default function WeatherChecker() {
   ];
 
   return (
-    <section className="py-12 sm:py-20">
+    <section className="py-12 sm:py-20 bg-gradient-to-b from-sky-50 via-blue-50/60 to-white">
       <div className="max-w-7xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -68,7 +68,7 @@ export default function WeatherChecker() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-sm transition-all duration-300 text-center"
+              className="snap-center shrink-0 w-[100px] sm:w-[120px] bg-white rounded-2xl p-3 sm:p-4 shadow-md border border-gray-100 transition-all duration-300 text-center hover:shadow-lg"
             >
               <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{w.month}</div>
               <div className="flex items-center justify-center">
