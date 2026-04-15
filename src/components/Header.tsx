@@ -259,9 +259,9 @@ export default function Header() {
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
               alt="Caravanverhuur Costa Brava"
-              width={320} height={80}
-              className="w-36 sm:w-48 lg:w-56 h-auto object-contain"
-              sizes="(max-width: 640px) 160px, (max-width: 1024px) 208px, 260px"
+              width={400} height={160}
+              className="w-40 sm:w-52 lg:w-60 h-auto object-contain"
+              sizes="(max-width: 640px) 160px, (max-width: 1024px) 208px, 240px"
             />
           </Link>
 
@@ -433,7 +433,7 @@ export default function Header() {
             {/* Panel header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-28 h-auto" />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png" alt="Caravanverhuur Costa Brava" width={400} height={160} className="w-36 h-auto object-contain" />
               </Link>
               <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
                 <X size={15} className="text-gray-500" />

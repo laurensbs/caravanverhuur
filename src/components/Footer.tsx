@@ -95,10 +95,10 @@ export default function Footer() {
             <Image
               src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
               alt="Caravanverhuur Costa Brava"
-              width={240}
-              height={70}
-              className="w-36 h-auto mb-3 mx-auto sm:mx-0"
-              sizes="144px"
+              width={400}
+              height={160}
+              className="w-48 sm:w-56 h-auto mb-3 mx-auto sm:mx-0 object-contain"
+              sizes="(max-width: 640px) 192px, 224px"
             />
             <div className="flex justify-center sm:justify-start">
               <GoogleStars size={12} />

@@ -396,11 +396,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
               <div>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
                   alt="Caravanverhuur Spanje"
-                  width={240}
-                  height={70}
-                  className="w-44 xl:w-52 h-auto"
+                  width={400}
+                  height={160}
+                  className="w-48 xl:w-56 h-auto object-contain"
                  
                 />
               </div>
@@ -455,11 +455,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
               <div className="relative z-10">
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
                   alt="Caravanverhuur Spanje"
-                  width={200}
-                  height={60}
-                  className="w-40 h-auto mb-3"
+                  width={400}
+                  height={160}
+                  className="w-44 h-auto mb-3 object-contain"
                  
                 />
                 <h1 className="text-xl font-bold text-white">{lt('auth.welcomeBack')}</h1>
@@ -1512,9 +1512,9 @@ function AdminLayoutInner({
                 <Image
                   src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
                   alt="Caravanverhuur Costa Brava"
-                  width={200}
-                  height={56}
-                  className="w-32 lg:w-40 h-auto"
+                  width={400}
+                  height={160}
+                  className="w-36 lg:w-44 h-auto object-contain"
                 />
                 <button
                   onClick={toggleSidebar}
