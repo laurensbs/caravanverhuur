@@ -8,7 +8,7 @@ import { destinations as staticDestinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent, ChevronRight,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
-  Dumbbell, Star, UtensilsCrossed,
+  Dumbbell, Star, UtensilsCrossed, Mountain, Clock, ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -165,9 +165,11 @@ export default function BestemmingenPage() {
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [allCampings, setAllCampings] = useState<Camping[]>(staticCampings);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [trails, setTrails] = useState<any[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Fetch campings from API
+  // Fetch campings + trails from API
   useEffect(() => {
     fetch('/api/campings', { cache: 'no-store' })
       .then(res => res.json())
@@ -175,6 +177,10 @@ export default function BestemmingenPage() {
         if (data.campings?.length) setAllCampings(data.campings as Camping[]);
       })
       .catch((e) => console.error('Fetch error:', e));
+    fetch('/api/trails')
+      .then(res => res.json())
+      .then(data => setTrails(data.trails || []))
+      .catch((e) => console.error('Fetch trails error:', e));
   }, []);
 
   // Handle hash routing
@@ -714,6 +720,74 @@ export default function BestemmingenPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ===== WANDELROUTES ===== */}
+      {trails.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-10 sm:py-14">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <Mountain size={20} className="text-emerald-600" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">{t('trails.heroTitle')}</h2>
+                <p className="text-xs sm:text-sm text-muted">{t('trails.heroSubtitle')}</p>
+              </div>
+            </div>
+            <Link href="/wandelroutes" className="text-sm text-emerald-600 font-medium hover:underline flex items-center gap-1">
+              {t('nav.viewAll') || 'Bekijk alles'} <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {trails.slice(0, 6).map(trail => (
+              <div key={trail.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all group">
+                {trail.photos?.[0] && (
+                  <div className="relative aspect-[16/9] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={trail.photos[0]} alt={trail.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {trail.difficulty && (
+                      <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        trail.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                        trail.difficulty === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{trail.difficulty}</span>
+                    )}
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-foreground text-sm">{trail.name}</h3>
+                  <p className="text-xs text-muted flex items-center gap-1 mt-1"><MapPin size={12} /> {trail.location}</p>
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted">
+                    {trail.distanceKm && <span>{trail.distanceKm} km</span>}
+                    {trail.durationMinutes && (
+                      <span className="flex items-center gap-0.5"><Clock size={11} /> {Math.floor(trail.durationMinutes / 60)}u{trail.durationMinutes % 60 > 0 ? `${trail.durationMinutes % 60}m` : ''}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    {trail.alltrailsUrl && (
+                      <a href={trail.alltrailsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium hover:bg-emerald-100 transition-colors">
+                        <ExternalLink size={11} /> AllTrails
+                      </a>
+                    )}
+                    {trail.googleMapsUrl && (
+                      <a href={trail.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors">
+                        <MapPin size={11} /> Maps
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {trails.length > 6 && (
+            <div className="text-center mt-6">
+              <Link href="/wandelroutes" className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors">
+                {t('trails.heroTitle')} <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ===== BOOKING CTA ===== */}
       <BookingCTA />
