@@ -27,7 +27,7 @@ export default function BookingCTA() {
             {t('destinations.bookNowBtn')} <ArrowRight size={16} />
           </Link>
           <Link
-            href="/caravans"
+            href="/bestemmingen"
             className="inline-flex items-center gap-2 px-7 py-3 bg-foreground/5 text-foreground font-semibold rounded-full transition-all duration-300 text-sm hover:bg-foreground/10"
           >
             {t('destinations.viewAllCaravans')} <ArrowRight size={16} />

@@ -12,6 +12,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Minus, MessageSquare,
   ThumbsUp, ThumbsDown, Trash2, ExternalLink, ChevronDown,
   Home, Settings, Plus, Eye, Plane, TreePalm, ScrollText, Compass, Lightbulb,
+  Mountain, Bookmark,
 } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -96,7 +97,7 @@ interface BorgChecklist {
   borg_return_method?: string | null;
 }
 
-type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'tips' | 'voorwaarden' | 'profiel';
+type Tab = 'overzicht' | 'boekingen' | 'betalingen' | 'borg' | 'wandelroutes' | 'tips' | 'voorwaarden' | 'profiel';
 
 // ===== HELPERS =====
 const localeMap: Record<Locale, string> = { nl: 'nl-NL', en: 'en-GB', es: 'es-ES' };
@@ -192,6 +193,11 @@ function MijnAccountContent() {
   const [newsletterUnsubscribed, setNewsletterUnsubscribed] = useState(false);
   const [togglingNewsletter, setTogglingNewsletter] = useState(false);
 
+  // Saved trails
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [savedTrails, setSavedTrails] = useState<any[]>([]);
+  const [savedTrailIds, setSavedTrailIds] = useState<string[]>([]);
+
   // Close modals on Escape
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -218,6 +224,14 @@ function MijnAccountContent() {
       .then(res => res.json())
       .then(data => { if (data.campings?.length) setCampings(data.campings); })
       .catch((e) => console.error('Fetch error:', e));
+    // Fetch saved trails
+    Promise.all([
+      fetch('/api/trails').then(r => r.json()),
+      fetch('/api/trails/save').then(r => r.json()),
+    ]).then(([trailsData, savedData]) => {
+      setSavedTrails(trailsData.trails || []);
+      setSavedTrailIds(savedData.savedTrailIds || []);
+    }).catch((e) => console.error('Fetch trails error:', e));
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -245,7 +259,7 @@ function MijnAccountContent() {
   // Sync tab with URL
   useEffect(() => {
     const urlTab = searchParams.get('tab') as Tab;
-    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'tips', 'voorwaarden', 'profiel'].includes(urlTab)) {
+    if (urlTab && ['overzicht', 'boekingen', 'betalingen', 'borg', 'wandelroutes', 'tips', 'voorwaarden', 'profiel'].includes(urlTab)) {
       setTab(urlTab);
     }
   }, [searchParams]);
@@ -403,6 +417,7 @@ function MijnAccountContent() {
     { key: 'boekingen', label: t('myAccount.tabBookings'), icon: <Calendar size={18} />, badge: activeBookings.length || undefined },
     { key: 'betalingen', label: t('myAccount.tabPayments'), icon: <CreditCard size={18} />, badge: openPayments.length || undefined },
     { key: 'borg', label: t('myAccount.tabBorg'), icon: <Shield size={18} />, badge: openBorg.length || undefined },
+    { key: 'wandelroutes', label: t('trails.savedTrails'), icon: <Mountain size={18} /> },
     { key: 'tips', label: t('myAccount.tipsTab'), icon: <Compass size={18} /> },
     { key: 'voorwaarden', label: t('myAccount.tabTerms'), icon: <ScrollText size={18} /> },
     { key: 'profiel', label: t('myAccount.tabProfile'), icon: <Settings size={18} /> },
@@ -1362,6 +1377,97 @@ function MijnAccountContent() {
                       </Link>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* ==================== WANDELROUTES ==================== */}
+              {tab === 'wandelroutes' && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+                      <Mountain size={20} className="text-emerald-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-foreground tracking-tight">{t('trails.savedTrails')}</h2>
+                      <p className="text-sm text-muted">{t('trails.noSavedTrails')}</p>
+                    </div>
+                  </div>
+
+                  {savedTrailIds.length === 0 ? (
+                    <div className="bg-white rounded-2xl p-8 text-center">
+                      <Bookmark size={32} className="mx-auto text-muted mb-3" />
+                      <p className="text-sm text-muted mb-4">{t('trails.noSavedTrails')}</p>
+                      <Link href="/wandelroutes" className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
+                        {t('trails.heroTitle')} <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {savedTrails.filter(tr => savedTrailIds.includes(tr.id)).map(trail => (
+                        <div key={trail.id} className="bg-white rounded-2xl overflow-hidden">
+                          <div className="flex flex-col sm:flex-row">
+                            {trail.photos?.[0] && (
+                              <div className="sm:w-40 h-32 sm:h-auto shrink-0">
+                                <img src={trail.photos[0]} alt={trail.name} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="p-4 flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <h3 className="font-semibold text-foreground truncate">{trail.name}</h3>
+                                  <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                                    <MapPin size={12} /> {trail.location}
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={async () => {
+                                    await fetch('/api/trails/save', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ trailId: trail.id, action: 'unsave' }),
+                                    });
+                                    setSavedTrailIds(prev => prev.filter(id => id !== trail.id));
+                                  }}
+                                  className="text-emerald-600 hover:text-red-500 transition-colors shrink-0"
+                                  title={t('trails.unsave')}
+                                >
+                                  <Bookmark size={18} fill="currentColor" />
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-muted">
+                                {trail.distanceKm && <span>{trail.distanceKm} km</span>}
+                                {trail.durationMinutes && <span>{Math.floor(trail.durationMinutes / 60)}h{trail.durationMinutes % 60 > 0 ? ` ${trail.durationMinutes % 60}m` : ''}</span>}
+                                {trail.difficulty && (
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                    trail.difficulty === 'easy' ? 'bg-green-50 text-green-700' :
+                                    trail.difficulty === 'medium' ? 'bg-amber-50 text-amber-700' :
+                                    'bg-red-50 text-red-700'
+                                  }`}>{trail.difficulty}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-3">
+                                {trail.alltrailsUrl && (
+                                  <a href={trail.alltrailsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium hover:bg-emerald-100 transition-colors">
+                                    <ExternalLink size={12} /> AllTrails
+                                  </a>
+                                )}
+                                {trail.googleMapsUrl && (
+                                  <a href={trail.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors">
+                                    <MapPin size={12} /> Google Maps
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="text-center pt-2">
+                        <Link href="/wandelroutes" className="text-sm text-emerald-600 font-medium hover:underline">
+                          {t('trails.heroTitle')} →
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

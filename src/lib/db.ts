@@ -558,6 +558,50 @@ async function _setupDatabaseInner() {
     await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP`;
   } catch { /* columns already exist */ }
 
+  // Destinations table (admin-managed photo overrides)
+  await sql`
+    CREATE TABLE IF NOT EXISTS destinations (
+      id TEXT PRIMARY KEY,
+      slug TEXT UNIQUE NOT NULL,
+      hero_image TEXT,
+      gallery JSONB DEFAULT '[]'::jsonb,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Hiking trails table (admin-managed)
+  await sql`
+    CREATE TABLE IF NOT EXISTS hiking_trails (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT,
+      location TEXT NOT NULL,
+      description TEXT,
+      long_description TEXT,
+      distance_km DOUBLE PRECISION,
+      duration_minutes INTEGER,
+      difficulty TEXT DEFAULT 'medium',
+      alltrails_url TEXT,
+      google_maps_url TEXT,
+      photos JSONB DEFAULT '[]'::jsonb,
+      tags JSONB DEFAULT '[]'::jsonb,
+      active BOOLEAN DEFAULT true,
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+
+  // Saved trails per customer
+  await sql`
+    CREATE TABLE IF NOT EXISTS saved_trails (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL,
+      trail_id TEXT NOT NULL,
+      saved_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(customer_id, trail_id)
+    )
+  `;
+
   return { success: true, message: 'Database tables created successfully' };
 }
 
@@ -2185,6 +2229,116 @@ export async function reorderCampings(orderedIds: string[]) {
   for (let i = 0; i < orderedIds.length; i++) {
     await sql`UPDATE campings SET sort_order = ${i} WHERE id = ${orderedIds[i]}`;
   }
+}
+
+// ===== DESTINATIONS (photo overrides) =====
+
+export async function getAllDestinations() {
+  try {
+    const result = await sql`SELECT * FROM destinations ORDER BY slug ASC`;
+    return result.rows;
+  } catch {
+    return [];
+  }
+}
+
+export async function upsertDestination(slug: string, data: { hero_image?: string; gallery?: string[] }) {
+  const existing = await sql`SELECT id FROM destinations WHERE slug = ${slug}`;
+  if (existing.rows.length > 0) {
+    if (data.hero_image !== undefined) await sql`UPDATE destinations SET hero_image = ${data.hero_image}, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.gallery !== undefined) await sql`UPDATE destinations SET gallery = ${JSON.stringify(data.gallery)}::jsonb, updated_at = NOW() WHERE slug = ${slug}`;
+    return { id: existing.rows[0].id };
+  }
+  const id = generateId('dest');
+  await sql`
+    INSERT INTO destinations (id, slug, hero_image, gallery)
+    VALUES (${id}, ${slug}, ${data.hero_image || ''}, ${JSON.stringify(data.gallery || [])}::jsonb)
+  `;
+  return { id };
+}
+
+// ===== HIKING TRAILS =====
+
+export async function getAllTrails(activeOnly = false) {
+  try {
+    if (activeOnly) {
+      const result = await sql`SELECT * FROM hiking_trails WHERE active = true ORDER BY sort_order ASC, name ASC`;
+      return result.rows;
+    }
+    const result = await sql`SELECT * FROM hiking_trails ORDER BY sort_order ASC, name ASC`;
+    return result.rows;
+  } catch {
+    return [];
+  }
+}
+
+export async function createTrail(data: {
+  name: string; location: string; description?: string; long_description?: string;
+  distance_km?: number; duration_minutes?: number; difficulty?: string;
+  alltrails_url?: string; google_maps_url?: string; photos?: string[]; tags?: string[];
+}) {
+  const id = generateId('trail');
+  const maxOrder = await sql`SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM hiking_trails`;
+  const sortOrder = maxOrder.rows[0]?.next || 0;
+  const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  await sql`
+    INSERT INTO hiking_trails (id, name, slug, location, description, long_description, distance_km, duration_minutes, difficulty, alltrails_url, google_maps_url, photos, tags, sort_order)
+    VALUES (${id}, ${data.name}, ${slug}, ${data.location}, ${data.description || ''}, ${data.long_description || ''}, ${data.distance_km || null}, ${data.duration_minutes || null}, ${data.difficulty || 'medium'}, ${data.alltrails_url || ''}, ${data.google_maps_url || ''}, ${JSON.stringify(data.photos || [])}::jsonb, ${JSON.stringify(data.tags || [])}::jsonb, ${sortOrder})
+  `;
+  return { id };
+}
+
+export async function updateTrail(id: string, data: {
+  name?: string; slug?: string; location?: string; description?: string; long_description?: string;
+  distance_km?: number | null; duration_minutes?: number | null; difficulty?: string;
+  alltrails_url?: string; google_maps_url?: string; photos?: string[]; tags?: string[];
+  active?: boolean;
+}) {
+  if (data.name !== undefined) await sql`UPDATE hiking_trails SET name = ${data.name} WHERE id = ${id}`;
+  if (data.slug !== undefined) await sql`UPDATE hiking_trails SET slug = ${data.slug} WHERE id = ${id}`;
+  if (data.location !== undefined) await sql`UPDATE hiking_trails SET location = ${data.location} WHERE id = ${id}`;
+  if (data.description !== undefined) await sql`UPDATE hiking_trails SET description = ${data.description} WHERE id = ${id}`;
+  if (data.long_description !== undefined) await sql`UPDATE hiking_trails SET long_description = ${data.long_description} WHERE id = ${id}`;
+  if (data.distance_km !== undefined) await sql`UPDATE hiking_trails SET distance_km = ${data.distance_km} WHERE id = ${id}`;
+  if (data.duration_minutes !== undefined) await sql`UPDATE hiking_trails SET duration_minutes = ${data.duration_minutes} WHERE id = ${id}`;
+  if (data.difficulty !== undefined) await sql`UPDATE hiking_trails SET difficulty = ${data.difficulty} WHERE id = ${id}`;
+  if (data.alltrails_url !== undefined) await sql`UPDATE hiking_trails SET alltrails_url = ${data.alltrails_url} WHERE id = ${id}`;
+  if (data.google_maps_url !== undefined) await sql`UPDATE hiking_trails SET google_maps_url = ${data.google_maps_url} WHERE id = ${id}`;
+  if (data.photos !== undefined) await sql`UPDATE hiking_trails SET photos = ${JSON.stringify(data.photos)}::jsonb WHERE id = ${id}`;
+  if (data.tags !== undefined) await sql`UPDATE hiking_trails SET tags = ${JSON.stringify(data.tags)}::jsonb WHERE id = ${id}`;
+  if (data.active !== undefined) await sql`UPDATE hiking_trails SET active = ${data.active} WHERE id = ${id}`;
+}
+
+export async function deleteTrail(id: string) {
+  await sql`DELETE FROM hiking_trails WHERE id = ${id}`;
+  await sql`DELETE FROM saved_trails WHERE trail_id = ${id}`;
+}
+
+export async function reorderTrails(orderedIds: string[]) {
+  for (let i = 0; i < orderedIds.length; i++) {
+    await sql`UPDATE hiking_trails SET sort_order = ${i} WHERE id = ${orderedIds[i]}`;
+  }
+}
+
+// ===== SAVED TRAILS =====
+
+export async function getSavedTrails(customerId: string) {
+  const result = await sql`SELECT trail_id FROM saved_trails WHERE customer_id = ${customerId} ORDER BY saved_at DESC`;
+  return result.rows.map(r => r.trail_id as string);
+}
+
+export async function saveTrail(customerId: string, trailId: string) {
+  const id = generateId('st');
+  try {
+    await sql`INSERT INTO saved_trails (id, customer_id, trail_id) VALUES (${id}, ${customerId}, ${trailId})`;
+    return true;
+  } catch {
+    return false; // already saved (unique constraint)
+  }
+}
+
+export async function unsaveTrail(customerId: string, trailId: string) {
+  await sql`DELETE FROM saved_trails WHERE customer_id = ${customerId} AND trail_id = ${trailId}`;
 }
 
 // ===== PASSWORD RESET TOKENS =====

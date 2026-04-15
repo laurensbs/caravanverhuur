@@ -6,8 +6,8 @@
 const RESEND_API_URL = 'https://api.resend.com/emails';
 const SITE_URL = 'https://caravanverhuurspanje.com';
 const BRAND_NAME = 'Caravanverhuur Spanje';
-const LOGO_URL = 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png';
-import { GOOGLE_REVIEW_URL } from './constants';
+const LOGO_URL = 'https://u.cubeupload.com/laurensbos/Caravanverhuur3.png';
+import { GOOGLE_REVIEW_URL, INSTAGRAM_URL } from './constants';
 import { getEmailTranslations } from './email-translations';
 
 interface EmailOptions {
@@ -109,6 +109,8 @@ function emailWrapper(content: string, preheader?: string, locale?: string): str
             <a href="mailto:info@caravanverhuurspanje.com" style="color:#94A3B8;text-decoration:none;">&#9993; info@caravanverhuurspanje.com</a>
             &nbsp;&nbsp;&middot;&nbsp;&nbsp;
             <a href="https://wa.me/34650036755" style="color:#25D366;text-decoration:none;font-weight:500;">WhatsApp</a>
+            &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+            <a href="${INSTAGRAM_URL}" style="color:#E1306C;text-decoration:none;font-weight:500;">Instagram</a>
             &nbsp;&nbsp;&middot;&nbsp;&nbsp;
             <a href="tel:+34650036755" style="color:#94A3B8;text-decoration:none;">&#9742; +34 650 036 755</a>
           </p>

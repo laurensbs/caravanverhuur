@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { campings as staticCampings, type Camping } from '@/data/campings';
-import { destinations } from '@/data/destinations';
+import { destinations as staticDestinations } from '@/data/destinations';
 import {
   MapPin, ArrowRight, Search, X, Tent, ChevronRight,
   Waves, Heart, Sparkles, Umbrella, Wifi, ShoppingCart,
@@ -13,6 +13,7 @@ import {
 import { useLanguage } from '@/i18n/context';
 import { motion, AnimatePresence } from 'framer-motion';
 import BookingCTA from '@/components/BookingCTA';
+import { useData } from '@/lib/data-context';
 
 /* ── Types ─────────────────────────────── */
 type Tab = 'stranden' | 'dorpen' | 'campings';
@@ -53,8 +54,8 @@ const beachVibeLabel: Record<string, string> = {
 };
 
 /* ── Build flat beaches array from destinations ── */
-function getAllBeaches() {
-  return destinations.flatMap(d =>
+function getAllBeaches(dests: typeof staticDestinations) {
+  return dests.flatMap(d =>
     d.beaches.map(b => ({
       ...b,
       destination: d.name,
@@ -129,7 +130,12 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
               {nearDests.slice(0, 3).map(d => (
                 <span key={d.slug} className="inline-flex items-center gap-1 text-[11px] text-gray-500">
                   <div className="w-4 h-4 rounded-full overflow-hidden relative bg-gray-100 shrink-0">
-                    <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="16px" />
+                    {d.heroImage.startsWith('http') ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={d.heroImage} alt={d.name} className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <Image src={d.heroImage} alt={d.name} fill className="object-cover" sizes="16px" />
+                    )}
                   </div>
                   {d.name}
                 </span>
@@ -153,6 +159,8 @@ function CampingCard({ camping, t }: { camping: Camping; t: (k: string) => strin
 /* ================================================================== */
 export default function BestemmingenPage() {
   const { t } = useLanguage();
+  const { destinations: ctxDestinations } = useData();
+  const destinations = ctxDestinations.length > 0 ? ctxDestinations : staticDestinations;
   const [activeTab, setActiveTab] = useState<Tab | null>(null);
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
@@ -183,7 +191,7 @@ export default function BestemmingenPage() {
   }, []);
 
   // All beaches flattened
-  const allBeaches = useMemo(() => getAllBeaches(), []);
+  const allBeaches = useMemo(() => getAllBeaches(destinations), [destinations]);
 
   // Filtered data
   const filteredCampings = useMemo(() => {
@@ -479,13 +487,18 @@ export default function BestemmingenPage() {
                         className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100"
                       >
                         <div className="relative aspect-[16/10] overflow-hidden">
-                          <Image
-                            src={beach.heroImage}
-                            alt={beach.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          />
+                          {beach.heroImage.startsWith('http') ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={beach.heroImage} alt={beach.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                          ) : (
+                            <Image
+                              src={beach.heroImage}
+                              alt={beach.name}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                          )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                           <div className="absolute top-2.5 left-2.5 flex gap-1.5">
                             <span className="px-2 py-0.5 bg-cyan-500/90 backdrop-blur-sm rounded-full text-[10px] font-semibold text-white shadow-sm">
@@ -552,13 +565,18 @@ export default function BestemmingenPage() {
                           className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300"
                         >
                           <div className="relative aspect-[4/3] overflow-hidden">
-                            <Image
-                              src={d.heroImage}
-                              alt={d.name}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            />
+                            {d.heroImage.startsWith('http') ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={d.heroImage} alt={d.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            ) : (
+                              <Image
+                                src={d.heroImage}
+                                alt={d.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                              />
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                             <div className="absolute top-2.5 left-2.5">
                               <span className="px-2 py-0.5 bg-amber-500/90 backdrop-blur-sm rounded-full text-[10px] font-semibold text-white shadow-sm">

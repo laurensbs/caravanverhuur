@@ -225,41 +225,48 @@ export default function CaravansPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-12 sm:mb-16">
+          {/* Service — numbered horizontal process */}
+          <div className="relative flex flex-col sm:flex-row items-stretch gap-0 mb-16 sm:mb-20">
+            {/* Connector line (desktop) */}
+            <div className="hidden sm:block absolute top-6 left-[10%] right-[10%] h-0.5 bg-primary/15 z-0" />
             {[
-              { label: t('caravans.serviceSetup'), icon: <Truck size={22} /> },
-              { label: t('caravans.serviceAwningUp'), icon: <Tent size={22} /> },
-              { label: t('caravans.servicePickup'), icon: <Truck size={22} /> },
-              { label: t('caravans.serviceAwningDown'), icon: <Tent size={22} /> },
+              { label: t('caravans.serviceSetup'), icon: <Truck size={20} />, step: 1 },
+              { label: t('caravans.serviceAwningUp'), icon: <Tent size={20} />, step: 2 },
+              { label: t('caravans.servicePickup'), icon: <Truck size={20} />, step: 3 },
+              { label: t('caravans.serviceAwningDown'), icon: <Tent size={20} />, step: 4 },
             ].map((item, i) => (
-              <div key={i} className="bg-surface rounded-2xl p-4 sm:p-6 text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+              <div key={i} className="flex-1 relative z-10 flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0 px-2 py-3 sm:py-0">
+                <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shrink-0 sm:mb-4 relative">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center shadow-sm border border-primary/20">{item.step}</span>
                   {item.icon}
                 </div>
-                <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{item.label}</p>
+                <p className="text-sm font-semibold text-foreground sm:text-center leading-snug">{item.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-8 sm:mb-10">
             <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
               {t('home.extrasTitle')}
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          {/* Extras — accent-colored cards with left border */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={22} className="text-white" /> },
-              { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={22} className="text-white" /> },
-              { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={22} className="text-white" /> },
-              { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={22} className="text-white" /> },
+              { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={20} />, color: 'border-blue-400 bg-blue-50/50' },
+              { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={20} />, color: 'border-emerald-400 bg-emerald-50/50' },
+              { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={20} />, color: 'border-amber-400 bg-amber-50/50' },
+              { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={20} />, color: 'border-cyan-400 bg-cyan-50/50' },
             ].map((extra, i) => (
-              <div key={i} className="bg-surface rounded-2xl p-4 sm:p-6 text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-dark rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
+              <div key={i} className={`rounded-xl border-l-4 ${extra.color} p-4 flex items-center gap-4`}>
+                <div className="text-foreground shrink-0">
                   {extra.icon}
                 </div>
-                <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{extra.name}</p>
-                <p className="text-xs font-bold text-primary mt-1">{extra.price}</p>
+                <div>
+                  <p className="text-sm font-semibold text-foreground leading-snug">{extra.name}</p>
+                  <p className="text-xs font-bold text-primary mt-0.5">{extra.price}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -286,21 +293,12 @@ export default function CaravansPage() {
               <p className="text-foreground-light text-sm sm:text-base leading-relaxed mb-6">
                 {t('home.roadTripSubtitle')}
               </p>
-              <div className="space-y-4">
-                {[
-                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceSetup') },
-                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceAwningUp') },
-                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.servicePickup') },
-                  { icon: <CheckCircle className="w-5 h-5" />, text: t('caravans.serviceAwningDown') },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      {item.icon}
-                    </div>
-                    <span className="text-sm sm:text-base font-medium text-foreground">{item.text}</span>
-                  </div>
-                ))}
-              </div>
+              <Link
+                href="/boeken"
+                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors"
+              >
+                {t('nav.bookNow')} <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </div>

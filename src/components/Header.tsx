@@ -257,7 +257,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+              src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
               alt="Caravanverhuur Costa Brava"
               width={320} height={80}
               className="w-36 sm:w-48 lg:w-56 h-auto object-contain"
@@ -277,6 +277,7 @@ export default function Header() {
               </Link>
             </div>
             <Link href="/over-ons" className={navCls('/over-ons')}>{t('nav.about')}</Link>
+            <Link href="/wandelroutes" className={navCls('/wandelroutes')}>{t('nav.trails')}</Link>
             <Link href="/faq" className={navCls('/faq')}>{t('nav.faq')}</Link>
             <Link href="/contact" className={navCls('/contact')}>{t('nav.contact')}</Link>
 
@@ -432,7 +433,7 @@ export default function Header() {
             {/* Panel header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-28 h-auto" />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png" alt="Caravanverhuur Costa Brava" width={200} height={56} className="w-28 h-auto" />
               </Link>
               <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
                 <X size={15} className="text-gray-500" />
@@ -536,6 +537,9 @@ export default function Header() {
               <div className="mt-2 pt-2 border-t border-gray-100/80">
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.14 }}>
                   <MobLink href="/over-ons" label={t('nav.about')} on={active('/over-ons')} close={() => setMenuOpen(false)} />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.155 }}>
+                  <MobLink href="/wandelroutes" label={t('nav.trails')} on={active('/wandelroutes')} close={() => setMenuOpen(false)} />
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.17 }}>
                   <MobLink href="/faq" label={t('nav.faq')} on={active('/faq')} close={() => setMenuOpen(false)} />

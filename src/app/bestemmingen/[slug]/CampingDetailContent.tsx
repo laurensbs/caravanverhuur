@@ -53,9 +53,16 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   const { t } = useLanguage();
   const { campings: dbCampings } = useData();
 
-  // Use DB camping data (admin-uploaded photos) when available, fall back to static
+  // Use DB camping data (admin-uploaded photos + edited text) when available, fall back to static
   const dbCamping = dbCampings.find(c => c.id === camping.id || c.slug === camping.slug);
   const photos = (dbCamping?.photos?.length ? dbCamping.photos : camping.photos) || [];
+  const description = dbCamping?.description || camping.description;
+  const longDescription = dbCamping?.longDescription || camping.longDescription;
+  const facilities = dbCamping?.facilities?.length ? dbCamping.facilities : camping.facilities;
+  const bestFor = dbCamping?.bestFor?.length ? dbCamping.bestFor : camping.bestFor;
+  const website = dbCamping?.website || camping.website;
+  const location = dbCamping?.location || camping.location;
+  const region = dbCamping?.region || camping.region;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -97,8 +104,8 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">{camping.name}</h1>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-white/90 text-sm">
-                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><MapPin size={14} /> {camping.location}</span>
-                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><Globe size={14} /> {camping.region}</span>
+                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><MapPin size={14} /> {location}</span>
+                <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full"><Globe size={14} /> {region}</span>
               </div>
             </div>
           </div>
@@ -112,11 +119,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             {/* Stats */}
             <div className="grid grid-cols-3 divide-x divide-gray-100">
               <div className="text-center px-2 sm:px-4">
-                <p className="text-sm sm:text-lg font-bold text-primary truncate">{camping.location}</p>
+                <p className="text-sm sm:text-lg font-bold text-primary truncate">{location}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.locationLabel')}</p>
               </div>
               <div className="text-center px-2 sm:px-4">
-                <p className="text-sm sm:text-lg font-bold text-primary">{camping.facilities?.length || 0}</p>
+                <p className="text-sm sm:text-lg font-bold text-primary">{facilities?.length || 0}</p>
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">{t('destinations.facilitiesLabel')}</p>
               </div>
               <div className="text-center px-2 sm:px-4">
@@ -138,11 +145,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">{t('destinations.aboutCamping')}</h2>
               <p className="text-gray-600 leading-relaxed text-[15px]">
-                {camping.longDescription || camping.description}
+                {longDescription || description}
               </p>
-              {camping.bestFor && camping.bestFor.length > 0 && (
+              {bestFor && bestFor.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {camping.bestFor.map(tag => (
+                  {bestFor.map(tag => (
                     <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/5 text-primary rounded-full text-xs font-semibold">
                       <Sparkles size={10} /> {tag}
                     </span>
@@ -152,11 +159,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             </div>
 
             {/* Facilities */}
-            {camping.facilities && camping.facilities.length > 0 && (
+            {facilities && facilities.length > 0 && (
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-5">{t('destinations.facilitiesTitle')}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {camping.facilities.map(f => (
+                  {facilities.map(f => (
                     <div key={f} className="flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                       <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
                         {facilityIcons[f] || <Tent size={16} className="text-gray-400" />}
@@ -213,9 +220,9 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               >
                 {t('nav.bookNow')} <ArrowRight size={16} />
               </Link>
-              {camping.website && (
+              {website && (
                 <a
-                  href={camping.website}
+                  href={website}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 mt-2 bg-white/15 text-white font-medium rounded-xl text-sm transition-colors hover:bg-white/25"
@@ -233,11 +240,11 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex justify-between">
                   <span className="text-gray-500">{t('destinations.place')}</span>
-                  <span className="font-medium text-gray-900">{camping.location}</span>
+                  <span className="font-medium text-gray-900">{location}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">{t('destinations.regionLabel')}</span>
-                  <span className="font-medium text-gray-900">{camping.region}</span>
+                  <span className="font-medium text-gray-900">{region}</span>
                 </div>
               </div>
             </div>

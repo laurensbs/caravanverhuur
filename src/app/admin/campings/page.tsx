@@ -28,6 +28,7 @@ interface Camping {
   name: string;
   location: string;
   description: string;
+  long_description: string;
   website: string;
   photos: string[];
   active: boolean;
@@ -149,6 +150,7 @@ export default function AdminCampingsPage() {
   const [formName, setFormName] = useState('');
   const [formLocation, setFormLocation] = useState('');
   const [formDescription, setFormDescription] = useState('');
+  const [formLongDescription, setFormLongDescription] = useState('');
   const [formWebsite, setFormWebsite] = useState('');
   const [formPhotos, setFormPhotos] = useState('');
 
@@ -192,7 +194,7 @@ export default function AdminCampingsPage() {
   const activeCount = campings.filter(c => c.active).length;
 
   const resetForm = () => {
-    setFormName(''); setFormLocation(''); setFormDescription(''); setFormWebsite(''); setFormPhotos('');
+    setFormName(''); setFormLocation(''); setFormDescription(''); setFormLongDescription(''); setFormWebsite(''); setFormPhotos('');
     setEditingId(null);
   };
 
@@ -205,7 +207,7 @@ export default function AdminCampingsPage() {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
-          body: JSON.stringify({ id: editingId, name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
+          body: JSON.stringify({ id: editingId, name: formName, location: formLocation, description: formDescription, long_description: formLongDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
         if (!res.ok) console.error('PUT failed:', await res.text());
       } else {
@@ -213,7 +215,7 @@ export default function AdminCampingsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
-          body: JSON.stringify({ name: formName, location: formLocation, description: formDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
+          body: JSON.stringify({ name: formName, location: formLocation, description: formDescription, long_description: formLongDescription, website: formWebsite, photos: formPhotos.split('\n').map(s => s.trim()).filter(Boolean) }),
         });
         if (!res.ok) console.error('POST failed:', await res.text());
       }
@@ -259,6 +261,7 @@ export default function AdminCampingsPage() {
     setFormName(camping.name);
     setFormLocation(camping.location);
     setFormDescription(camping.description || '');
+    setFormLongDescription(camping.long_description || '');
     setFormWebsite(camping.website || '');
     setFormPhotos((camping.photos || []).join('\n'));
     setEditingId(camping.id);
@@ -448,6 +451,19 @@ export default function AdminCampingsPage() {
                   onChange={e => setFormDescription(e.target.value)}
                   placeholder={isNl ? 'Korte beschrijving van de camping...' : 'Short description of the camping...'}
                   rows={2}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted mb-1">
+                  {isNl ? 'Uitgebreide beschrijving (zichtbaar op campingpagina)' : 'Long description (shown on camping page)'}
+                </label>
+                <textarea
+                  value={formLongDescription}
+                  onChange={e => setFormLongDescription(e.target.value)}
+                  placeholder={isNl ? 'Uitgebreide tekst over de camping, faciliteiten, omgeving...' : 'Detailed text about the camping, facilities, surroundings...'}
+                  rows={5}
                   className="w-full px-3 py-2.5 rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>

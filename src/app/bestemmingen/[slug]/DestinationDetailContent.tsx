@@ -12,6 +12,7 @@ import {
 import { useLanguage } from '@/i18n/context';
 import { type Destination } from '@/data/destinations';
 import { type Camping } from '@/data/campings';
+import { useData } from '@/lib/data-context';
 
 interface Props {
   destination: Destination;
@@ -50,7 +51,12 @@ function AutoSlideGallery({ photos, altPrefix }: { photos: string[]; altPrefix: 
     <SlowMarquee>
       {photos.map((photo, i) => (
         <div key={i} className="relative w-32 h-22 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
-          <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px" />
+          {photo.startsWith('http') ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photo} alt={`${altPrefix} foto ${i + 2}`} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          ) : (
+            <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px" />
+          )}
         </div>
       ))}
     </SlowMarquee>
@@ -59,8 +65,14 @@ function AutoSlideGallery({ photos, altPrefix }: { photos: string[]; altPrefix: 
 
 export default function DestinationDetailContent({ destination, nearbyCampings, otherDestinations }: Props) {
   const { t } = useLanguage();
+  const { destinations: ctxDestinations } = useData();
 
-  const allPhotos = [destination.heroImage, ...destination.gallery.filter(g => g !== destination.heroImage)];
+  // Use DB-overridden photos if available
+  const dbDest = ctxDestinations.find(d => d.slug === destination.slug);
+  const heroImage = dbDest?.heroImage || destination.heroImage;
+  const gallery = (dbDest?.gallery?.length ? dbDest.gallery : destination.gallery);
+
+  const allPhotos = [heroImage, ...gallery.filter(g => g !== heroImage)];
   const galleryPhotos = allPhotos.slice(1);
 
   return (
@@ -68,14 +80,23 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
       {/* Hero — full-width */}
       <section className="relative">
         <div className="h-[55vh] sm:h-[60vh] md:h-[65vh] overflow-hidden">
-          <Image
-            src={allPhotos[0]}
-            alt={`${destination.name} — ${destination.region}, Costa Brava`}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+          {allPhotos[0].startsWith('http') ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={allPhotos[0]}
+              alt={`${destination.name} — ${destination.region}, Costa Brava`}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <Image
+              src={allPhotos[0]}
+              alt={`${destination.name} — ${destination.region}, Costa Brava`}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/5" />
 
           {/* Content overlay */}
@@ -264,19 +285,27 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Meer ontdekken in {destination.region}</h2>
                 <p className="text-gray-500 text-sm mb-4 sm:mb-5">Andere prachtige plaatsen op korte rijafstand van {destination.name}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  {otherDestinations.slice(0, 6).map(dest => (
+                  {otherDestinations.slice(0, 6).map(dest => {
+                    const dbOther = ctxDestinations.find(d => d.slug === dest.slug);
+                    const otherHero = dbOther?.heroImage || dest.heroImage;
+                    return (
                     <Link
                       key={dest.slug}
                       href={`/bestemmingen/${dest.slug}`}
                       className="group relative aspect-[3/4] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
-                      <Image
-                        src={dest.heroImage}
-                        alt={`${dest.name} — ${dest.region}, Costa Brava`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        sizes="(max-width: 640px) 50vw, 33vw"
-                      />
+                      {otherHero.startsWith('http') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={otherHero} alt={`${dest.name} — ${dest.region}, Costa Brava`} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      ) : (
+                        <Image
+                          src={otherHero}
+                          alt={`${dest.name} — ${dest.region}, Costa Brava`}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          sizes="(max-width: 640px) 50vw, 33vw"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                         <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>
@@ -285,7 +314,8 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                         </div>
                       </div>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

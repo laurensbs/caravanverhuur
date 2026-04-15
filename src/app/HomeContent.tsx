@@ -35,11 +35,13 @@ import {
   BedDouble,
 } from 'lucide-react';
 import type { Caravan } from '@/data/caravans';
-import { destinations } from '@/data/destinations';
+import { destinations as staticDestinations } from '@/data/destinations';
+import { campings as staticCampings } from '@/data/campings';
 import BookingWidget from '@/components/BookingWidget';
 import WeatherChecker from '@/components/WeatherChecker';
 import { useLanguage } from '@/i18n/context';
 import { GOOGLE_REVIEW_URL } from '@/lib/constants';
+import { useData } from '@/lib/data-context';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -178,6 +180,9 @@ function InventoryCategories() {
 
 export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
   const { t } = useLanguage();
+  const { destinations: ctxDestinations, campings: ctxCampings } = useData();
+  const destinations = ctxDestinations.length > 0 ? ctxDestinations : staticDestinations;
+  const campings = ctxCampings.length > 0 ? ctxCampings : staticCampings;
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -648,18 +653,18 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               <Star size={18} className="text-primary" /> {t('home.popularPlaces')}
             </h3>
             <SlowMarquee>
-              {destinations.slice(0, 8).map((d, i) => (
+              {campings.slice(0, 10).map((c) => (
                 <div
-                  key={d.slug}
+                  key={c.slug}
                   className="shrink-0"
                 >
-                  <Link href={`/bestemmingen/${d.slug}`} className="group block w-[120px] sm:w-[140px]">
+                  <Link href={`/bestemmingen`} className="group block w-[120px] sm:w-[140px]">
                     <div className="relative aspect-square rounded-xl overflow-hidden mb-1.5">
-                      <Image src={d.heroImage} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="140px" />
+                      <Image src={c.photos[0]} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="140px" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-foreground text-center truncate">{d.name}</h4>
-                    <p className="text-[10px] text-muted text-center">{d.beaches.length} {t('destinations.beaches')}</p>
+                    <h4 className="text-xs sm:text-sm font-semibold text-foreground text-center truncate">{c.name}</h4>
+                    <p className="text-[10px] text-muted text-center">{c.location}</p>
                   </Link>
                 </div>
               ))}

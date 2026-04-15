@@ -42,6 +42,7 @@ import {
   Truck,
   Menu,
   ChevronDown,
+  Mountain,
 } from 'lucide-react';
 import { AdminProvider, useAdmin as useAdminCtx } from '@/i18n/admin-context';
 import { createT, type AdminLocale, type AdminRole } from '@/i18n/admin-translations';
@@ -91,6 +92,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { sub: '/caravans', key: 'nav.caravans', icon: CarFront, roles: ['admin'] },
       { sub: '/campings', key: 'nav.campings', icon: Tent, roles: ['admin'] },
+      { sub: '/bestemmingen', key: 'nav.destinations', icon: Globe, roles: ['admin'] },
+      { sub: '/wandelroutes', key: 'nav.trails', icon: Mountain, roles: ['admin'] },
       { sub: '/kortingscodes', key: 'nav.discountCodes', icon: Tag, roles: ['admin'] },
       { sub: '/prijzen', key: 'nav.pricing', icon: Percent, roles: ['admin'] },
       { sub: '/activiteit', key: 'nav.activity', icon: History, roles: ['admin', 'staff'] },
@@ -393,7 +396,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
               <div>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
                   alt="Caravanverhuur Spanje"
                   width={240}
                   height={70}
@@ -452,7 +455,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
               <div className="relative z-10">
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
                   alt="Caravanverhuur Spanje"
                   width={200}
                   height={60}
@@ -1189,7 +1192,7 @@ function AdminLayoutInner({
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       const notif = new Notification(title, {
         body,
-        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur1.png',
+        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur3.png',
         tag: 'admin-notif-' + Date.now(),
       });
       notif.onclick = () => {
@@ -1507,7 +1510,7 @@ function AdminLayoutInner({
             {sidebarOpen ? (
               <>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur1.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
                   alt="Caravanverhuur Costa Brava"
                   width={200}
                   height={56}
