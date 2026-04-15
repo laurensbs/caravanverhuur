@@ -181,10 +181,16 @@ export default function AdminTrailsPage() {
   };
 
   // Page actions (title bar buttons)
-  usePageActions([
-    { label: '', icon: <RefreshCw size={16} />, onClick: () => { setLoading(true); fetchTrails(); }, variant: 'secondary' },
-    { label: isNl ? 'Toevoegen' : 'Add', icon: <PlusCircle size={16} />, onClick: () => { resetForm(); setShowForm(true); } },
-  ]);
+  usePageActions(
+    <>
+      <button onClick={() => { setLoading(true); fetchTrails(); }} className="p-2 bg-white rounded-xl text-muted hover:text-primary transition-colors cursor-pointer" title="Refresh">
+        <RefreshCw size={16} />
+      </button>
+      <button onClick={() => { resetForm(); setShowForm(true); }} className="p-2 bg-primary-dark text-white rounded-xl hover:bg-primary-dark/90 transition-colors cursor-pointer" title={isNl ? 'Toevoegen' : 'Add'}>
+        <PlusCircle size={16} />
+      </button>
+    </>
+  );
 
   const diffLabel = (d: string) => DIFFICULTIES.find(x => x.value === d)?.[isNl ? 'nl' : 'en'] || d;
   const formatDuration = (min: number) => {
