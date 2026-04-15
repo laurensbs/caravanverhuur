@@ -21,23 +21,23 @@ export interface Caravan {
 /* ------------------------------------------------------------------ */
 const sharedInventory: string[] = [
   /* Buiten */
-  '4 tuinstoelen', '1 tuintafel',
+  '4 Tuinstoelen', '1 Tuintafel',
   /* Keuken */
-  '1 koffiezetapparaat (Senseo)', '1 waterkoker', '2 koekenpannen', '2 kookpannen',
-  'Snijplanken', '3 pannenonderzetters', '1 vergiet', '1 maatbeker', '1 rasp', '1 gasfles',
+  '1 Koffiezetapparaat (Senseo)', '1 Waterkoker', '2 Koekenpannen', '2 Kookpannen',
+  'Snijplanken', '3 Pannenonderzetters', '1 Vergiet', '1 Maatbeker', '1 Rasp', '1 Gasfles',
   /* Servies & glaswerk */
-  '6 grote platte borden', '6 ontbijtborden', '6 soepkommen',
-  '6 theeglazen', '6 koffiemokken', '6 longdrink glazen', '6 bierglazen', '6 wijnglazen',
+  '6 Grote Platte Borden', '6 Ontbijtborden', '6 Soepkommen',
+  '6 Theeglazen', '6 Koffiemokken', '6 Longdrink Glazen', '6 Bierglazen', '6 Wijnglazen',
   /* Bestek */
-  '6 lepels', '6 vorken', '6 messen', '6 theelepels',
+  '6 Lepels', '6 Vorken', '6 Messen', '6 Theelepels',
   /* Overig keuken */
-  '2 schilmessen', '2 opscheplepels', '1 snijmes', '1 schaar', '1 flessenopener', '1 kaasschaaf', '1 blikopener',
+  '2 Schilmessen', '2 Opscheplepels', '1 Snijmes', '1 Schaar', '1 Flessenopener', '1 Kaasschaaf', '1 Blikopener',
   /* Overig */
-  '1 pedaalemmer', '1 stoffer + blik', '1 afwasbak', '1 emmer', '1 vloerveger', '1 droogrek', 'Wasknijpers',
+  '1 Pedaalemmer', '1 Stoffer + Blik', '1 Afwasbak', '1 Emmer', '1 Vloerveger', '1 Droogrek', 'Wasknijpers',
   /* Ouderslaapkamer */
-  '4 slaapplekken (2 slaapkamers)', '10 kledinghangers',
+  '4 Slaapplekken (2 Slaapkamers)', '10 Kledinghangers',
   /* Tweede slaapkamer */
-  '1 lampje',
+  '1 Lampje',
 ];
 
 const sharedAmenities: string[] = [
