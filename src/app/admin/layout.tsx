@@ -1192,7 +1192,7 @@ function AdminLayoutInner({
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       const notif = new Notification(title, {
         body,
-        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur2.png',
+        icon: 'https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png',
         tag: 'admin-notif-' + Date.now(),
       });
       notif.onclick = () => {
@@ -1510,7 +1510,7 @@ function AdminLayoutInner({
             {sidebarOpen ? (
               <>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
+                  src="https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png"
                   alt="Caravanverhuur Costa Brava"
                   width={400}
                   height={160}

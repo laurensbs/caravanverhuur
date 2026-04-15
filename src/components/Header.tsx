@@ -257,7 +257,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
-              src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
+              src="https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png"
               alt="Caravanverhuur Costa Brava"
               width={400} height={160}
               className="w-40 sm:w-52 lg:w-60 h-auto object-contain"
@@ -433,7 +433,7 @@ export default function Header() {
             {/* Panel header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100/80">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png" alt="Caravanverhuur Costa Brava" width={400} height={160} className="w-36 h-auto object-contain" />
+                <Image src="https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png" alt="Caravanverhuur Costa Brava" width={400} height={160} className="w-36 h-auto object-contain" />
               </Link>
               <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
                 <X size={15} className="text-gray-500" />
