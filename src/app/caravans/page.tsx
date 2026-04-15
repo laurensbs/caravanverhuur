@@ -4,7 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import BookingCTA from '@/components/BookingCTA';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, ChevronRight, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerator, Snowflake, ChevronDown, ChevronRight, Armchair, UtensilsCrossed, Wine, Utensils, Trash2, BedDouble, Truck, MapPin, Sparkles } from 'lucide-react';
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
@@ -137,6 +138,31 @@ function CaravanInventoryCategories() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Animation variants — matching homepage patterns                    */
+/* ------------------------------------------------------------------ */
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.07, duration: 0.5, ease },
+  }),
+};
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.06 } },
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.85 },
+  visible: (i: number) => ({
+    opacity: 1, scale: 1,
+    transition: { delay: i * 0.06, duration: 0.45, ease },
+  }),
+};
+
 export default function CaravansPage() {
   const { t } = useLanguage();
   const { campings: allCampings } = useData();
@@ -159,114 +185,227 @@ export default function CaravansPage() {
 
   return (
     <>
-      {/* ===== COMPACT HEADER ===== */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 pt-8 sm:pt-12 pb-6 sm:pb-8">
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight leading-[1.1] mb-3">
-            {t('caravans.heroTitle')}
-          </h1>
-          <p className="text-sm sm:text-base text-muted max-w-2xl leading-relaxed mb-4">
-            {t('caravans.heroSubtitle')}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-full text-blue-700 text-xs font-medium">
-              <Info size={12} className="shrink-0" />
-              {t('termsPage.caravanDisclaimer')}
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full text-amber-700 text-xs font-medium">
-              <Tent size={12} className="shrink-0" />
-              {t('caravans.campingFirstNote')}
-            </span>
-          </div>
+      {/* ===== CINEMATIC HERO ===== */}
+      <section className="relative bg-foreground text-white overflow-hidden">
+        <div className="absolute inset-0">
+          {allPhotos[0] && (
+            <Image
+              src={allPhotos[0]}
+              alt="Caravan Costa Brava"
+              fill
+              className="object-cover opacity-25"
+              sizes="100vw"
+              priority
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground/40 via-foreground/70 to-foreground" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-16 sm:pt-24 pb-10 sm:pb-14">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
+          >
+            <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 rounded-full text-white/80 text-xs font-medium mb-5">
+              <Sparkles size={12} /> Seizoen 2026
+            </motion.div>
+            <motion.h1 variants={fadeUp} custom={1} className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] mb-4 max-w-3xl">
+              {t('caravans.heroTitle')}
+            </motion.h1>
+            <motion.p variants={fadeUp} custom={2} className="text-sm sm:text-lg text-white/60 max-w-xl leading-relaxed mb-6">
+              {t('caravans.heroSubtitle')}
+            </motion.p>
+            <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/80 text-xs">
+                <Info size={11} className="text-blue-300 shrink-0" />
+                {t('termsPage.caravanDisclaimer')}
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/80 text-xs">
+                <Tent size={11} className="text-amber-300 shrink-0" />
+                {t('caravans.campingFirstNote')}
+              </span>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* ===== PHOTO STRIP ===== */}
-      <section className="py-5 sm:py-8 bg-gray-50">
+      <section className="py-5 sm:py-8 bg-surface">
         <SlowMarquee>
           {allPhotos.slice(0, 8).map((photo, i) => (
-            <div key={i} className="shrink-0 w-[45vw] sm:w-[24vw] md:w-[18vw] lg:w-[15vw] relative rounded-xl overflow-hidden shadow-sm aspect-[4/3]">
+            <div key={i} className="shrink-0 w-[48vw] sm:w-[26vw] md:w-[20vw] lg:w-[16vw] relative rounded-2xl overflow-hidden shadow-md aspect-[4/3]">
               <Image
                 src={photo}
                 alt={`Caravan foto ${i + 1}`}
                 fill
-                sizes="(max-width: 640px) 45vw, (max-width: 768px) 24vw, (max-width: 1024px) 18vw, 15vw"
+                sizes="(max-width: 640px) 48vw, (max-width: 768px) 26vw, (max-width: 1024px) 20vw, 16vw"
                 className="object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-              <div className="absolute bottom-1.5 left-1.5 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
-                <p className="text-[9px] text-white/80">{t('caravans.orSimilar')}</p>
+              <div className="absolute bottom-2 left-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                <p className="text-[10px] text-white/80">{t('caravans.orSimilar')}</p>
               </div>
             </div>
           ))}
         </SlowMarquee>
       </section>
 
-      {/* ===== SERVICE & EXTRAS ===== */}
+      {/* ===== HOW IT WORKS — SERVICE + EXTRAS ===== */}
       <section className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-10 sm:mb-16"
+          >
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
               {t('caravans.serviceIncluded')}
-            </h2>
-            <p className="text-muted mt-3 text-sm sm:text-lg max-w-xl mx-auto">
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={1} className="text-muted mt-3 text-sm sm:text-lg max-w-xl mx-auto">
               {t('caravans.serviceNote')}
-            </p>
+            </motion.p>
+          </motion.div>
+
+          {/* Service timeline — 4 animated steps */}
+          <div className="relative max-w-3xl mx-auto mb-16 sm:mb-20">
+            {/* Vertical connector (mobile) / Horizontal connector (desktop) */}
+            <div className="sm:hidden absolute top-0 bottom-0 left-6 w-0.5 bg-primary/10 z-0" />
+            <div className="hidden sm:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-primary/10 z-0" />
+
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-0">
+              {[
+                { label: t('caravans.serviceSetup'), icon: <Truck size={20} />, step: 1 },
+                { label: t('caravans.serviceAwningUp'), icon: <Tent size={20} />, step: 2 },
+                { label: t('caravans.servicePickup'), icon: <Truck size={20} />, step: 3 },
+                { label: t('caravans.serviceAwningDown'), icon: <Tent size={20} />, step: 4 },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.12, duration: 0.5, ease }}
+                  className="flex-1 relative z-10 flex sm:flex-col items-center gap-4 sm:gap-0"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shrink-0 sm:mb-4 relative">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center shadow-sm border border-primary/20">{item.step}</span>
+                    {item.icon}
+                  </div>
+                  <p className="text-sm font-semibold text-foreground sm:text-center leading-snug">{item.label}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
-          {/* Service — numbered horizontal process */}
-          <div className="relative flex flex-col sm:flex-row items-stretch gap-0 mb-16 sm:mb-20">
-            {/* Connector line (desktop) */}
-            <div className="hidden sm:block absolute top-6 left-[10%] right-[10%] h-0.5 bg-primary/15 z-0" />
-            {[
-              { label: t('caravans.serviceSetup'), icon: <Truck size={20} />, step: 1 },
-              { label: t('caravans.serviceAwningUp'), icon: <Tent size={20} />, step: 2 },
-              { label: t('caravans.servicePickup'), icon: <Truck size={20} />, step: 3 },
-              { label: t('caravans.serviceAwningDown'), icon: <Tent size={20} />, step: 4 },
-            ].map((item, i) => (
-              <div key={i} className="flex-1 relative z-10 flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0 px-2 py-3 sm:py-0">
-                <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shrink-0 sm:mb-4 relative">
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center shadow-sm border border-primary/20">{item.step}</span>
-                  {item.icon}
-                </div>
-                <p className="text-sm font-semibold text-foreground sm:text-center leading-snug">{item.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mb-8 sm:mb-10">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
+          {/* Extras */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+          >
+            <motion.h3 variants={fadeUp} custom={0} className="text-center text-xl sm:text-2xl font-extrabold text-foreground tracking-tight mb-6 sm:mb-8">
               {t('home.extrasTitle')}
-            </h3>
-          </div>
+            </motion.h3>
 
-          {/* Extras — accent-colored cards with left border */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={20} />, color: 'border-blue-400 bg-blue-50/50' },
-              { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={20} />, color: 'border-emerald-400 bg-emerald-50/50' },
-              { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={20} />, color: 'border-amber-400 bg-amber-50/50' },
-              { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={20} />, color: 'border-cyan-400 bg-cyan-50/50' },
-            ].map((extra, i) => (
-              <div key={i} className={`rounded-xl border-l-4 ${extra.color} p-4 flex items-center gap-4`}>
-                <div className="text-foreground shrink-0">
-                  {extra.icon}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground leading-snug">{extra.name}</p>
-                  <p className="text-xs font-bold text-primary mt-0.5">{extra.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { name: t('home.extraItemBedlinnen'), price: t('home.extraItemBedlinnenPrice'), icon: <Bed size={20} />, color: 'from-blue-500/10 to-blue-500/5 border-blue-200' },
+                { name: t('home.extraItemMountainbikes'), price: t('home.extraItemMountainbikesPrice'), icon: <Mountain size={20} />, color: 'from-emerald-500/10 to-emerald-500/5 border-emerald-200' },
+                { name: t('home.extraItemKoelkast'), price: t('home.extraItemKoelkastPrice'), icon: <Refrigerator size={20} />, color: 'from-amber-500/10 to-amber-500/5 border-amber-200' },
+                { name: t('home.extraItemAirco'), price: t('home.extraItemAircoPrice'), icon: <Snowflake size={20} />, color: 'from-cyan-500/10 to-cyan-500/5 border-cyan-200' },
+              ].map((extra, i) => (
+                <motion.div key={i} variants={scaleIn} custom={i + 1} className={`rounded-2xl bg-gradient-to-b ${extra.color} border p-4 sm:p-5 text-center`}>
+                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center mx-auto mb-3 text-foreground">
+                    {extra.icon}
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{extra.name}</p>
+                  <p className="text-xs font-bold text-primary mt-1">{extra.price}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
+      {/* ===== CAMPINGS ===== */}
+      {allCampings.length > 0 && (
+        <section className="py-14 sm:py-24 bg-surface">
+          <div className="max-w-7xl mx-auto px-4">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-80px' }}
+              variants={stagger}
+              className="flex items-end justify-between mb-8 sm:mb-10"
+            >
+              <div>
+                <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+                  {t('caravans.campingsTitle')}
+                </motion.h2>
+                <motion.p variants={fadeUp} custom={1} className="text-muted text-sm mt-1.5 max-w-md">{t('caravans.campingsSubtitle')}</motion.p>
+              </div>
+              <motion.div variants={fadeUp} custom={2}>
+                <Link href="/bestemmingen" className="hidden sm:flex items-center gap-1.5 text-sm text-primary font-semibold hover:underline">
+                  {t('caravans.allCampings')} <ArrowRight size={14} />
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Mobile: horizontal scroll, Desktop: 4-col grid */}
+            <div className="flex gap-3.5 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4 sm:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {allCampings.slice(0, 8).map((c, i) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06, duration: 0.5, ease }}
+                  className="snap-start shrink-0 w-[75vw] sm:w-auto"
+                >
+                  <Link href={`/bestemmingen/${c.slug}`} className="group block">
+                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-2.5 shadow-sm">
+                      {(c.photos?.[0] || '').startsWith('http') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.photos![0]} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      ) : (
+                        <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 75vw, (max-width: 1024px) 50vw, 25vw" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <span className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-foreground shadow-sm">
+                        {c.region}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{c.name}</h3>
+                    <p className="text-xs text-muted flex items-center gap-1 mt-0.5"><MapPin size={11} /> {c.location}</p>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="sm:hidden mt-5 text-center">
+              <Link href="/bestemmingen" className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold">
+                {t('caravans.viewAllCampings')} <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ===== TRANSPORT VISUAL ===== */}
-      <section className="py-14 sm:py-24 bg-surface">
+      <section className="py-14 sm:py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease }}
+              className="relative rounded-2xl overflow-hidden aspect-[4/3] shadow-lg"
+            >
               <Image
                 src="https://u.cubeupload.com/laurensbos/IMG3797.jpg"
                 alt="Transport caravan naar camping"
@@ -274,8 +413,13 @@ export default function CaravansPage() {
                 className="object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease, delay: 0.1 }}
+            >
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight leading-tight mb-4">
                 {t('home.roadTripTitle')}
               </h2>
@@ -284,93 +428,60 @@ export default function CaravansPage() {
               </p>
               <Link
                 href="/boeken"
-                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors"
+                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-md shadow-primary/20"
               >
                 {t('nav.bookNow')} <ArrowRight size={16} />
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* ===== INVENTORY ===== */}
-      <section className="py-14 sm:py-24 bg-white">
+      <section className="py-14 sm:py-24 bg-surface">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="text-center mb-8 sm:mb-12"
+          >
+            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
               {t('home.inventoryTitle')}
-            </h2>
-            <p className="text-muted text-sm sm:text-lg mt-3 max-w-2xl mx-auto leading-relaxed">
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={1} className="text-muted text-sm sm:text-lg mt-3 max-w-2xl mx-auto leading-relaxed">
               {t('home.inventorySubtitle')}
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
-          {/* Amenities as compact pill grid */}
-          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-12">
+          {/* Amenities */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease }}
+            className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-12"
+          >
             {amenities.map(a => (
               <span key={a} className="text-xs font-medium bg-primary/5 text-primary-dark px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
                 <CheckCircle size={10} className="text-primary" />{a}
               </span>
             ))}
-          </div>
+          </motion.div>
 
-          {/* Categorized inventory — collapsible */}
-          <div className="max-w-2xl mx-auto">
+          {/* Categorized inventory */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease, delay: 0.1 }}
+            className="max-w-2xl mx-auto"
+          >
             <CaravanInventoryCategories />
-          </div>
+          </motion.div>
         </div>
       </section>
-
-      {/* ===== CAMPINGS ===== */}
-      {allCampings.length > 0 && (
-        <section className="py-12 sm:py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-end justify-between mb-6 sm:mb-8">
-              <div>
-                <h2 className="text-xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                  {t('caravans.campingsTitle')}
-                </h2>
-                <p className="text-muted text-sm mt-1.5">{t('caravans.campingsSubtitle')}</p>
-              </div>
-              <Link href="/bestemmingen" className="hidden sm:flex items-center gap-1 text-sm text-primary font-semibold hover:underline">
-                {t('caravans.allCampings')} <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            {/* Mobile: horizontal scroll, Desktop: grid */}
-            <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {allCampings.slice(0, 8).map(c => (
-                <Link
-                  key={c.id}
-                  href={`/bestemmingen/${c.slug}`}
-                  className="snap-start shrink-0 w-[70vw] sm:w-auto group"
-                >
-                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-2">
-                    {(c.photos?.[0] || '').startsWith('http') ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.photos![0]} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    ) : (
-                      <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 70vw, (max-width: 1024px) 50vw, 25vw" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-semibold text-foreground">
-                      {c.region}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground truncate">{c.name}</h3>
-                  <p className="text-xs text-muted flex items-center gap-1 mt-0.5"><MapPin size={11} /> {c.location}</p>
-                </Link>
-              ))}
-            </div>
-
-            <div className="sm:hidden mt-4 text-center">
-              <Link href="/bestemmingen" className="inline-flex items-center gap-1.5 text-sm text-primary font-semibold">
-                {t('caravans.viewAllCampings')} <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       <BookingCTA />
     </>
