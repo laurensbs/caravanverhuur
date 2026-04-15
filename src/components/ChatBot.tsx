@@ -2512,7 +2512,7 @@ export default function ChatBot() {
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary-dark px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 shrink-0 rounded-t-2xl">
               <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white/20 flex items-center justify-center shrink-0">
-                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png" alt="Caravanverhuur Spanje chatbot" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" />
+                <Image src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png" alt="Caravanverhuur Spanje chatbot" width={28} height={28} className="object-contain sm:w-[30px] sm:h-[30px]" />
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-primary" />
               </div>
               <div className="flex-1 min-w-0">

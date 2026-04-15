@@ -396,7 +396,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
               <div>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
                   alt="Caravanverhuur Spanje"
                   width={240}
                   height={70}
@@ -455,7 +455,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
               <div className="relative z-10">
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
                   alt="Caravanverhuur Spanje"
                   width={200}
                   height={60}
@@ -1192,7 +1192,7 @@ function AdminLayoutInner({
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       const notif = new Notification(title, {
         body,
-        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur3.png',
+        icon: 'https://u.cubeupload.com/laurensbos/Caravanverhuur2.png',
         tag: 'admin-notif-' + Date.now(),
       });
       notif.onclick = () => {
@@ -1510,7 +1510,7 @@ function AdminLayoutInner({
             {sidebarOpen ? (
               <>
                 <Image
-                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur3.png"
+                  src="https://u.cubeupload.com/laurensbos/Caravanverhuur2.png"
                   alt="Caravanverhuur Costa Brava"
                   width={200}
                   height={56}
