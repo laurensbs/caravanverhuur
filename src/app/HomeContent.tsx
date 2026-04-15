@@ -815,77 +815,78 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       <WeatherChecker />
 
       {/* ===== INSTAGRAM FEED ===== */}
-      <section className="py-14 sm:py-24 bg-surface overflow-hidden relative">
+      <section className="py-14 sm:py-24 bg-[#1a1a2e] overflow-hidden relative">
+        {/* Subtle gradient glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-pink-500/15 via-purple-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          {/* ----- INSTAGRAM FEED ----- */}
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
-                  <Instagram size={20} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">{t('home.instagramTitle')}</h3>
-                  <p className="text-xs text-muted">@caravanverhuurcostabrava</p>
-                </div>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8 sm:mb-10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center shadow-lg shadow-pink-500/25">
+                <Instagram size={22} className="text-white" />
               </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">{t('home.instagramTitle')}</h2>
+                <p className="text-sm text-white/50">@caravanverhuurcostabrava</p>
+              </div>
+            </div>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-sm font-semibold text-white hover:bg-white/20 transition-colors"
+            >
+              {t('home.followInstagram')} <ArrowRight size={14} />
+            </a>
+          </div>
+
+          {/* Instagram grid — mobile: 2-col grid scroll, desktop: 6-col */}
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-6 sm:gap-3">
+            {[
+              { img: '/images/campings/els_masos_de_pals.jpg', caption: 'Pals ☀️', likes: 47 },
+              { img: '/images/campings/estartit.jpg', caption: "L'Estartit 🌊", likes: 63 },
+              { img: 'https://u.cubeupload.com/laurensbos/IMG3797.jpg', caption: 'Onderweg 🚚', likes: 89 },
+              { img: '/images/campings/cadaques_pueblo_marinero.jpg', caption: 'Cadaqués 🏘️', likes: 112 },
+              { img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg', caption: 'Tossa de Mar 🏰', likes: 74 },
+              { img: '/images/campings/roses_mit_sporthafen.jpg', caption: 'Roses ⛵', likes: 56 },
+            ].map((post, i) => (
               <a
+                key={i}
                 href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-pink-600 hover:text-pink-700 transition-colors"
+                className="group relative aspect-square rounded-2xl overflow-hidden ring-1 ring-white/10"
               >
-                {t('home.followInstagram')} <ArrowRight size={14} />
-              </a>
-            </div>
-
-            {/* Instagram grid — mobile: horizontal scroll, desktop: 6-col grid */}
-            <div className="flex gap-2.5 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 md:grid-cols-6 sm:gap-3 sm:overflow-visible scrollbar-hide">
-              {[
-                { img: '/images/campings/els_masos_de_pals.jpg', caption: 'Pals \u2600\uFE0F', likes: 47 },
-                { img: '/images/campings/estartit.jpg', caption: "L'Estartit \uD83C\uDF0A", likes: 63 },
-                { img: 'https://u.cubeupload.com/laurensbos/IMG3797.jpg', caption: 'Onderweg \uD83D\uDE9A', likes: 89 },
-                { img: '/images/campings/cadaques_pueblo_marinero.jpg', caption: 'Cadaqu\u00E9s \uD83C\uDFD8\uFE0F', likes: 112 },
-                { img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg', caption: 'Tossa de Mar \uD83C\uDFF0', likes: 74 },
-                { img: '/images/campings/roses_mit_sporthafen.jpg', caption: 'Roses \u26F5', likes: 56 },
-              ].map((post, i) => (
-                <a
-                  key={i}
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="snap-center shrink-0 w-[40vw] sm:w-auto group relative aspect-square rounded-xl overflow-hidden"
-                >
-                  <Image
-                    src={post.img}
-                    alt={post.caption}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    sizes="(max-width: 640px) 40vw, (max-width: 768px) 33vw, 16.6vw"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-3 text-white text-sm font-semibold">
-                      <span className="flex items-center gap-1"><Heart size={16} className="fill-white" /> {post.likes}</span>
-                    </div>
+                <Image
+                  src={post.img}
+                  alt={post.caption}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 16.6vw"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-3 text-white text-sm font-semibold">
+                    <span className="flex items-center gap-1"><Heart size={16} className="fill-white" /> {post.likes}</span>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 sm:p-3">
-                    <p className="text-white text-xs font-medium truncate">{post.caption}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-
-            {/* Mobile follow button */}
-            <div className="sm:hidden mt-4 text-center">
-              <a
-                href={INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-md"
-              >
-                <Instagram size={16} /> {t('home.followInstagram')}
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3">
+                  <p className="text-white text-xs sm:text-sm font-medium truncate">{post.caption}</p>
+                </div>
               </a>
-            </div>
+            ))}
+          </div>
+
+          {/* Mobile follow button */}
+          <div className="sm:hidden mt-6 text-center">
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg shadow-pink-500/25"
+            >
+              <Instagram size={16} /> {t('home.followInstagram')}
+            </a>
           </div>
         </div>
       </section>
