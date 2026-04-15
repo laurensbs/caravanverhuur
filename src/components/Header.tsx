@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { X, ArrowRight, ChevronDown, ChevronRight, User, Calendar, CreditCard, Shield, Settings, LogOut, MessageCircle } from 'lucide-react';
+import { X, ArrowRight, ChevronDown, ChevronRight, User, Calendar, CreditCard, Shield, Settings, LogOut, MessageCircle, Instagram } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { caravans as staticCaravansData } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
@@ -248,6 +248,18 @@ export default function Header() {
               <MessageCircle size={18} className="sm:w-3.5 sm:h-3.5" />
               <span className="hidden sm:inline">Live Chat</span>
             </button>
+
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/caravanverhuurcostabrava"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Instagram"
+            >
+              <Instagram size={18} className="sm:w-3.5 sm:h-3.5" />
+              <span className="hidden sm:inline">Instagram</span>
+            </a>
           </div>
         </div>
       </div>

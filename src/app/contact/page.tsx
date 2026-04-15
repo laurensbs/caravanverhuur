@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle, Instagram, ArrowRight } from 'lucide-react';
+import { INSTAGRAM_URL } from '@/lib/constants';
 import { useLanguage } from '@/i18n/context';
 
 export default function ContactPage() {
@@ -217,6 +218,27 @@ export default function ContactPage() {
                 <div>
                   <div className="font-semibold text-sm">{t('contact.whatsappPrefer')}</div>
                   <div className="text-white/80 text-xs">{t('contact.whatsappDirect')}</div>
+                </div>
+              </a>
+
+              {/* Instagram */}
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-[#1a1a2e] hover:bg-[#22223a] rounded-2xl p-5 transition-colors group"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center shadow-lg shadow-pink-500/25">
+                    <Instagram size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white text-sm">{t('home.instagramTitle')}</div>
+                    <div className="text-white/50 text-xs">@caravanverhuurcostabrava</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-pink-400 group-hover:text-pink-300 transition-colors">
+                  {t('home.followInstagram')} <ArrowRight size={14} />
                 </div>
               </a>
 
