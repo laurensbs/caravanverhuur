@@ -25,18 +25,18 @@ staticCampingsData.forEach(c => {
 });
 const regionOrder = ['Baix Empordà', 'Alt Empordà', 'La Selva'];
 
-/* Curated attractions for the mega menu */
-const attractions = [
-  { name: 'Dalí Theatre-Museum', place: 'Figueres', slug: 'figueres', img: '/images/destinations/teater_museu_gala_salvador_dali_building_from_outside.jpg' },
-  { name: 'Vila Vella', place: 'Tossa de Mar', slug: 'tossa-de-mar', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
-  { name: 'Illes Medes', place: "L'Estartit", slug: 'estartit', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
-  { name: 'Jardí Botànic Marimurtra', place: 'Blanes', slug: 'blanes', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
-  { name: 'Cap de Creus', place: 'Cadaqués', slug: 'cadaques', img: '/images/campings/cap_de_creus_landscape.jpg' },
-  { name: 'Kasteel van Begur', place: 'Begur', slug: 'begur', img: '/images/campings/begurcastle.jpg' },
-  { name: 'Jardí de Cap Roig', place: 'Calella', slug: 'calella-de-palafrugell', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
-  { name: 'Kanalen', place: 'Empuriabrava', slug: 'empuriabrava', img: '/images/campings/canal_principal_de_empuriabrava.jpg' },
-  { name: 'Santa Clotilde tuinen', place: 'Lloret de Mar', slug: 'lloret-de-mar', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
-  { name: 'Ruïnes Empúries', place: "L'Escala", slug: 'sant-pere-pescador', img: '/images/campings/msodaiguistperefigueres1.jpg' },
+/* Curated beaches for the mega menu */
+const beaches = [
+  { name: 'Platja de Pals', place: 'Pals', slug: 'pals', img: '/images/destinations/la_platja_de_pals_spain_beach_costa_brava.jpg' },
+  { name: 'Cala Montjoi', place: 'Roses', slug: 'roses', img: '/images/campings/roses_mit_sporthafen.jpg' },
+  { name: 'Platja Gran', place: 'Tossa de Mar', slug: 'tossa-de-mar', img: '/images/destinations/tossa_de_mar_torre_n_jmm.jpg' },
+  { name: 'Platja de Lloret', place: 'Lloret de Mar', slug: 'lloret-de-mar', img: '/images/destinations/jardins_de_santa_clotilde__lloret_de_mar.jpg' },
+  { name: 'Platja de Calella', place: 'Calella de Palafrugell', slug: 'calella-de-palafrugell', img: '/images/destinations/jardines_de_cap_roig-calella_de_palafurgell-8-2013__11_.jpg' },
+  { name: 'Platja de Sant Pere', place: 'Sant Pere Pescador', slug: 'sant-pere-pescador', img: '/images/campings/msodaiguistperefigueres1.jpg' },
+  { name: 'Portlligat', place: 'Cadaqués', slug: 'cadaques', img: '/images/campings/cap_de_creus_landscape.jpg' },
+  { name: "Platja de l'Estartit", place: "L'Estartit", slug: 'estartit', img: '/images/campings/spain__catalonia__illes_medes__medes_islands_.jpg' },
+  { name: 'Sa Boadella', place: 'Blanes', slug: 'blanes', img: '/images/campings/marimurtra_botanic_garden_blanes_costa_brava_catalonia_spain.jpg' },
+  { name: 'Platja de Begur', place: 'Begur', slug: 'begur', img: '/images/campings/begurcastle.jpg' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -380,13 +380,13 @@ export default function Header() {
                       </div>
                     </div>
 
-                    {/* Column 3: Bezienswaardigheden */}
+                    {/* Column 3: Stranden */}
                     <div>
                       <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
-                        Bezienswaardigheden
+                        Stranden
                       </p>
                       <div className="space-y-0.5">
-                        {attractions.slice(0, 6).map(a => (
+                        {beaches.slice(0, 6).map(a => (
                           <Link key={a.slug} href={`/bestemmingen/${a.slug}`} className="group flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-surface-alt transition-colors">
                             <div className="w-7 h-7 rounded overflow-hidden shrink-0 relative bg-surface-alt">
                               <Image src={a.img} alt={a.name} fill className="object-cover" sizes="28px" />
@@ -397,8 +397,8 @@ export default function Header() {
                             </div>
                           </Link>
                         ))}
-                        <Link href="/bestemmingen#bezienswaardigheden" className="block px-2 py-1.5 text-xs text-primary font-medium">
-                          Alle bezienswaardigheden →
+                        <Link href="/bestemmingen#stranden" className="block px-2 py-1.5 text-xs text-primary font-medium">
+                          Alle stranden →
                         </Link>
                       </div>
                     </div>
@@ -546,10 +546,10 @@ export default function Header() {
                           <ChevronRight size={14} className="text-emerald-400" />
                         </Link>
 
-                        {/* Bezienswaardigheden */}
-                        <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Bezienswaardigheden</p>
+                        {/* Stranden */}
+                        <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold text-primary/60 uppercase tracking-[0.15em]">Stranden</p>
                         <div className="space-y-0.5">
-                          {attractions.slice(0, 5).map((a, i) => (
+                          {beaches.slice(0, 5).map((a, i) => (
                             <motion.div key={a.slug} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
                               <Link href={`/bestemmingen/${a.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
                                 <div className="w-7 h-7 rounded-md overflow-hidden relative shrink-0 bg-gray-100">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import BookingCTA from '@/components/BookingCTA';
@@ -18,49 +18,6 @@ interface Props {
   destination: Destination;
   nearbyCampings: Camping[];
   otherDestinations: Destination[];
-}
-
-/* Slow-motion marquee — continuous CSS scroll, premium feel */
-function SlowMarquee({ children }: { children: React.ReactNode }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [dur, setDur] = useState(40);
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const contentW = el.scrollWidth / 2;
-    setDur(contentW / 35);
-  }, [children]);
-  return (
-    <div className="overflow-hidden">
-      <div
-        ref={trackRef}
-        className="flex gap-3 w-max hover:[animation-play-state:paused] active:[animation-play-state:paused]"
-        style={{ animation: `marquee-scroll ${dur}s linear infinite` }}
-        onTouchStart={e => { e.currentTarget.style.animationPlayState = 'paused'; }}
-        onTouchEnd={e => { e.currentTarget.style.animationPlayState = 'running'; }}
-      >
-        {children}
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function AutoSlideGallery({ photos, altPrefix }: { photos: string[]; altPrefix: string }) {
-  return (
-    <SlowMarquee>
-      {photos.map((photo, i) => (
-        <div key={i} className="relative w-32 h-22 sm:w-40 sm:h-28 md:w-48 md:h-32 rounded-xl overflow-hidden shrink-0 group">
-          {photo.startsWith('http') ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo} alt={`${altPrefix} foto ${i + 2}`} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-          ) : (
-            <Image src={photo} alt={`${altPrefix} foto ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 192px" />
-          )}
-        </div>
-      ))}
-    </SlowMarquee>
-  );
 }
 
 export default function DestinationDetailContent({ destination, nearbyCampings, otherDestinations }: Props) {
@@ -95,7 +52,6 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
   });
 
   const allPhotos = [heroImage, ...gallery.filter(g => g !== heroImage)];
-  const galleryPhotos = allPhotos.slice(1);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -171,12 +127,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
               </div>
             </div>
 
-            {/* Gallery thumbnails - auto-sliding */}
-            {galleryPhotos.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <AutoSlideGallery photos={galleryPhotos} altPrefix={destination.name} />
-              </div>
-            )}
+
           </div>
         </div>
       </section>
