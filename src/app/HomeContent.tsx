@@ -814,75 +814,11 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
       {/* ===== WEATHER CHECKER ===== */}
       <WeatherChecker />
 
-      {/* ===== REVIEWS / SOCIAL PROOF ===== */}
+      {/* ===== INSTAGRAM FEED ===== */}
       <section className="py-14 sm:py-24 bg-surface overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={stagger}
-            className="text-center mb-12 sm:mb-20"
-          >
-            <motion.h2 variants={fadeUp} custom={0} className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
-              {t('home.reviewsTitle2')}
-            </motion.h2>
-            <motion.p variants={fadeUp} custom={1} className="text-muted mt-4 max-w-lg mx-auto text-sm sm:text-lg">
-              {t('home.reviewsSubtitle2')}
-            </motion.p>
-          </motion.div>
-
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible scrollbar-hide">
-            {[
-              {
-                name: t('home.review1Name'),
-                location: t('home.review1Location'),
-                rating: 5,
-                text: t('home.review1Text'),
-                date: t('home.review1Date'),
-              },
-              {
-                name: t('home.review2Name'),
-                location: t('home.review2Location'),
-                rating: 5,
-                text: t('home.review2Text'),
-                date: t('home.review2Date'),
-              },
-              {
-                name: t('home.review5Name'),
-                location: t('home.review5Location'),
-                rating: 5,
-                text: t('home.review5Text'),
-                date: t('home.review5Date'),
-              },
-            ].map((review, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="snap-center shrink-0 w-[85vw] sm:w-auto bg-white rounded-2xl p-5 sm:p-6 shadow-sm relative"
-              >
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: review.rating }).map((_, s) => (
-                    <Star key={s} size={16} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-foreground leading-relaxed mb-4">&ldquo;{review.text}&rdquo;</p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">{review.name}</div>
-                    <div className="text-xs text-muted flex items-center gap-1"><MapPin size={10} />{review.location}</div>
-                  </div>
-                  <span className="text-xs text-muted">{review.date}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
           {/* ----- INSTAGRAM FEED ----- */}
-          <div className="mt-14 sm:mt-20">
+          <div>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
