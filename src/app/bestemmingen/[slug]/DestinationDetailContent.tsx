@@ -65,12 +65,19 @@ function AutoSlideGallery({ photos, altPrefix }: { photos: string[]; altPrefix: 
 
 export default function DestinationDetailContent({ destination, nearbyCampings, otherDestinations }: Props) {
   const { t } = useLanguage();
-  const { destinations: ctxDestinations } = useData();
+  const { destinations: ctxDestinations, campings: dbCampings } = useData();
 
   // Use DB-overridden photos if available
   const dbDest = ctxDestinations.find(d => d.slug === destination.slug);
   const heroImage = dbDest?.heroImage || destination.heroImage;
   const gallery = (dbDest?.gallery?.length ? dbDest.gallery : destination.gallery);
+
+  // Enrich nearbyCampings with DB data (admin-uploaded photos)
+  const enrichedNearbyCampings = nearbyCampings.map(c => {
+    const db = dbCampings.find(d => d.id === c.id || d.slug === c.slug);
+    if (!db) return c;
+    return { ...c, photos: db.photos?.length ? db.photos : c.photos, location: db.location || c.location };
+  });
 
   const allPhotos = [heroImage, ...gallery.filter(g => g !== heroImage)];
   const galleryPhotos = allPhotos.slice(1);
@@ -363,13 +370,13 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
             </div>
 
             {/* Nearby campings */}
-            {nearbyCampings.length > 0 && (
+            {enrichedNearbyCampings.length > 0 && (
               <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Tent size={16} className="text-primary" /> Campings in de buurt
                 </h3>
                 <div className="space-y-1.5">
-                  {nearbyCampings.map(c => (
+                  {enrichedNearbyCampings.map(c => (
                     <Link
                       key={c.id}
                       href={`/bestemmingen/${c.slug}`}

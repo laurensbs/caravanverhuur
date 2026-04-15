@@ -56,6 +56,13 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
   // Use DB camping data (admin-uploaded photos + edited text) when available, fall back to static
   const dbCamping = dbCampings.find(c => c.id === camping.id || c.slug === camping.slug);
   const photos = (dbCamping?.photos?.length ? dbCamping.photos : camping.photos) || [];
+
+  // Enrich otherCampings with DB data (admin-uploaded photos)
+  const enrichedOtherCampings = otherCampings.map(c => {
+    const db = dbCampings.find(d => d.id === c.id || d.slug === c.slug);
+    if (!db) return c;
+    return { ...c, photos: db.photos?.length ? db.photos : c.photos, location: db.location || c.location };
+  });
   const description = dbCamping?.description || camping.description;
   const longDescription = dbCamping?.longDescription || camping.longDescription;
   const facilities = dbCamping?.facilities?.length ? dbCamping.facilities : camping.facilities;
@@ -250,13 +257,13 @@ export default function CampingDetailContent({ camping, nearbyDestinations, othe
             </div>
 
             {/* Other campings in region */}
-            {otherCampings.length > 0 && (
+            {enrichedOtherCampings.length > 0 && (
               <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Tent size={16} className="text-primary" /> {t('destinations.otherCampingsInRegion')}
                 </h3>
                 <div className="space-y-1.5">
-                  {otherCampings.map(c => (
+                  {enrichedOtherCampings.map(c => (
                     <Link
                       key={c.id}
                       href={`/bestemmingen/${c.slug}`}
