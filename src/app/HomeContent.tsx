@@ -230,11 +230,15 @@ export default function HomeContent({ caravans }: { caravans: Caravan[] }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3"
             >
-              <Sun size={12} className="text-primary-light" />
-              <span className="hidden sm:inline">{t('nav.season')}</span>
-              <span className="sm:hidden">{t('nav.seasonShort')}</span>
+              <Link
+                href="/boeken"
+                className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-white/90 text-xs mb-3 hover:bg-white/25 transition-colors"
+              >
+                <Sun size={12} className="text-primary-light" />
+                <span className="hidden sm:inline">{t('nav.season')}</span>
+                <span className="sm:hidden">{t('nav.seasonShort')}</span>
+              </Link>
             </motion.div>
 
             <motion.h1
