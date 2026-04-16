@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useMemo, useRef, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, ReactNode, useMemo, useRef, useCallback, createContext, useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -890,15 +890,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   /* ── Authenticated Layout ───────────────────────── */
-  const navSections: NavSectionFiltered[] = NAV_SECTIONS
+  const isAdminPath = pathname.startsWith('/admin');
+  const navSections: NavSectionFiltered[] = useMemo(() => NAV_SECTIONS
     .map(section => ({
       sectionKey: section.sectionKey,
       items: section.items
         .filter(item => item.roles.includes(role))
-        .map(i => ({ ...i, href: p(i.sub) })),
+        .map(i => ({ ...i, href: isAdminPath ? `/admin${i.sub}` : (i.sub || '/') })),
     }))
-    .filter(section => section.items.length > 0);
-  const allNavItems = navSections.flatMap(s => s.items);
+    .filter(section => section.items.length > 0), [role, isAdminPath]);
+  const allNavItems = useMemo(() => navSections.flatMap(s => s.items), [navSections]);
 
   return (
     <AdminProvider role={role} username={username} displayName={displayName}>
@@ -969,7 +970,7 @@ const ONBOARDING_STAFF_EN: OnboardingStep[] = [
 
 
 /* ── Sidebar Nav Item with dedicated drag handle ── */
-function SidebarNavItem({
+const SidebarNavItem = React.memo(function SidebarNavItem({
   item,
   isActive,
   onNavigate,
@@ -986,7 +987,6 @@ function SidebarNavItem({
   isMobile?: boolean;
   collapsed?: boolean;
 }) {
-  const router = useRouter();
   const controls = useDragControls();
   const isDraggingRef = useRef(false);
   const Icon = item.icon;
@@ -996,7 +996,7 @@ function SidebarNavItem({
       {/* Drag handle — outside the link, only on desktop expanded */}
       {!isMobile && !collapsed && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover/nav:opacity-100 transition-opacity z-10 cursor-grab active:cursor-grabbing"
+          className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-opacity z-10 cursor-grab active:cursor-grabbing"
           onPointerDown={(e) => controls.start(e)}
           style={{ touchAction: 'none' }}
         >
@@ -1010,8 +1010,6 @@ function SidebarNavItem({
             e.preventDefault();
             return;
           }
-          e.preventDefault();
-          router.push(item.href);
           onNavigate();
         }}
         draggable={false}
@@ -1072,7 +1070,7 @@ function SidebarNavItem({
       {linkContent}
     </Reorder.Item>
   );
-}
+});
 
 function AdminLayoutInner({
   navSections,
@@ -1100,6 +1098,14 @@ function AdminLayoutInner({
   const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
   const [pageActions, setPageActions] = useState<ReactNode>(null);
   const pageActionsValue = useMemo(() => ({ actions: pageActions, setActions: setPageActions }), [pageActions]);
+
+  // Stable navigation callbacks for sidebar items
+  const noopNavigate = useCallback(() => {}, []);
+  const mobileNavigate = useCallback(() => {
+    setSidebarOpen(false);
+    localStorage.setItem('admin_sidebar_open', 'false');
+  }, [setSidebarOpen]);
+
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [settingsCurrentPw, setSettingsCurrentPw] = useState('');
@@ -1295,7 +1301,7 @@ function AdminLayoutInner({
       hoverExpandedRef.current = false;
       setSidebarOpen(false);
       hoverTimerRef.current = null;
-    }, 200);
+    }, 400);
   };
 
   // Fetch badge counts periodically & trigger notifications on changes
@@ -1335,15 +1341,19 @@ function AdminLayoutInner({
               }
             }
 
+            // Only update state if badge values actually changed
+            const prev = prevBadgesRef.current;
+            const changed = Object.keys(map).some(k => map[k] !== prev[k]) ||
+              Object.keys(prev).some(k => !(k in map));
             prevBadgesRef.current = map;
-            setBadges(map);
+            if (changed) setBadges(map);
             initialBadgeLoadRef.current = false;
           }
         })
         .catch(() => {});
     };
     fetchBadges();
-    const interval = setInterval(fetchBadges, 15000); // every 15s
+    const interval = setInterval(fetchBadges, 30000); // every 30s
     return () => clearInterval(interval);
   }, [notifEnabled, sendNotification, t]);
 
@@ -1557,7 +1567,7 @@ function AdminLayoutInner({
                           key={item.href}
                           item={item}
                           isActive={pathname === item.href}
-                          onNavigate={() => {}}
+                          onNavigate={noopNavigate}
                           t={t}
                           badge={badges[item.key]}
                         />
@@ -1572,7 +1582,7 @@ function AdminLayoutInner({
                         key={item.href}
                         item={item}
                         isActive={pathname === item.href}
-                        onNavigate={() => {}}
+                        onNavigate={noopNavigate}
                         t={t}
                         badge={badges[item.key]}
                         collapsed
@@ -1589,7 +1599,7 @@ function AdminLayoutInner({
                         key={item.href}
                         item={item}
                         isActive={pathname === item.href}
-                        onNavigate={() => { setSidebarOpen(false); localStorage.setItem('admin_sidebar_open', 'false'); }}
+                        onNavigate={mobileNavigate}
                         t={t}
                         badge={badges[item.key]}
                         isMobile
@@ -1963,18 +1973,14 @@ function AdminLayoutInner({
           )}
         </AnimatePresence>
 
-        {/* Page content with fade-in */}
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+        {/* Page content */}
+        <main
           className="flex-1 p-3 lg:p-6 overflow-auto"
         >
           <PageActionsContext.Provider value={pageActionsValue}>
             {children}
           </PageActionsContext.Provider>
-        </motion.main>
+        </main>
       </div>
 
       {/* ═══ ONBOARDING MODAL ═══ */}
