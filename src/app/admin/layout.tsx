@@ -154,7 +154,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const lt = useMemo(() => createT(loginLocale), [loginLocale]);
 
   /* Subdomain-aware admin paths */
-  const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+  const isAdminPath = pathname.startsWith('/admin');
+  const p = (sub: string) => isAdminPath ? `/admin${sub}` : (sub || '/');
+
+  /* Memoize nav data (must be before conditional returns to respect Rules of Hooks) */
+  const navSections: NavSectionFiltered[] = useMemo(() => NAV_SECTIONS
+    .map(section => ({
+      sectionKey: section.sectionKey,
+      items: section.items
+        .filter(item => item.roles.includes(role))
+        .map(i => ({ ...i, href: isAdminPath ? `/admin${i.sub}` : (i.sub || '/') })),
+    }))
+    .filter(section => section.items.length > 0), [role, isAdminPath]);
+  const allNavItems = useMemo(() => navSections.flatMap(s => s.items), [navSections]);
 
   useEffect(() => {
     /* Restore locale */
@@ -890,16 +902,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   /* ── Authenticated Layout ───────────────────────── */
-  const isAdminPath = pathname.startsWith('/admin');
-  const navSections: NavSectionFiltered[] = useMemo(() => NAV_SECTIONS
-    .map(section => ({
-      sectionKey: section.sectionKey,
-      items: section.items
-        .filter(item => item.roles.includes(role))
-        .map(i => ({ ...i, href: isAdminPath ? `/admin${i.sub}` : (i.sub || '/') })),
-    }))
-    .filter(section => section.items.length > 0), [role, isAdminPath]);
-  const allNavItems = useMemo(() => navSections.flatMap(s => s.items), [navSections]);
 
   return (
     <AdminProvider role={role} username={username} displayName={displayName}>
