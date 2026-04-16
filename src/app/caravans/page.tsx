@@ -213,16 +213,16 @@ export default function CaravansPage() {
             <motion.h1 variants={fadeUp} custom={1} className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] mb-4 max-w-3xl">
               {t('caravans.heroTitle')}
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-sm sm:text-lg text-white/60 max-w-xl leading-relaxed mb-6">
+            <motion.p variants={fadeUp} custom={2} className="text-sm sm:text-lg text-white/60 max-w-xl leading-relaxed mb-3">
               {t('caravans.heroSubtitle')}
             </motion.p>
             <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/80 text-xs">
-                <Info size={11} className="text-blue-300 shrink-0" />
-                {t('termsPage.caravanDisclaimer')}
+              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/50 text-xs">
+                <Info size={11} className="shrink-0" />
+                {t('termsPage.caravanDisclaimerShort')}
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/80 text-xs">
-                <Tent size={11} className="text-amber-300 shrink-0" />
+              <span className="inline-flex items-center gap-1.5 bg-white/8 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full text-white/50 text-xs">
+                <Tent size={11} className="shrink-0" />
                 {t('caravans.campingFirstNote')}
               </span>
             </motion.div>
