@@ -58,7 +58,7 @@ export async function GET() {
           location: (c.location as string) || '',
           region: (c.region as string) || staticMatch?.region || 'Baix Empordà',
           description: (c.description as string) || staticMatch?.description || '',
-          longDescription: (c.long_description as string) || staticMatch?.longDescription || '',
+          longDescription: (c.long_description as string) || (c.description as string) || '',
           website: (c.website as string) || staticMatch?.website || '',
           photos,
           coordinates: {

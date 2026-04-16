@@ -303,6 +303,7 @@ export default function AdminCampingsPage() {
               name: c.name,
               location: c.location,
               description: c.description,
+              long_description: c.longDescription || c.description || '',
               website: c.website || '',
               photos: c.photos || [],
               slug: c.slug || '',
