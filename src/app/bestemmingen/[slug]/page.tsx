@@ -72,12 +72,34 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function CampingDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
+  // Haversine distance in km between two lat/lng points
+  function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   // Try camping first
   const camping = getCampingBySlug(slug);
   if (camping) {
-    const nearbyDestinations = (camping.nearestDestinations || [])
-      .map(s => getDestinationBySlug(s))
-      .filter(Boolean);
+    const campingLat = camping.coordinates?.lat;
+    const campingLng = camping.coordinates?.lng;
+
+    const nearbyDestinations = campingLat && campingLng
+      ? destinations
+          .filter(d => {
+            const dist = haversineKm(campingLat, campingLng, d.coordinates.lat, d.coordinates.lng);
+            return dist <= 20;
+          })
+          .sort((a, b) =>
+            haversineKm(campingLat, campingLng, a.coordinates.lat, a.coordinates.lng) -
+            haversineKm(campingLat, campingLng, b.coordinates.lat, b.coordinates.lng)
+          )
+      : (camping.nearestDestinations || [])
+          .map(s => getDestinationBySlug(s))
+          .filter(Boolean);
 
     const otherCampings = campings
       .filter(c => c.id !== camping.id && c.region === camping.region)
