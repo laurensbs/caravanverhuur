@@ -510,6 +510,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                           { id: 'helen', name: 'Helen', initials: 'HL', color: 'bg-purple-500' },
                           { id: 'dominique', name: 'Dominique', initials: 'DM', color: 'bg-amber-500' },
                           { id: 'laurens', name: 'Laurens', initials: 'LB', color: 'bg-rose-500' },
+                          { id: 'noah', name: 'Noah', initials: 'NH', color: 'bg-teal-500' },
                         ].map((u) => (
                           <button
                             key={u.id}

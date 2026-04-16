@@ -489,6 +489,7 @@ async function _setupDatabaseInner() {
       { id: 'au-helen', username: 'helen', display_name: 'Helen', role: 'admin', locale: 'en' },
       { id: 'au-dominique', username: 'dominique', display_name: 'Dominique', role: 'admin', locale: 'nl' },
       { id: 'au-laurens', username: 'laurens', display_name: 'Laurens', role: 'admin', locale: 'nl' },
+      { id: 'au-noah', username: 'noah', display_name: 'Noah', role: 'admin', locale: 'nl' },
     ];
     for (const u of users) {
       await sql`
@@ -501,7 +502,7 @@ async function _setupDatabaseInner() {
 
   // Set default locale for Jake & Helen if not yet set
   await sql`UPDATE admin_users SET locale = 'en' WHERE username IN ('jake', 'helen') AND locale IS NULL`;
-  await sql`UPDATE admin_users SET locale = 'nl' WHERE username IN ('johan', 'dominique', 'laurens') AND locale IS NULL`;
+  await sql`UPDATE admin_users SET locale = 'nl' WHERE username IN ('johan', 'dominique', 'laurens', 'noah') AND locale IS NULL`;
 
   // Performance indexes
   await sql`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`;
