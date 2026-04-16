@@ -111,16 +111,20 @@ export default function WandelroutesPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/trails').then(r => r.json()),
-      fetch('/api/trails/save').then(r => r.json()),
-      fetch('/api/auth/me').then(r => r.ok ? r.json() : null),
-    ]).then(([trailsData, savedData, meData]) => {
-      setTrails(trailsData.trails || []);
-      setSavedIds(savedData.savedTrailIds || []);
-      setIsLoggedIn(!!meData?.customer);
+    // Load trails first (cached, fast), then lazy-load auth & saved state
+    fetch('/api/trails').then(r => r.json()).then(data => {
+      setTrails(data.trails || []);
       setLoading(false);
     }).catch(() => setLoading(false));
+
+    // Non-blocking: load saved trails & auth in background
+    Promise.all([
+      fetch('/api/trails/save').then(r => r.json()).catch(() => ({ savedTrailIds: [] })),
+      fetch('/api/auth/me').then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([savedData, meData]) => {
+      setSavedIds(savedData.savedTrailIds || []);
+      setIsLoggedIn(!!meData?.customer);
+    });
   }, []);
 
   const filtered = useMemo(() => {
@@ -240,9 +244,9 @@ export default function WandelroutesPage() {
                 return (
                   <motion.div
                     key={trail.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ duration: 0.3 }}
                     className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="p-4 sm:p-6">

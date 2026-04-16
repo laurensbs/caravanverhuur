@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getAllTrails, setupDatabase } from '@/lib/db';
+import { getAllTrails } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300; // cache 5 minutes
 
 function parseJsonb(val: unknown): string[] {
   if (typeof val === 'string') { try { return JSON.parse(val); } catch { return []; } }
@@ -11,7 +10,6 @@ function parseJsonb(val: unknown): string[] {
 
 export async function GET() {
   try {
-    await setupDatabase();
     const trails = await getAllTrails(true); // active only
     const parsed = trails.map((t: Record<string, unknown>) => ({
       id: String(t.id),
@@ -28,7 +26,9 @@ export async function GET() {
       photos: parseJsonb(t.photos),
       tags: parseJsonb(t.tags),
     }));
-    return NextResponse.json({ trails: parsed });
+    return NextResponse.json({ trails: parsed }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+    });
   } catch (error) {
     console.error('Error fetching trails:', error);
     return NextResponse.json({ trails: [] });
