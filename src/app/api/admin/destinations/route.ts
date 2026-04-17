@@ -33,18 +33,18 @@ export async function GET() {
   }
 }
 
-// PUT - Update destination photos (heroImage + gallery) by slug
+// PUT - Update destination (photos + text) by slug
 export async function PUT(request: NextRequest) {
   try {
     const session = getSessionFromHeaders(request);
     const body = await request.json();
-    const { slug, hero_image, gallery } = body;
+    const { slug, hero_image, gallery, description, long_description, highlights, travel_tip, beaches } = body;
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug is verplicht' }, { status: 400 });
     }
 
-    await upsertDestination(slug, { hero_image, gallery });
+    await upsertDestination(slug, { hero_image, gallery, description, long_description, highlights, travel_tip, beaches });
     logActivity({
       actor: session.user,
       role: session.role,

@@ -559,16 +559,30 @@ async function _setupDatabaseInner() {
     await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP`;
   } catch { /* columns already exist */ }
 
-  // Destinations table (admin-managed photo overrides)
+  // Destinations table (admin-managed overrides)
   await sql`
     CREATE TABLE IF NOT EXISTS destinations (
       id TEXT PRIMARY KEY,
       slug TEXT UNIQUE NOT NULL,
       hero_image TEXT,
       gallery JSONB DEFAULT '[]'::jsonb,
+      description TEXT,
+      long_description TEXT,
+      highlights JSONB,
+      travel_tip TEXT,
+      beaches JSONB,
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+
+  // Add text columns if they don't exist yet
+  try {
+    await sql`ALTER TABLE destinations ADD COLUMN IF NOT EXISTS description TEXT`;
+    await sql`ALTER TABLE destinations ADD COLUMN IF NOT EXISTS long_description TEXT`;
+    await sql`ALTER TABLE destinations ADD COLUMN IF NOT EXISTS highlights JSONB`;
+    await sql`ALTER TABLE destinations ADD COLUMN IF NOT EXISTS travel_tip TEXT`;
+    await sql`ALTER TABLE destinations ADD COLUMN IF NOT EXISTS beaches JSONB`;
+  } catch { /* columns already exist */ }
 
   // Hiking trails table (admin-managed)
   await sql`
@@ -2243,17 +2257,22 @@ export async function getAllDestinations() {
   }
 }
 
-export async function upsertDestination(slug: string, data: { hero_image?: string; gallery?: string[] }) {
+export async function upsertDestination(slug: string, data: { hero_image?: string; gallery?: string[]; description?: string; long_description?: string; highlights?: string[]; travel_tip?: string; beaches?: unknown }) {
   const existing = await sql`SELECT id FROM destinations WHERE slug = ${slug}`;
   if (existing.rows.length > 0) {
     if (data.hero_image !== undefined) await sql`UPDATE destinations SET hero_image = ${data.hero_image}, updated_at = NOW() WHERE slug = ${slug}`;
     if (data.gallery !== undefined) await sql`UPDATE destinations SET gallery = ${JSON.stringify(data.gallery)}::jsonb, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.description !== undefined) await sql`UPDATE destinations SET description = ${data.description}, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.long_description !== undefined) await sql`UPDATE destinations SET long_description = ${data.long_description}, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.highlights !== undefined) await sql`UPDATE destinations SET highlights = ${JSON.stringify(data.highlights)}::jsonb, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.travel_tip !== undefined) await sql`UPDATE destinations SET travel_tip = ${data.travel_tip}, updated_at = NOW() WHERE slug = ${slug}`;
+    if (data.beaches !== undefined) await sql`UPDATE destinations SET beaches = ${JSON.stringify(data.beaches)}::jsonb, updated_at = NOW() WHERE slug = ${slug}`;
     return { id: existing.rows[0].id };
   }
   const id = generateId('dest');
   await sql`
-    INSERT INTO destinations (id, slug, hero_image, gallery)
-    VALUES (${id}, ${slug}, ${data.hero_image || ''}, ${JSON.stringify(data.gallery || [])}::jsonb)
+    INSERT INTO destinations (id, slug, hero_image, gallery, description, long_description, highlights, travel_tip, beaches)
+    VALUES (${id}, ${slug}, ${data.hero_image || ''}, ${JSON.stringify(data.gallery || [])}::jsonb, ${data.description || null}, ${data.long_description || null}, ${data.highlights ? JSON.stringify(data.highlights) : null}::jsonb, ${data.travel_tip || null}, ${data.beaches ? JSON.stringify(data.beaches) : null}::jsonb)
   `;
   return { id };
 }
