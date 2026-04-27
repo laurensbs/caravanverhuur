@@ -10,10 +10,16 @@ const LOGO_URL = 'https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png';
 import { GOOGLE_REVIEW_URL, INSTAGRAM_URL } from './constants';
 import { getEmailTranslations } from './email-translations';
 
+interface EmailAttachment {
+  filename: string;
+  content: string; // base64
+}
+
 interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  attachments?: EmailAttachment[];
 }
 
 async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
@@ -26,18 +32,22 @@ async function sendEmail(options: EmailOptions): Promise<{ success: boolean; err
   }
 
   try {
+    const payload: Record<string, unknown> = {
+      from,
+      to: [options.to],
+      subject: options.subject,
+      html: options.html,
+    };
+    if (options.attachments && options.attachments.length > 0) {
+      payload.attachments = options.attachments;
+    }
     const res = await fetch(RESEND_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        from,
-        to: [options.to],
-        subject: options.subject,
-        html: options.html,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -638,13 +648,20 @@ export async function sendPaymentLinkEmail(to: string, data: {
   reference: string;
   depositAmount: number;
   paymentUrl: string;
+  invoicePdfBase64?: string;
+  invoiceNumber?: string;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
 
+  const attachments: EmailAttachment[] | undefined = data.invoicePdfBase64
+    ? [{ filename: `factuur-${data.invoiceNumber || data.reference}.pdf`, content: data.invoicePdfBase64 }]
+    : undefined;
+
   return sendEmail({
     to,
     subject: t.paymentLinkSubject(data.reference),
+    attachments,
     html: emailWrapper(`
       ${badge('\uD83D\uDCB3', t.paymentLinkHeading)}
       ${heading(t.paymentLinkHeading)}

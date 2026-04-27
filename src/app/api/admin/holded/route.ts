@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCustomCaravans, getAllCampings } from '@/lib/db';
-import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
+import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf } from '@/lib/holded';
+import { sendPaymentLinkEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -95,20 +96,38 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentHoldedStatus(paymentId, 'IN_HOLDED', holded.invoiceId);
 
-    let mailSent = false;
+    // Haal de Holded publieke factuur-URL op (de "online invoice"-pagina met Stripe-betaalknop)
+    // en de PDF, en stuur via onze eigen Resend-template — zo loopt de mail door onze branding
+    // én is hij zichtbaar in de Resend-historie.
+    const publicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+    let invoicePdfBase64: string | undefined;
     try {
-      await sendHoldedInvoice(
-        holded.invoiceId,
-        booking.guest_email,
-        `Factuur aanbetaling boeking ${booking.reference} — Caravanverhuur Spanje`,
-        `Beste ${booking.guest_name.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${booking.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
-      );
-      mailSent = true;
-    } catch (sendErr) {
-      console.error('Failed to send Holded invoice email:', sendErr);
+      const pdf = await getHoldedInvoicePdf(holded.invoiceId);
+      invoicePdfBase64 = pdf.toString('base64');
+    } catch (pdfErr) {
+      console.warn('Could not fetch Holded PDF for attachment:', pdfErr);
     }
 
-    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent });
+    let mailSent = false;
+    if (publicUrl) {
+      try {
+        const result = await sendPaymentLinkEmail(booking.guest_email, {
+          guestName: booking.guest_name,
+          reference: booking.reference,
+          depositAmount: amount,
+          paymentUrl: publicUrl,
+          invoicePdfBase64,
+          invoiceNumber: holded.number,
+        });
+        mailSent = result.success;
+      } catch (sendErr) {
+        console.error('Failed to send payment link email:', sendErr);
+      }
+    } else {
+      console.warn('Holded did not return a publicUrl — payment link email not sent');
+    }
+
+    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent, publicUrl });
   } catch (error) {
     console.error('POST /api/admin/holded error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to create Holded invoice' }, { status: 500 });

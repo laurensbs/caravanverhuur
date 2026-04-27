@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
-import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
-import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
+import { sendBookingConfirmationEmail, sendAdminNewBookingNotification, sendPaymentLinkEmail } from '@/lib/email';
+import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf } from '@/lib/holded';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
@@ -195,16 +195,29 @@ export async function POST(request: NextRequest) {
 
       await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
 
+      const publicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+      let invoicePdfBase64: string | undefined;
       try {
-        await sendHoldedInvoice(
-          holded.invoiceId,
-          guestEmail,
-          `Factuur aanbetaling boeking ${result.reference} — Caravanverhuur Spanje`,
-          `Beste ${guestName.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${result.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
-        );
-      } catch (sendErr) {
-        console.error('Failed to send Holded invoice email:', sendErr);
-        // Invoice exists in Holded; admin can resend manually from the Holded dashboard
+        const pdf = await getHoldedInvoicePdf(holded.invoiceId);
+        invoicePdfBase64 = pdf.toString('base64');
+      } catch (pdfErr) {
+        console.warn('Could not fetch Holded PDF for attachment:', pdfErr);
+      }
+      if (publicUrl) {
+        try {
+          await sendPaymentLinkEmail(guestEmail, {
+            guestName,
+            reference: result.reference,
+            depositAmount: deposit25,
+            paymentUrl: publicUrl,
+            invoicePdfBase64,
+            invoiceNumber: holded.number,
+          });
+        } catch (sendErr) {
+          console.error('Failed to send payment link email:', sendErr);
+        }
+      } else {
+        console.warn('Holded did not return publicUrl — payment link email not sent');
       }
       holdedInvoiceCreated = true;
     } catch (err) {
