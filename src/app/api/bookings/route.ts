@@ -163,6 +163,7 @@ export async function POST(request: NextRequest) {
     // The Holded email includes a Stripe payment button (when Stripe is connected in Holded settings).
     // Our own confirmation email (sent below) explains that the invoice arrives in a separate email.
     let holdedInvoiceCreated = false;
+    let holdedPaymentUrl: string | undefined;
     try {
       const contactId = await findOrCreateHoldedContact({
         name: guestName,
@@ -196,10 +197,11 @@ export async function POST(request: NextRequest) {
       await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
 
       const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
-      // Fallback: onze eigen redirect-route die at request-time de publicUrl bij Holded ophaalt.
-      // Zo werkt de knop ook als Holded de URL pas later beschikbaar maakt.
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
       const paymentUrlForEmail = directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`;
+      // Maak deze URL ook beschikbaar in de POST-respons zodat de boeken-pagina
+      // de klant direct naar de Holded-betaalpagina kan redirecten.
+      holdedPaymentUrl = paymentUrlForEmail;
 
       let invoicePdfBase64: string | undefined;
       try {
@@ -227,8 +229,9 @@ export async function POST(request: NextRequest) {
       console.error('Failed to create Holded invoice — booking continues without invoice:', err);
     }
 
-    // paymentUrl is no longer used — Holded sends its own email with the payment link
-    const paymentUrl: string | undefined = undefined;
+    // Direct na boeking sturen we de klant naar de Holded-betaalpagina (Stripe-checkout
+    // van Holded) — zo kan hij meteen de aanbetaling van 25% voldoen.
+    const paymentUrl: string | undefined = holdedPaymentUrl;
 
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
