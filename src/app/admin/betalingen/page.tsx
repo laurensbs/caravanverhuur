@@ -392,7 +392,6 @@ export default function BetalingenPage() {
                 <div className="col-span-3">
                   <p className="text-sm font-medium text-foreground">{payment.guest_name}</p>
                   <p className="text-xs text-muted">{payment.booking_ref}</p>
-                  {payment.stripe_id && <p className="text-[10px] text-muted/60 font-mono truncate" title={payment.stripe_id}>{payment.stripe_id}</p>}
                 </div>
                 <div className="col-span-2">
                   <span className="text-sm text-foreground">{ts(payment.type)}</span>
@@ -449,7 +448,7 @@ export default function BetalingenPage() {
 
               <div className="col-span-1">
                 <span className="text-xs text-muted">
-                  {payment.method === 'ideal' || payment.method === 'stripe' ? 'Stripe' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
+                  {payment.method === 'ideal' || payment.method === 'stripe' ? 'Holded' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
                 </span>
               </div>
 

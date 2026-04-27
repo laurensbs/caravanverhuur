@@ -593,7 +593,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                     <div>
                       <p className="font-medium text-foreground text-xs">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
                       <p className="text-[10px] text-muted">
-                        {p.method === 'ideal' || p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
+                        {p.method === 'ideal' || p.method === 'stripe' ? 'Holded' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
                         {p.paid_at && ` • ${formatDateTime(p.paid_at)}`}
                       </p>
                     </div>
