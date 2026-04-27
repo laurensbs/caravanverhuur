@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCustomCaravans, getAllCampings } from '@/lib/db';
-import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf, getHoldedInvoice } from '@/lib/holded';
-import { sendPaymentLinkEmail } from '@/lib/email';
+import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -96,46 +95,20 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentHoldedStatus(paymentId, 'IN_HOLDED', holded.invoiceId);
 
-    // Check of de factuur (mogelijk al via een eerdere flow) reeds betaald is bij Holded.
-    let alreadyPaid = false;
-    try {
-      const status = await getHoldedInvoice(holded.invoiceId);
-      alreadyPaid = !!status.paid;
-    } catch (statusErr) {
-      console.warn('Could not fetch Holded invoice status:', statusErr);
-    }
-
-    const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
-    const paymentUrlForEmail = alreadyPaid ? undefined : (directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`);
-
-    let invoicePdfBase64: string | undefined;
-    try {
-      const pdf = await getHoldedInvoicePdf(holded.invoiceId);
-      invoicePdfBase64 = pdf.toString('base64');
-      console.log(`[holded] PDF size: ${(pdf.length / 1024).toFixed(1)} KB for invoice ${holded.invoiceId}`);
-    } catch (pdfErr) {
-      console.warn('Could not fetch Holded PDF for attachment:', pdfErr);
-    }
-
     let mailSent = false;
     try {
-      const result = await sendPaymentLinkEmail(booking.guest_email, {
-        guestName: booking.guest_name,
-        reference: booking.reference,
-        depositAmount: amount,
-        paymentUrl: paymentUrlForEmail,
-        invoicePdfBase64,
-        invoiceNumber: holded.number,
-        alreadyPaid,
-      });
-      mailSent = result.success;
-      console.log(`[holded] Payment link email send → success=${mailSent}, hasPublicUrl=${!!directPublicUrl}, hasPdf=${!!invoicePdfBase64}`);
+      await sendHoldedInvoice(
+        holded.invoiceId,
+        booking.guest_email,
+        `Factuur aanbetaling boeking ${booking.reference} — Caravanverhuur Spanje`,
+        `Beste ${booking.guest_name.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${booking.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
+      );
+      mailSent = true;
     } catch (sendErr) {
-      console.error('Failed to send payment link email:', sendErr);
+      console.error('Failed to send Holded invoice email:', sendErr);
     }
 
-    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent, publicUrl: directPublicUrl });
+    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent });
   } catch (error) {
     console.error('POST /api/admin/holded error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to create Holded invoice' }, { status: 500 });
