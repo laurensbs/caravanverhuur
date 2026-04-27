@@ -172,23 +172,15 @@ export async function getHoldedInvoicePdf(invoiceId: string): Promise<Buffer> {
   return Buffer.from(b64, 'base64');
 }
 
-// Fetch the public-facing URL of an invoice (the "online invoice" page with Stripe pay button).
-// Holded sometimes returns this in `publicUrl`, sometimes in `url`, sometimes only after explicitly
-// requesting a public link. We try a few likely fields; returns undefined if not available.
+// Publieke betaal-/share-pagina van een Holded factuur. Deterministisch: Holded serveert
+// op /documents/invoice/{id}/pay de online-invoice-widget (met Stripe-betaalknop indien
+// geconfigureerd). Empirisch geverifieerd — de GET /documents/invoice/{id} response
+// bevat geen URL-velden, dus we construeren 'm zelf.
+export function buildHoldedInvoicePublicUrl(invoiceId: string): string {
+  return `${HOLDED_API_BASE}/documents/invoice/${invoiceId}/pay`;
+}
+
+// Backwards-compat alias — async voor bestaande call sites die await gebruiken.
 export async function getHoldedInvoicePublicUrl(invoiceId: string): Promise<string | undefined> {
-  try {
-    const inv = await holdedFetch(`/documents/invoice/${invoiceId}`) as Record<string, unknown>;
-    const candidates = [
-      inv.publicUrl,
-      inv.url,
-      (inv.shareLink as Record<string, unknown> | undefined)?.url,
-      inv.shareUrl,
-    ];
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.startsWith('http')) return c;
-    }
-  } catch (err) {
-    console.warn('Failed to fetch Holded invoice public URL:', err);
-  }
-  return undefined;
+  return buildHoldedInvoicePublicUrl(invoiceId);
 }
