@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentStripeId, getActivePricingRules } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
 import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
-import { getStripe } from '@/lib/stripe';
+import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
@@ -159,39 +159,60 @@ export async function POST(request: NextRequest) {
     const bookingCustomer = await getCustomerByEmail(guestEmail.toLowerCase().trim()).catch(() => null);
     const customerLocale = bookingCustomer?.locale || 'nl';
 
-    // Create Stripe checkout session for the 25% deposit
-    let paymentUrl: string | undefined;
+    // Create Holded invoice for the 25% deposit and let Holded email it directly to the customer.
+    // The Holded email includes a Stripe payment button (when Stripe is connected in Holded settings).
+    // Our own confirmation email (sent below) explains that the invoice arrives in a separate email.
+    let holdedInvoiceCreated = false;
     try {
-      const stripe = getStripe();
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        line_items: [{
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `Aanbetaling — ${result.reference}`,
-              description: `Caravanverhuur Spanje — ${guestName}`,
-            },
-            unit_amount: Math.round(deposit25 * 100),
-          },
-          quantity: 1,
-        }],
-        customer_email: guestEmail,
-        metadata: {
-          paymentId: result.paymentId,
-          bookingId: result.id,
-          bookingRef: result.reference,
-          type: 'AANBETALING',
-        },
-        success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
+      const contactId = await findOrCreateHoldedContact({
+        name: guestName,
+        email: guestEmail,
+        phone: guestPhone,
       });
-      paymentUrl = session.url ?? undefined;
-      await updatePaymentStripeId(result.paymentId, session.id);
+
+      const checkInLabel = new Date(checkIn).toLocaleDateString('nl-NL');
+      const checkOutLabel = new Date(checkOut).toLocaleDateString('nl-NL');
+      const invoiceNotes = [
+        `Boeking ${result.reference}`,
+        `Caravan: ${caravanName}`,
+        `Camping: ${campingName}${spotNumber ? ` (plek ${spotNumber})` : ''}`,
+        `Verblijf: ${checkInLabel} t/m ${checkOutLabel} (${serverNights} nachten)`,
+        `Gasten: ${adults || 2} volw.${(children || 0) > 0 ? ` + ${children} kind.` : ''}`,
+        `Totale huurprijs: €${totalPrice.toFixed(2)} — Aanbetaling 25% (rest + borg op de camping)`,
+      ].join('\n');
+
+      const holded = await createHoldedInvoice({
+        contactId,
+        reference: `Aanbetaling boeking ${result.reference}`,
+        items: [{
+          name: `Aanbetaling 25% — boeking ${result.reference} (${caravanName})`,
+          units: 1,
+          subtotal: deposit25,
+          tax: 0,
+        }],
+        notes: invoiceNotes,
+      });
+
+      await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
+
+      try {
+        await sendHoldedInvoice(
+          holded.invoiceId,
+          guestEmail,
+          `Factuur aanbetaling boeking ${result.reference} — Caravanverhuur Spanje`,
+          `Beste ${guestName.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${result.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
+        );
+      } catch (sendErr) {
+        console.error('Failed to send Holded invoice email:', sendErr);
+        // Invoice exists in Holded; admin can resend manually from the Holded dashboard
+      }
+      holdedInvoiceCreated = true;
     } catch (err) {
-      console.error('Failed to create Stripe checkout session:', err);
+      console.error('Failed to create Holded invoice — booking continues without invoice:', err);
     }
+
+    // paymentUrl is no longer used — Holded sends its own email with the payment link
+    const paymentUrl: string | undefined = undefined;
 
     sendBookingConfirmationEmail(guestEmail, {
       guestName,
@@ -210,6 +231,7 @@ export async function POST(request: NextRequest) {
       paymentUrl,
       borgAmount: serverBorgAmount,
       hasBedlinnen: !!extraBedlinnen,
+      holdedInvoiceSent: holdedInvoiceCreated,
     }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
 
     // Notify admin of new booking (non-blocking)

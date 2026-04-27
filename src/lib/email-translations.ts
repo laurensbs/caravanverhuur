@@ -56,6 +56,8 @@ interface EmailTranslations {
   bookingPayNow: (amount: string) => string;
   bookingButton: string;
   bookingBeddingReminder: string;
+  bookingHoldedNote: string;
+  bookingHoldedPendingNote: string;
   // Payment link email
   paymentLinkSubject: (ref: string) => string;
   paymentLinkHeading: string;
@@ -250,8 +252,8 @@ const nl: EmailTranslations = {
   bookingHeading: 'Boeking ontvangen',
   bookingSubtext: (name) => `Bedankt ${name}! Betaal de aanbetaling (25%) om je boeking definitief te maken.`,
   bookingRefLabel: 'Referentienummer',
-  bookingAwaitConfirm: '💳 Betaal om te bevestigen',
-  bookingAwaitPaymentLink: '⏳ Betaallink volgt per e-mail',
+  bookingAwaitConfirm: '🧾 Factuur volgt in aparte e-mail',
+  bookingAwaitPaymentLink: '⏳ Factuur wordt handmatig verzonden',
   bookingCaravan: 'Caravan',
   bookingCamping: 'Camping',
   bookingSpot: 'Plek',
@@ -272,6 +274,8 @@ const nl: EmailTranslations = {
   bookingPayNow: (amount: string) => `Betaal aanbetaling ${amount} →`,
   bookingButton: 'Ga naar mijn account →',
   bookingBeddingReminder: '🛏️ <strong>LET OP:</strong> Je hebt geen beddengoed bijgeboekt. Vergeet niet om zelf dekbedden, kussens en hoeslakens mee te nemen! Alsnog bijboeken? Neem contact met ons op.',
+  bookingHoldedNote: '🧾 <strong>Je factuur komt zo in een aparte e-mail.</strong> Binnen enkele minuten ontvang je een tweede e-mail van <strong>Caravanverhuur Spanje (via Holded)</strong> met de officiële factuur voor de aanbetaling van 25%. In die e-mail staat een veilige betaal-knop waarmee je direct online kunt betalen met iDEAL, Bancontact of creditcard.<br/><br/>👉 <strong>Tip:</strong> zie je geen tweede e-mail? Controleer je <strong>spam-folder</strong> en voeg <strong>info@caravanverhuurspanje.com</strong> toe aan je contacten. Geen mail binnen 24 uur? Neem dan even contact met ons op.',
+  bookingHoldedPendingNote: '🧾 <strong>Factuur volgt — actie van onze kant nodig.</strong> Door een tijdelijke storing is je factuur nog niet automatisch verstuurd. Geen zorgen: we sturen hem zo snel mogelijk handmatig op via Holded, samen met de betaal-link. Heb je vragen, neem gerust contact met ons op.',
   // Payment link email
   paymentLinkSubject: (ref) => `Betaallink voor boeking ${ref} 💳`,
   paymentLinkHeading: 'Betaallink beschikbaar',
@@ -466,8 +470,8 @@ const en: EmailTranslations = {
   bookingHeading: 'Booking received',
   bookingSubtext: (name) => `Thank you ${name}! Pay the deposit (25%) to confirm your booking.`,
   bookingRefLabel: 'Reference number',
-  bookingAwaitConfirm: '💳 Pay to confirm',
-  bookingAwaitPaymentLink: '⏳ Payment link coming soon',
+  bookingAwaitConfirm: '🧾 Invoice arrives in separate email',
+  bookingAwaitPaymentLink: '⏳ Invoice will be sent manually',
   bookingCaravan: 'Caravan',
   bookingCamping: 'Campsite',
   bookingSpot: 'Pitch',
@@ -488,6 +492,8 @@ const en: EmailTranslations = {
   bookingPayNow: (amount: string) => `Pay deposit ${amount} →`,
   bookingButton: 'Go to my account →',
   bookingBeddingReminder: '🛏️ <strong>NOTE:</strong> You have not booked bed linen. Don\'t forget to bring your own duvets, pillows and fitted sheets! Want to add bed linen? Contact us.',
+  bookingHoldedNote: '🧾 <strong>Your invoice arrives in a separate email shortly.</strong> Within a few minutes you will receive a second email from <strong>Caravanverhuur Spanje (via Holded)</strong> with the official invoice for the 25% down payment. That email contains a secure payment button to pay directly online with iDEAL, Bancontact or credit card.<br/><br/>👉 <strong>Tip:</strong> can\'t find the second email? Check your <strong>spam folder</strong> and add <strong>info@caravanverhuurspanje.com</strong> to your contacts. No email within 24 hours? Please get in touch with us.',
+  bookingHoldedPendingNote: '🧾 <strong>Invoice to follow — manual action on our side.</strong> Due to a temporary issue your invoice was not sent automatically. No worries: we will send it to you shortly via Holded, together with the payment link. Any questions, feel free to contact us.',
   // Payment link email
   paymentLinkSubject: (ref) => `Payment link for booking ${ref} 💳`,
   paymentLinkHeading: 'Payment link available',
@@ -682,8 +688,8 @@ const es: EmailTranslations = {
   bookingHeading: 'Reserva recibida',
   bookingSubtext: (name) => `¡Gracias ${name}! Paga el anticipo (25%) para confirmar tu reserva.`,
   bookingRefLabel: 'Número de referencia',
-  bookingAwaitConfirm: '💳 Paga para confirmar',
-  bookingAwaitPaymentLink: '⏳ Enlace de pago próximamente',
+  bookingAwaitConfirm: '🧾 La factura llegará en correo aparte',
+  bookingAwaitPaymentLink: '⏳ La factura se enviará manualmente',
   bookingCaravan: 'Caravana',
   bookingCamping: 'Camping',
   bookingSpot: 'Parcela',
@@ -704,6 +710,8 @@ const es: EmailTranslations = {
   bookingPayNow: (amount: string) => `Pagar anticipo ${amount} →`,
   bookingButton: 'Ir a mi cuenta →',
   bookingBeddingReminder: '🛏️ <strong>ATENCIÓN:</strong> No has reservado ropa de cama. ¡No olvides traer tus propios edredones, almohadas y sábanas bajeras! ¿Quieres añadir ropa de cama? Contáctanos.',
+  bookingHoldedNote: '🧾 <strong>Tu factura llegará en breve en un correo separado.</strong> En unos minutos recibirás un segundo correo de <strong>Caravanverhuur Spanje (vía Holded)</strong> con la factura oficial del anticipo del 25%. Ese correo incluye un botón de pago seguro para pagar directamente online con iDEAL, Bancontact o tarjeta de crédito.<br/><br/>👉 <strong>Consejo:</strong> ¿no encuentras el segundo correo? Revisa tu <strong>carpeta de spam</strong> y añade <strong>info@caravanverhuurspanje.com</strong> a tus contactos. ¿No recibes nada en 24 horas? Contáctanos.',
+  bookingHoldedPendingNote: '🧾 <strong>Factura pendiente — acción manual por nuestra parte.</strong> Debido a un problema temporal tu factura no se envió automáticamente. No te preocupes: te la enviaremos en breve vía Holded, junto con el enlace de pago. Si tienes preguntas, contáctanos.',
   // Payment link email
   paymentLinkSubject: (ref) => `Enlace de pago para reserva ${ref} 💳`,
   paymentLinkHeading: 'Enlace de pago disponible',

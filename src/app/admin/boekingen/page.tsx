@@ -106,13 +106,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const [selectedCaravanId, setSelectedCaravanId] = useState<string>(booking.caravan_id || '');
   const [caravanSaving, setCaravanSaving] = useState(false);
   const [borgReturnMethod, setBorgReturnMethod] = useState<string | null>(null);
-  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
-  const [paymentLinkUrl, setPaymentLinkUrl] = useState<string | null>(null);
-  const [manualLinkInput, setManualLinkInput] = useState('');
-  const [savingManualLink, setSavingManualLink] = useState(false);
-  const [linkSent, setLinkSent] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
-  const [editingLink, setEditingLink] = useState(false);
 
   // Extras management state
   const [showExtras, setShowExtras] = useState(false);
@@ -127,6 +121,50 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   // Collapsible sections
   const [openSection, setOpenSection] = useState<string | null>(null);
   const toggleSection = (key: string) => setOpenSection(prev => prev === key ? null : key);
+
+  // Email history (Resend) + Holded re-send
+  const [emails, setEmails] = useState<Array<{ id: string; to: string[]; from: string; subject: string; createdAt: string; status: string; forThisBooking?: boolean }>>([]);
+  const [loadingEmails, setLoadingEmails] = useState(false);
+  const [sendingHolded, setSendingHolded] = useState(false);
+  const fetchEmails = useCallback(async () => {
+    setLoadingEmails(true);
+    try {
+      const res = await fetch(`/api/admin/emails?bookingId=${booking.id}`);
+      const data = await res.json();
+      setEmails(data.emails || []);
+    } catch (err) {
+      console.error('Failed to load emails:', err);
+    } finally {
+      setLoadingEmails(false);
+    }
+  }, [booking.id]);
+  // Load email history once on mount so the "payment-link mail sent" badge in the deposit block
+  // is correct without requiring the user to open the emails section first.
+  useEffect(() => { fetchEmails(); }, [fetchEmails]);
+
+  const handleSendHoldedInvoice = useCallback(async (paymentId: string) => {
+    if (!confirm('Holded factuur aanmaken en mailen naar de klant?')) return;
+    setSendingHolded(true);
+    try {
+      const res = await fetch('/api/admin/holded', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Onbekende fout');
+      toast(data.mailSent ? 'Holded factuur aangemaakt + verstuurd' : 'Holded factuur aangemaakt (mail-verzending mislukt — check Holded)', data.mailSent ? 'success' : 'warning');
+      // Refresh payments + emails
+      const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
+      const pData = await pRes.json();
+      setPayments(pData.payments || []);
+      fetchEmails();
+    } catch (err) {
+      toast(`Mislukt: ${err instanceof Error ? err.message : err}`, 'error');
+    } finally {
+      setSendingHolded(false);
+    }
+  }, [booking.id, toast, fetchEmails]);
 
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
 
@@ -165,57 +203,6 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
     setDepositConfirming(false);
   };
 
-  const handleSendPaymentLink = async () => {
-    setSendingPaymentLink(true);
-    try {
-      const res = await fetch('/api/admin/bookings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send-payment-link', bookingId: booking.id }),
-      });
-      const data = await res.json();
-      if (data.success && data.paymentUrl) {
-        setPaymentLinkUrl(data.paymentUrl);
-        setManualLinkInput(data.paymentUrl);
-        setLinkSent(true);
-        toast(t('bookings.paymentLinkSent'), 'success');
-      } else {
-        toast(data.error || t('bookings.paymentLinkFailed'), 'error');
-      }
-    } catch {
-      toast(t('bookings.paymentLinkFailed'), 'error');
-    }
-    setSendingPaymentLink(false);
-  };
-
-  const handleSaveManualLink = async () => {
-    if (!manualLinkInput.trim()) return;
-    setSavingManualLink(true);
-    try {
-      const res = await fetch('/api/admin/bookings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save-payment-link', bookingId: booking.id, paymentLink: manualLinkInput.trim() }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setPaymentLinkUrl(manualLinkInput.trim());
-        setLinkSent(true);
-        setEditingLink(false);
-        // Refresh payments
-        const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
-        const pData = await pRes.json();
-        setPayments(pData.payments || []);
-        toast(t('bookings.linkSavedAndSent'), 'success');
-      } else {
-        toast(data.error || t('bookings.linkSaveFailed'), 'error');
-      }
-    } catch {
-      toast(t('bookings.linkSaveFailed'), 'error');
-    }
-    setSavingManualLink(false);
-  };
-
   const handleCheckPaymentStatus = async () => {
     setCheckingPayment(true);
     try {
@@ -241,13 +228,6 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       .then(res => res.json())
       .then(data => {
         setPayments(data.payments || []);
-        // Load existing payment link from AANBETALING payment
-        const deposit = (data.payments || []).find((p: Payment) => p.type === 'AANBETALING');
-        if (deposit?.payment_link) {
-          setPaymentLinkUrl(deposit.payment_link);
-          setManualLinkInput(deposit.payment_link);
-          setLinkSent(true);
-        }
       })
       .catch((e) => { console.error('Fetch error:', e); })
       .finally(() => setLoadingPayments(false));
@@ -507,56 +487,81 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           })()}
         </div>
 
-        {/* Deposit payment link section */}
-        {!loadingPayments && !depositAlreadyPaid && (
-          <div className="mt-3 border border-blue-200 rounded-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 border-b border-blue-200">
-              <h5 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> {t('bookings.depositExplainTitle')}</h5>
-            </div>
-            <div className="p-3 space-y-2">
-              <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-blue-100">
-                <span className="text-xs font-medium text-gray-700">{t('bookings.depositAmountToPay')}</span>
-                <span className="text-base font-bold text-blue-700">{formatCurrency(Number(booking.deposit_amount))}</span>
+        {/* Deposit payment via Holded */}
+        {!loadingPayments && !depositAlreadyPaid && (() => {
+          const depositPayment = payments.find(p => p.type === 'AANBETALING');
+          const holdedSent = depositPayment?.holded_status === 'IN_HOLDED' && !!depositPayment.holded_invoice_id;
+          const invoiceId = depositPayment?.holded_invoice_id;
+          const holdedHref = invoiceId
+            ? (invoiceId.startsWith('http') ? invoiceId : `https://app.holded.com/invoices/${invoiceId}`)
+            : null;
+          const paymentLinkMail = emails.find(e =>
+            /betaal|payment|factuur|invoice|aanbetaling|deposit/i.test(e.subject),
+          );
+          return (
+            <div className="mt-3 border border-blue-200 rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 border-b border-blue-200">
+                <h5 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> Aanbetaling — Holded factuur</h5>
               </div>
+              <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-blue-100">
+                  <span className="text-xs font-medium text-gray-700">{t('bookings.depositAmountToPay')}</span>
+                  <span className="text-base font-bold text-blue-700">{formatCurrency(Number(booking.deposit_amount))}</span>
+                </div>
 
-              {paymentLinkUrl && linkSent && !editingLink ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
-                    <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
-                    <p className="text-xs font-medium flex-1">{t('bookings.paymentLinkActive')}</p>
+                {holdedSent ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
+                      <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                      <p className="text-xs font-medium flex-1">Holded factuur verstuurd — wachten op betaling</p>
+                    </div>
+                    {paymentLinkMail && (
+                      <div className="flex items-center gap-2 bg-green-50 text-green-800 rounded-lg px-3 py-1.5 text-[11px]">
+                        <Mail className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Mail bevestigd in Resend: <strong>{paymentLinkMail.subject}</strong> ({paymentLinkMail.status})</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {holdedHref && (
+                        <a href={holdedHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-blue-200 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50">
+                          <ExternalLink className="w-3.5 h-3.5" /> Open in Holded
+                        </a>
+                      )}
+                      {invoiceId && !invoiceId.startsWith('http') && (
+                        <a href={`/api/admin/holded/pdf?invoiceId=${invoiceId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-blue-200 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50">
+                          <FileText className="w-3.5 h-3.5" /> Factuur PDF
+                        </a>
+                      )}
+                      <button onClick={() => depositPayment && handleSendHoldedInvoice(depositPayment.id)} disabled={sendingHolded} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50">
+                        {sendingHolded ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        Opnieuw versturen
+                      </button>
+                      <button onClick={handleCheckPaymentStatus} disabled={checkingPayment} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50">
+                        {checkingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                        {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <input readOnly value={paymentLinkUrl} className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 truncate text-gray-600" />
-                    <button onClick={() => { navigator.clipboard.writeText(paymentLinkUrl); toast(t('bookings.paymentLinkCopied'), 'success'); }} className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600 cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
-                    <a href={paymentLinkUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600"><ExternalLink className="w-3.5 h-3.5" /></a>
-                    <button onClick={() => setEditingLink(true)} className="text-[10px] text-blue-600 hover:text-blue-800 px-1.5 py-1 rounded hover:bg-blue-50 cursor-pointer">{t('bookings.editLink')}</button>
-                  </div>
-                  <button onClick={handleCheckPaymentStatus} disabled={checkingPayment} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50">
-                    {checkingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                    {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
+                ) : (
+                  <button
+                    onClick={() => depositPayment && handleSendHoldedInvoice(depositPayment.id)}
+                    disabled={sendingHolded || !depositPayment}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 cursor-pointer disabled:opacity-50"
+                  >
+                    {sendingHolded ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    Holded factuur aanmaken & mailen
                   </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <input type="url" value={manualLinkInput} onChange={(e) => setManualLinkInput(e.target.value)} placeholder={t('bookings.enterStripeLink')} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button onClick={handleSaveManualLink} disabled={savingManualLink || !manualLinkInput.trim()} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 cursor-pointer disabled:opacity-50">
-                      {savingManualLink ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                      {savingManualLink ? t('bookings.savingLink') : t('bookings.saveAndSendLink')}
-                    </button>
-                    {editingLink && <button onClick={() => { setEditingLink(false); setManualLinkInput(paymentLinkUrl || ''); }} className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 cursor-pointer">{t('common.cancel')}</button>}
-                  </div>
-                </div>
-              )}
+                )}
 
-              <div className="flex items-center gap-3 py-0.5"><div className="flex-1 h-px bg-gray-200" /><span className="text-[10px] text-gray-400 uppercase">of</span><div className="flex-1 h-px bg-gray-200" /></div>
-              <button onClick={handleConfirmDeposit} disabled={depositConfirming} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50">
-                {depositConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.manualConfirmDeposit')}
-              </button>
+                <div className="flex items-center gap-3 py-0.5"><div className="flex-1 h-px bg-gray-200" /><span className="text-[10px] text-gray-400 uppercase">of</span><div className="flex-1 h-px bg-gray-200" /></div>
+                <button onClick={handleConfirmDeposit} disabled={depositConfirming} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50">
+                  {depositConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  {depositConfirming ? t('bookings.confirmingDeposit') : t('bookings.manualConfirmDeposit')}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {depositAlreadyPaid && (
           <div className="mt-3 flex items-center gap-2 bg-green-50 text-green-700 rounded-lg px-3 py-2">
@@ -574,18 +579,101 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           <p className="text-sm text-muted">{t('bookings.noPayments')}</p>
         ) : (
           <div className="space-y-1.5">
-            {payments.map((p) => (
-              <div key={p.id} className="bg-white rounded-lg p-2.5 flex items-center justify-between text-sm">
-                <div>
-                  <p className="font-medium text-foreground text-xs">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
-                  <p className="text-[10px] text-muted">
-                    {p.method === 'ideal' || p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
-                    {p.paid_at && ` • ${formatDateTime(p.paid_at)}`}
-                  </p>
+            {payments.map((p) => {
+              const holdedBadge = p.status === 'BETAALD'
+                ? { label: '🟢 Aanbetaling betaald', cls: 'bg-green-50 text-green-700 border-green-200' }
+                : p.holded_status === 'IN_HOLDED'
+                  ? { label: '🟡 Factuur via Holded verzonden', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' }
+                  : p.holded_status === 'HANDMATIG'
+                    ? { label: '🔵 Handmatig in Holded', cls: 'bg-blue-50 text-blue-700 border-blue-200' }
+                    : { label: '⚪ Geen Holded factuur', cls: 'bg-gray-50 text-gray-600 border-gray-200' };
+              return (
+                <div key={p.id} className="bg-white rounded-lg p-2.5 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-foreground text-xs">{p.type.replace('_', ' ')} &ndash; {formatCurrency(Number(p.amount))}</p>
+                      <p className="text-[10px] text-muted">
+                        {p.method === 'ideal' || p.method === 'stripe' ? 'Stripe' : p.method === 'bank' ? t('common.bank') : t('common.cash')}
+                        {p.paid_at && ` • ${formatDateTime(p.paid_at)}`}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getPaymentStatusColor(p.status)}`}>{ts(p.status)}</span>
+                  </div>
+                  {p.type === 'AANBETALING' && (
+                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${holdedBadge.cls}`}>{holdedBadge.label}</span>
+                      {p.holded_invoice_id && (
+                        <a
+                          href={p.holded_invoice_id.startsWith('http') ? p.holded_invoice_id : `https://app.holded.com/invoices/${p.holded_invoice_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Open in Holded
+                        </a>
+                      )}
+                      {p.holded_invoice_id && !p.holded_invoice_id.startsWith('http') && (
+                        <a
+                          href={`/api/admin/holded/pdf?invoiceId=${p.holded_invoice_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                        >
+                          <FileText className="w-3 h-3" /> PDF
+                        </a>
+                      )}
+                      {p.status !== 'BETAALD' && (
+                        <button
+                          onClick={() => handleSendHoldedInvoice(p.id)}
+                          disabled={sendingHolded}
+                          className="inline-flex items-center gap-1 text-[10px] font-medium text-white bg-primary-dark hover:bg-[#1E40AF] px-2 py-0.5 rounded-full disabled:opacity-50 cursor-pointer"
+                        >
+                          {sendingHolded ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                          {p.holded_status === 'IN_HOLDED' ? 'Opnieuw versturen' : 'Holded factuur versturen'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getPaymentStatusColor(p.status)}`}>{ts(p.status)}</span>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        )}
+      </SectionToggle>
+
+      {/* SENT EMAILS (Resend history) */}
+      <SectionToggle icon={<Mail className="w-4 h-4" />} label={`Verzonden e-mails${emails.length ? ` (${emails.length})` : ''}`} sectionKey="emails" openSection={openSection} toggle={toggleSection}>
+        {loadingEmails ? (
+          <div className="flex items-center gap-2 text-sm text-muted"><Loader2 className="w-4 h-4 animate-spin" /> Laden…</div>
+        ) : emails.length === 0 ? (
+          <p className="text-sm text-muted">Nog geen e-mails verstuurd voor deze boeking.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {emails.map((e) => {
+              const statusCls = e.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-200'
+                : e.status === 'bounced' || e.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200'
+                : e.status === 'opened' || e.status === 'clicked' ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : 'bg-gray-50 text-gray-700 border-gray-200';
+              return (
+                <div key={e.id} className={`rounded-lg p-2.5 text-sm ${e.forThisBooking ? 'bg-blue-50 border border-blue-200' : 'bg-white'}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground text-xs truncate">
+                        {e.forThisBooking && <span className="inline-block mr-1 text-[9px] font-bold text-blue-700 bg-blue-100 px-1 rounded">DEZE BOEKING</span>}
+                        {e.subject}
+                      </p>
+                      <p className="text-[10px] text-muted truncate">
+                        Naar {e.to.join(', ')} • {formatDateTime(e.createdAt)}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusCls} shrink-0`}>{e.status || 'onbekend'}</span>
+                  </div>
+                </div>
+              );
+            })}
+            <button onClick={fetchEmails} className="text-[10px] text-primary hover:underline flex items-center gap-1 mt-1">
+              <RefreshCw className="w-3 h-3" /> Vernieuwen
+            </button>
           </div>
         )}
       </SectionToggle>

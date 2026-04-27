@@ -338,6 +338,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   paymentUrl?: string;
   borgAmount?: number;
   hasBedlinnen?: boolean;
+  holdedInvoiceSent?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -358,7 +359,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#0F172A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
-        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${data.paymentUrl ? t.bookingAwaitConfirm : t.bookingAwaitPaymentLink}</span>
+        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${data.holdedInvoiceSent ? t.bookingAwaitConfirm : t.bookingAwaitPaymentLink}</span>
       </div>
 
       <!-- Booking details -->
@@ -403,16 +404,9 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
       ${highlight(`
         <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          ${data.paymentUrl
-            ? (data.immediatePayment
-              ? t.bookingImmediateNote(formatPrice(data.totalPrice), deadlineLabel)
-              : t.bookingLaterNote(formatPrice(data.totalPrice), deadlineLabel))
-            : t.bookingPendingPaymentNote(formatPrice(data.totalPrice), deadlineLabel)
-          }
+          ${data.holdedInvoiceSent ? t.bookingHoldedNote : t.bookingHoldedPendingNote}
         </p>
       `, true)}
-
-      ${data.paymentUrl ? button(t.bookingPayNow(formatPrice(deposit25)), data.paymentUrl) : ''}
 
       ${!data.hasBedlinnen ? highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">

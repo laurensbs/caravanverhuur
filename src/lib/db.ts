@@ -832,6 +832,13 @@ export async function updatePaymentHoldedStatus(id: string, holdedStatus: string
   `;
 }
 
+export async function getPaymentByHoldedInvoiceId(holdedInvoiceId: string) {
+  const result = await sql`
+    SELECT * FROM payments WHERE holded_invoice_id = ${holdedInvoiceId} LIMIT 1
+  `;
+  return result.rows[0] || null;
+}
+
 export async function updatePaymentLink(id: string, paymentLink: string) {
   await sql`
     UPDATE payments SET payment_link = ${paymentLink} WHERE id = ${id}
