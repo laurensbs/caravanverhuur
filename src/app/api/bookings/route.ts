@@ -195,29 +195,32 @@ export async function POST(request: NextRequest) {
 
       await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
 
-      const publicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+      const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+      // Fallback: onze eigen redirect-route die at request-time de publicUrl bij Holded ophaalt.
+      // Zo werkt de knop ook als Holded de URL pas later beschikbaar maakt.
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
+      const paymentUrlForEmail = directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`;
+
       let invoicePdfBase64: string | undefined;
       try {
         const pdf = await getHoldedInvoicePdf(holded.invoiceId);
         invoicePdfBase64 = pdf.toString('base64');
+        console.log(`[holded] PDF size: ${(pdf.length / 1024).toFixed(1)} KB for invoice ${holded.invoiceId}`);
       } catch (pdfErr) {
         console.warn('Could not fetch Holded PDF for attachment:', pdfErr);
       }
-      if (publicUrl) {
-        try {
-          await sendPaymentLinkEmail(guestEmail, {
-            guestName,
-            reference: result.reference,
-            depositAmount: deposit25,
-            paymentUrl: publicUrl,
-            invoicePdfBase64,
-            invoiceNumber: holded.number,
-          });
-        } catch (sendErr) {
-          console.error('Failed to send payment link email:', sendErr);
-        }
-      } else {
-        console.warn('Holded did not return publicUrl — payment link email not sent');
+      try {
+        const result2 = await sendPaymentLinkEmail(guestEmail, {
+          guestName,
+          reference: result.reference,
+          depositAmount: deposit25,
+          paymentUrl: paymentUrlForEmail,
+          invoicePdfBase64,
+          invoiceNumber: holded.number,
+        });
+        console.log(`[holded] Payment link email send → success=${result2.success}, hasPublicUrl=${!!directPublicUrl}, hasPdf=${!!invoicePdfBase64}`);
+      } catch (sendErr) {
+        console.error('Failed to send payment link email:', sendErr);
       }
       holdedInvoiceCreated = true;
     } catch (err) {

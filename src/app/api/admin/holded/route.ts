@@ -96,38 +96,36 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentHoldedStatus(paymentId, 'IN_HOLDED', holded.invoiceId);
 
-    // Haal de Holded publieke factuur-URL op (de "online invoice"-pagina met Stripe-betaalknop)
-    // en de PDF, en stuur via onze eigen Resend-template — zo loopt de mail door onze branding
-    // én is hij zichtbaar in de Resend-historie.
-    const publicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+    const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
+    const paymentUrlForEmail = directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`;
+
     let invoicePdfBase64: string | undefined;
     try {
       const pdf = await getHoldedInvoicePdf(holded.invoiceId);
       invoicePdfBase64 = pdf.toString('base64');
+      console.log(`[holded] PDF size: ${(pdf.length / 1024).toFixed(1)} KB for invoice ${holded.invoiceId}`);
     } catch (pdfErr) {
       console.warn('Could not fetch Holded PDF for attachment:', pdfErr);
     }
 
     let mailSent = false;
-    if (publicUrl) {
-      try {
-        const result = await sendPaymentLinkEmail(booking.guest_email, {
-          guestName: booking.guest_name,
-          reference: booking.reference,
-          depositAmount: amount,
-          paymentUrl: publicUrl,
-          invoicePdfBase64,
-          invoiceNumber: holded.number,
-        });
-        mailSent = result.success;
-      } catch (sendErr) {
-        console.error('Failed to send payment link email:', sendErr);
-      }
-    } else {
-      console.warn('Holded did not return a publicUrl — payment link email not sent');
+    try {
+      const result = await sendPaymentLinkEmail(booking.guest_email, {
+        guestName: booking.guest_name,
+        reference: booking.reference,
+        depositAmount: amount,
+        paymentUrl: paymentUrlForEmail,
+        invoicePdfBase64,
+        invoiceNumber: holded.number,
+      });
+      mailSent = result.success;
+      console.log(`[holded] Payment link email send → success=${mailSent}, hasPublicUrl=${!!directPublicUrl}, hasPdf=${!!invoicePdfBase64}`);
+    } catch (sendErr) {
+      console.error('Failed to send payment link email:', sendErr);
     }
 
-    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent, publicUrl });
+    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent, publicUrl: directPublicUrl });
   } catch (error) {
     console.error('POST /api/admin/holded error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to create Holded invoice' }, { status: 500 });
