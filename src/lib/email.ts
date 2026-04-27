@@ -647,9 +647,10 @@ export async function sendPaymentLinkEmail(to: string, data: {
   guestName: string;
   reference: string;
   depositAmount: number;
-  paymentUrl: string;
+  paymentUrl?: string;
   invoicePdfBase64?: string;
   invoiceNumber?: string;
+  alreadyPaid?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -657,6 +658,27 @@ export async function sendPaymentLinkEmail(to: string, data: {
   const attachments: EmailAttachment[] | undefined = data.invoicePdfBase64
     ? [{ filename: `factuur-${data.invoiceNumber || data.reference}.pdf`, content: data.invoicePdfBase64 }]
     : undefined;
+
+  const isPaid = data.alreadyPaid === true || !data.paymentUrl;
+  if (isPaid) {
+    const paidHeading = locale === 'es' ? 'Pago recibido' : locale === 'en' ? 'Payment received' : 'Betaling ontvangen';
+    const paidSubject = locale === 'es' ? `Factura pagada — ${data.reference}` : locale === 'en' ? `Invoice paid — ${data.reference}` : `Factuur betaald — ${data.reference}`;
+    const paidText = locale === 'es'
+      ? `Hola ${firstName}, hemos recibido el pago del depósito (25%) de tu reserva <strong>${data.reference}</strong>. La factura va adjunta.`
+      : locale === 'en'
+      ? `Hi ${firstName}, we have received the deposit payment (25%) for your booking <strong>${data.reference}</strong>. The invoice is attached.`
+      : `Hoi ${firstName}, we hebben de aanbetaling (25%) voor je boeking <strong>${data.reference}</strong> ontvangen. De factuur zit als bijlage in deze e-mail.`;
+    return sendEmail({
+      to,
+      subject: paidSubject,
+      attachments,
+      html: emailWrapper(`
+        ${badge('✅', paidHeading)}
+        ${heading(paidHeading)}
+        ${subtext(paidText)}
+      `, paidSubject, locale),
+    });
+  }
 
   return sendEmail({
     to,
@@ -667,7 +689,7 @@ export async function sendPaymentLinkEmail(to: string, data: {
       ${heading(t.paymentLinkHeading)}
       ${subtext(t.paymentLinkText(firstName, data.reference, formatPrice(data.depositAmount)))}
 
-      ${button(t.paymentLinkButton(formatPrice(data.depositAmount)), data.paymentUrl)}
+      ${button(t.paymentLinkButton(formatPrice(data.depositAmount)), data.paymentUrl!)}
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, `${t.paymentLinkSubject(data.reference)}`, locale),

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCustomCaravans, getAllCampings } from '@/lib/db';
-import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf } from '@/lib/holded';
+import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf, getHoldedInvoice } from '@/lib/holded';
 import { sendPaymentLinkEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -96,9 +96,18 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentHoldedStatus(paymentId, 'IN_HOLDED', holded.invoiceId);
 
+    // Check of de factuur (mogelijk al via een eerdere flow) reeds betaald is bij Holded.
+    let alreadyPaid = false;
+    try {
+      const status = await getHoldedInvoice(holded.invoiceId);
+      alreadyPaid = !!status.paid;
+    } catch (statusErr) {
+      console.warn('Could not fetch Holded invoice status:', statusErr);
+    }
+
     const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
-    const paymentUrlForEmail = directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`;
+    const paymentUrlForEmail = alreadyPaid ? undefined : (directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`);
 
     let invoicePdfBase64: string | undefined;
     try {
@@ -118,6 +127,7 @@ export async function POST(request: NextRequest) {
         paymentUrl: paymentUrlForEmail,
         invoicePdfBase64,
         invoiceNumber: holded.number,
+        alreadyPaid,
       });
       mailSent = result.success;
       console.log(`[holded] Payment link email send → success=${mailSent}, hasPublicUrl=${!!directPublicUrl}, hasPdf=${!!invoicePdfBase64}`);

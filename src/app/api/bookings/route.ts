@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
 import { sendBookingConfirmationEmail, sendAdminNewBookingNotification, sendPaymentLinkEmail } from '@/lib/email';
-import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf } from '@/lib/holded';
+import { findOrCreateHoldedContact, createHoldedInvoice, getHoldedInvoicePublicUrl, getHoldedInvoicePdf, getHoldedInvoice } from '@/lib/holded';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
@@ -196,11 +196,19 @@ export async function POST(request: NextRequest) {
 
       await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
 
+      let alreadyPaid = false;
+      try {
+        const status = await getHoldedInvoice(holded.invoiceId);
+        alreadyPaid = !!status.paid;
+      } catch (statusErr) {
+        console.warn('Could not fetch Holded invoice status:', statusErr);
+      }
+
       const directPublicUrl = holded.publicUrl || (await getHoldedInvoicePublicUrl(holded.invoiceId));
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://caravanverhuurspanje.com';
-      const paymentUrlForEmail = directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`;
+      const paymentUrlForEmail = alreadyPaid ? undefined : (directPublicUrl || `${siteUrl}/api/holded-invoice/${holded.invoiceId}`);
       // Maak deze URL ook beschikbaar in de POST-respons zodat de boeken-pagina
-      // de klant direct naar de Holded-betaalpagina kan redirecten.
+      // de klant direct naar de Holded-betaalpagina kan redirecten — tenzij al betaald.
       holdedPaymentUrl = paymentUrlForEmail;
 
       let invoicePdfBase64: string | undefined;
@@ -219,6 +227,7 @@ export async function POST(request: NextRequest) {
           paymentUrl: paymentUrlForEmail,
           invoicePdfBase64,
           invoiceNumber: holded.number,
+          alreadyPaid,
         });
         console.log(`[holded] Payment link email send → success=${result2.success}, hasPublicUrl=${!!directPublicUrl}, hasPdf=${!!invoicePdfBase64}`);
       } catch (sendErr) {
