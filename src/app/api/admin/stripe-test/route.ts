@@ -131,9 +131,11 @@ export async function POST(request: NextRequest) {
       console.warn('Holded invoice creation failed (test continues):', holdedErr);
     }
 
-    // Stripe Checkout — productie-tekst, alleen bedrag verschilt
+    // Stripe Checkout — productie-tekst, alleen bedrag verschilt.
+    // Force het hoofd-domein voor success/cancel — de admin werkt vaak op een
+    // subdomein (admin.*) waar de publieke /betaling/* routes niet bestaan.
     const stripe = getStripe();
-    const origin = request.headers.get('origin') || request.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
     const payment = await getPaymentById(booking.paymentId);
 
     const session = await stripe.checkout.sessions.create({
