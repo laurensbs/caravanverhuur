@@ -1,26 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBookingAtomic, getPaymentById, updatePaymentStripeId, updatePaymentHoldedStatus } from '@/lib/db';
+import { createBookingAtomic, getPaymentById, updatePaymentStripeId, updatePaymentHoldedStatus, getAllCampings, getAllCustomCaravans } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { getStripe } from '@/lib/stripe';
+import { caravans as staticCaravans } from '@/data/caravans';
+import { campings as staticCampings } from '@/data/campings';
 
 // POST /api/admin/stripe-test
-// Maakt een echte boeking van EUR 0,01 + Holded factuur + Stripe Checkout en
-// retourneert de checkout-URL. Doorloopt exact dezelfde flow als een klantboeking
-// (mails, webhook, Holded markeren als betaald), zodat we end-to-end kunnen testen
-// met een minimaal bedrag. Refund daarna in Stripe als je wilt.
+// Volgt exact dezelfde flow als POST /api/bookings — gebruikt een echte caravan en camping,
+// zelfde Holded-factuur opmaak, zelfde mails, zelfde Stripe Checkout — alleen het bedrag is
+// €0,01 zodat we end-to-end kunnen verifiëren met minimaal geld.
 export async function POST(request: NextRequest) {
   const cookie = request.cookies.get('admin_session')?.value;
   if (!cookie) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const body = await request.json().catch(() => ({}));
-    const guestName: string = body.guestName || 'Stripe Test';
+    const guestName: string = body.guestName || 'Test Boeking';
     const guestEmail: string = body.guestEmail || 'laurensbos@hotmail.com';
     const guestPhone: string = body.guestPhone || '+31600000000';
+
+    // Pak de eerste actieve caravan en camping uit de data — zo ziet de flow er
+    // identiek uit aan een gewone klantboeking.
+    let caravanId: string | undefined = staticCaravans[0]?.id;
+    let caravanName: string | undefined = staticCaravans[0]?.name;
+    if (!caravanId) {
+      try {
+        const custom = await getAllCustomCaravans();
+        caravanId = custom[0]?.id as string | undefined;
+        caravanName = custom[0]?.name as string | undefined;
+      } catch {}
+    }
+    let campingId: string | undefined = staticCampings[0]?.id;
+    let campingName: string | undefined = staticCampings[0]?.name;
+    try {
+      const dbCampings = await getAllCampings();
+      if (dbCampings.length > 0) {
+        campingId = dbCampings[0].id as string;
+        campingName = dbCampings[0].name as string;
+      }
+    } catch {}
+
+    if (!caravanId || !campingId) {
+      return NextResponse.json({ error: 'Geen caravan of camping beschikbaar voor test' }, { status: 500 });
+    }
 
     // Boek ver in de toekomst zodat we geen echte boekingen blokkeren
     const checkIn = '2099-12-01';
     const checkOut = '2099-12-02';
+    const nights = 1;
+    const totalPrice = 0.01;
+    const deposit25 = 0.01;
 
     const booking = await createBookingAtomic({
       guestName,
@@ -28,14 +57,14 @@ export async function POST(request: NextRequest) {
       guestPhone,
       adults: 1,
       children: 0,
-      specialRequests: 'STRIPE TEST — €0,01 — refund daarna',
-      caravanId: 'test',
-      campingId: 'test',
+      specialRequests: undefined,
+      caravanId,
+      campingId,
       checkIn,
       checkOut,
-      nights: 1,
-      totalPrice: 0.01,
-      depositAmount: 0.01,
+      nights,
+      totalPrice,
+      depositAmount: deposit25,
       remainingAmount: 0,
       borgAmount: 0,
     });
@@ -44,15 +73,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create test booking' }, { status: 500 });
     }
 
-    // Holded factuur (zelfde flow als productie)
+    // Holded factuur — exact dezelfde tekst als productie, met klein TEST-flagje in notes
     let holdedInvoiceId: string | undefined;
     try {
       const contactId = await findOrCreateHoldedContact({ name: guestName, email: guestEmail, phone: guestPhone });
+      const checkInLabel = new Date(checkIn).toLocaleDateString('nl-NL');
+      const checkOutLabel = new Date(checkOut).toLocaleDateString('nl-NL');
+      const invoiceNotes = [
+        `[TEST €0,01]`,
+        `Boeking ${booking.reference}`,
+        `Caravan: ${caravanName}`,
+        `Camping: ${campingName}`,
+        `Verblijf: ${checkInLabel} t/m ${checkOutLabel} (${nights} nachten)`,
+        `Gasten: 1 volw.`,
+        `Totale huurprijs: €${totalPrice.toFixed(2)} — Aanbetaling 25% (rest + borg op de camping)`,
+      ].join('\n');
+
       const holded = await createHoldedInvoice({
         contactId,
-        reference: `TEST aanbetaling ${booking.reference}`,
-        items: [{ name: `STRIPE TEST — boeking ${booking.reference}`, units: 1, subtotal: 0.01, tax: 0 }],
-        notes: `STRIPE TEST flow — €0,01\nBoeking ${booking.reference}`,
+        reference: `Aanbetaling boeking ${booking.reference}`,
+        items: [{
+          name: `Aanbetaling 25% — boeking ${booking.reference} (${caravanName})`,
+          units: 1,
+          subtotal: deposit25,
+          tax: 0,
+        }],
+        notes: invoiceNotes,
       });
       holdedInvoiceId = holded.invoiceId;
       await updatePaymentHoldedStatus(booking.paymentId, 'IN_HOLDED', holded.invoiceId);
@@ -60,8 +106,7 @@ export async function POST(request: NextRequest) {
       console.warn('Holded invoice creation failed (test continues):', holdedErr);
     }
 
-    // Stripe Checkout — minimum bedrag is EUR 0,50 voor cards, dus we doen 1 cent voor iDEAL.
-    // iDEAL accepteert kleinere bedragen.
+    // Stripe Checkout — productie-tekst, alleen bedrag verschilt
     const stripe = getStripe();
     const origin = request.headers.get('origin') || request.nextUrl.origin;
     const payment = await getPaymentById(booking.paymentId);
@@ -72,8 +117,11 @@ export async function POST(request: NextRequest) {
       line_items: [{
         price_data: {
           currency: 'eur',
-          product_data: { name: `STRIPE TEST — boeking ${booking.reference}` },
-          unit_amount: 1, // 1 cent
+          product_data: {
+            name: `Aanbetaling 25% — boeking ${booking.reference}`,
+            description: `Caravanverhuur Spanje — ${caravanName}`,
+          },
+          unit_amount: Math.round(deposit25 * 100),
         },
         quantity: 1,
       }],
