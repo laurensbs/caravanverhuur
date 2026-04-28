@@ -134,8 +134,19 @@ export async function POST(request: NextRequest) {
     // Stripe Checkout — productie-tekst, alleen bedrag verschilt.
     // Force het hoofd-domein voor success/cancel — de admin werkt vaak op een
     // subdomein (admin.*) waar de publieke /betaling/* routes niet bestaan.
+    // Robuuste fallback: env var → request origin → hardcoded canonical.
     const stripe = getStripe();
-    const origin = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+    const envBase = (process.env.NEXT_PUBLIC_BASE_URL || '').trim();
+    const reqOrigin = request.headers.get('origin') || request.nextUrl.origin;
+    const isAdminHost = /^https?:\/\/admin\./i.test(reqOrigin);
+    const candidate = envBase || (isAdminHost ? '' : reqOrigin) || 'https://caravanverhuurspanje.com';
+    // Validate: moet beginnen met http(s):// en geldig zijn
+    let origin: string;
+    try {
+      origin = new URL(candidate).origin;
+    } catch {
+      origin = 'https://caravanverhuurspanje.com';
+    }
     const payment = await getPaymentById(booking.paymentId);
 
     const session = await stripe.checkout.sessions.create({
