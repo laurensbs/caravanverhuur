@@ -3,10 +3,10 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { CheckCircle, ArrowRight, Loader2, Star } from 'lucide-react';
+import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
-import { GOOGLE_REVIEW_URL, INSTAGRAM_URL } from '@/lib/constants';
+import { INSTAGRAM_URL } from '@/lib/constants';
 
 interface BookingSummary {
   reference: string;
@@ -183,26 +183,23 @@ function SuccesContent() {
             </motion.div>
           )}
 
-          {/* Google Review CTA */}
+          {/* Bestemmingen CTA */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-8"
+            className="bg-cyan-50 border border-cyan-200 rounded-2xl p-5 mb-8"
           >
             <div className="flex items-center gap-2 justify-center mb-2">
-              <Star size={18} className="text-amber-400 fill-amber-400" />
-              <span className="font-semibold text-amber-800 text-sm">{t('paymentPage.reviewHint')}</span>
+              <span className="text-base">🌊</span>
+              <span className="font-semibold text-cyan-900 text-sm">Bekijk alvast de mooiste bestemmingen</span>
             </div>
-            <a
-              href={GOOGLE_REVIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-amber-700 border border-amber-300 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-100 transition-colors"
+            <Link
+              href="/bestemmingen"
+              className="inline-flex items-center gap-2 bg-white text-cyan-700 border border-cyan-300 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-cyan-100 transition-colors"
             >
-              <Star size={14} className="fill-amber-400 text-amber-400" />
-              {t('paymentPage.leaveReview')}
-            </a>
+              Ontdek de Costa Brava <ArrowRight size={14} />
+            </Link>
           </motion.div>
 
           {/* Instagram CTA */}
