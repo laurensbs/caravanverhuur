@@ -98,6 +98,27 @@ export default function AdminDashboard() {
   const [stripeTestLoading, setStripeTestLoading] = useState(false);
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [resetPwdLoading, setResetPwdLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  const handleResendConfirmation = async () => {
+    const ref = prompt('Boekingsreferentie (BK-...) om bevestigingsmail opnieuw te sturen:');
+    if (!ref) return;
+    setResendLoading(true);
+    try {
+      const res = await fetch('/api/admin/resend-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingRef: ref.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(`Mislukt: ${data.error || 'onbekende fout'}`); setResendLoading(false); return; }
+      alert(`Mail verstuurd: ${data.success ? 'ja' : 'nee'}\nNaar: ${data.guestEmail}\nNieuw account: ${data.newAccountCreated ? 'ja' : 'bestond al'}\n${data.mailError ? `Fout: ${data.mailError}` : ''}`);
+    } catch (err) {
+      alert(`Mislukt: ${err}`);
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleDebugCustomer = async () => {
     const email = prompt('Welk e-mailadres bekijken?', 'laurensbs@proton.me');
@@ -559,6 +580,15 @@ export default function AdminDashboard() {
               >
                 {resetPwdLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🔑'}
                 Reset wachtwoord
+              </button>
+              <button
+                onClick={handleResendConfirmation}
+                disabled={resendLoading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer disabled:opacity-50"
+                title="Forceer de bevestigingsmail + Holded mark-paid voor een boeking — handig als webhook niet doorkwam"
+              >
+                {resendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '📧'}
+                Bevestigingsmail forceren
               </button>
               <button
                 onClick={handleExport}
