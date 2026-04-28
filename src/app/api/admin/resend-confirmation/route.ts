@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     if (sessionId) {
       const stripe = getStripe();
       const session = await stripe.checkout.sessions.retrieve(sessionId);
-      if (session.payment_status !== 'paid' && session.payment_status !== 'processing') {
+      const ps = String(session.payment_status);
+      if (ps !== 'paid' && ps !== 'processing') {
         return NextResponse.json({ error: `Stripe sessie status: ${session.payment_status} — geen betaalde betaling om te bevestigen` }, { status: 400 });
       }
       paymentId = session.metadata?.paymentId;
