@@ -207,7 +207,10 @@ export async function POST(request: NextRequest) {
     let paymentUrl: string | undefined;
     try {
       const stripe = getStripe();
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+      // Gebruik het domein waar de klant vandaan kwam (caravanverhuurspanje.com of
+      // costabrava.com) zodat Stripe ze terugbrengt op hetzelfde domein.
+      const origin = request.headers.get('origin') || request.nextUrl.origin;
+      const baseUrl = origin || process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
       const payment = await getPaymentById(result.paymentId);
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
