@@ -98,7 +98,7 @@ export default function AdminDashboard() {
   const [stripeTestLoading, setStripeTestLoading] = useState(false);
 
   const handleStripeTest = async () => {
-    if (!confirm('Een echte Stripe-checkout van €0,01 starten op jouw e-mail (laurensbos@hotmail.com)? Doorloopt de hele klant-flow inclusief mails. Refund daarna handmatig in Stripe.')) return;
+    if (!confirm('Een echte Stripe-checkout van €0,01 starten op jouw e-mail (laurensbs@proton.me)? Doorloopt de hele klant-flow inclusief mails. Refund daarna handmatig in Stripe.')) return;
     setStripeTestLoading(true);
     try {
       const res = await fetch('/api/admin/stripe-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });

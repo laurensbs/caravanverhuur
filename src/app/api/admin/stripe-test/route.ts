@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const guestName: string = body.guestName || 'Test Boeking';
-    const guestEmail: string = body.guestEmail || 'laurensbos@hotmail.com';
+    const guestEmail: string = body.guestEmail || 'laurensbs@proton.me';
     const guestPhone: string = body.guestPhone || '+31600000000';
 
     // Pak de eerste actieve caravan en camping uit de data — zo ziet de flow er
