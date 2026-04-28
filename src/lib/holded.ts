@@ -139,6 +139,28 @@ export interface HoldedInvoiceStatus {
   total?: number;
 }
 
+// Markeer een Holded-factuur als (volledig) betaald. Verifieerd via API: POST naar /pay
+// met date+amount voegt een payment-record toe en zet pending op 0.
+export async function markHoldedInvoicePaid(invoiceId: string, amount?: number): Promise<void> {
+  // Als amount niet meegegeven is, lees de factuur en gebruik het totaal.
+  let amountToPay = amount;
+  if (amountToPay === undefined) {
+    const inv = await holdedFetch(`/documents/invoice/${invoiceId}`) as { total?: number; paymentsPending?: number };
+    amountToPay = typeof inv.paymentsPending === 'number' && inv.paymentsPending > 0
+      ? inv.paymentsPending
+      : (inv.total || 0);
+  }
+  if (!amountToPay || amountToPay <= 0) return; // niets te betalen
+
+  await holdedFetch(`/documents/invoice/${invoiceId}/pay`, {
+    method: 'POST',
+    body: JSON.stringify({
+      date: Math.floor(Date.now() / 1000),
+      amount: amountToPay,
+    }),
+  });
+}
+
 export async function getHoldedInvoice(invoiceId: string): Promise<HoldedInvoiceStatus> {
   const inv = await holdedFetch(`/documents/invoice/${invoiceId}`) as Record<string, unknown>;
   return {

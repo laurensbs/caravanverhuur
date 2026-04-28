@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
 import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
-import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
+import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
+import { getStripe } from '@/lib/stripe';
+import { updatePaymentStripeId, getPaymentById } from '@/lib/db';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
@@ -162,6 +164,8 @@ export async function POST(request: NextRequest) {
     // Create Holded invoice for the 25% deposit and let Holded email it directly to the customer.
     // The Holded email includes a Stripe payment button (when Stripe is connected in Holded settings).
     // Our own confirmation email (sent below) explains that the invoice arrives in a separate email.
+    // Maak een Holded-factuur aan voor administratie (zonder mailen). De webhook markeert
+    // 'm later als betaald zodra Stripe de aanbetaling heeft verwerkt.
     let holdedInvoiceCreated = false;
     try {
       const contactId = await findOrCreateHoldedContact({
@@ -194,26 +198,47 @@ export async function POST(request: NextRequest) {
       });
 
       await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
-
-      // Laat Holded zelf de factuur-mail versturen — dat is de enige flow waarin Holded
-      // een werkende publieke betaal-URL (Stripe via Customer Portal) genereert.
-      try {
-        await sendHoldedInvoice(
-          holded.invoiceId,
-          guestEmail,
-          `Factuur aanbetaling boeking ${result.reference} — Caravanverhuur Spanje`,
-          `Beste ${guestName.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${result.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
-        );
-      } catch (sendErr) {
-        console.error('Failed to send Holded invoice email:', sendErr);
-      }
       holdedInvoiceCreated = true;
     } catch (err) {
       console.error('Failed to create Holded invoice — booking continues without invoice:', err);
     }
 
-    // Geen directe redirect — Holded mailt de betaalknop, klant ziet bedankt-scherm.
-    const paymentUrl: string | undefined = undefined;
+    // Maak Stripe Checkout Session voor de aanbetaling — de klant wordt direct doorgestuurd.
+    let paymentUrl: string | undefined;
+    try {
+      const stripe = getStripe();
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+      const payment = await getPaymentById(result.paymentId);
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card', 'ideal', 'bancontact'],
+        line_items: [{
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Aanbetaling 25% — boeking ${result.reference}`,
+              description: `Caravanverhuur Spanje — ${caravanName}`,
+            },
+            unit_amount: Math.round(deposit25 * 100),
+          },
+          quantity: 1,
+        }],
+        customer_email: guestEmail,
+        metadata: {
+          paymentId: result.paymentId,
+          bookingId: result.id,
+          bookingRef: result.reference,
+          type: 'AANBETALING',
+          holdedInvoiceId: payment?.holded_invoice_id || '',
+        },
+        success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
+      });
+      await updatePaymentStripeId(result.paymentId, session.id);
+      paymentUrl = session.url || undefined;
+    } catch (err) {
+      console.error('Failed to create Stripe checkout session:', err);
+    }
 
     sendBookingConfirmationEmail(guestEmail, {
       guestName,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus } from '@/lib/db';
 import { sendPaymentConfirmationEmail } from '@/lib/email';
+import { markHoldedInvoicePaid } from '@/lib/holded';
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -56,6 +57,16 @@ export async function POST(request: NextRequest) {
           const paidPayment = await getPaymentById(paymentId);
           if (paidPayment?.type === 'AANBETALING') {
             await updateBookingStatus(paidPayment.booking_id, 'AANBETAALD');
+          }
+
+          // Markeer de Holded-factuur als betaald (voor administratie).
+          const holdedInvoiceId = session.metadata?.holdedInvoiceId;
+          if (holdedInvoiceId) {
+            try {
+              await markHoldedInvoicePaid(holdedInvoiceId);
+            } catch (holdedErr) {
+              console.error('Failed to mark Holded invoice as paid:', holdedErr);
+            }
           }
 
           // Send confirmation email
