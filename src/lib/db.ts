@@ -175,6 +175,11 @@ async function _setupDatabaseInner() {
     await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`;
   } catch { /* ignore */ }
 
+  // Migration: add must_change_password (voor auto-aangemaakte accounts bij boeking)
+  try {
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE`;
+  } catch { /* ignore */ }
+
   // Password reset tokens table
   await sql`
     CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -1218,13 +1223,22 @@ export async function customerAgreeBorgChecklist(token: string, agreed: boolean,
 
 // ===== CUSTOMER QUERIES =====
 
-export async function createCustomer(data: { email: string; passwordHash: string; name: string; phone?: string; locale?: string }) {
+export async function createCustomer(data: { email: string; passwordHash: string; name: string; phone?: string; locale?: string; mustChangePassword?: boolean; emailVerified?: boolean }) {
   const id = generateId('CU');
   await sql`
-    INSERT INTO customers (id, email, password_hash, name, phone, locale)
-    VALUES (${id}, ${data.email}, ${data.passwordHash}, ${data.name}, ${data.phone || null}, ${data.locale || 'nl'})
+    INSERT INTO customers (id, email, password_hash, name, phone, locale, must_change_password, email_verified)
+    VALUES (${id}, ${data.email}, ${data.passwordHash}, ${data.name}, ${data.phone || null}, ${data.locale || 'nl'}, ${data.mustChangePassword === true}, ${data.emailVerified === true})
   `;
   return { id };
+}
+
+export async function clearCustomerMustChangePassword(id: string) {
+  await sql`UPDATE customers SET must_change_password = FALSE WHERE id = ${id}`;
+}
+
+export async function getBookingByReference(reference: string) {
+  const result = await sql`SELECT * FROM bookings WHERE reference = ${reference} LIMIT 1`;
+  return result.rows[0] || null;
 }
 
 export async function getCustomerByEmail(email: string) {

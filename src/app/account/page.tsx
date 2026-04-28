@@ -56,8 +56,8 @@ function AccountPageInner() {
   const [resendEmail, setResendEmail] = useState('');
   const [resendingVerification, setResendingVerification] = useState(false);
 
-  // Form fields
-  const [email, setEmail] = useState('');
+  // Form fields — pre-fill email vanuit ?email=... query (van /betaling/succes na auto-account)
+  const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

@@ -8,11 +8,25 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
 import { GOOGLE_REVIEW_URL, INSTAGRAM_URL } from '@/lib/constants';
 
+interface BookingSummary {
+  reference: string;
+  caravanName: string;
+  campingName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  totalPrice: number;
+  depositAmount: number;
+  guestEmail: string;
+}
+
 function SuccesContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [loading, setLoading] = useState(true);
   const [verified, setVerified] = useState(false);
+  const [booking, setBooking] = useState<BookingSummary | null>(null);
+  const [amount, setAmount] = useState<number | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -28,6 +42,8 @@ function SuccesContent() {
         try {
           const res = await fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`);
           const data = await res.json();
+          if (data.booking && !cancelled) setBooking(data.booking as BookingSummary);
+          if (typeof data.amount === 'number' && !cancelled) setAmount(data.amount);
           if (data.paid === true) {
             if (!cancelled) { setVerified(true); setLoading(false); }
             return;
@@ -117,7 +133,7 @@ function SuccesContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl p-6 shadow-sm mb-8"
+            className="bg-white rounded-2xl p-6 shadow-sm mb-4"
           >
             <div className="flex items-center gap-3 justify-center text-primary mb-3">
               <CheckCircle size={20} />
@@ -127,6 +143,45 @@ function SuccesContent() {
               {t('paymentPage.receivedDesc')}
             </p>
           </motion.div>
+
+          {booking && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-white rounded-2xl p-6 shadow-sm mb-4 text-left"
+            >
+              <p className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1">Boekingsreferentie</p>
+              <p className="text-lg font-bold text-foreground mb-4">{booking.reference}</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4"><span className="text-muted">Caravan</span><span className="font-medium text-right">{booking.caravanName}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-muted">Camping</span><span className="font-medium text-right">{booking.campingName}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-muted">Verblijf</span><span className="font-medium text-right">{new Date(booking.checkIn).toLocaleDateString('nl-NL')} → {new Date(booking.checkOut).toLocaleDateString('nl-NL')} ({booking.nights}n)</span></div>
+                <div className="flex justify-between gap-4 pt-2 border-t border-gray-100"><span className="text-muted">Totale huurprijs</span><span className="font-medium">€{booking.totalPrice.toFixed(2)}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-muted">Aanbetaling betaald</span><span className="font-bold text-primary">€{(amount ?? booking.depositAmount).toFixed(2)}</span></div>
+              </div>
+            </motion.div>
+          )}
+
+          {booking?.guestEmail && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 mb-8 text-left"
+            >
+              <p className="font-semibold text-indigo-900 text-sm mb-1">🔐 Jouw klant-account</p>
+              <p className="text-xs text-indigo-800 leading-relaxed mb-3">
+                We hebben een account voor je aangemaakt op <strong>{booking.guestEmail}</strong>. Het tijdelijke wachtwoord staat in je bevestigingsmail. Bij je eerste login vragen we je een eigen wachtwoord te kiezen.
+              </p>
+              <Link
+                href={`/account?email=${encodeURIComponent(booking.guestEmail)}`}
+                className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                Inloggen <ArrowRight size={14} />
+              </Link>
+            </motion.div>
+          )}
 
           {/* Google Review CTA */}
           <motion.div

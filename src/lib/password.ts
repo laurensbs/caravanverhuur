@@ -1,6 +1,20 @@
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 const SALT_ROUNDS = 12;
+
+const READABLE_WORDS = ['Brava', 'Pals', 'Begur', 'Roses', 'Calella', 'Estartit', 'Lloret', 'Tossa', 'Aro', 'Palamos', 'Cadaques', 'Empuria', 'Costa', 'Marina', 'Platja', 'Sol', 'Mar', 'Sand', 'Wave', 'Sunny'];
+
+/**
+ * Leesbaar tijdelijk wachtwoord, format Woord-XXXX-Woord (Brava-7421-Pals).
+ * ~16 bits entropie — voldoende met bcrypt + rate-limit + verplichte change bij eerste login.
+ */
+export function generateTemporaryPassword(): string {
+  const w1 = READABLE_WORDS[randomBytes(1)[0] % READABLE_WORDS.length];
+  const w2 = READABLE_WORDS[randomBytes(1)[0] % READABLE_WORDS.length];
+  const num = (randomBytes(2).readUInt16BE(0) % 9000 + 1000).toString();
+  return `${w1}-${num}-${w2}`;
+}
 
 /**
  * Hash a password using bcrypt.

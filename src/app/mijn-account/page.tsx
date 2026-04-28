@@ -36,6 +36,63 @@ interface Customer {
   name: string;
   phone: string | null;
   created_at?: string;
+  must_change_password?: boolean;
+}
+
+function ForcePasswordChange({ onSuccess }: { onSuccess: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (newPassword.length < 8) { setError('Nieuw wachtwoord moet minimaal 8 tekens zijn.'); return; }
+    if (newPassword !== confirmPassword) { setError('Wachtwoorden komen niet overeen.'); return; }
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Kon wachtwoord niet wijzigen'); setSubmitting(false); return; }
+      onSuccess();
+    } catch {
+      setError('Netwerkfout, probeer opnieuw');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+        <h1 className="text-xl font-bold text-foreground mb-1">Kies een nieuw wachtwoord</h1>
+        <p className="text-sm text-muted mb-5">Je bent ingelogd met een tijdelijk wachtwoord. Stel nu een eigen wachtwoord in om door te gaan.</p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1">Tijdelijk wachtwoord (uit je mail)</label>
+            <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required className="w-full px-3 py-2.5 rounded-xl bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1">Nieuw wachtwoord (min. 8 tekens)</label>
+            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} className="w-full px-3 py-2.5 rounded-xl bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1">Bevestig nieuw wachtwoord</label>
+            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={8} className="w-full px-3 py-2.5 rounded-xl bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <button type="submit" disabled={submitting} className="w-full bg-primary text-white py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50">
+            {submitting ? 'Bezig…' : 'Wachtwoord opslaan'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 interface Booking {
@@ -382,6 +439,10 @@ function MijnAccountContent() {
   }
 
   if (!customer) return null;
+
+  if (customer.must_change_password) {
+    return <ForcePasswordChange onSuccess={() => setCustomer({ ...customer, must_change_password: false })} />;
+  }
 
   const statusLabelsNL: Record<string, string> = {
     NIEUW: t('myAccount.statusNieuw'),

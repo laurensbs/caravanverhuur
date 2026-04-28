@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       customer: { id: customer.id, email: customer.email, name: customer.name },
+      mustChangePassword: !!customer.must_change_password,
     });
     response.cookies.set('customer_session', session.token, {
       httpOnly: true,

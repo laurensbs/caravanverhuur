@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules, createCustomer } from '@/lib/db';
+import { hashPassword, generateTemporaryPassword } from '@/lib/password';
 import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { getStripe } from '@/lib/stripe';
@@ -157,8 +158,30 @@ export async function POST(request: NextRequest) {
     const immediatePayment = true;
     const paymentDeadline = 'nu';
 
-    // Look up customer locale
-    const bookingCustomer = await getCustomerByEmail(guestEmail.toLowerCase().trim()).catch(() => null);
+    // Look up customer — als nog geen account, maak er automatisch een aan met een
+    // tijdelijk wachtwoord. Klant kan na betaling inloggen met dit wachtwoord en moet
+    // 'm dan direct wijzigen (must_change_password=true).
+    const normalizedEmail = guestEmail.toLowerCase().trim();
+    let bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
+    let temporaryPasswordPlain: string | undefined;
+    if (!bookingCustomer) {
+      try {
+        temporaryPasswordPlain = generateTemporaryPassword();
+        const hash = await hashPassword(temporaryPasswordPlain);
+        await createCustomer({
+          email: normalizedEmail,
+          passwordHash: hash,
+          name: guestName,
+          phone: guestPhone,
+          locale: 'nl',
+          mustChangePassword: true,
+          emailVerified: true, // boeking + betaling is bewijs van eigenaarschap
+        });
+        bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
+      } catch (createErr) {
+        console.error('Auto-create customer at booking failed:', createErr);
+      }
+    }
     const customerLocale = bookingCustomer?.locale || 'nl';
 
     // Create Holded invoice for the 25% deposit and let Holded email it directly to the customer.
@@ -261,6 +284,7 @@ export async function POST(request: NextRequest) {
       borgAmount: serverBorgAmount,
       hasBedlinnen: !!extraBedlinnen,
       holdedInvoiceSent: holdedInvoiceCreated,
+      temporaryPassword: temporaryPasswordPlain,
     }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
 
     // Notify admin of new booking (non-blocking)

@@ -349,6 +349,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   borgAmount?: number;
   hasBedlinnen?: boolean;
   holdedInvoiceSent?: boolean;
+  temporaryPassword?: string;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -357,6 +358,25 @@ export async function sendBookingConfirmationEmail(to: string, data: {
     ? t.bookingDirectPayment
     : formatDateShort(data.paymentDeadline, locale);
 
+  // Mini account-blok als er een tijdelijk wachtwoord is meegegeven (auto-aangemaakt account)
+  const accountTitle = locale === 'es' ? 'Tu cuenta de cliente' : locale === 'en' ? 'Your customer account' : 'Jouw klant-account';
+  const accountIntro = locale === 'es'
+    ? `Hemos creado una cuenta para ti en <strong>${to}</strong>. Inicia sesi\u00F3n con la contrase\u00F1a temporal a continuaci\u00F3n; te pediremos que la cambies en tu primer inicio de sesi\u00F3n.`
+    : locale === 'en'
+    ? `We've created an account for you on <strong>${to}</strong>. Log in with the temporary password below; you'll be asked to change it on your first login.`
+    : `We hebben een account voor je aangemaakt op <strong>${to}</strong>. Log in met het tijdelijke wachtwoord hieronder; bij je eerste login vragen we je een eigen wachtwoord te kiezen.`;
+  const tempPasswordLabel = locale === 'es' ? 'Contrase\u00F1a temporal' : locale === 'en' ? 'Temporary password' : 'Tijdelijk wachtwoord';
+  const loginButtonLabel = locale === 'es' ? 'Iniciar sesi\u00F3n' : locale === 'en' ? 'Log in' : 'Inloggen';
+  const accountBlock = data.temporaryPassword ? `
+    <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:14px;padding:18px;margin:0 0 20px;">
+      <p style="margin:0 0 6px;color:#3730A3;font-size:13px;font-weight:700;">\uD83D\uDD10 ${accountTitle}</p>
+      <p style="margin:0 0 10px;color:#1E1B4B;font-size:13px;line-height:1.5;">${accountIntro}</p>
+      <p style="margin:0 0 4px;color:#64748B;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${tempPasswordLabel}</p>
+      <p style="margin:0 0 12px;font-family:'Courier New',monospace;color:#0F172A;font-size:18px;font-weight:700;letter-spacing:1px;">${data.temporaryPassword}</p>
+      <a href="${SITE_URL}/account?email=${encodeURIComponent(to)}" style="display:inline-block;background:#4338CA;color:#fff;text-decoration:none;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;">${loginButtonLabel} \u2192</a>
+    </div>
+  ` : '';
+
   return sendEmail({
     to,
     subject: t.bookingSubject(data.reference),
@@ -364,6 +384,7 @@ export async function sendBookingConfirmationEmail(to: string, data: {
       ${badge('\uD83D\uDCDD', t.bookingBadge)}
       ${heading(t.bookingHeading)}
       ${subtext(t.bookingSubtext(firstName))}
+      ${accountBlock}
 
       <!-- Reference card -->
       <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">

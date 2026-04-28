@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
         phone: customer.phone,
         created_at: customer.created_at,
         newsletter_unsubscribed: newsletterUnsubscribed,
+        must_change_password: !!customer.must_change_password,
       },
       bookings,
       payments,
