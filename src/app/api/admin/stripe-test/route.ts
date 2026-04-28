@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBookingAtomic, getPaymentById, updatePaymentStripeId, updatePaymentHoldedStatus, getAllCampings, getAllCustomCaravans, getCustomerByEmail, createCustomer } from '@/lib/db';
+import { createBookingAtomic, getPaymentById, updatePaymentStripeId, updatePaymentHoldedStatus, getAllCampings, getAllCustomCaravans } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { getStripe } from '@/lib/stripe';
-import { hashPassword, generateTemporaryPassword } from '@/lib/password';
-import { sendBookingConfirmationEmail } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 
@@ -73,29 +71,6 @@ export async function POST(request: NextRequest) {
 
     if (!booking) {
       return NextResponse.json({ error: 'Failed to create test booking' }, { status: 500 });
-    }
-
-    // Account ensure: identiek aan productie-flow
-    const normalizedEmail = guestEmail.toLowerCase().trim();
-    let temporaryPasswordPlain: string | undefined;
-    let bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-    if (!bookingCustomer) {
-      try {
-        temporaryPasswordPlain = generateTemporaryPassword();
-        const hash = await hashPassword(temporaryPasswordPlain);
-        await createCustomer({
-          email: normalizedEmail,
-          passwordHash: hash,
-          name: guestName,
-          phone: guestPhone,
-          locale: 'nl',
-          mustChangePassword: true,
-          emailVerified: true,
-        });
-        bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-      } catch (createErr) {
-        console.error('Auto-create customer (test) failed:', createErr);
-      }
     }
 
     // Holded factuur — exact dezelfde tekst als productie, met klein TEST-flagje in notes
@@ -178,24 +153,8 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentStripeId(booking.paymentId, session.id);
 
-    // Boekingsbevestigingsmail — exact zoals productie, inclusief tijdelijk wachtwoord
-    sendBookingConfirmationEmail(guestEmail, {
-      guestName,
-      reference: booking.reference,
-      caravanName: caravanName || '',
-      campingName: campingName || '',
-      checkIn,
-      checkOut,
-      nights,
-      adults: 1,
-      children: 0,
-      totalPrice,
-      paymentDeadline: 'nu',
-      immediatePayment: true,
-      borgAmount: 0,
-      holdedInvoiceSent: !!holdedInvoiceId,
-      temporaryPassword: temporaryPasswordPlain,
-    }, bookingCustomer?.locale || 'nl').catch(err => console.error('Test booking confirmation mail failed:', err));
+    // Geen confirmation-mail hier — die wordt door de Stripe webhook verstuurd
+    // pas ná succesvolle betaling, met welkomst-blok + tijdelijk wachtwoord.
 
     return NextResponse.json({
       success: true,

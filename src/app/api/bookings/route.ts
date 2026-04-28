@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules, createCustomer } from '@/lib/db';
-import { hashPassword, generateTemporaryPassword } from '@/lib/password';
-import { sendBookingConfirmationEmail, sendAdminNewBookingNotification } from '@/lib/email';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
+import { sendAdminNewBookingNotification } from '@/lib/email';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { getStripe } from '@/lib/stripe';
 import { updatePaymentStripeId, getPaymentById } from '@/lib/db';
@@ -158,30 +157,11 @@ export async function POST(request: NextRequest) {
     const immediatePayment = true;
     const paymentDeadline = 'nu';
 
-    // Look up customer — als nog geen account, maak er automatisch een aan met een
-    // tijdelijk wachtwoord. Klant kan na betaling inloggen met dit wachtwoord en moet
-    // 'm dan direct wijzigen (must_change_password=true).
+    // Look up customer locale (account-creatie + welkomstmail gebeuren pas in de
+    // Stripe webhook, ná succesvolle betaling — anders sturen we al inloggegevens
+    // voordat we weten of de boeking betaald wordt).
     const normalizedEmail = guestEmail.toLowerCase().trim();
-    let bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-    let temporaryPasswordPlain: string | undefined;
-    if (!bookingCustomer) {
-      try {
-        temporaryPasswordPlain = generateTemporaryPassword();
-        const hash = await hashPassword(temporaryPasswordPlain);
-        await createCustomer({
-          email: normalizedEmail,
-          passwordHash: hash,
-          name: guestName,
-          phone: guestPhone,
-          locale: 'nl',
-          mustChangePassword: true,
-          emailVerified: true, // boeking + betaling is bewijs van eigenaarschap
-        });
-        bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-      } catch (createErr) {
-        console.error('Auto-create customer at booking failed:', createErr);
-      }
-    }
+    const bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
     const customerLocale = bookingCustomer?.locale || 'nl';
 
     // Create Holded invoice for the 25% deposit and let Holded email it directly to the customer.
@@ -266,26 +246,9 @@ export async function POST(request: NextRequest) {
       console.error('Failed to create Stripe checkout session:', err);
     }
 
-    sendBookingConfirmationEmail(guestEmail, {
-      guestName,
-      reference: result.reference,
-      caravanName,
-      campingName,
-      checkIn,
-      checkOut,
-      nights: serverNights,
-      adults: adults || 2,
-      children: children || 0,
-      totalPrice,
-      paymentDeadline,
-      immediatePayment,
-      spotNumber,
-      paymentUrl,
-      borgAmount: serverBorgAmount,
-      hasBedlinnen: !!extraBedlinnen,
-      holdedInvoiceSent: holdedInvoiceCreated,
-      temporaryPassword: temporaryPasswordPlain,
-    }, customerLocale).catch(err => console.error('Booking confirmation email failed:', err));
+    // Geen bevestigingsmail naar klant op dit moment — die wordt pas via de Stripe
+    // webhook verstuurd zodra de betaling is gelukt, of als 'betaling mislukt' bij
+    // session.expired / payment_intent.payment_failed.
 
     // Notify admin of new booking (non-blocking)
     sendAdminNewBookingNotification({

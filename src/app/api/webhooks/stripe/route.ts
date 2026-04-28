@@ -1,8 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus } from '@/lib/db';
-import { sendPaymentConfirmationEmail } from '@/lib/email';
+import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus, createCustomer, getAllCampings, getAllCustomCaravans } from '@/lib/db';
+import { sendBookingConfirmationEmail, sendPaymentFailedEmail } from '@/lib/email';
 import { markHoldedInvoicePaid } from '@/lib/holded';
+import { hashPassword, generateTemporaryPassword } from '@/lib/password';
+import { caravans as staticCaravans } from '@/data/caravans';
+import { campings as staticCampings } from '@/data/campings';
+
+async function resolveCaravanName(caravanId: string): Promise<string> {
+  const fromStatic = staticCaravans.find(c => c.id === caravanId)?.name;
+  if (fromStatic) return fromStatic;
+  try {
+    const custom = await getAllCustomCaravans();
+    return (custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string) || caravanId;
+  } catch { return caravanId; }
+}
+
+async function resolveCampingName(campingId: string): Promise<string> {
+  try {
+    const dbCampings = await getAllCampings();
+    const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
+    if (found) return found.name as string;
+  } catch {}
+  return staticCampings.find(c => c.id === campingId)?.name || campingId;
+}
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -69,44 +90,114 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Send confirmation email
+          // Welkomst- + bevestigingsmail (alleen ná betaling). Maakt account aan
+          // voor de klant als nog niet bestaand, met tijdelijk wachtwoord.
           try {
             const payment = await getPaymentById(paymentId);
             if (payment) {
               const booking = await getBookingById(payment.booking_id);
               if (booking) {
-                const whCustomer = await getCustomerByEmail(booking.guest_email).catch(() => null);
-                await sendPaymentConfirmationEmail(booking.guest_email, {
+                const normalizedEmail = booking.guest_email.toLowerCase().trim();
+                let whCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
+                let temporaryPasswordPlain: string | undefined;
+                if (!whCustomer) {
+                  try {
+                    temporaryPasswordPlain = generateTemporaryPassword();
+                    const hash = await hashPassword(temporaryPasswordPlain);
+                    await createCustomer({
+                      email: normalizedEmail,
+                      passwordHash: hash,
+                      name: booking.guest_name,
+                      phone: booking.guest_phone,
+                      locale: 'nl',
+                      mustChangePassword: true,
+                      emailVerified: true,
+                    });
+                    whCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
+                  } catch (createErr) {
+                    console.error('Auto-create customer in webhook failed:', createErr);
+                  }
+                }
+
+                const caravanName = await resolveCaravanName(booking.caravan_id);
+                const campingName = await resolveCampingName(booking.camping_id);
+
+                await sendBookingConfirmationEmail(booking.guest_email, {
                   guestName: booking.guest_name,
                   reference: booking.reference,
-                  type: payment.type,
-                  amount: parseFloat(payment.amount),
-                  paidAt,
+                  caravanName,
+                  campingName,
+                  checkIn: booking.check_in,
+                  checkOut: booking.check_out,
+                  nights: booking.nights,
+                  adults: booking.adults,
+                  children: booking.children,
                   totalPrice: parseFloat(booking.total_price),
-                  remainingAmount: parseFloat(booking.remaining_amount),
+                  paymentDeadline: 'nu',
+                  immediatePayment: true,
+                  spotNumber: booking.spot_number || undefined,
                   borgAmount: parseFloat(booking.borg_amount),
-                }, whCustomer?.locale);
+                  hasBedlinnen: !!booking.special_requests && /bedlinnen/i.test(booking.special_requests),
+                  alreadyPaid: true,
+                  temporaryPassword: temporaryPasswordPlain,
+                }, whCustomer?.locale || 'nl');
               }
             }
           } catch (emailErr) {
-            console.error('Failed to send payment confirmation email:', emailErr);
+            console.error('Failed to send booking confirmation email:', emailErr);
           }
         }
         break;
       }
 
       case 'checkout.session.expired': {
-        // Session expired before payment — no action needed, payment stays OPENSTAAND
-        console.warn('Checkout session expired:', event.data.object.id);
+        // Session expired voor betaling — payment blijft OPENSTAAND, klant kan
+        // opnieuw betalen via /mijn-account. Stuur mail om dit te vertellen.
+        try {
+          const session = event.data.object;
+          const paymentId = session.metadata?.paymentId;
+          if (paymentId) {
+            const payment = await getPaymentById(paymentId);
+            if (payment && payment.status !== 'BETAALD') {
+              const booking = await getBookingById(payment.booking_id);
+              if (booking) {
+                const whCustomer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+                await sendPaymentFailedEmail(booking.guest_email, {
+                  guestName: booking.guest_name,
+                  reference: booking.reference,
+                  depositAmount: parseFloat(payment.amount),
+                  retryUrl: `${baseUrl}/mijn-account`,
+                }, whCustomer?.locale || 'nl');
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Failed to send payment-failed mail (expired):', err);
+        }
         break;
       }
 
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object;
-        // Find payment by Stripe ID (indexed lookup, no full table scan)
         const match = await getPaymentByStripeId(paymentIntent.id);
         if (match) {
           await updatePaymentStatus(match.id, 'MISLUKT');
+          try {
+            const booking = await getBookingById(match.booking_id);
+            if (booking) {
+              const whCustomer = await getCustomerByEmail(booking.guest_email).catch(() => null);
+              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+              await sendPaymentFailedEmail(booking.guest_email, {
+                guestName: booking.guest_name,
+                reference: booking.reference,
+                depositAmount: parseFloat(match.amount),
+                retryUrl: `${baseUrl}/mijn-account`,
+              }, whCustomer?.locale || 'nl');
+            }
+          } catch (err) {
+            console.error('Failed to send payment-failed mail (intent_failed):', err);
+          }
         }
         break;
       }

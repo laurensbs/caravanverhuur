@@ -350,6 +350,9 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   hasBedlinnen?: boolean;
   holdedInvoiceSent?: boolean;
   temporaryPassword?: string;
+  /** Set true wanneer de aanbetaling al is voldaan — past kop/tekst aan zodat we
+   *  niet vragen om alsnog te betalen. */
+  alreadyPaid?: boolean;
 }, locale?: string) {
   const t = getEmailTranslations(locale);
   const firstName = data.guestName.split(' ')[0];
@@ -357,6 +360,22 @@ export async function sendBookingConfirmationEmail(to: string, data: {
   const deadlineLabel = data.immediatePayment
     ? t.bookingDirectPayment
     : formatDateShort(data.paymentDeadline, locale);
+
+  // Tekst-overrides als de boeking al betaald is (welkomstmail-modus)
+  const paidBadgeText = locale === 'es' ? '✅ Pagado' : locale === 'en' ? '✅ Paid' : '✅ Aanbetaling betaald';
+  const paidSubtextText = locale === 'es'
+    ? `¡Hola ${firstName}! Hemos recibido el pago de tu depósito. Tu reserva está confirmada.`
+    : locale === 'en'
+    ? `Hi ${firstName}! We've received your deposit payment. Your booking is confirmed.`
+    : `Hoi ${firstName}! We hebben je aanbetaling ontvangen. Je boeking is bevestigd.`;
+  const paidHighlightText = locale === 'es'
+    ? 'El resto del alquiler y la fianza se pagan en el camping a tu llegada.'
+    : locale === 'en'
+    ? 'The remainder of the rent and the deposit are paid at the campsite on arrival.'
+    : 'Het resterende huurbedrag en de borg betaal je op de camping bij aankomst.';
+  const subjectText = data.alreadyPaid
+    ? (locale === 'es' ? `Reserva confirmada — ${data.reference}` : locale === 'en' ? `Booking confirmed — ${data.reference}` : `Boeking bevestigd — ${data.reference}`)
+    : t.bookingSubject(data.reference);
 
   // Mini account-blok als er een tijdelijk wachtwoord is meegegeven (auto-aangemaakt account)
   const accountTitle = locale === 'es' ? 'Tu cuenta de cliente' : locale === 'en' ? 'Your customer account' : 'Jouw klant-account';
@@ -379,18 +398,18 @@ export async function sendBookingConfirmationEmail(to: string, data: {
 
   return sendEmail({
     to,
-    subject: t.bookingSubject(data.reference),
+    subject: subjectText,
     html: emailWrapper(`
-      ${badge('\uD83D\uDCDD', t.bookingBadge)}
-      ${heading(t.bookingHeading)}
-      ${subtext(t.bookingSubtext(firstName))}
+      ${badge(data.alreadyPaid ? '\u2705' : '\uD83D\uDCDD', data.alreadyPaid ? paidBadgeText : t.bookingBadge)}
+      ${heading(data.alreadyPaid ? paidBadgeText : t.bookingHeading)}
+      ${subtext(data.alreadyPaid ? paidSubtextText : t.bookingSubtext(firstName))}
       ${accountBlock}
 
       <!-- Reference card -->
       <div style="background:linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);border:1px solid #E7E5E4;border-radius:16px;padding:24px;text-align:center;margin:0 0 28px;">
         <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.bookingRefLabel}</p>
         <p style="margin:0 0 8px;color:#0F172A;font-weight:800;font-size:22px;letter-spacing:0.5px;">${data.reference}</p>
-        <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${data.holdedInvoiceSent ? t.bookingAwaitConfirm : t.bookingAwaitPaymentLink}</span>
+        <span style="display:inline-block;background:${data.alreadyPaid ? '#DCFCE7' : '#FEF3C7'};color:${data.alreadyPaid ? '#166534' : '#92400E'};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;">${data.alreadyPaid ? paidBadgeText : (data.holdedInvoiceSent ? t.bookingAwaitConfirm : t.bookingAwaitPaymentLink)}</span>
       </div>
 
       <!-- Booking details -->
@@ -433,11 +452,10 @@ export async function sendBookingConfirmationEmail(to: string, data: {
         </tr>
       </table>
 
-      ${highlight(`
-        <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">
-          ${data.holdedInvoiceSent ? t.bookingHoldedNote : t.bookingHoldedPendingNote}
-        </p>
-      `, true)}
+      ${data.alreadyPaid
+        ? highlight(`<p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">${paidHighlightText}</p>`, true)
+        : highlight(`<p style="margin:0;color:#0F172A;font-size:14px;line-height:1.65;">${data.holdedInvoiceSent ? t.bookingHoldedNote : t.bookingHoldedPendingNote}</p>`, true)
+      }
 
       ${!data.hasBedlinnen ? highlight(`
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
@@ -714,6 +732,46 @@ export async function sendPaymentLinkEmail(to: string, data: {
 
       ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${t.spamNotice}</p>`)}
     `, `${t.paymentLinkSubject(data.reference)}`, locale),
+  });
+}
+
+export async function sendPaymentFailedEmail(to: string, data: {
+  guestName: string;
+  reference: string;
+  depositAmount: number;
+  retryUrl: string; // bv. /mijn-account of een nieuwe checkout-URL
+}, locale?: string) {
+  const firstName = data.guestName.split(' ')[0];
+  const subject = locale === 'es'
+    ? `Pago no completado — ${data.reference}`
+    : locale === 'en'
+    ? `Payment not completed — ${data.reference}`
+    : `Betaling niet gelukt — ${data.reference}`;
+  const heading_ = locale === 'es' ? 'Pago no completado' : locale === 'en' ? 'Payment not completed' : 'Betaling niet gelukt';
+  const intro = locale === 'es'
+    ? `Hola ${firstName}, tu pago para la reserva <strong>${data.reference}</strong> no se completó. Tu reserva sigue activa pero pendiente de pago.`
+    : locale === 'en'
+    ? `Hi ${firstName}, your payment for booking <strong>${data.reference}</strong> was not completed. Your booking is still active but awaiting payment.`
+    : `Hoi ${firstName}, je betaling voor boeking <strong>${data.reference}</strong> is niet gelukt. Je boeking staat nog actief maar wacht op betaling.`;
+  const btn = locale === 'es' ? `Volver a intentar — ${formatPrice(data.depositAmount)}` : locale === 'en' ? `Try again — ${formatPrice(data.depositAmount)}` : `Opnieuw proberen — ${formatPrice(data.depositAmount)}`;
+  const tip = locale === 'es'
+    ? 'Si necesitas ayuda, responde a este correo o contáctanos.'
+    : locale === 'en'
+    ? 'If you need help, reply to this email or contact us.'
+    : 'Heb je hulp nodig? Beantwoord deze mail of neem contact op.';
+
+  return sendEmail({
+    to,
+    subject,
+    html: emailWrapper(`
+      ${badge('⚠️', heading_)}
+      ${heading(heading_)}
+      ${subtext(intro)}
+
+      ${button(btn, data.retryUrl)}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${tip}</p>`)}
+    `, subject, locale),
   });
 }
 
