@@ -20,18 +20,29 @@ function SuccesContent() {
       setLoading(false);
       return;
     }
-    fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`)
-      .then(res => res.json())
-      .then(data => {
-        setVerified(data.paid === true);
-        setLoading(false);
-      })
-      .catch(() => {
-        // If verification fails (e.g. Stripe not configured), still show success
-        // The webhook is the source of truth for payment status
-        setVerified(true);
-        setLoading(false);
-      });
+    let cancelled = false;
+    const verify = async () => {
+      // iDEAL is async — probeer een paar keer, daarna toch de succespagina tonen
+      // (de Stripe webhook is de echte source of truth voor de DB-status).
+      for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
+        try {
+          const res = await fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`);
+          const data = await res.json();
+          if (data.paid === true) {
+            if (!cancelled) { setVerified(true); setLoading(false); }
+            return;
+          }
+        } catch {
+          // negeren — we proberen opnieuw of vallen aan het eind terug op true
+        }
+        if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+      }
+      // Na 3 pogingen nog niet bevestigd — toon toch succes; de webhook regelt
+      // de definitieve status, en de klant ziet de boeking in /mijn-account.
+      if (!cancelled) { setVerified(true); setLoading(false); }
+    };
+    verify();
+    return () => { cancelled = true; };
   }, [sessionId]);
 
   if (loading) {
