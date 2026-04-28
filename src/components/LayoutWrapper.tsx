@@ -32,7 +32,10 @@ export function LayoutWrapper({
 }) {
   const pathname = usePathname();
 
-  const isAdmin = pathname.startsWith('/admin') || isAdminSubdomain;
+  const isPayment = pathname.startsWith('/betaling');
+  // Payment pages moeten LanguageProvider hebben — ook als ze worden geserveerd
+  // op een admin-subdomein (Stripe redirect kan vanaf admin.* terugkomen).
+  const isAdmin = (pathname.startsWith('/admin') || isAdminSubdomain) && !isPayment;
   const isDriver = pathname.startsWith('/chauffeur');
   const isBorg = pathname.startsWith('/borg');
 
