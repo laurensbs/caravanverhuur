@@ -1,14 +1,14 @@
 // ===== HOLDED INVOICING CLIENT =====
 // Thin fetch-based wrapper around the Holded REST API.
 // Used to auto-create + send a deposit invoice to the customer when a booking is made.
-// API key is read from HOLDED_API_KEY env var (with a fallback to the key the user shared).
+// API key wordt gelezen uit HOLDED_API_KEY env var.
 
 const HOLDED_API_BASE = 'https://api.holded.com/api/invoicing/v1';
-const HOLDED_CONTACTS_BASE = 'https://api.holded.com/api/invoicing/v1/contacts';
-const FALLBACK_KEY = '5c5749a168a15ca925a58456590c47f9';
 
 function getKey(): string {
-  return process.env.HOLDED_API_KEY || FALLBACK_KEY;
+  const key = process.env.HOLDED_API_KEY;
+  if (!key) throw new Error('HOLDED_API_KEY is not set in environment variables');
+  return key;
 }
 
 async function holdedFetch(path: string, init: RequestInit = {}): Promise<unknown> {
