@@ -371,6 +371,25 @@ export default function AdminBestemmingenPage() {
                             </div>
                           </div>
                           <div>
+                            <label className="block text-[11px] text-muted mb-0.5">
+                              <ImageIcon size={10} className="inline mr-1" />
+                              {isNl ? 'Foto-URL' : 'Photo URL'}
+                            </label>
+                            <input
+                              type="url"
+                              value={beach.photo || ''}
+                              onChange={e => updateBeach(idx, 'photo', e.target.value)}
+                              placeholder="https://u.cubeupload.com/..."
+                              className="w-full px-2.5 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-xs"
+                            />
+                            {beach.photo && beach.photo.startsWith('http') && (
+                              <div className="mt-1.5 relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={beach.photo} alt={beach.name || 'Beach'} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
                             <label className="block text-[11px] text-muted mb-0.5">{isNl ? 'Beschrijving' : 'Description'}</label>
                             <textarea
                               value={beach.description}

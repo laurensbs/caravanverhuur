@@ -230,7 +230,14 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {destination.beaches.map(b => (
-                    <div key={b.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+                    <div key={b.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                      {b.photo && b.photo.startsWith('http') && (
+                        <div className="relative w-full aspect-[16/9] bg-gray-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={b.photo} alt={b.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      )}
+                      <div className="p-4 sm:p-5">
                       <h3 className="font-bold text-gray-900 text-base mb-2">{b.name}</h3>
                       <div className="flex flex-wrap items-center gap-1.5 mb-3">
                         <span className={`px-2 py-1 rounded-lg text-[11px] font-semibold ${b.type === 'zand' ? 'bg-amber-50 text-amber-700' : b.type === 'kiezel' ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-700'}`}>
@@ -246,6 +253,7 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                         )}
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">{b.description}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

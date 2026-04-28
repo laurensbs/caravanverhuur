@@ -12,6 +12,7 @@ export interface Beach {
   vibe: 'rustig' | 'levendig' | 'wild' | 'familiaal';
   description: string;
   facilities: boolean;
+  photo?: string;
 }
 
 export interface Destination {

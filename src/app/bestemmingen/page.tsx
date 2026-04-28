@@ -61,7 +61,8 @@ function getAllBeaches(dests: typeof staticDestinations) {
       destination: d.name,
       destinationSlug: d.slug,
       region: d.region,
-      heroImage: d.heroImage,
+      // Per-strand foto heeft voorrang; valt anders terug op de bestemming-hero.
+      heroImage: b.photo || d.heroImage,
     }))
   );
 }
