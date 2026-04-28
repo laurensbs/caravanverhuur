@@ -95,6 +95,25 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [stripeTestLoading, setStripeTestLoading] = useState(false);
+
+  const handleStripeTest = async () => {
+    if (!confirm('Een echte Stripe-checkout van €0,01 starten op jouw e-mail (laurensbos@hotmail.com)? Doorloopt de hele klant-flow inclusief mails. Refund daarna handmatig in Stripe.')) return;
+    setStripeTestLoading(true);
+    try {
+      const res = await fetch('/api/admin/stripe-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        alert(`Mislukt: ${data.error || 'onbekende fout'}`);
+        setStripeTestLoading(false);
+        return;
+      }
+      window.location.href = data.url;
+    } catch (err) {
+      alert(`Mislukt: ${err}`);
+      setStripeTestLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadCustomData();
@@ -450,14 +469,25 @@ export default function AdminDashboard() {
                 <p className="text-xs text-muted">{t('dashboard.exportDataDesc')}</p>
               </div>
             </div>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {t('dashboard.exportBtn')}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleStripeTest}
+                disabled={stripeTestLoading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer disabled:opacity-50"
+                title="Maakt een echte Stripe-checkout van €0,01 op jouw e-mail om de end-to-end flow te testen"
+              >
+                {stripeTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🧪'}
+                Stripe €0,01 test
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {t('dashboard.exportBtn')}
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
