@@ -97,6 +97,40 @@ export default function AdminDashboard() {
   const [exporting, setExporting] = useState(false);
   const [stripeTestLoading, setStripeTestLoading] = useState(false);
   const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [resetPwdLoading, setResetPwdLoading] = useState(false);
+
+  const handleDebugCustomer = async () => {
+    const email = prompt('Welk e-mailadres bekijken?', 'laurensbs@proton.me');
+    if (!email) return;
+    try {
+      const res = await fetch(`/api/admin/debug-customer?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      alert(JSON.stringify(data, null, 2));
+    } catch (err) {
+      alert(`Mislukt: ${err}`);
+    }
+  };
+
+  const handleResetCustomerPassword = async () => {
+    const email = prompt('Welk e-mailadres reset je het wachtwoord van?', 'laurensbs@proton.me');
+    if (!email) return;
+    if (!confirm(`Genereer nieuw tijdelijk wachtwoord voor ${email}?`)) return;
+    setResetPwdLoading(true);
+    try {
+      const res = await fetch('/api/admin/reset-customer-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(`Mislukt: ${data.error || 'onbekende fout'}`); setResetPwdLoading(false); return; }
+      prompt(`Nieuw tijdelijk wachtwoord voor ${email} (kopiëren met Cmd+C):`, data.temporaryPassword);
+    } catch (err) {
+      alert(`Mislukt: ${err}`);
+    } finally {
+      setResetPwdLoading(false);
+    }
+  };
 
   const handleCleanupTestCustomer = async () => {
     const email = prompt('Welk e-mailadres opruimen? (verwijdert customer-account + 2099 test-boekingen)', 'laurensbs@proton.me');
@@ -509,6 +543,22 @@ export default function AdminDashboard() {
               >
                 {cleanupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🗑️'}
                 Test-customer opruimen
+              </button>
+              <button
+                onClick={handleDebugCustomer}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                title="Toont accountstatus voor een e-mail (bestaat, email_verified, must_change_password, hash-prefix)"
+              >
+                🔍 Debug klant
+              </button>
+              <button
+                onClick={handleResetCustomerPassword}
+                disabled={resetPwdLoading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer disabled:opacity-50"
+                title="Genereert een nieuw tijdelijk wachtwoord en toont het — handig als klant niet kan inloggen"
+              >
+                {resetPwdLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🔑'}
+                Reset wachtwoord
               </button>
               <button
                 onClick={handleExport}
