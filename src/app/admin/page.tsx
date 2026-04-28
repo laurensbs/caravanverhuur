@@ -96,6 +96,28 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
   const [stripeTestLoading, setStripeTestLoading] = useState(false);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+
+  const handleCleanupTestCustomer = async () => {
+    const email = prompt('Welk e-mailadres opruimen? (verwijdert customer-account + 2099 test-boekingen)', 'laurensbs@proton.me');
+    if (!email) return;
+    if (!confirm(`Verwijder customer + test-boekingen voor ${email}?`)) return;
+    setCleanupLoading(true);
+    try {
+      const res = await fetch('/api/admin/dev-cleanup-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(`Mislukt: ${data.error || 'onbekende fout'}`); setCleanupLoading(false); return; }
+      alert(`Klaar.\nCustomer verwijderd: ${data.deletedCustomer ? 'ja' : 'niet gevonden'}\nTest-boekingen verwijderd: ${data.deletedBookings}`);
+    } catch (err) {
+      alert(`Mislukt: ${err}`);
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const handleStripeTest = async () => {
     if (!confirm('Een echte Stripe-checkout van €0,01 starten op jouw e-mail (laurensbs@proton.me)? Doorloopt de hele klant-flow inclusief mails. Refund daarna handmatig in Stripe.')) return;
@@ -478,6 +500,15 @@ export default function AdminDashboard() {
               >
                 {stripeTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🧪'}
                 Stripe €0,01 test
+              </button>
+              <button
+                onClick={handleCleanupTestCustomer}
+                disabled={cleanupLoading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-50"
+                title="Verwijdert customer-account en 2099 test-boekingen voor een opgegeven e-mail"
+              >
+                {cleanupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '🗑️'}
+                Test-customer opruimen
               </button>
               <button
                 onClick={handleExport}
