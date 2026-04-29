@@ -146,6 +146,14 @@ export default function VoorwaardenPage() {
                 <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-1" />
                 <p className="text-sm text-amber-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.a6Note') }} />
               </div>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-3">
+                <AlertTriangle size={18} className="text-red-600 shrink-0 mt-1" />
+                <p className="text-sm text-red-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.a6Text3') }} />
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
+                <Info size={18} className="text-blue-600 shrink-0 mt-1" />
+                <p className="text-sm text-blue-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('termsPage.a6Text4') }} />
+              </div>
             </div>
           </div>
 
