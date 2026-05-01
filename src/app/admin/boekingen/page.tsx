@@ -143,7 +143,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   useEffect(() => { fetchEmails(); }, [fetchEmails]);
 
   const handleSendHoldedInvoice = useCallback(async (paymentId: string) => {
-    if (!confirm('Holded pro forma aanmaken en mailen naar de klant?')) return;
+    if (!confirm('Holded pro forma handmatig aanmaken? (Wordt niet naar de klant gemaild — alleen voor onze administratie.)')) return;
     setSendingHolded(true);
     try {
       const res = await fetch('/api/admin/holded', {
@@ -153,7 +153,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Onbekende fout');
-      toast(data.mailSent ? 'Holded pro forma aangemaakt + verstuurd' : 'Holded pro forma aangemaakt (mail-verzending mislukt — check Holded)', data.mailSent ? 'success' : 'warning');
+      toast('Holded pro forma aangemaakt', 'success');
       // Refresh payments + emails
       const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
       const pData = await pRes.json();
@@ -525,12 +525,12 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
                       <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
-                      <p className="text-xs font-medium flex-1">Holded pro forma verstuurd — wachten op betaling</p>
+                      <p className="text-xs font-medium flex-1">Pro forma aangemaakt — wachten op betaling</p>
                     </div>
                     {paymentLinkMail && (
                       <div className="flex items-center gap-2 bg-green-50 text-green-800 rounded-lg px-3 py-1.5 text-[11px]">
                         <Mail className="w-3 h-3 shrink-0" />
-                        <span className="truncate">Mail bevestigd in Resend: <strong>{paymentLinkMail.subject}</strong> ({paymentLinkMail.status})</span>
+                        <span className="truncate">Betaal-mail verstuurd: <strong>{paymentLinkMail.subject}</strong> ({paymentLinkMail.status})</span>
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -544,10 +544,6 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                           <FileText className="w-3.5 h-3.5" /> Pro forma PDF
                         </a>
                       )}
-                      <button onClick={() => depositPayment && handleSendHoldedInvoice(depositPayment.id)} disabled={sendingHolded} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50">
-                        {sendingHolded ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                        Opnieuw versturen
-                      </button>
                       <button onClick={handleCheckPaymentStatus} disabled={checkingPayment} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50">
                         {checkingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                         {checkingPayment ? t('bookings.checkingStatus') : t('bookings.checkPaymentStatus')}
@@ -555,14 +551,12 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => depositPayment && handleSendHoldedInvoice(depositPayment.id)}
-                    disabled={sendingHolded || !depositPayment}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 cursor-pointer disabled:opacity-50"
-                  >
-                    {sendingHolded ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                    Holded pro forma aanmaken & mailen
-                  </button>
+                  <div className="flex items-start gap-2 bg-gray-50 text-gray-700 rounded-lg px-3 py-2 border border-gray-200">
+                    <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gray-500" />
+                    <p className="text-xs leading-snug">
+                      Pro forma wordt automatisch aangemaakt zodra de klant haar adresgegevens invult op de betaalpagina (of na betaling als failsafe). Holded is alleen voor onze administratie — wordt niet naar de klant gemaild.
+                    </p>
+                  </div>
                 )}
 
                 <div className="flex items-center gap-3 py-0.5"><div className="flex-1 h-px bg-gray-200" /><span className="text-[10px] text-gray-400 uppercase">of</span><div className="flex-1 h-px bg-gray-200" /></div>
@@ -634,14 +628,15 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                           <FileText className="w-3 h-3" /> PDF
                         </a>
                       )}
-                      {p.status !== 'BETAALD' && (
+                      {p.status !== 'BETAALD' && p.holded_status !== 'IN_HOLDED' && (
                         <button
                           onClick={() => handleSendHoldedInvoice(p.id)}
                           disabled={sendingHolded}
                           className="inline-flex items-center gap-1 text-[10px] font-medium text-white bg-primary-dark hover:bg-[#1E40AF] px-2 py-0.5 rounded-full disabled:opacity-50 cursor-pointer"
+                          title="Failsafe — proforma wordt normaal automatisch aangemaakt"
                         >
                           {sendingHolded ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                          {p.holded_status === 'IN_HOLDED' ? 'Opnieuw versturen' : 'Holded pro forma versturen'}
+                          Pro forma handmatig aanmaken
                         </button>
                       )}
                     </div>

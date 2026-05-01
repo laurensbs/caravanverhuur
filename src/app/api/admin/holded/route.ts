@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCampings } from '@/lib/db';
-import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
+import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { campings as staticCampings } from '@/data/campings';
 
 export async function PATCH(request: NextRequest) {
@@ -87,20 +87,8 @@ export async function POST(request: NextRequest) {
 
     await updatePaymentHoldedStatus(paymentId, 'IN_HOLDED', holded.invoiceId);
 
-    let mailSent = false;
-    try {
-      await sendHoldedInvoice(
-        holded.invoiceId,
-        booking.guest_email,
-        `Factuur aanbetaling boeking ${booking.reference} — Caravanverhuur Spanje`,
-        `Beste ${booking.guest_name.split(' ')[0]},\n\nHierbij de factuur voor de aanbetaling (25%) van je boeking ${booking.reference}. Je kunt direct online betalen via de link in deze e-mail.\n\nMet vriendelijke groet,\nCaravanverhuur Spanje`,
-      );
-      mailSent = true;
-    } catch (sendErr) {
-      console.error('Failed to send Holded invoice email:', sendErr);
-    }
-
-    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent });
+    // We do NOT send the proforma to the customer — Holded is for our own bookkeeping only.
+    return NextResponse.json({ success: true, holdedInvoiceId: holded.invoiceId, mailSent: false });
   } catch (error) {
     console.error('POST /api/admin/holded error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to create Holded invoice' }, { status: 500 });
