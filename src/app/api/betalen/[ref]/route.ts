@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStripeId, updateBookingAddress } from '@/lib/db';
+import { updatePaymentStripeId, updateBookingAddress, getAllCampings, getAllCustomCaravans } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { verifyBookingPaymentToken } from '@/lib/payment-link-token';
+
+// Look up display names — checks static data first, then DB-managed custom records.
+async function resolveCaravanName(caravanId: string): Promise<string> {
+  const fromStatic = staticCaravans.find(c => c.id === caravanId)?.name;
+  if (fromStatic) return fromStatic;
+  try {
+    const custom = await getAllCustomCaravans();
+    return (custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string) || caravanId;
+  } catch { return caravanId; }
+}
+
+async function resolveCampingName(campingId: string): Promise<string> {
+  try {
+    const dbCampings = await getAllCampings();
+    const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
+    if (found) return found.name as string;
+  } catch {}
+  return staticCampings.find(c => c.id === campingId)?.name || campingId;
+}
 
 interface BookingRow {
   id: string;
@@ -44,8 +63,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const p = await sql`SELECT id, status, amount FROM payments WHERE booking_id = ${b.id} AND type = 'AANBETALING' LIMIT 1`;
   const payment = p.rows[0];
 
-  const caravanName = staticCaravans.find(c => c.id === b.caravan_id)?.name || b.caravan_id;
-  const campingName = staticCampings.find(c => c.id === b.camping_id)?.name || b.camping_id;
+  const [caravanName, campingName] = await Promise.all([
+    resolveCaravanName(b.caravan_id),
+    resolveCampingName(b.camping_id),
+  ]);
 
   return NextResponse.json({
     reference: b.reference,
@@ -108,8 +129,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // If no invoice yet, create one. If one exists, leave it — we don't recreate to avoid duplicate Holded entries.
     if (!holdedInvoiceId) {
-      const caravanName = staticCaravans.find(c => c.id === b.caravan_id)?.name || b.caravan_id;
-      const campingName = staticCampings.find(c => c.id === b.camping_id)?.name || b.camping_id;
+      const [caravanName, campingName] = await Promise.all([
+        resolveCaravanName(b.caravan_id),
+        resolveCampingName(b.camping_id),
+      ]);
       const checkInLabel = new Date(b.check_in).toLocaleDateString('nl-NL');
       const checkOutLabel = new Date(b.check_out).toLocaleDateString('nl-NL');
       const notes = [
