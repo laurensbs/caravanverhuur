@@ -129,8 +129,6 @@ export default function BetaalPage({ params }: { params: Promise<{ ref: string }
         <div className="bg-white rounded-2xl p-5 mb-5 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground mb-3">Jouw boeking</h2>
           <dl className="grid grid-cols-3 gap-y-2 text-sm">
-            <dt className="text-muted col-span-1">Caravan</dt>
-            <dd className="col-span-2 text-foreground">{booking.caravanName}</dd>
             <dt className="text-muted col-span-1">Camping</dt>
             <dd className="col-span-2 text-foreground">{booking.campingName}{booking.spotNumber ? ` (plek ${booking.spotNumber})` : ''}</dd>
             <dt className="text-muted col-span-1">Verblijf</dt>
