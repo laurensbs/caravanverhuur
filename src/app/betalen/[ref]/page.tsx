@@ -8,7 +8,6 @@ interface BookingSummary {
   reference: string;
   guestName: string;
   guestEmail: string;
-  caravanName: string;
   campingName: string;
   spotNumber: string | null;
   checkIn: string;

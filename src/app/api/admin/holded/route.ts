@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCustomCaravans, getAllCampings } from '@/lib/db';
+import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCampings } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice, sendHoldedInvoice } from '@/lib/holded';
-import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 
 export async function PATCH(request: NextRequest) {
@@ -45,14 +44,8 @@ export async function POST(request: NextRequest) {
     const booking = await getBookingById(payment.booking_id);
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
-    // Resolve caravan + camping name (mirrors logic in /api/bookings POST)
-    let caravanName: string = staticCaravans.find(c => c.id === booking.caravan_id)?.name || '';
-    if (!caravanName) {
-      try {
-        const custom = await getAllCustomCaravans();
-        caravanName = (custom.find((c: Record<string, unknown>) => c.id === booking.caravan_id)?.name as string) || booking.caravan_id;
-      } catch { caravanName = booking.caravan_id; }
-    }
+    // Resolve camping name. Caravan name is intentionally left out of customer-visible
+    // proforma fields (we assign caravans server-side, the customer doesn't see it).
     let campingName: string = booking.camping_id;
     try {
       const dbCampings = await getAllCampings();
@@ -73,7 +66,6 @@ export async function POST(request: NextRequest) {
     const checkOutLabel = new Date(booking.check_out).toLocaleDateString('nl-NL');
     const invoiceNotes = [
       `Boeking ${booking.reference}`,
-      `Caravan: ${caravanName}`,
       `Camping: ${campingName}${booking.spot_number ? ` (plek ${booking.spot_number})` : ''}`,
       `Verblijf: ${checkInLabel} t/m ${checkOutLabel} (${booking.nights} nachten)`,
       `Gasten: ${booking.adults} volw.${booking.children > 0 ? ` + ${booking.children} kind.` : ''}`,
@@ -85,7 +77,7 @@ export async function POST(request: NextRequest) {
       contactId,
       reference: `Aanbetaling boeking ${booking.reference}`,
       items: [{
-        name: `Aanbetaling 25% — boeking ${booking.reference} (${caravanName})`,
+        name: `Aanbetaling 25% — boeking ${booking.reference}`,
         units: 1,
         subtotal: amount,
         tax: 0,

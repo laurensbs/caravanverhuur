@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStripeId, updateBookingAddress, getAllCampings, getAllCustomCaravans } from '@/lib/db';
+import { updatePaymentStripeId, updateBookingAddress, getAllCampings } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
-import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { verifyBookingPaymentToken } from '@/lib/payment-link-token';
-
-// Look up display names — checks static data first, then DB-managed custom records.
-async function resolveCaravanName(caravanId: string): Promise<string> {
-  const fromStatic = staticCaravans.find(c => c.id === caravanId)?.name;
-  if (fromStatic) return fromStatic;
-  try {
-    const custom = await getAllCustomCaravans();
-    return (custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string) || caravanId;
-  } catch { return caravanId; }
-}
 
 async function resolveCampingName(campingId: string): Promise<string> {
   try {
@@ -63,17 +52,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const p = await sql`SELECT id, status, amount FROM payments WHERE booking_id = ${b.id} AND type = 'AANBETALING' LIMIT 1`;
   const payment = p.rows[0];
 
-  const [caravanName, campingName] = await Promise.all([
-    resolveCaravanName(b.caravan_id),
-    resolveCampingName(b.camping_id),
-  ]);
+  const campingName = await resolveCampingName(b.camping_id);
 
   return NextResponse.json({
     reference: b.reference,
     guestName: b.guest_name,
     guestEmail: b.guest_email,
     guestPhone: b.guest_phone,
-    caravanName,
     campingName,
     spotNumber: b.spot_number,
     checkIn: b.check_in,
@@ -129,15 +114,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // If no invoice yet, create one. If one exists, leave it — we don't recreate to avoid duplicate Holded entries.
     if (!holdedInvoiceId) {
-      const [caravanName, campingName] = await Promise.all([
-        resolveCaravanName(b.caravan_id),
-        resolveCampingName(b.camping_id),
-      ]);
+      const campingName = await resolveCampingName(b.camping_id);
       const checkInLabel = new Date(b.check_in).toLocaleDateString('nl-NL');
       const checkOutLabel = new Date(b.check_out).toLocaleDateString('nl-NL');
       const notes = [
         `Boeking ${b.reference}`,
-        `Caravan: ${caravanName}`,
         `Camping: ${campingName}${b.spot_number ? ` (plek ${b.spot_number})` : ''}`,
         `Verblijf: ${checkInLabel} t/m ${checkOutLabel} (${b.nights} nachten)`,
         `Gasten: ${b.adults} volw.${b.children > 0 ? ` + ${b.children} kind.` : ''}`,
@@ -146,7 +127,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const inv = await createHoldedInvoice({
         contactId,
         reference: `Aanbetaling boeking ${b.reference}`,
-        items: [{ name: `Aanbetaling 25% — boeking ${b.reference} (${caravanName})`, units: 1, subtotal: parseFloat(payment.amount), tax: 0 }],
+        items: [{ name: `Aanbetaling 25% — boeking ${b.reference}`, units: 1, subtotal: parseFloat(payment.amount), tax: 0 }],
         notes,
       });
       holdedInvoiceId = inv.invoiceId;
