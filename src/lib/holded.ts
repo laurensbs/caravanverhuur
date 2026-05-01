@@ -1,9 +1,14 @@
-// ===== HOLDED INVOICING CLIENT =====
-// Thin fetch-based wrapper around the Holded REST API.
-// Used to auto-create + send a deposit invoice to the customer when a booking is made.
-// API key wordt gelezen uit HOLDED_API_KEY env var.
+// ===== HOLDED PROFORMA CLIENT =====
+// IMPORTANT: we create PROFORMA documents (not invoices) in Holded. Final invoices are
+// only ever created MANUALLY by the team after manual review. Even when a payment is
+// received, we DO NOT promote a proforma to a real invoice via the API — `markHoldedProformaPaid`
+// just records the payment against the proforma so we can see in Holded that it's been paid.
+//
+// The `Invoice` naming in some exported types/functions is preserved for backwards
+// compatibility with call sites; they all operate on /documents/proform now.
 
 const HOLDED_API_BASE = 'https://api.holded.com/api/invoicing/v1';
+const DOC_TYPE = 'proform'; // NEVER change to 'invoice' — see file-level note
 
 function getKey(): string {
   const key = process.env.HOLDED_API_KEY;
@@ -57,7 +62,7 @@ function buildBillAddress(addr?: HoldedAddress) {
 
 // Find existing contact by email, or create a new one. Returns Holded contact id.
 // If address is provided and the contact already exists without an address, the existing
-// contact is updated with the address (so the invoice PDF will show it).
+// contact is updated with the address (so the proforma PDF will show it).
 export async function findOrCreateHoldedContact(input: HoldedContactInput): Promise<string> {
   // Search by email
   try {
@@ -123,7 +128,7 @@ export interface HoldedInvoiceItem {
 
 export interface CreateHoldedInvoiceInput {
   contactId: string;
-  reference: string; // booking reference, used as invoice notes/desc
+  reference: string; // booking reference, used as document notes/desc
   items: HoldedInvoiceItem[];
   notes?: string;
   // Optional: due date as unix timestamp (seconds)
@@ -131,21 +136,22 @@ export interface CreateHoldedInvoiceInput {
 }
 
 export interface HoldedInvoiceResult {
-  invoiceId: string;
-  // Holded "Online invoice" public URL with embedded Stripe payment button (when enabled in Holded settings)
+  invoiceId: string; // proforma id (kept name for backwards compat with call sites)
   publicUrl?: string;
-  number?: string;
+  number?: string; // proforma number, e.g. PRO260740
 }
 
+// Create a Holded PROFORMA (not an invoice). The proforma is approved on creation so it
+// gets a docNumber but is still NOT a final invoice for accounting purposes.
 export async function createHoldedInvoice(input: CreateHoldedInvoiceInput): Promise<HoldedInvoiceResult> {
   const nowSec = Math.floor(Date.now() / 1000);
   const body: Record<string, unknown> = {
     contactId: input.contactId,
     desc: input.reference,
     notes: input.notes || '',
-    date: nowSec, // Holded requires invoice date as unix timestamp (seconds)
-    dueDate: input.dueDate || nowSec + 14 * 24 * 60 * 60, // default: due in 14 days
-    approveDoc: 1, // approve immediately — without this the invoice stays as draft (not visible in main list, no docNumber)
+    date: nowSec,
+    dueDate: input.dueDate || nowSec + 14 * 24 * 60 * 60,
+    approveDoc: 1,
     items: input.items.map((it) => ({
       name: it.name,
       units: it.units,
@@ -154,12 +160,12 @@ export async function createHoldedInvoice(input: CreateHoldedInvoiceInput): Prom
     })),
   };
 
-  const created = await holdedFetch('/documents/invoice', {
+  const created = await holdedFetch(`/documents/${DOC_TYPE}`, {
     method: 'POST',
     body: JSON.stringify(body),
   }) as { id?: string; invoiceNum?: string; docNumber?: string; publicUrl?: string };
 
-  if (!created?.id) throw new Error('Holded invoice creation returned no id');
+  if (!created?.id) throw new Error('Holded proforma creation returned no id');
 
   return {
     invoiceId: created.id,
@@ -168,14 +174,14 @@ export async function createHoldedInvoice(input: CreateHoldedInvoiceInput): Prom
   };
 }
 
-// Tell Holded to send the invoice email to the customer. Holded includes the Stripe payment link
-// (provided the Stripe integration is configured in the Holded account).
+// Tell Holded to email the proforma to the customer. Holded includes the Stripe payment
+// link if Stripe integration is configured. Used for occasional manual resends.
 export async function sendHoldedInvoice(invoiceId: string, email: string, subject?: string, message?: string): Promise<void> {
-  await holdedFetch(`/documents/invoice/${invoiceId}/send`, {
+  await holdedFetch(`/documents/${DOC_TYPE}/${invoiceId}/send`, {
     method: 'POST',
     body: JSON.stringify({
       emails: email,
-      subject: subject || 'Factuur',
+      subject: subject || 'Pro forma',
       message: message || '',
     }),
   });
@@ -189,20 +195,20 @@ export interface HoldedInvoiceStatus {
   total?: number;
 }
 
-// Markeer een Holded-factuur als (volledig) betaald. Verifieerd via API: POST naar /pay
-// met date+amount voegt een payment-record toe en zet pending op 0.
+// Record a payment against the proforma so the team can see it as paid in Holded.
+// IMPORTANT: this does NOT convert the proforma to a final invoice — that step is
+// always manual.
 export async function markHoldedInvoicePaid(invoiceId: string, amount?: number): Promise<void> {
-  // Als amount niet meegegeven is, lees de factuur en gebruik het totaal.
   let amountToPay = amount;
   if (amountToPay === undefined) {
-    const inv = await holdedFetch(`/documents/invoice/${invoiceId}`) as { total?: number; paymentsPending?: number };
+    const inv = await holdedFetch(`/documents/${DOC_TYPE}/${invoiceId}`) as { total?: number; paymentsPending?: number };
     amountToPay = typeof inv.paymentsPending === 'number' && inv.paymentsPending > 0
       ? inv.paymentsPending
       : (inv.total || 0);
   }
-  if (!amountToPay || amountToPay <= 0) return; // niets te betalen
+  if (!amountToPay || amountToPay <= 0) return;
 
-  await holdedFetch(`/documents/invoice/${invoiceId}/pay`, {
+  await holdedFetch(`/documents/${DOC_TYPE}/${invoiceId}/pay`, {
     method: 'POST',
     body: JSON.stringify({
       date: Math.floor(Date.now() / 1000),
@@ -212,21 +218,19 @@ export async function markHoldedInvoicePaid(invoiceId: string, amount?: number):
 }
 
 export async function getHoldedInvoice(invoiceId: string): Promise<HoldedInvoiceStatus> {
-  const inv = await holdedFetch(`/documents/invoice/${invoiceId}`) as Record<string, unknown>;
+  const inv = await holdedFetch(`/documents/${DOC_TYPE}/${invoiceId}`) as Record<string, unknown>;
   return {
     id: String(inv.id || invoiceId),
     status: inv.status as string | number | undefined,
-    // Holded marks fully-paid invoices with status numeric code or "paid" pending == 0
     paid: (typeof inv.pending === 'number' && inv.pending === 0) || inv.status === 'paid' || inv.status === 1,
     pending: typeof inv.pending === 'number' ? inv.pending : undefined,
     total: typeof inv.total === 'number' ? inv.total : undefined,
   };
 }
 
-// Fetch the invoice PDF as a Buffer. Holded returns either { data: <base64> } or a binary stream
-// depending on the endpoint variant; we handle both.
+// Fetch the proforma PDF as a Buffer.
 export async function getHoldedInvoicePdf(invoiceId: string): Promise<Buffer> {
-  const url = `${HOLDED_API_BASE}/documents/invoice/${invoiceId}/pdf`;
+  const url = `${HOLDED_API_BASE}/documents/${DOC_TYPE}/${invoiceId}/pdf`;
   const res = await fetch(url, {
     headers: { 'Accept': 'application/json', 'key': getKey() },
   });
@@ -244,15 +248,13 @@ export async function getHoldedInvoicePdf(invoiceId: string): Promise<Buffer> {
   return Buffer.from(b64, 'base64');
 }
 
-// Publieke betaal-/share-pagina van een Holded factuur. Deterministisch: Holded serveert
-// op /documents/invoice/{id}/pay de online-invoice-widget (met Stripe-betaalknop indien
-// geconfigureerd). Empirisch geverifieerd — de GET /documents/invoice/{id} response
-// bevat geen URL-velden, dus we construeren 'm zelf.
+// Build the public-facing pay/share URL for a proforma. Used to construct deep links into
+// the Holded online-document widget for the team's reference.
 export function buildHoldedInvoicePublicUrl(invoiceId: string): string {
-  return `${HOLDED_API_BASE}/documents/invoice/${invoiceId}/pay`;
+  return `${HOLDED_API_BASE}/documents/${DOC_TYPE}/${invoiceId}/pay`;
 }
 
-// Backwards-compat alias — async voor bestaande call sites die await gebruiken.
+// Backwards-compat alias — async for call sites that use await.
 export async function getHoldedInvoicePublicUrl(invoiceId: string): Promise<string | undefined> {
   return buildHoldedInvoicePublicUrl(invoiceId);
 }

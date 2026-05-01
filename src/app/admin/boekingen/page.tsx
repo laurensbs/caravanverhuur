@@ -143,7 +143,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   useEffect(() => { fetchEmails(); }, [fetchEmails]);
 
   const handleSendHoldedInvoice = useCallback(async (paymentId: string) => {
-    if (!confirm('Holded factuur aanmaken en mailen naar de klant?')) return;
+    if (!confirm('Holded pro forma aanmaken en mailen naar de klant?')) return;
     setSendingHolded(true);
     try {
       const res = await fetch('/api/admin/holded', {
@@ -153,7 +153,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Onbekende fout');
-      toast(data.mailSent ? 'Holded factuur aangemaakt + verstuurd' : 'Holded factuur aangemaakt (mail-verzending mislukt — check Holded)', data.mailSent ? 'success' : 'warning');
+      toast(data.mailSent ? 'Holded pro forma aangemaakt + verstuurd' : 'Holded pro forma aangemaakt (mail-verzending mislukt — check Holded)', data.mailSent ? 'success' : 'warning');
       // Refresh payments + emails
       const pRes = await fetch(`/api/payments?bookingId=${booking.id}`);
       const pData = await pRes.json();
@@ -505,7 +505,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           const holdedSent = depositPayment?.holded_status === 'IN_HOLDED' && !!depositPayment.holded_invoice_id;
           const invoiceId = depositPayment?.holded_invoice_id;
           const holdedHref = invoiceId
-            ? (invoiceId.startsWith('http') ? invoiceId : `https://app.holded.com/invoicing/documents/invoices/${invoiceId}`)
+            ? (invoiceId.startsWith('http') ? invoiceId : `https://app.holded.com/invoicing/documents/proforms/${invoiceId}`)
             : null;
           const paymentLinkMail = emails.find(e =>
             /betaal|payment|factuur|invoice|aanbetaling|deposit/i.test(e.subject),
@@ -513,7 +513,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           return (
             <div className="mt-3 border border-blue-200 rounded-xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2 border-b border-blue-200">
-                <h5 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> Aanbetaling — Holded factuur</h5>
+                <h5 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5"><Info className="w-3.5 h-3.5" /> Aanbetaling — Holded pro forma</h5>
               </div>
               <div className="p-3 space-y-2">
                 <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-blue-100">
@@ -525,7 +525,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 bg-amber-50 text-amber-800 rounded-lg px-3 py-2">
                       <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
-                      <p className="text-xs font-medium flex-1">Holded factuur verstuurd — wachten op betaling</p>
+                      <p className="text-xs font-medium flex-1">Holded pro forma verstuurd — wachten op betaling</p>
                     </div>
                     {paymentLinkMail && (
                       <div className="flex items-center gap-2 bg-green-50 text-green-800 rounded-lg px-3 py-1.5 text-[11px]">
@@ -541,7 +541,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                       )}
                       {invoiceId && !invoiceId.startsWith('http') && (
                         <a href={`/api/admin/holded/pdf?invoiceId=${invoiceId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-blue-200 rounded-lg text-xs font-medium text-blue-700 hover:bg-blue-50">
-                          <FileText className="w-3.5 h-3.5" /> Factuur PDF
+                          <FileText className="w-3.5 h-3.5" /> Pro forma PDF
                         </a>
                       )}
                       <button onClick={() => depositPayment && handleSendHoldedInvoice(depositPayment.id)} disabled={sendingHolded} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50">
@@ -561,7 +561,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                     className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 cursor-pointer disabled:opacity-50"
                   >
                     {sendingHolded ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                    Holded factuur aanmaken & mailen
+                    Holded pro forma aanmaken & mailen
                   </button>
                 )}
 
@@ -595,10 +595,10 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
               const holdedBadge = p.status === 'BETAALD'
                 ? { label: '🟢 Aanbetaling betaald', cls: 'bg-green-50 text-green-700 border-green-200' }
                 : p.holded_status === 'IN_HOLDED'
-                  ? { label: '🟡 Factuur via Holded verzonden', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' }
+                  ? { label: '🟡 Pro forma via Holded verzonden', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' }
                   : p.holded_status === 'HANDMATIG'
                     ? { label: '🔵 Handmatig in Holded', cls: 'bg-blue-50 text-blue-700 border-blue-200' }
-                    : { label: '⚪ Geen Holded factuur', cls: 'bg-gray-50 text-gray-600 border-gray-200' };
+                    : { label: '⚪ Geen Holded pro forma', cls: 'bg-gray-50 text-gray-600 border-gray-200' };
               return (
                 <div key={p.id} className="bg-white rounded-lg p-2.5 text-sm">
                   <div className="flex items-center justify-between">
@@ -616,7 +616,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${holdedBadge.cls}`}>{holdedBadge.label}</span>
                       {p.holded_invoice_id && (
                         <a
-                          href={p.holded_invoice_id.startsWith('http') ? p.holded_invoice_id : `https://app.holded.com/invoicing/documents/invoices/${p.holded_invoice_id}`}
+                          href={p.holded_invoice_id.startsWith('http') ? p.holded_invoice_id : `https://app.holded.com/invoicing/documents/proforms/${p.holded_invoice_id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
@@ -641,7 +641,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                           className="inline-flex items-center gap-1 text-[10px] font-medium text-white bg-primary-dark hover:bg-[#1E40AF] px-2 py-0.5 rounded-full disabled:opacity-50 cursor-pointer"
                         >
                           {sendingHolded ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                          {p.holded_status === 'IN_HOLDED' ? 'Opnieuw versturen' : 'Holded factuur versturen'}
+                          {p.holded_status === 'IN_HOLDED' ? 'Opnieuw versturen' : 'Holded pro forma versturen'}
                         </button>
                       )}
                     </div>
