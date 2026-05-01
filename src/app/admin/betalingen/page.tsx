@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -11,31 +11,39 @@ import {
   Loader2,
   Download,
   RefreshCw,
-  FileText,
-  ChevronDown,
-  Link2,
   Send,
   ExternalLink,
-  Copy,
   Calendar,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
 import {
-  getPaymentStatusColor,
   formatDateTime,
   formatCurrency,
   type Payment,
   type PaymentStatus,
   type PaymentType,
-  type HoldedStatus,
 } from '@/data/admin';
-import { caravans as staticCaravans } from '@/data/caravans';
-import type { Caravan } from '@/data/caravans';
 
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUGBETAALD', 'MISLUKT'];
 const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'HUUR', 'BORG', 'BORG_RETOUR'];
+
+// Big visual badge — same color set as /admin/boekingen list view.
+function paymentStatusBadge(status: PaymentStatus): { label: string; cls: string } {
+  switch (status) {
+    case 'BETAALD':
+      return { label: '🟢 Betaald', cls: 'bg-green-50 text-green-700 border-green-200' };
+    case 'OPENSTAAND':
+      return { label: '🟡 Wacht op betaling', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
+    case 'MISLUKT':
+      return { label: '🔴 Mislukt', cls: 'bg-red-50 text-red-700 border-red-200' };
+    case 'TERUGBETAALD':
+      return { label: '🔵 Terugbetaald', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
+    default:
+      return { label: status, cls: 'bg-gray-50 text-gray-600 border-gray-200' };
+  }
+}
 
 export default function BetalingenPage() {
   const { t, ts } = useAdmin();
@@ -47,52 +55,22 @@ export default function BetalingenPage() {
   const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
-  const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);
-  const [holdedUpdating, setHoldedUpdating] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [linkInput, setLinkInput] = useState<Record<string, string>>({});
-  const [savingLink, setSavingLink] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
-  const [holdedUrlInput, setHoldedUrlInput] = useState<Record<string, string>>({});
-  const [savingHoldedUrl, setSavingHoldedUrl] = useState<string | null>(null);
 
   const fetchPayments = useCallback(() => {
     setLoading(true);
-    Promise.all([
-      fetch('/api/admin/caravans').then(res => res.json()).then(data => setCustomCaravans(data.caravans || [])),
-      fetch('/api/payments').then(res => res.json()).then(data => setPayments(data.payments || [])),
-    ]).catch((e) => console.error('Fetch error:', e))
+    fetch('/api/payments')
+      .then(res => res.json())
+      .then(data => setPayments(data.payments || []))
+      .catch((e) => console.error('Fetch error:', e))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
-
-  const handleMarkPaid = async (paymentId: string) => {
-    setUpdatingId(paymentId);
-    try {
-      await fetch('/api/payments', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: paymentId, status: 'BETAALD', paidAt: new Date().toISOString() }),
-      });
-      setPayments(prev =>
-        prev.map(p =>
-          p.id === paymentId
-            ? { ...p, status: 'BETAALD' as PaymentStatus, paid_at: new Date().toISOString() }
-            : p
-        )
-      );
-      toast(t('common.saved'), 'success');
-    } catch {
-      toast(t('common.actionFailed'), 'error');
-    }
-    setUpdatingId(null);
-  };
 
   const handleRefund = async (paymentId: string) => {
     setRefundingId(paymentId);
@@ -121,50 +99,6 @@ export default function BetalingenPage() {
     setRefundConfirm(null);
   };
 
-  const handleHoldedToggle = async (paymentId: string, current: HoldedStatus | undefined) => {
-    const next: HoldedStatus = (!current || current === 'NIET_AANGEMAAKT') ? 'HANDMATIG' : 'NIET_AANGEMAAKT';
-    setHoldedUpdating(paymentId);
-    try {
-      const res = await fetch('/api/admin/holded', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId, holdedStatus: next }),
-      });
-      if (res.ok) {
-        setPayments(prev =>
-          prev.map(p =>
-            p.id === paymentId
-              ? { ...p, holded_status: next, holded_marked_at: next === 'HANDMATIG' ? new Date().toISOString() : undefined }
-              : p
-          )
-        );
-        toast(next === 'HANDMATIG' ? t('payments.holdedMarked') : t('payments.holdedUnmarked'), 'success');
-      } else {
-        toast(t('common.actionFailed'), 'error');
-      }
-    } catch {
-      toast(t('common.actionFailed'), 'error');
-    }
-    setHoldedUpdating(null);
-  };
-
-  const handleSavePaymentLink = async (paymentId: string) => {
-    const link = linkInput[paymentId] ?? '';
-    setSavingLink(paymentId);
-    try {
-      const res = await fetch('/api/payments', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: paymentId, action: 'update-link', paymentLink: link }),
-      });
-      if (res.ok) {
-        setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, payment_link: link } : p));
-        toast(t('common.saved'), 'success');
-      } else { toast(t('common.actionFailed'), 'error'); }
-    } catch { toast(t('common.actionFailed'), 'error'); }
-    setSavingLink(null);
-  };
-
   const handleSendReminder = async (paymentId: string) => {
     setSendingReminder(paymentId);
     try {
@@ -182,11 +116,6 @@ export default function BetalingenPage() {
     setSendingReminder(null);
   };
 
-  const getCaravanName = (caravanId?: string) => {
-    if (!caravanId) return '';
-    return staticCaravans.find(c => c.id === caravanId)?.name || customCaravans.find(c => c.id === caravanId)?.name || caravanId;
-  };
-
   const filtered = useMemo(() => payments
     .filter((p) => {
       if (statusFilter !== 'ALLE' && p.status !== statusFilter) return false;
@@ -198,14 +127,13 @@ export default function BetalingenPage() {
         return (
           (p.guest_name && p.guest_name.toLowerCase().includes(q)) ||
           (p.booking_ref && p.booking_ref.toLowerCase().includes(q)) ||
-          (p.stripe_id && p.stripe_id.toLowerCase().includes(q)) ||
-          getCaravanName(p.caravan_id).toLowerCase().includes(q)
+          (p.stripe_id && p.stripe_id.toLowerCase().includes(q))
         );
       }
       return true;
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-  [payments, statusFilter, typeFilter, dateFrom, dateTo, search, customCaravans]);
+  [payments, statusFilter, typeFilter, dateFrom, dateTo, search]);
 
   const ITEMS_PER_PAGE = 25;
   const [currentPage, setCurrentPage] = useState(1);
@@ -384,220 +312,93 @@ export default function BetalingenPage() {
       </div>
 
       <p className="text-xs text-muted">
-        {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-2">{t('payments.status')}</div> <div className="col-span-1">{t('payments.method')}</div> <div className="col-span-1">{t('payments.date')}</div> <div className="col-span-1"></div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="border-b border-gray-50 last:border-0">
-              <div
-                className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors cursor-pointer"
-                onClick={() => setExpandedId(expandedId === payment.id ? null : payment.id)}
-              >
+        {t('payments.paymentsFound', { count: String(filtered.length), s: filtered.length !== 1 ? 'en' : '' })} </p> {/* Payments list */} <div className="bg-white rounded-2xl overflow-hidden"> <div className="hidden md:grid grid-cols-12 gap-4 px-3 sm:px-5 py-2 sm:py-3 bg-surface text-xs font-semibold text-muted uppercase tracking-wider"> <div className="col-span-3">{t('payments.guestBooking')}</div> <div className="col-span-2">{t('payments.type')}</div> <div className="col-span-2">{t('payments.amount')}</div> <div className="col-span-3">{t('payments.status')}</div> <div className="col-span-1">{t('payments.date')}</div> <div className="col-span-1"></div> </div> <div className=""> {paginated.map((payment) => ( <div key={payment.id} className="border-b border-gray-50 last:border-0">
+              <div className="px-3 py-3 sm:px-5 sm:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center space-y-1.5 md:space-y-0 hover:bg-surface transition-colors">
                 <div className="col-span-3">
                   <p className="text-sm font-medium text-foreground">{payment.guest_name}</p>
                   <p className="text-xs text-muted">{payment.booking_ref}</p>
                 </div>
                 <div className="col-span-2">
                   <span className="text-sm text-foreground">{ts(payment.type)}</span>
-              </div>
-
-              <div className="col-span-2">
-                <span className="text-sm font-semibold text-foreground">
-                  {formatCurrency(Number(payment.amount))}
-                </span>
-              </div>
-
-              <div className="col-span-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                <span
-                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(payment.status)}`}
-                >
-                  {ts(payment.status)}
-                </span>
-                {payment.status === 'OPENSTAAND' && (
-                  <button
-                    onClick={() => handleMarkPaid(payment.id)}
-                    disabled={updatingId === payment.id}
-                    className="text-xs text-white bg-green-600 hover:bg-green-700 px-2.5 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
-                  >
-                    {updatingId === payment.id ? '...' : t('payments.markPaid')}
-                  </button>
-                )}
-                {payment.status === 'BETAALD' && (
-                  refundConfirm === payment.id ? (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleRefund(payment.id)}
-                        disabled={refundingId === payment.id}
-                        className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        {refundingId === payment.id ? '...' : 'Bevestig'}
-                      </button>
-                      <button
-                        onClick={() => setRefundConfirm(null)}
-                        className="text-xs text-muted px-1 py-0.5"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setRefundConfirm(payment.id)}
-                      className="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
-                    >
-                      Refund
-                    </button>
-                  )
-                )}
-              </div>
-
-              <div className="col-span-1">
-                <span className="text-xs text-muted">
-                  {payment.method === 'ideal' || payment.method === 'stripe' ? 'Holded' : payment.method === 'bank' ? t('common.bank') : t('common.cash')}
-                </span>
-              </div>
-
-              <div className="col-span-1">
-                <p className="text-xs text-muted">{formatDateTime(payment.created_at)}</p>
-                {payment.paid_at && (
-                  <p className="text-xs text-green-600">✓ {formatDateTime(payment.paid_at)}</p>
-                )}
-              </div>
-
-              <div className="col-span-1 flex items-center justify-end">
-                <ChevronDown size={16} className={`text-muted transition-transform ${expandedId === payment.id ? 'rotate-180' : ''}`} />
-              </div>
-              </div>
-
-              {/* Expanded detail panel */}
-              {expandedId === payment.id && (
-                <div className="px-3 sm:px-5 pb-4 pt-1 bg-surface/50 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Payment link */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
-                        <Link2 size={10} /> {t('payments.paymentLink')}
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="text"
-                          value={linkInput[payment.id] ?? payment.payment_link ?? ''}
-                          onChange={(e) => setLinkInput(prev => ({ ...prev, [payment.id]: e.target.value }))}
-                          placeholder="https://..."
-                          className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 truncate"
-                        />
-                        <button
-                          onClick={() => handleSavePaymentLink(payment.id)}
-                          disabled={savingLink === payment.id}
-                          className="px-2 py-1.5 bg-primary text-white rounded-lg text-[10px] font-medium hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          {savingLink === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('common.save')}
-                        </button>
-                        {payment.payment_link && (
-                          <>
-                            <button onClick={() => { navigator.clipboard.writeText(payment.payment_link!); toast(t('payments.linkCopied'), 'success'); }}
-                              className="p-1.5 rounded-lg hover:bg-white text-muted" title="Kopiëren"><Copy size={12} /></button>
-                            <a href={payment.payment_link} target="_blank" rel="noopener noreferrer"
-                              className="p-1.5 rounded-lg hover:bg-white text-muted" title="Openen"><ExternalLink size={12} /></a>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Reminder */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
-                        <Send size={10} /> {t('payments.reminder')}
-                      </label>
-                      {payment.reminder_sent_at ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-green-700 bg-green-50 px-2.5 py-1.5 rounded-lg">
-                            ✓ {t('payments.reminderSentOn')} {formatDateTime(payment.reminder_sent_at)}
-                          </span>
-                          <button
-                            onClick={() => handleSendReminder(payment.id)}
-                            disabled={sendingReminder === payment.id}
-                            className="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
-                          >
-                            {sendingReminder === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('payments.sendAgain')}
-                          </button>
-                        </div>
-                      ) : payment.status === 'OPENSTAAND' ? (
-                        <button
-                          onClick={() => handleSendReminder(payment.id)}
-                          disabled={sendingReminder === payment.id}
-                          className="flex items-center gap-1.5 text-xs text-white bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium"
-                        >
-                          {sendingReminder === payment.id ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                          {t('payments.sendReminder')}
-                        </button>
-                      ) : (
-                        <span className="text-xs text-muted">—</span>
-                      )}
-                    </div>
-
-                    {/* Holded invoice */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1">
-                        <FileText size={10} /> Holded {t('payments.holdedInvoice')}
-                      </label>
-                      {payment.status === 'BETAALD' ? (
-                        <div className="space-y-2">
-                          <button
-                            onClick={() => handleHoldedToggle(payment.id, payment.holded_status as HoldedStatus | undefined)}
-                            disabled={holdedUpdating === payment.id}
-                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50 font-medium ${
-                              payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                                ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                            }`}
-                          >
-                            <FileText size={12} />
-                            {holdedUpdating === payment.id
-                              ? '...'
-                              : payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED'
-                                ? `✓ ${t('payments.invoiceCreated')}${payment.holded_marked_at ? ` — ${formatDateTime(payment.holded_marked_at)}` : ''}`
-                                : t('payments.markInvoiceCreated')}
-                          </button>
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="url"
-                              value={holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? ''}
-                              onChange={(e) => setHoldedUrlInput(prev => ({ ...prev, [payment.id]: e.target.value }))}
-                              placeholder="https://app.holded.com/..."
-                              className="flex-1 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 truncate"
-                            />
-                            <button
-                              onClick={async () => {
-                                const url = holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? '';
-                                setSavingHoldedUrl(payment.id);
-                                try {
-                                  const status = (payment.holded_status === 'HANDMATIG' || payment.holded_status === 'IN_HOLDED') ? payment.holded_status : 'HANDMATIG';
-                                  const res = await fetch('/api/admin/holded', {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ paymentId: payment.id, holdedStatus: status, holdedInvoiceId: url }),
-                                  });
-                                  if (res.ok) {
-                                    setPayments(prev => prev.map(p => p.id === payment.id ? { ...p, holded_invoice_id: url, holded_status: status as HoldedStatus, holded_marked_at: new Date().toISOString() } : p));
-                                    toast(t('common.saved'), 'success');
-                                  } else { toast(t('common.actionFailed'), 'error'); }
-                                } catch { toast(t('common.actionFailed'), 'error'); }
-                                setSavingHoldedUrl(null);
-                              }}
-                              disabled={savingHoldedUrl === payment.id}
-                              className="px-2 py-1.5 bg-primary text-white rounded-lg text-[10px] font-medium hover:bg-primary-dark transition-colors cursor-pointer disabled:opacity-50"
-                            >
-                              {savingHoldedUrl === payment.id ? <Loader2 size={10} className="animate-spin" /> : t('common.save')}
-                            </button>
-                            {(holdedUrlInput[payment.id] ?? payment.holded_invoice_id) && (
-                              <a href={holdedUrlInput[payment.id] ?? payment.holded_invoice_id ?? ''} target="_blank" rel="noopener noreferrer"
-                                className="p-1.5 rounded-lg hover:bg-white text-muted" title="Openen in Holded"><ExternalLink size={12} /></a>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted">—</span>
-                      )}
-                    </div>
-                  </div>
                 </div>
-              )}
+
+                <div className="col-span-2">
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatCurrency(Number(payment.amount))}
+                  </span>
+                </div>
+
+                <div className="col-span-3 flex items-center gap-2 flex-wrap">
+                  {(() => {
+                    const badge = paymentStatusBadge(payment.status);
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
+                  {payment.holded_invoice_id && (
+                    <a
+                      href={payment.holded_invoice_id.startsWith('http')
+                        ? payment.holded_invoice_id
+                        : `https://app.holded.com/invoicing/documents/proforms/${payment.holded_invoice_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                      title="Open in Holded"
+                    >
+                      <ExternalLink size={10} /> Holded
+                    </a>
+                  )}
+                </div>
+
+                <div className="col-span-1">
+                  <p className="text-xs text-muted">{formatDateTime(payment.created_at)}</p>
+                  {payment.paid_at && (
+                    <p className="text-xs text-green-600">✓ {formatDateTime(payment.paid_at)}</p>
+                  )}
+                </div>
+
+                <div className="col-span-1 flex items-center justify-end gap-1.5">
+                  {payment.status === 'OPENSTAAND' && (
+                    <button
+                      onClick={() => handleSendReminder(payment.id)}
+                      disabled={sendingReminder === payment.id}
+                      className="inline-flex items-center gap-1 text-[10px] text-white bg-amber-600 hover:bg-amber-700 px-2 py-1 rounded-lg disabled:opacity-50 cursor-pointer"
+                      title={t('payments.sendReminder')}
+                    >
+                      {sendingReminder === payment.id ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                    </button>
+                  )}
+                  {payment.status === 'BETAALD' && (
+                    refundConfirm === payment.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleRefund(payment.id)}
+                          disabled={refundingId === payment.id}
+                          className="text-[10px] text-red-700 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer disabled:opacity-50"
+                        >
+                          {refundingId === payment.id ? '...' : 'OK'}
+                        </button>
+                        <button
+                          onClick={() => setRefundConfirm(null)}
+                          className="text-[10px] text-muted px-1"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setRefundConfirm(payment.id)}
+                        className="text-[10px] text-red-600 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer"
+                      >
+                        Refund
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
             </div>
           ))}
         </div>
