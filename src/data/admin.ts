@@ -55,6 +55,13 @@ export interface Booking {
   borg_amount: number;
   spot_number?: string;
   admin_notes?: string;
+  // Customer billing address (added in 04-2026 — optional for legacy bookings)
+  guest_street?: string;
+  guest_postal_code?: string;
+  guest_city?: string;
+  guest_country?: string;
+  // Deposit-payment status — joined in getAllBookings for the admin list view
+  deposit_status?: PaymentStatus;
   // Payments are fetched separately
   payments?: Payment[];
 }

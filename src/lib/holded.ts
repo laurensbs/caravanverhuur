@@ -31,37 +31,87 @@ async function holdedFetch(path: string, init: RequestInit = {}): Promise<unknow
   return data;
 }
 
+export interface HoldedAddress {
+  street: string;
+  postalCode: string;
+  city: string;
+  country?: string; // ISO country code, e.g. "NL"
+}
+
 export interface HoldedContactInput {
   name: string;
   email: string;
   phone?: string;
+  address?: HoldedAddress;
+}
+
+function buildBillAddress(addr?: HoldedAddress) {
+  if (!addr) return undefined;
+  return {
+    address: addr.street,
+    postalCode: addr.postalCode,
+    city: addr.city,
+    country: addr.country || 'NL',
+  };
 }
 
 // Find existing contact by email, or create a new one. Returns Holded contact id.
+// If address is provided and the contact already exists without an address, the existing
+// contact is updated with the address (so the invoice PDF will show it).
 export async function findOrCreateHoldedContact(input: HoldedContactInput): Promise<string> {
   // Search by email
   try {
-    const search = await holdedFetch(`/contacts?email=${encodeURIComponent(input.email)}`) as Array<{ id: string; email?: string }>;
+    const search = await holdedFetch(`/contacts?email=${encodeURIComponent(input.email)}`) as Array<{ id: string; email?: string; billAddress?: { address?: string } }>;
     if (Array.isArray(search) && search.length > 0 && search[0].id) {
-      return search[0].id;
+      const existing = search[0];
+      // If we have an address and the existing contact doesn't (or its billAddress.address is empty), update it
+      if (input.address && !existing.billAddress?.address) {
+        try {
+          await holdedFetch(`/contacts/${existing.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              billAddress: buildBillAddress(input.address),
+              phone: input.phone || '',
+            }),
+          });
+        } catch (err) {
+          console.warn('Holded contact address update failed (continuing):', err);
+        }
+      }
+      return existing.id;
     }
   } catch (err) {
     console.warn('Holded contact search failed, will try to create:', err);
   }
 
   // Create new
+  const body: Record<string, unknown> = {
+    name: input.name,
+    email: input.email,
+    phone: input.phone || '',
+    type: 'client',
+    isperson: 1,
+  };
+  const billAddress = buildBillAddress(input.address);
+  if (billAddress) body.billAddress = billAddress;
+
   const created = await holdedFetch('/contacts', {
     method: 'POST',
-    body: JSON.stringify({
-      name: input.name,
-      email: input.email,
-      phone: input.phone || '',
-      type: 'client',
-      isperson: 1,
-    }),
+    body: JSON.stringify(body),
   }) as { id?: string };
   if (!created?.id) throw new Error('Holded contact creation returned no id');
   return created.id;
+}
+
+// Update an existing Holded contact's billing address + phone.
+export async function updateHoldedContactAddress(contactId: string, address: HoldedAddress, phone?: string): Promise<void> {
+  await holdedFetch(`/contacts/${contactId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      billAddress: buildBillAddress(address),
+      ...(phone ? { phone } : {}),
+    }),
+  });
 }
 
 export interface HoldedInvoiceItem {

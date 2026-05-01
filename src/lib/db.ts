@@ -564,6 +564,14 @@ async function _setupDatabaseInner() {
     await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP`;
   } catch { /* columns already exist */ }
 
+  // Migration: add address columns to bookings (for Holded invoice address)
+  try {
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_street TEXT`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_postal_code TEXT`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_city TEXT`;
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS guest_country TEXT`;
+  } catch { /* columns already exist */ }
+
   // Destinations table (admin-managed overrides)
   await sql`
     CREATE TABLE IF NOT EXISTS destinations (
@@ -705,6 +713,10 @@ export async function createBookingAtomic(data: {
   remainingAmount: number;
   borgAmount: number;
   spotNumber?: string;
+  guestStreet?: string;
+  guestPostalCode?: string;
+  guestCity?: string;
+  guestCountry?: string;
 }): Promise<{ id: string; reference: string; paymentId: string } | null> {
   const MAX_CARAVANS = 5;
   const id = generateId('B');
@@ -713,8 +725,8 @@ export async function createBookingAtomic(data: {
 
   // Single atomic INSERT ... WHERE availability check passes
   const result = await sql`
-    INSERT INTO bookings (id, reference, status, guest_name, guest_email, guest_phone, adults, children, special_requests, caravan_id, camping_id, check_in, check_out, nights, total_price, deposit_amount, remaining_amount, borg_amount, spot_number)
-    SELECT ${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null}
+    INSERT INTO bookings (id, reference, status, guest_name, guest_email, guest_phone, adults, children, special_requests, caravan_id, camping_id, check_in, check_out, nights, total_price, deposit_amount, remaining_amount, borg_amount, spot_number, guest_street, guest_postal_code, guest_city, guest_country)
+    SELECT ${id}, ${reference}, 'NIEUW', ${data.guestName}, ${data.guestEmail}, ${data.guestPhone}, ${data.adults}, ${data.children}, ${data.specialRequests || null}, ${data.caravanId}, ${data.campingId}, ${data.checkIn}, ${data.checkOut}, ${data.nights}, ${data.totalPrice}, ${data.depositAmount}, ${data.remainingAmount}, ${data.borgAmount}, ${data.spotNumber || null}, ${data.guestStreet || null}, ${data.guestPostalCode || null}, ${data.guestCity || null}, ${data.guestCountry || null}
     WHERE (
       SELECT COUNT(*)::int FROM bookings
       WHERE status NOT IN ('GEANNULEERD')
@@ -736,9 +748,30 @@ export async function createBookingAtomic(data: {
   return { id, reference, paymentId };
 }
 
+export async function updateBookingAddress(id: string, address: { street: string; postalCode: string; city: string; country: string }) {
+  await sql`
+    UPDATE bookings
+    SET guest_street = ${address.street},
+        guest_postal_code = ${address.postalCode},
+        guest_city = ${address.city},
+        guest_country = ${address.country}
+    WHERE id = ${id}
+  `;
+}
+
+// Get all bookings with the AANBETALING payment's status joined as `deposit_status`.
+// Used by the admin booking list to show a paid/unpaid badge without a second fetch.
 export async function getAllBookings() {
   const result = await sql`
-    SELECT * FROM bookings ORDER BY created_at DESC
+    SELECT b.*, p.status AS deposit_status
+    FROM bookings b
+    LEFT JOIN LATERAL (
+      SELECT status FROM payments
+      WHERE booking_id = b.id AND type = 'AANBETALING'
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) p ON true
+    ORDER BY b.created_at DESC
   `;
   return result.rows;
 }

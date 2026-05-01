@@ -319,6 +319,18 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
               <Phone className="w-3 h-3" />
               <a href={`tel:${booking.guest_phone}`} className="hover:text-primary-dark">{booking.guest_phone}</a>
             </div>
+            {(booking.guest_street || booking.guest_postal_code || booking.guest_city) ? (
+              <div className="flex items-start gap-1.5 text-xs text-muted mt-1">
+                <MapPin className="w-3 h-3 mt-0.5" />
+                <span>
+                  {booking.guest_street}
+                  {booking.guest_postal_code || booking.guest_city ? <><br />{booking.guest_postal_code} {booking.guest_city}</> : null}
+                  {booking.guest_country ? <>, {booking.guest_country}</> : null}
+                </span>
+              </div>
+            ) : (
+              <p className="text-[11px] text-amber-700 mt-1 italic">⚠️ Adres ontbreekt — wordt opgevraagd bij betaling</p>
+            )}
           </div>
           <div>
             <p className="text-xs text-muted">
@@ -1444,10 +1456,25 @@ export default function BookingenPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <div className="text-right hidden md:block">
                     <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(booking.total_price))}</p>
                   </div>
+                  {(() => {
+                    const ds = booking.deposit_status;
+                    const depositBadge = ds === 'BETAALD'
+                      ? { label: '🟢 Betaald', cls: 'bg-green-100 text-green-700' }
+                      : ds === 'MISLUKT'
+                        ? { label: '🔴 Mislukt', cls: 'bg-red-100 text-red-700' }
+                        : ds === 'TERUGBETAALD'
+                          ? { label: '↩︎ Terugbetaald', cls: 'bg-gray-100 text-gray-700' }
+                          : { label: '🟡 Wacht op betaling', cls: 'bg-amber-100 text-amber-800' };
+                    return (
+                      <span className={`px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium whitespace-nowrap ${depositBadge.cls}`} title="Status van de aanbetaling">
+                        {depositBadge.label}
+                      </span>
+                    );
+                  })()}
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(booking.status)}`}
                   >

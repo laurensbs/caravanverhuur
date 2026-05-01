@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, updatePaymentHoldedStatus, getActivePricingRules } from '@/lib/db';
+import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, getActivePricingRules } from '@/lib/db';
 import { sendAdminNewBookingNotification } from '@/lib/email';
-import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
-import { getStripe } from '@/lib/stripe';
-import { updatePaymentStripeId, getPaymentById } from '@/lib/db';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
 import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
+import { signBookingPaymentToken } from '@/lib/payment-link-token';
 
 export async function GET(request: NextRequest) {
   // Only allow admin-authenticated requests to list all bookings
@@ -164,87 +162,13 @@ export async function POST(request: NextRequest) {
     const bookingCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
     const customerLocale = bookingCustomer?.locale || 'nl';
 
-    // Create Holded invoice for the 25% deposit and let Holded email it directly to the customer.
-    // The Holded email includes a Stripe payment button (when Stripe is connected in Holded settings).
-    // Our own confirmation email (sent below) explains that the invoice arrives in a separate email.
-    // Maak een Holded-factuur aan voor administratie (zonder mailen). De webhook markeert
-    // 'm later als betaald zodra Stripe de aanbetaling heeft verwerkt.
-    let holdedInvoiceCreated = false;
-    try {
-      const contactId = await findOrCreateHoldedContact({
-        name: guestName,
-        email: guestEmail,
-        phone: guestPhone,
-      });
-
-      const checkInLabel = new Date(checkIn).toLocaleDateString('nl-NL');
-      const checkOutLabel = new Date(checkOut).toLocaleDateString('nl-NL');
-      const invoiceNotes = [
-        `Boeking ${result.reference}`,
-        `Caravan: ${caravanName}`,
-        `Camping: ${campingName}${spotNumber ? ` (plek ${spotNumber})` : ''}`,
-        `Verblijf: ${checkInLabel} t/m ${checkOutLabel} (${serverNights} nachten)`,
-        `Gasten: ${adults || 2} volw.${(children || 0) > 0 ? ` + ${children} kind.` : ''}`,
-        `Totale huurprijs: €${totalPrice.toFixed(2)} — Aanbetaling 25% (rest + borg op de camping)`,
-      ].join('\n');
-
-      const holded = await createHoldedInvoice({
-        contactId,
-        reference: `Aanbetaling boeking ${result.reference}`,
-        items: [{
-          name: `Aanbetaling 25% — boeking ${result.reference} (${caravanName})`,
-          units: 1,
-          subtotal: deposit25,
-          tax: 0,
-        }],
-        notes: invoiceNotes,
-      });
-
-      await updatePaymentHoldedStatus(result.paymentId, 'IN_HOLDED', holded.invoiceId);
-      holdedInvoiceCreated = true;
-    } catch (err) {
-      console.error('Failed to create Holded invoice — booking continues without invoice:', err);
-    }
-
-    // Maak Stripe Checkout Session voor de aanbetaling — de klant wordt direct doorgestuurd.
-    let paymentUrl: string | undefined;
-    try {
-      const stripe = getStripe();
-      // Gebruik het domein waar de klant vandaan kwam (caravanverhuurspanje.com of
-      // costabrava.com) zodat Stripe ze terugbrengt op hetzelfde domein.
-      const origin = request.headers.get('origin') || request.nextUrl.origin;
-      const baseUrl = origin || process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
-      const payment = await getPaymentById(result.paymentId);
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        payment_method_types: ['card', 'ideal', 'bancontact'],
-        line_items: [{
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `Aanbetaling 25% — boeking ${result.reference}`,
-              description: `Caravanverhuur Spanje — ${caravanName}`,
-            },
-            unit_amount: Math.round(deposit25 * 100),
-          },
-          quantity: 1,
-        }],
-        customer_email: guestEmail,
-        metadata: {
-          paymentId: result.paymentId,
-          bookingId: result.id,
-          bookingRef: result.reference,
-          type: 'AANBETALING',
-          holdedInvoiceId: payment?.holded_invoice_id || '',
-        },
-        success_url: `${baseUrl}/betaling/succes?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/betaling/geannuleerd?payment_id=${result.paymentId}`,
-      });
-      await updatePaymentStripeId(result.paymentId, session.id);
-      paymentUrl = session.url || undefined;
-    } catch (err) {
-      console.error('Failed to create Stripe checkout session:', err);
-    }
+    // Don't create the Holded invoice or Stripe Checkout here yet. The customer is redirected
+    // to /betalen/[ref] where they fill in their billing address; that endpoint creates the
+    // Holded contact (with address) + invoice + Stripe Checkout session in one go.
+    const paymentToken = signBookingPaymentToken(result.reference);
+    const origin = request.headers.get('origin') || request.nextUrl.origin;
+    const baseUrl = origin || process.env.NEXT_PUBLIC_BASE_URL || 'https://caravanverhuurspanje.com';
+    const paymentUrl = `${baseUrl}/betalen/${result.reference}?token=${paymentToken}`;
 
     // Geen bevestigingsmail naar klant op dit moment — die wordt pas via de Stripe
     // webhook verstuurd zodra de betaling is gelukt, of als 'betaling mislukt' bij
