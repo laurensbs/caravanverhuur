@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Lint is reported but does not block — codebase has pre-existing
+      # React Compiler warnings (treated as errors by next lint). Will be
+      # tightened to blocking once those are cleaned up.
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+        env:
+          # Build-time placeholders. Real values are set in Vercel for deploy.
+          # Build must not crash on missing runtime secrets.
+          NEXT_PUBLIC_BASE_URL: https://caravanverhuurspanje.com
+          DATABASE_URL: postgres://user:pass@localhost:5432/db
+          POSTGRES_URL: postgres://user:pass@localhost:5432/db
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder
+          ADMIN_SECRET: ci-placeholder-admin-secret
+          STAFF_PASSWORD: ci-placeholder
+          PAYMENT_LINK_SECRET: ci-placeholder
+          CRON_SECRET: ci-placeholder
+          NEWSLETTER_SECRET: ci-placeholder
+          SETUP_SECRET: ci-placeholder
+          RESEND_API_KEY: re_placeholder
+          EMAIL_FROM: ci@example.com
+          HOLDED_API_KEY: placeholder
+          HOLDED_WEBHOOK_SECRET: placeholder
