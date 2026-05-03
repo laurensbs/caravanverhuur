@@ -153,8 +153,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   /* Translation helper for login screen (before context) */
   const lt = useMemo(() => createT(loginLocale), [loginLocale]);
 
-  /* Subdomain-aware admin paths */
-  const isAdminPath = pathname.startsWith('/admin');
+  /* Subdomain-aware admin paths.
+     We always want admin nav to use `/admin/...` URLs so Next client-router
+     keeps the admin layout segment mounted across navigations. On the admin
+     subdomain a bare bookmark like `/dashboard` is rewritten server-side,
+     but pathname will read `/dashboard` — so we also check the hostname. */
+  const isAdminPath = pathname.startsWith('/admin')
+    || (typeof window !== 'undefined' && window.location.hostname.startsWith('admin.'));
   const p = (sub: string) => isAdminPath ? `/admin${sub}` : (sub || '/');
 
   /* Memoize nav data (must be before conditional returns to respect Rules of Hooks) */
@@ -387,6 +392,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }
     setDriverLoading(false);
   };
+
+  /* ── Loader while verifying existing session ───────
+     Without this, every fresh mount of the admin tree (e.g. when client
+     navigation drops out of the /admin segment on the admin subdomain)
+     flashes the login screen for ~200ms — feels like being logged out.
+     During checkingAuth we render a neutral loader instead. */
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="flex items-center gap-3 text-foreground-light">
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm">{lt('auth.checking') || 'Sessie controleren…'}</span>
+        </div>
+      </div>
+    );
+  }
 
   /* ── Login Screen ───────────────────────────────── */
   if (!authenticated) {
@@ -1097,7 +1118,11 @@ function AdminLayoutInner({
 }) {
   /* Use the admin context for translations */
   const { t, locale, setLocale, username: ctxUsername, displayName: ctxDisplayName, role: ctxRole } = useAdminCtx();
-  const p = (sub: string) => pathname.startsWith('/admin') ? `/admin${sub}` : (sub || '/');
+  const p = (sub: string) => {
+    const isAdminScope = pathname.startsWith('/admin')
+      || (typeof window !== 'undefined' && window.location.hostname.startsWith('admin.'));
+    return isAdminScope ? `/admin${sub}` : (sub || '/');
+  };
   const [pageActions, setPageActions] = useState<ReactNode>(null);
   const pageActionsValue = useMemo(() => ({ actions: pageActions, setActions: setPageActions }), [pageActions]);
 

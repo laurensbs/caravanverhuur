@@ -73,19 +73,23 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    if (pathname.startsWith('/admin')) {
-      const clean = pathname.replace(/^\/admin/, '') || '/';
-      return NextResponse.redirect(new URL(clean, request.url));
-    }
-
-    const url = request.nextUrl.clone();
-    url.pathname = `/admin${pathname}`;
-    // Add X-Robots-Tag header to prevent indexing
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-admin-subdomain', '1');
-    const response = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return response;
+
+    // All admin URLs on admin.* are explicit /admin/<path>. This keeps Next
+    // client-router inside the /admin app-segment across navigations, so
+    // admin-layout state (auth, role, etc.) survives soft-navigation.
+    if (pathname.startsWith('/admin')) {
+      const response = NextResponse.next({ request: { headers: requestHeaders } });
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    }
+
+    // Legacy bookmark like admin.host/dashboard or admin.host/ → 301 to
+    // /admin equivalent. Hard redirect (not rewrite) so the browser URL
+    // becomes canonical and subsequent client-side nav uses /admin/... too.
+    const target = pathname === '/' ? '/admin' : `/admin${pathname}`;
+    return NextResponse.redirect(new URL(target, request.url), 301);
   }
 
   /* ── Main domain: redirect /admin/* to admin subdomain ─ */
