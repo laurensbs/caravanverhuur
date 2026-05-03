@@ -7,6 +7,8 @@
 // The `Invoice` naming in some exported types/functions is preserved for backwards
 // compatibility with call sites; they all operate on /documents/proform now.
 
+import * as Sentry from '@sentry/nextjs';
+
 const HOLDED_API_BASE = 'https://api.holded.com/api/invoicing/v1';
 const DOC_TYPE = 'proform'; // NEVER change to 'invoice' — see file-level note
 
@@ -31,7 +33,12 @@ async function holdedFetch(path: string, init: RequestInit = {}): Promise<unknow
   let data: unknown = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
   if (!res.ok) {
-    throw new Error(`Holded API ${res.status}: ${typeof data === 'string' ? data : JSON.stringify(data)}`);
+    const err = new Error(`Holded API ${res.status}: ${typeof data === 'string' ? data : JSON.stringify(data)}`);
+    Sentry.captureException(err, {
+      tags: { integration: 'holded', status: String(res.status) },
+      extra: { path },
+    });
+    throw err;
   }
   return data;
 }

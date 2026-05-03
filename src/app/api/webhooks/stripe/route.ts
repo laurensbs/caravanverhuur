@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { getStripe } from '@/lib/stripe';
 import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus, createCustomer, getAllCampings, getAllCustomCaravans } from '@/lib/db';
 import { sendBookingConfirmationEmail, sendPaymentFailedEmail } from '@/lib/email';
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
+    Sentry.captureException(err, { tags: { integration: 'stripe', stage: 'signature_verify' } });
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -206,6 +208,10 @@ export async function POST(request: NextRequest) {
     }
   } catch (err) {
     console.error('Webhook handler error:', err);
+    Sentry.captureException(err, {
+      tags: { integration: 'stripe', stage: 'handler', event_type: event.type },
+      extra: { event_id: event.id },
+    });
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 

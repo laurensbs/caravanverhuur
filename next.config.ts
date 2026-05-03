@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -44,4 +45,21 @@ const nextConfig: NextConfig = {
 
 };
 
-export default nextConfig;
+// Wrap with Sentry only when DSN + auth-token are configured.
+// Without auth-token, withSentryConfig still works (no sourcemap upload),
+// but logs a warning each build. We skip the wrap entirely when no DSN
+// is set so the local/CI build stays silent.
+const hasSentry = Boolean(
+  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+);
+
+export default hasSentry
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      disableLogger: true,
+    })
+  : nextConfig;

@@ -7,8 +7,14 @@ const RESEND_API_URL = 'https://api.resend.com/emails';
 const SITE_URL = 'https://caravanverhuurspanje.com';
 const BRAND_NAME = 'Caravanverhuur Spanje';
 const LOGO_URL = 'https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png';
+import * as Sentry from '@sentry/nextjs';
 import { GOOGLE_REVIEW_URL, INSTAGRAM_URL } from './constants';
 import { getEmailTranslations } from './email-translations';
+
+function recipientDomain(to: string): string {
+  const at = to.lastIndexOf('@');
+  return at === -1 ? 'unknown' : to.slice(at + 1).toLowerCase();
+}
 
 interface EmailAttachment {
   filename: string;
@@ -53,12 +59,25 @@ async function sendEmail(options: EmailOptions): Promise<{ success: boolean; err
     if (!res.ok) {
       const body = await res.text();
       console.error('Resend API error:', res.status, body);
+      Sentry.captureMessage('Resend API error', {
+        level: 'error',
+        tags: {
+          integration: 'resend',
+          status: String(res.status),
+          recipient_domain: recipientDomain(options.to),
+        },
+        extra: { subject: options.subject, body: body.slice(0, 500) },
+      });
       return { success: false, error: body };
     }
 
     return { success: true };
   } catch (err) {
     console.error('Email send error:', err);
+    Sentry.captureException(err, {
+      tags: { integration: 'resend', recipient_domain: recipientDomain(options.to) },
+      extra: { subject: options.subject },
+    });
     return { success: false, error: String(err) };
   }
 }
