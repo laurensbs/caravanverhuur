@@ -32,6 +32,9 @@ export default function CookieConsent() {
     <AnimatePresence>
       {show && (
         <motion.div
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="cookie-title"
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
@@ -44,7 +47,7 @@ export default function CookieConsent() {
                 <Cookie className="text-primary" size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1">{t('cookie.title')}</h3>
+                <h3 id="cookie-title" className="font-semibold text-foreground text-sm sm:text-base mb-1">{t('cookie.title')}</h3>
                 <p className="text-xs sm:text-sm text-muted leading-relaxed">
                   {t('cookie.text')}{' '}
                   <Link href="/privacy" className="text-primary underline">

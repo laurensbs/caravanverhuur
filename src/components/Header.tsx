@@ -139,6 +139,9 @@ export default function Header() {
                 onClick={() => setLangDropdown(!langDropdown)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Language"
+                aria-haspopup="menu"
+                aria-expanded={langDropdown}
+                aria-controls="lang-menu"
               >
                 <span className="text-lg sm:text-sm leading-none">{localeFlags[locale]}</span>
                 <span className="hidden sm:inline">{locale.toUpperCase()}</span>
@@ -147,6 +150,8 @@ export default function Header() {
               <AnimatePresence>
                 {langDropdown && (
                   <motion.div
+                    id="lang-menu"
+                    role="menu"
                     initial={{ opacity: 0, y: -4, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
@@ -156,6 +161,8 @@ export default function Header() {
                     {(['nl', 'en', 'es'] as Locale[]).map(l => (
                       <button
                         key={l}
+                        role="menuitemradio"
+                        aria-checked={locale === l}
                         onClick={() => { setLocale(l); setLangDropdown(false); }}
                         className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors hover:bg-gray-50 ${locale === l ? 'text-primary font-semibold bg-primary/5' : 'text-foreground-light'}`}
                       >
@@ -177,6 +184,10 @@ export default function Header() {
                 <button
                   onClick={() => setAccountDropdown(!accountDropdown)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label={locale === 'nl' ? 'Mijn account' : locale === 'es' ? 'Mi cuenta' : 'My account'}
+                  aria-haspopup="menu"
+                  aria-expanded={accountDropdown}
+                  aria-controls="account-menu"
                 >
                   <span className="w-7 h-7 sm:w-5 sm:h-5 bg-white/20 rounded-full flex items-center justify-center text-xs sm:text-[10px] font-bold leading-none">
                     {loggedInUser.name.charAt(0).toUpperCase()}
@@ -193,6 +204,8 @@ export default function Header() {
               <AnimatePresence>
                 {accountDropdown && loggedInUser && (
                   <motion.div
+                    id="account-menu"
+                    role="menu"
                     initial={{ opacity: 0, y: -4, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.97 }}
@@ -302,7 +315,7 @@ export default function Header() {
             <Link href="/boeken" className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1">
               {t('nav.bookNow')} <ArrowRight size={11} />
             </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label="Menu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 flex items-center justify-center active:scale-90 transition-transform" aria-label={menuOpen ? 'Sluit menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="mobile-nav">
             <div className="relative w-[18px] h-3">
               <motion.span animate={menuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} transition={{ type: 'spring', damping: 18, stiffness: 300 }} className="absolute top-0 left-0 w-full h-[1.5px] bg-foreground rounded-full origin-center" />
               <motion.span animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} transition={{ duration: 0.15 }} className="absolute top-[5px] left-0 w-full h-[1.5px] bg-foreground rounded-full" />
@@ -449,6 +462,10 @@ export default function Header() {
           />
 
           <motion.div
+            id="mobile-nav"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Hoofdmenu"
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 380, mass: 0.8 }}
             className="fixed top-0 right-0 bottom-0 w-full sm:w-[85vw] sm:max-w-[380px] bg-white z-[101] lg:hidden shadow-2xl flex flex-col"
@@ -458,7 +475,7 @@ export default function Header() {
               <Link href="/" onClick={() => setMenuOpen(false)}>
                 <Image src="https://u.cubeupload.com/laurensbos/12aCaravanverhuur2.png" alt="Caravanverhuur Costa Brava" width={400} height={160} className="w-36 h-auto object-contain" />
               </Link>
-              <button onClick={() => setMenuOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
+              <button onClick={() => setMenuOpen(false)} aria-label="Sluit menu" className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:scale-95 transition-all">
                 <X size={15} className="text-gray-500" />
               </button>
             </div>

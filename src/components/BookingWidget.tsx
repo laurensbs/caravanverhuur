@@ -16,6 +16,8 @@ function MobileSheet({ open, onClose, title, subtitle, children }: {
   open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
   useEffect(() => { setMounted(true); }, []);
 
   // Lock body scroll when open
@@ -24,12 +26,20 @@ function MobileSheet({ open, onClose, title, subtitle, children }: {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  // Close on Escape
+  // Close on Escape + move focus into dialog on open + restore on close.
+  // Not a full focus-trap (Tab can still leave the dialog), but covers the
+  // most common keyboard-user expectation: pressing Esc closes, opening
+  // moves focus into the panel, closing returns focus to the trigger.
   useEffect(() => {
     if (!open) return;
+    lastFocusedRef.current = document.activeElement as HTMLElement | null;
+    requestAnimationFrame(() => dialogRef.current?.focus());
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
+    return () => {
+      window.removeEventListener('keydown', h);
+      lastFocusedRef.current?.focus?.();
+    };
   }, [open, onClose]);
 
   if (!mounted) return null;
@@ -42,29 +52,35 @@ function MobileSheet({ open, onClose, title, subtitle, children }: {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 z-[200]"
             onClick={onClose}
+            aria-hidden="true"
           />
           <motion.div
+            ref={dialogRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sheet-title"
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[201] bg-white rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[201] bg-white rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col outline-none"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+              <div className="w-10 h-1 bg-gray-300 rounded-full" aria-hidden="true" />
             </div>
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-3">
               <div className="min-w-0">
-                <h3 className="text-base font-bold text-foreground">{title}</h3>
+                <h3 id="sheet-title" className="text-base font-bold text-foreground">{title}</h3>
                 {subtitle && (
                   <p className="text-xs text-primary font-medium truncate mt-0.5 flex items-center gap-1">
-                    <Check size={11} className="shrink-0" />
+                    <Check size={11} className="shrink-0" aria-hidden="true" />
                     {subtitle}
                   </p>
                 )}
               </div>
-              <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 ml-3">
-                <X size={18} className="text-muted" />
+              <button onClick={onClose} aria-label="Sluiten" className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0 ml-3">
+                <X size={18} className="text-muted" aria-hidden="true" />
               </button>
             </div>
             {/* Content */}

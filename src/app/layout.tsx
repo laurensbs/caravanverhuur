@@ -132,6 +132,7 @@ export default async function RootLayout({
         className={`${plusJakarta.variable} ${inter.variable} antialiased`}
         suppressHydrationWarning
       >
+        <a href="#main-content" className="skip-link">Spring naar hoofdinhoud</a>
         <LayoutWrapper
           header={<Header />}
           footer={<Footer />}

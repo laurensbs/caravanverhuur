@@ -64,7 +64,7 @@ export function LayoutWrapper({
       <DataProvider>
         <HtmlLangSync />
         {header}
-        <main className="min-h-screen">{children}</main>
+        <main id="main-content" className="min-h-screen">{children}</main>
         {footer}
         {cookieConsent}
         <ChatBot />

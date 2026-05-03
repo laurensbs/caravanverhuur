@@ -28,3 +28,49 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   body { background: white !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+
+/* ─── Accessibility ─── */
+
+/* Visible focus ring for keyboard users on every interactive element.
+   :focus-visible only shows on keyboard nav, not mouse-clicks — so we
+   don't ruin the visual design for pointer users. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Strip the default browser outline once :focus-visible takes over. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip-link: hidden until keyboard-focused, then jumps to main content. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  z-index: 1000;
+  padding: 0.75rem 1rem;
+  background: var(--color-foreground);
+  color: #fff;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease-out;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Visually-hidden but readable to screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
