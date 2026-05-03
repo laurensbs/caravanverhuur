@@ -527,6 +527,24 @@ async function _setupDatabaseInner() {
   await sql`CREATE INDEX IF NOT EXISTS idx_chat_msgs_conv ON chat_messages(conversation_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_booking_tasks_booking ON booking_tasks(booking_id)`;
 
+  // Auth-hot path: every request looks up sessions where expires_at > NOW()
+  await sql`CREATE INDEX IF NOT EXISTS idx_customer_sessions_expires ON customer_sessions(expires_at)`;
+  // Token-validation queries filter on expires_at after token-equality
+  await sql`CREATE INDEX IF NOT EXISTS idx_password_reset_expires ON password_reset_tokens(expires_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_email_verification_expires ON email_verification_tokens(expires_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_delete_confirmations_expires ON delete_confirmations(expires_at)`;
+  // Availability queries scan a date range; composite index helps overlap checks
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_dates ON bookings(check_in, check_out)`;
+  // Admin list views: ORDER BY created_at DESC LIMIT N
+  await sql`CREATE INDEX IF NOT EXISTS idx_bookings_created ON bookings(created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_contacts_created ON contacts(created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_customers_created ON customers(created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_newsletters_created ON newsletters(created_at DESC)`;
+  // Chat list shows last message per conversation — composite covers ORDER BY
+  await sql`CREATE INDEX IF NOT EXISTS idx_chat_msgs_conv_created ON chat_messages(conversation_id, created_at DESC)`;
+  // Payment list per booking is fetched ORDER BY created_at — composite avoids sort
+  await sql`CREATE INDEX IF NOT EXISTS idx_payments_booking_created ON payments(booking_id, created_at)`;
+
   // Seed default pricing rules if none exist
   const existingRules = await sql`SELECT COUNT(*) as cnt FROM pricing_rules`;
   if (parseInt(existingRules.rows[0].cnt) === 0) {
