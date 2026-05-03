@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getPaymentById, updatePaymentStatus, getBookingById, logActivity } from '@/lib/db';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
+import { parseJson } from '@/lib/validate';
+
+const RefundSchema = z.object({
+  paymentId: z.string().min(1).max(64),
+});
 
 // POST /api/admin/refund — Mark a payment as refunded.
 // Refunds zelf gebeuren handmatig in Holded; deze endpoint update alleen de status in onze DB.
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { paymentId } = body;
-
-    if (!paymentId) {
-      return NextResponse.json({ error: 'paymentId is verplicht' }, { status: 400 });
-    }
+    const parsed = await parseJson(request, RefundSchema);
+    if (!parsed.ok) return parsed.response;
+    const { paymentId } = parsed.data;
 
     const payment = await getPaymentById(paymentId);
     if (!payment) {

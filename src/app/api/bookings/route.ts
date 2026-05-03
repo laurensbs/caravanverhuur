@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createBooking, getAllBookings, updateBookingStatus, updateBookingNotes, updateBookingCaravan, createBorgChecklist, getAllCustomCaravans, deleteBookingById, incrementDiscountCodeUsage, validateDiscountCode, getCustomerByEmail, checkCaravanAvailability, createBookingAtomic, getActivePricingRules } from '@/lib/db';
 import { sendAdminNewBookingNotification } from '@/lib/email';
 import { caravans as staticCaravans } from '@/data/caravans';
@@ -6,6 +7,34 @@ import { campings as staticCampings } from '@/data/campings';
 import { getAllCampings } from '@/lib/db';
 import { bookingLimiter, getClientIp } from '@/lib/rate-limit';
 import { signBookingPaymentToken } from '@/lib/payment-link-token';
+import { Email, Phone, parseJson } from '@/lib/validate';
+
+// Stays loose on date format — accepts ISO yyyy-mm-dd or full ISO strings.
+// Server-side recomputes nights from these values, so we just need a parseable date.
+const isoDate = z.string().min(8).max(40).refine(
+  (s) => !Number.isNaN(new Date(s).getTime()),
+  { message: 'Invalid date' },
+);
+
+const BookingPostSchema = z.object({
+  guestName: z.string().trim().min(1).max(120),
+  guestEmail: Email,
+  guestPhone: Phone,
+  adults: z.coerce.number().int().min(1).max(20),
+  children: z.coerce.number().int().min(0).max(20).optional().default(0),
+  specialRequests: z.string().trim().max(2000).optional(),
+  caravanId: z.string().trim().min(1).max(64),
+  campingId: z.string().trim().min(1).max(64),
+  checkIn: isoDate,
+  checkOut: isoDate,
+  spotNumber: z.string().trim().max(40).optional(),
+  discountCode: z.string().trim().max(40).optional(),
+  extraBedlinnen: z.boolean().optional().default(false),
+  extraFridge: z.boolean().optional().default(false),
+  extraAirco: z.boolean().optional().default(false),
+  extraBikes: z.coerce.number().int().min(0).max(20).optional().default(0),
+  extraMountainbikes: z.coerce.number().int().min(0).max(20).optional().default(0),
+});
 
 export async function GET(request: NextRequest) {
   // Only allow admin-authenticated requests to list all bookings
@@ -34,12 +63,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, spotNumber, discountCode, extraBedlinnen, extraFridge, extraAirco, extraBikes, extraMountainbikes } = body;
-
-    if (!guestName || !guestEmail || !guestPhone || !caravanId || !campingId || !checkIn || !checkOut) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+    const parsed = await parseJson(request, BookingPostSchema);
+    if (!parsed.ok) return parsed.response;
+    const { guestName, guestEmail, guestPhone, adults, children, specialRequests, caravanId, campingId, checkIn, checkOut, spotNumber, discountCode, extraBedlinnen, extraFridge, extraAirco, extraBikes, extraMountainbikes } = parsed.data;
 
     // Enforce minimum 7 nights
     const diffMs = new Date(checkOut).getTime() - new Date(checkIn).getTime();

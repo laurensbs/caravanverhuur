@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { getStripe } from '@/lib/stripe';
 import { updatePaymentStripeId, updateBookingAddress, getAllCampings } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { campings as staticCampings } from '@/data/campings';
 import { verifyBookingPaymentToken } from '@/lib/payment-link-token';
+import { parseJson } from '@/lib/validate';
+
+const AddressSchema = z.object({
+  street: z.string().trim().min(1).max(120),
+  postalCode: z.string().trim().min(2).max(20),
+  city: z.string().trim().min(1).max(80),
+  // ISO-3166-1 alpha-2 (e.g. NL, BE, ES). Loose check: 2 letters.
+  country: z.string().trim().length(2).regex(/^[A-Za-z]{2}$/).transform(s => s.toUpperCase()),
+});
 
 async function resolveCampingName(campingId: string): Promise<string> {
   try {
@@ -81,11 +91,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Ongeldige of verlopen link' }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { street, postalCode, city, country } = body as { street?: string; postalCode?: string; city?: string; country?: string };
-  if (!street || !postalCode || !city || !country) {
-    return NextResponse.json({ error: 'Vul alle adresvelden in' }, { status: 400 });
-  }
+  const parsed = await parseJson(request, AddressSchema);
+  if (!parsed.ok) return parsed.response;
+  const { street, postalCode, city, country } = parsed.data;
 
   const b = await loadBookingByRef(ref);
   if (!b) return NextResponse.json({ error: 'Boeking niet gevonden' }, { status: 404 });

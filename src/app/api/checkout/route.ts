@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getStripe } from '@/lib/stripe';
 import { getPaymentById, updatePaymentStripeId, getBookingById } from '@/lib/db';
 import { checkoutLimiter, getClientIp } from '@/lib/rate-limit';
+import { parseJson } from '@/lib/validate';
+
+const CheckoutSchema = z.object({
+  paymentId: z.string().min(1).max(64),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +20,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { paymentId } = body;
-
-    if (!paymentId) {
-      return NextResponse.json({ error: 'Missing paymentId' }, { status: 400 });
-    }
+    const parsed = await parseJson(request, CheckoutSchema);
+    if (!parsed.ok) return parsed.response;
+    const { paymentId } = parsed.data;
 
     const payment = await getPaymentById(paymentId);
     if (!payment) {

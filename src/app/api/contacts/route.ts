@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createContact, getAllContacts, updateContactStatus, replyToContact, getContactById, getCustomerByEmail, deleteContact, assignContactToCustomer, searchCustomersSimple, logActivity } from '@/lib/db';
 import { sendContactAcknowledgmentEmail, sendContactReplyEmail } from '@/lib/email';
 import { contactLimiter, getClientIp } from '@/lib/rate-limit';
+import { Email, Phone } from '@/lib/validate';
+
+const ContactPostSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  email: Email,
+  phone: Phone.optional().or(z.literal('')),
+  subject: z.string().trim().min(1).max(200),
+  message: z.string().trim().min(1).max(5000),
+  source: z.string().trim().max(40).optional(),
+});
 
 export async function GET(request: NextRequest) {
   // Require admin auth to list contacts
@@ -31,17 +42,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { name, email, phone, subject, message, website, source } = body;
-
-    // Honeypot check — if filled, it's a bot
-    if (website) {
+    let raw: unknown;
+    try { raw = await request.json(); } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+    // Honeypot check FIRST — bots filling `website` get a fake 201 so they
+    // don't learn the field is a trigger. Must precede Zod (which would 400).
+    if (raw && typeof raw === 'object' && 'website' in raw && (raw as { website?: unknown }).website) {
       return NextResponse.json({ success: true }, { status: 201 });
     }
 
-    if (!name || !email || !subject || !message) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const parsed = ContactPostSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', issues: parsed.error.issues.map(i => ({ path: i.path.join('.'), message: i.message })) },
+        { status: 400 },
+      );
     }
+    const { name, email, phone, subject, message, source } = parsed.data;
 
     const result = await createContact({ name, email, phone, subject, message, source });
 

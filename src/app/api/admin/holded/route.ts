@@ -1,24 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { updatePaymentHoldedStatus, getPaymentById, getBookingById, getAllCampings } from '@/lib/db';
 import { findOrCreateHoldedContact, createHoldedInvoice } from '@/lib/holded';
 import { campings as staticCampings } from '@/data/campings';
+import { parseJson } from '@/lib/validate';
+
+const PatchSchema = z.object({
+  paymentId: z.string().min(1).max(64),
+  holdedStatus: z.enum(['NIET_AANGEMAAKT', 'HANDMATIG', 'IN_HOLDED']),
+  holdedInvoiceId: z.string().min(1).max(64).optional(),
+});
+
+const PostSchema = z.object({
+  paymentId: z.string().min(1).max(64),
+});
 
 export async function PATCH(request: NextRequest) {
   const cookie = request.cookies.get('admin_session')?.value;
   if (!cookie) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const body = await request.json();
-    const { paymentId, holdedStatus, holdedInvoiceId } = body;
-
-    if (!paymentId || !holdedStatus) {
-      return NextResponse.json({ error: 'Missing paymentId or holdedStatus' }, { status: 400 });
-    }
-
-    const validStatuses = ['NIET_AANGEMAAKT', 'HANDMATIG', 'IN_HOLDED'];
-    if (!validStatuses.includes(holdedStatus)) {
-      return NextResponse.json({ error: 'Invalid holdedStatus' }, { status: 400 });
-    }
+    const parsed = await parseJson(request, PatchSchema);
+    if (!parsed.ok) return parsed.response;
+    const { paymentId, holdedStatus, holdedInvoiceId } = parsed.data;
 
     await updatePaymentHoldedStatus(paymentId, holdedStatus, holdedInvoiceId);
     return NextResponse.json({ success: true });
@@ -35,9 +39,9 @@ export async function POST(request: NextRequest) {
   if (!cookie) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const body = await request.json();
-    const { paymentId } = body;
-    if (!paymentId) return NextResponse.json({ error: 'Missing paymentId' }, { status: 400 });
+    const parsed = await parseJson(request, PostSchema);
+    if (!parsed.ok) return parsed.response;
+    const { paymentId } = parsed.data;
 
     const payment = await getPaymentById(paymentId);
     if (!payment) return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
