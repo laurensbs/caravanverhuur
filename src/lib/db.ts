@@ -468,6 +468,25 @@ async function _setupDatabaseInner() {
     )
   `;
 
+  // Holded outbox: opslag van mislukte Holded API-calls zodat ze
+  // automatisch opnieuw worden geprobeerd door /api/cron/holded-retry.
+  // Voorkomt verloren proforma-mark-paid bij tijdelijke Holded-storingen.
+  await sql`
+    CREATE TABLE IF NOT EXISTS holded_outbox (
+      id TEXT PRIMARY KEY,
+      payment_id TEXT NOT NULL,
+      holded_invoice_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT,
+      last_attempt_at TIMESTAMP,
+      next_retry_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      completed_at TIMESTAMP,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_holded_outbox_pending ON holded_outbox(next_retry_at) WHERE completed_at IS NULL`;
+
   // Admin users table
   await sql`
     CREATE TABLE IF NOT EXISTS admin_users (

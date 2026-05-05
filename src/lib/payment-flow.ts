@@ -21,6 +21,7 @@ import {
 } from '@/lib/db';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { markHoldedInvoicePaid } from '@/lib/holded';
+import { enqueueHoldedJob } from '@/lib/holded-outbox';
 import { hashPassword, generateTemporaryPassword } from '@/lib/password';
 import { caravans as staticCaravans } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
@@ -102,11 +103,30 @@ export async function markPaymentPaid(opts: MarkPaidOptions): Promise<MarkPaidRe
     }
   }
 
-  // 2) Holded mark-paid (best effort). If we already paid this earlier, skip.
+  // 2) Holded mark-paid (best effort, met outbox-fallback). Bij failure
+  // schrijven we een retry-job zodat /api/cron/holded-retry 'm later
+  // alsnog probeert. Voorkomt verloren proforma's bij tijdelijke
+  // Holded-storingen of rate-limits.
   const holdedInvoiceId = opts.holdedInvoiceId || existingPayment.holded_invoice_id;
   if (holdedInvoiceId && !wasAlreadyPaid) {
-    try { await markHoldedInvoicePaid(holdedInvoiceId); }
-    catch (e) { console.error(`${tag} markHoldedInvoicePaid err:`, e); /* Sentry capture happens inside holded.ts */ }
+    try {
+      await markHoldedInvoicePaid(holdedInvoiceId);
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error(`${tag} markHoldedInvoicePaid err — enqueuing retry:`, errMsg);
+      try {
+        await enqueueHoldedJob({
+          paymentId,
+          holdedInvoiceId,
+          action: 'mark-paid',
+          initialError: errMsg,
+        });
+      } catch (enqueueErr) {
+        // Outbox zelf weigert (DB down?) — Sentry zorgt dat we het zien.
+        console.error(`${tag} outbox enqueue failed:`, enqueueErr);
+        Sentry.captureException(enqueueErr, { tags: { flow: 'mark-paid', source, step: 'outbox_enqueue' } });
+      }
+    }
   }
 
   // 3) Confirmation email — only if THIS call did the transition (idempotent
