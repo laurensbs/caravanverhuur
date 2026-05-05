@@ -50,6 +50,7 @@ import type { Caravan } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { holdedProformaAppUrl } from '@/lib/holded-urls';
 import { useUrlState } from '@/lib/use-url-state';
+import StatusStepper from '@/components/admin/StatusStepper';
 
 const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
@@ -368,6 +369,40 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── Booking status stepper — visualisatie van waar deze boeking staat ── */}
+      <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+        <div className="bg-surface rounded-xl p-3">
+          <StatusStepper
+            steps={['NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND'] as const}
+            current={booking.status}
+            labels={{
+              NIEUW: 'Nieuw',
+              BEVESTIGD: 'Bevestigd',
+              AANBETAALD: 'Aanbetaald',
+              VOLLEDIG_BETAALD: 'Volledig',
+              ACTIEF: 'Actief',
+              AFGEROND: 'Afgerond',
+              GEANNULEERD: 'Geannuleerd',
+            }}
+            nextAction={
+              booking.status === 'NIEUW'
+                ? 'Bevestig boeking en stuur betaallink'
+                : booking.status === 'BEVESTIGD'
+                  ? 'Wacht op aanbetaling van klant'
+                  : booking.status === 'AANBETAALD'
+                    ? 'Restbedrag + borg op camping innen'
+                    : booking.status === 'VOLLEDIG_BETAALD'
+                      ? 'Klaar voor incheck'
+                      : booking.status === 'ACTIEF'
+                        ? 'Klant verblijft op camping'
+                        : booking.status === 'AFGEROND'
+                          ? 'Boeking afgerond — eventueel review-mail'
+                          : null
+            }
+          />
+        </div>
       </div>
 
       {/* ── Accordion Sections ── */}

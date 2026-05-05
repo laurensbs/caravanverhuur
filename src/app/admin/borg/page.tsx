@@ -5,6 +5,7 @@ import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
 import { useUrlState } from '@/lib/use-url-state';
+import StatusStepper from '@/components/admin/StatusStepper';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardCheck,
@@ -758,6 +759,34 @@ export default function AdminBorgPage() {
                       className="overflow-hidden"
                     >
                       <div className="p-3 sm:p-4 space-y-3 sm:space-y-5">
+                        {/* Status-stepper — visualiseert state-machine + next action */}
+                        <div className="bg-surface rounded-xl p-3">
+                          <StatusStepper
+                            steps={['OPEN', 'IN_BEHANDELING', 'AFGEROND', 'KLANT_AKKOORD'] as const}
+                            current={checklist.status}
+                            labels={{
+                              OPEN: 'Aangemaakt',
+                              IN_BEHANDELING: 'Inspectie loopt',
+                              AFGEROND: 'Wacht op klant',
+                              KLANT_AKKOORD: 'Klant akkoord',
+                              KLANT_BEZWAAR: 'Klant bezwaar',
+                            }}
+                            nextAction={
+                              checklist.status === 'OPEN'
+                                ? 'Inspecteer caravan via mobiele wizard'
+                                : checklist.status === 'IN_BEHANDELING'
+                                  ? 'Wizard afmaken en versturen naar klant'
+                                  : checklist.status === 'AFGEROND'
+                                    ? 'Wacht op akkoord van klant (of bevestig handmatig)'
+                                    : checklist.status === 'KLANT_AKKOORD'
+                                      ? 'Verwerk eventuele restitutie via /betalingen'
+                                      : checklist.status === 'KLANT_BEZWAAR'
+                                        ? 'Beoordeel bezwaar en neem contact op met klant'
+                                        : null
+                            }
+                          />
+                        </div>
+
                         {/* Info bar */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-sm">
                           <div className="flex items-center gap-2 text-muted">
