@@ -1,0 +1,45 @@
+name: Lighthouse
+
+on:
+  # Wekelijks meten zodat je trends ziet in plaats van een eenmalig getal.
+  schedule:
+    - cron: '0 6 * * 1' # elke maandag 06:00 UTC
+  # Op aanvraag te draaien vanuit de Actions tab.
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL om te meten (default: productie)'
+        default: 'https://www.caravanverhuurspanje.com'
+        required: false
+
+concurrency:
+  group: lighthouse
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Lighthouse audit (mobiel, productie)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      - name: Run Lighthouse
+        run: lhci autorun
+        env:
+          LHCI_BASE_URL: ${{ github.event.inputs.base_url || 'https://www.caravanverhuurspanje.com' }}
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci
+          retention-days: 30

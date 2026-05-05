@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -87,8 +88,8 @@ const hasSentry = Boolean(
   process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
 );
 
-export default hasSentry
-  ? withSentryConfig(nextConfig, {
+const withSentry = hasSentry
+  ? (cfg: NextConfig) => withSentryConfig(cfg, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -96,4 +97,12 @@ export default hasSentry
       widenClientFileUpload: true,
       disableLogger: true,
     })
-  : nextConfig;
+  : (cfg: NextConfig) => cfg;
+
+// Bundle analyzer: opt-in via ANALYZE=true npm run build. Genereert een
+// statische treemap in .next/analyze/ — geen runtime overhead bij normale builds.
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+export default withAnalyzer(withSentry(nextConfig));
