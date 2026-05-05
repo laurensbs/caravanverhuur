@@ -5,6 +5,29 @@ import { getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmai
 import { sendPaymentFailedEmail } from '@/lib/email';
 import { markPaymentPaid } from '@/lib/payment-flow';
 
+// Diagnostic GET — validates env + imports without executing the handler.
+// Returns 200 + status object so we can pinpoint where setup breaks. The
+// CRON_SECRET (or just "?diag=1") is required so this isn't a public probe.
+export async function GET(request: NextRequest) {
+  if (request.nextUrl.searchParams.get('diag') !== '1') {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  }
+  const status: Record<string, unknown> = {
+    timestamp: new Date().toISOString(),
+    env: {
+      STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+      STRIPE_WEBHOOK_SECRET: !!process.env.STRIPE_WEBHOOK_SECRET,
+      STRIPE_WEBHOOK_SECRET_prefix: process.env.STRIPE_WEBHOOK_SECRET?.slice(0, 7) || null,
+      RESEND_API_KEY: !!process.env.RESEND_API_KEY,
+      DATABASE_URL: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
+      HOLDED_API_KEY: !!process.env.HOLDED_API_KEY,
+    },
+  };
+  try { getStripe(); status.getStripe = 'ok'; }
+  catch (e) { status.getStripe = `err: ${e instanceof Error ? e.message : String(e)}`; }
+  return NextResponse.json(status);
+}
+
 export async function POST(request: NextRequest) {
   // Boot-time env-var checks must NOT throw — Stripe will retry forever on
   // 5xx and we lose visibility. Return a structured error instead.
@@ -45,6 +68,12 @@ export async function POST(request: NextRequest) {
     Sentry.captureException(err, { tags: { integration: 'stripe', stage: 'signature_verify' } });
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
+
+  // Acknowledge synthetic test events from Stripe Dashboard FAST.
+  // These have empty metadata; further processing has nothing to do anyway,
+  // and Stripe Dashboard's tester gives up if we take too long or returns
+  // the response body in a confusing way.
+  console.log(`[webhook] event ${event.id} type=${event.type} livemode=${event.livemode}`);
 
   try {
     switch (event.type) {
