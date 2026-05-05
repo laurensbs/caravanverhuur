@@ -95,6 +95,20 @@ function BoekenContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Inline guest-field validation. We don't migrate the full booking form
+  // to react-hook-form (1400-line multi-step state) — just gate step 4 with
+  // Zod-derived errors that show on blur.
+  const [guestTouched, setGuestTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean }>({});
+  const guestErrors = useMemo(() => {
+    const errs: { name?: string; email?: string; phone?: string } = {};
+    if (!name.trim()) errs.name = 'Vul je naam in';
+    if (!email.trim()) errs.email = 'Vul je e-mailadres in';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Ongeldig e-mailadres';
+    if (!phone.trim()) errs.phone = 'Vul je telefoonnummer in';
+    else if (!/^[+0-9 ()\-./]{6,32}$/.test(phone.trim())) errs.phone = 'Ongeldig telefoonnummer';
+    return errs;
+  }, [name, email, phone]);
+
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -239,7 +253,7 @@ function BoekenContent() {
       case 1: return checkIn && checkOut && nights >= 7;
       case 2: return campingId !== '' && spotNumber.trim() !== '';
       case 3: return adults >= 1 && selectedCaravan !== '';
-      case 4: return name && email && phone && termsAccepted;
+      case 4: return name && email && phone && termsAccepted && !guestErrors.name && !guestErrors.email && !guestErrors.phone;
       default: return false;
     }
   };
@@ -897,26 +911,53 @@ function BoekenContent() {
 
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 space-y-5">
                         <div>
-                          <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
+                          <label htmlFor="boeken-name" className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                             <User size={14} className="text-primary" /> {t('booking.fullName')}
                           </label>
-                          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('contact.placeholderName')}
-                            className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
+                          <input
+                            id="boeken-name" type="text" autoComplete="name"
+                            value={name} onChange={e => setName(e.target.value)}
+                            onBlur={() => setGuestTouched(g => ({ ...g, name: true }))}
+                            aria-invalid={guestTouched.name && !!guestErrors.name}
+                            aria-describedby={guestTouched.name && guestErrors.name ? 'boeken-name-err' : undefined}
+                            placeholder={t('contact.placeholderName')}
+                            className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                          {guestTouched.name && guestErrors.name && (
+                            <p id="boeken-name-err" role="alert" className="mt-1 text-xs text-danger">{guestErrors.name}</p>
+                          )}
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
+                            <label htmlFor="boeken-email" className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                               <Mail size={14} className="text-primary" /> {t('booking.emailAddress')}
                             </label>
-                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('contact.placeholderEmail')}
-                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
+                            <input
+                              id="boeken-email" type="email" autoComplete="email" inputMode="email"
+                              value={email} onChange={e => setEmail(e.target.value)}
+                              onBlur={() => setGuestTouched(g => ({ ...g, email: true }))}
+                              aria-invalid={guestTouched.email && !!guestErrors.email}
+                              aria-describedby={guestTouched.email && guestErrors.email ? 'boeken-email-err' : undefined}
+                              placeholder={t('contact.placeholderEmail')}
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                            {guestTouched.email && guestErrors.email && (
+                              <p id="boeken-email-err" role="alert" className="mt-1 text-xs text-danger">{guestErrors.email}</p>
+                            )}
                           </div>
                           <div>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
+                            <label htmlFor="boeken-phone" className="flex items-center gap-2 text-sm font-semibold text-foreground-light mb-1.5">
                               <Phone size={14} className="text-primary" /> {t('booking.phoneNumber')}
                             </label>
-                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('contact.placeholderPhone')}
-                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm" />
+                            <input
+                              id="boeken-phone" type="tel" autoComplete="tel" inputMode="tel"
+                              value={phone} onChange={e => setPhone(e.target.value)}
+                              onBlur={() => setGuestTouched(g => ({ ...g, phone: true }))}
+                              aria-invalid={guestTouched.phone && !!guestErrors.phone}
+                              aria-describedby={guestTouched.phone && guestErrors.phone ? 'boeken-phone-err' : undefined}
+                              placeholder={t('contact.placeholderPhone')}
+                              className="w-full px-3.5 py-2.5 bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all text-sm aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                            {guestTouched.phone && guestErrors.phone && (
+                              <p id="boeken-phone-err" role="alert" className="mt-1 text-xs text-danger">{guestErrors.phone}</p>
+                            )}
                           </div>
                         </div>
                       </div>

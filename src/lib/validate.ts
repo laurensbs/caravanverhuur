@@ -7,7 +7,10 @@
 //   const body = parsed.data;
 
 import { NextResponse } from 'next/server';
-import { z, ZodError, type ZodSchema } from 'zod';
+import { ZodError, type ZodSchema } from 'zod';
+// Re-export primitives so existing server callers (`@/lib/validate`)
+// keep working unchanged.
+export { Email, Phone, NonEmpty } from './validate-shared';
 
 export type ParseResult<T> =
   | { ok: true; data: T }
@@ -53,10 +56,3 @@ function formatIssues(err: ZodError): Array<{ path: string; message: string }> {
   }));
 }
 
-// Common reusable primitives. Kept narrow on purpose — endpoints can
-// extend with route-specific schemas.
-export const Email = z.string().trim().toLowerCase().email().max(254);
-// Loose phone: digits, spaces, +, -, (). Real validation happens client-side
-// or via a downstream service. Server only blocks obvious garbage.
-export const Phone = z.string().trim().min(6).max(32).regex(/^[+0-9 ()\-./]+$/);
-export const NonEmpty = (max = 500) => z.string().trim().min(1).max(max);

@@ -3,44 +3,55 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCircle, Instagram, ArrowRight } from 'lucide-react';
 import { INSTAGRAM_URL } from '@/lib/constants';
 import { useLanguage } from '@/i18n/context';
+import { Email, Phone as PhoneSchema } from '@/lib/validate-shared';
+
+// Mirrors server schema in /api/contacts. Phone is optional; honeypot
+// `website` is registered but not validated — bots fill it, server-side
+// returns a fake 201 (so they don't learn it's a trigger).
+const ContactSchema = z.object({
+  name: z.string().trim().min(1, { message: 'Vul je naam in' }).max(120),
+  email: Email,
+  phone: z.union([PhoneSchema, z.literal('')]).optional(),
+  subject: z.string().trim().min(1, { message: 'Kies een onderwerp' }),
+  message: z.string().trim().min(1, { message: 'Schrijf een bericht' }).max(5000),
+  website: z.string().optional(),
+});
+type ContactValues = z.infer<typeof ContactSchema>;
 
 export default function ContactPage() {
   const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: '',
-    website: '',
+  const [submitError, setSubmitError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactValues>({
+    resolver: zodResolver(ContactSchema),
+    mode: 'onBlur',
+    defaultValues: { name: '', email: '', phone: '', subject: '', message: '', website: '' },
   });
 
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
+  const onSubmit = handleSubmit(async (data) => {
     setSubmitError('');
     try {
       const res = await fetch('/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error('Submit failed');
       setSubmitted(true);
     } catch {
       setSubmitError(t('contact.errorText'));
-    } finally {
-      setSubmitting(false);
     }
-  };
+  });
 
   if (submitted) {
     return (
@@ -120,25 +131,28 @@ export default function ContactPage() {
             {/* Contact form — spans 2 cols */}
             <div className="lg:col-span-2">
               <div className="bg-surface rounded-2xl p-4 sm:p-8 border border-border">
-                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                <form onSubmit={onSubmit} noValidate className="space-y-4 sm:space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.nameLabel')} *</label>
-                      <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={t('contact.placeholderName')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
+                      <label htmlFor="contact-name" className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.nameLabel')} *</label>
+                      <input id="contact-name" type="text" autoComplete="name" placeholder={t('contact.placeholderName')} aria-invalid={!!errors.name} aria-describedby={errors.name ? 'contact-name-err' : undefined} {...register('name')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                      {errors.name && <p id="contact-name-err" role="alert" className="mt-1 text-xs text-danger">{errors.name.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.emailLabel')} *</label>
-                      <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={t('contact.placeholderEmail')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
+                      <label htmlFor="contact-email" className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.emailLabel')} *</label>
+                      <input id="contact-email" type="email" autoComplete="email" inputMode="email" placeholder={t('contact.placeholderEmail')} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'contact-email-err' : undefined} {...register('email')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                      {errors.email && <p id="contact-email-err" role="alert" className="mt-1 text-xs text-danger">{errors.email.message || 'Ongeldig e-mailadres'}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.phoneLabel')}</label>
-                      <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={t('contact.placeholderPhone')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all" />
+                      <label htmlFor="contact-phone" className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.phoneLabel')}</label>
+                      <input id="contact-phone" type="tel" autoComplete="tel" inputMode="tel" placeholder={t('contact.placeholderPhone')} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'contact-phone-err' : undefined} {...register('phone')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all aria-invalid:border-danger aria-invalid:ring-danger/20" />
+                      {errors.phone && <p id="contact-phone-err" role="alert" className="mt-1 text-xs text-danger">{errors.phone.message || 'Ongeldig telefoonnummer'}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.subjectLabel')} *</label>
-                      <select required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all">
+                      <label htmlFor="contact-subject" className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.subjectLabel')} *</label>
+                      <select id="contact-subject" aria-invalid={!!errors.subject} aria-describedby={errors.subject ? 'contact-subject-err' : undefined} {...register('subject')} className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all aria-invalid:border-danger aria-invalid:ring-danger/20">
                         <option value="">{t('contact.subjectPlaceholder')}</option>
                         <option value="boeking">{t('contact.subjectBooking')}</option>
                         <option value="caravans">{t('contact.subjectCaravans')}</option>
@@ -147,35 +161,30 @@ export default function ContactPage() {
                         <option value="transport">{t('contact.subjectTransport')}</option>
                         <option value="anders">{t('contact.subjectOther')}</option>
                       </select>
+                      {errors.subject && <p id="contact-subject-err" role="alert" className="mt-1 text-xs text-danger">{errors.subject.message}</p>}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.messageLabel')} *</label>
+                    <label htmlFor="contact-message" className="block text-sm font-medium text-foreground mb-1.5 sm:mb-2">{t('contact.messageLabel')} *</label>
                     <textarea
-                      required
-                      value={form.message}
-                      onChange={e => setForm({ ...form, message: e.target.value })}
+                      id="contact-message"
                       placeholder={t('contact.messagePlaceholder')}
                       rows={5}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all resize-none"
+                      aria-invalid={!!errors.message}
+                      aria-describedby={errors.message ? 'contact-message-err' : undefined}
+                      {...register('message')}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:bg-white focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 outline-none transition-all resize-none aria-invalid:border-danger aria-invalid:ring-danger/20"
                     />
+                    {errors.message && <p id="contact-message-err" role="alert" className="mt-1 text-xs text-danger">{errors.message.message}</p>}
                   </div>
-                  {/* Honeypot field — hidden from real users, bots will fill it */}
+                  {/* Honeypot field — hidden from real users, bots will fill it. Server returnt 201 stilletjes. */}
                   <div className="absolute opacity-0 -z-10" aria-hidden="true" tabIndex={-1}>
                     <label htmlFor="website">Website</label>
-                    <input
-                      type="text"
-                      id="website"
-                      name="website"
-                      autoComplete="off"
-                      tabIndex={-1}
-                      value={form.website}
-                      onChange={e => setForm({ ...form, website: e.target.value })}
-                    />
+                    <input type="text" id="website" autoComplete="off" tabIndex={-1} {...register('website')} />
                   </div>
-                  {submitError && <p className="text-danger text-sm">{submitError}</p>}
-                  <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 px-8 py-3 bg-foreground disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all hover:bg-foreground/90 active:scale-[0.98]">
-                    {submitting ? (
+                  {submitError && <p role="alert" aria-live="polite" className="text-danger text-sm">{submitError}</p>}
+                  <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 px-8 py-3 bg-foreground disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all hover:bg-foreground/90 active:scale-[0.98]">
+                    {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         {t('contact.sending')}
