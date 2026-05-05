@@ -990,23 +990,38 @@ export default function AdminBorgPage() {
                               </div>
                               {confirmOnBehalfId === checklist.id ? (
                                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-                                  <p className="text-sm text-amber-800 font-medium">{t('deposit.selectReturnMethod')}</p>
-                                  <div className="flex gap-3">
-                                    <button
-                                      type="button"
-                                      onClick={() => setConfirmReturnMethod('contant')}
-                                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'contant' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
-                                    >
-                                      <Banknote size={16} /> {t('deposit.borgCash')}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setConfirmReturnMethod('bank')}
-                                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'bank' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
-                                    >
-                                      <Building2 size={16} /> {t('deposit.borgBank')}
-                                    </button>
-                                  </div>
+                                  {/* Als wizard al een return-method zette, tonen we 'm read-only.
+                                      Anders vragen we 'm alsnog hier (legacy/manuele flow). */}
+                                  {checklist.borg_return_method ? (
+                                    <p className="text-sm text-amber-800">
+                                      {t('deposit.returnMethodFromWizard') || 'Klant koos tijdens inspectie:'}{' '}
+                                      <strong>
+                                        {checklist.borg_return_method === 'contant'
+                                          ? t('deposit.borgCash')
+                                          : t('deposit.borgBank')}
+                                      </strong>
+                                    </p>
+                                  ) : (
+                                    <>
+                                      <p className="text-sm text-amber-800 font-medium">{t('deposit.selectReturnMethod')}</p>
+                                      <div className="flex gap-3">
+                                        <button
+                                          type="button"
+                                          onClick={() => setConfirmReturnMethod('contant')}
+                                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'contant' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
+                                        >
+                                          <Banknote size={16} /> {t('deposit.borgCash')}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setConfirmReturnMethod('bank')}
+                                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold border-2 transition-colors cursor-pointer ${confirmReturnMethod === 'bank' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
+                                        >
+                                          <Building2 size={16} /> {t('deposit.borgBank')}
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => handleConfirmOnBehalf(checklist)}
@@ -1026,7 +1041,11 @@ export default function AdminBorgPage() {
                                 </div>
                               ) : (
                                 <button
-                                  onClick={() => { setConfirmOnBehalfId(checklist.id); setConfirmReturnMethod('bank'); }}
+                                  onClick={() => {
+                                    setConfirmOnBehalfId(checklist.id);
+                                    // Pre-vul met wat de wizard al heeft vastgelegd; anders fallback bank.
+                                    setConfirmReturnMethod((checklist.borg_return_method as 'contant' | 'bank') || 'bank');
+                                  }}
                                   className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg text-sm font-semibold hover:bg-amber-200 transition-colors cursor-pointer"
                                 >
                                   <User size={14} />
