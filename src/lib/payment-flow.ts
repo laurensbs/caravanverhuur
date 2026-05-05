@@ -88,8 +88,17 @@ export async function markPaymentPaid(opts: MarkPaidOptions): Promise<MarkPaidRe
     }
 
     if (existingPayment.type === 'AANBETALING') {
-      try { await updateBookingStatus(existingPayment.booking_id, 'AANBETAALD'); }
-      catch (e) { console.error(`${tag} updateBookingStatus err:`, e); Sentry.captureException(e, { tags: { flow: 'mark-paid', source, step: 'updateBookingStatus' } }); }
+      try {
+        // Only bump to AANBETAALD if the booking is currently in a lower
+        // state. We don't want to *down*grade a booking that was manually
+        // set to VOLLEDIG_BETAALD/ACTIEF/AFGEROND (e.g. when admin already
+        // confirmed both deposit + rest).
+        const booking = await getBookingById(existingPayment.booking_id);
+        const lowerStates: ReadonlyArray<string> = ['NIEUW', 'BEVESTIGD'];
+        if (booking && lowerStates.includes(booking.status)) {
+          await updateBookingStatus(existingPayment.booking_id, 'AANBETAALD');
+        }
+      } catch (e) { console.error(`${tag} updateBookingStatus err:`, e); Sentry.captureException(e, { tags: { flow: 'mark-paid', source, step: 'updateBookingStatus' } }); }
     }
   }
 
