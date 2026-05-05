@@ -61,6 +61,32 @@ export default function BetalingenPage() {
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
   const [markPaidConfirm, setMarkPaidConfirm] = useState<string | null>(null);
+  // Anchor coords for the floating mark-menu (fixed-positioned so it
+  // escapes the parent's overflow:hidden).
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; right: number } | null>(null);
+
+  // Close menu on viewport scroll/resize so it doesn't drift away from its trigger.
+  useEffect(() => {
+    if (!markPaidConfirm) return;
+    const close = () => { setMarkPaidConfirm(null); setMenuAnchor(null); };
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [markPaidConfirm]);
+
+  const openMarkMenu = (e: React.MouseEvent<HTMLButtonElement>, paymentId: string) => {
+    if (markPaidConfirm === paymentId) {
+      setMarkPaidConfirm(null);
+      setMenuAnchor(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMenuAnchor({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setMarkPaidConfirm(paymentId);
+  };
 
   const fetchPayments = useCallback(() => {
     setLoading(true);
@@ -135,6 +161,7 @@ export default function BetalingenPage() {
     }
     setMarkingPaid(null);
     setMarkPaidConfirm(null);
+    setMenuAnchor(null);
   };
 
   const handleSendReminder = async (paymentId: string) => {
@@ -411,64 +438,17 @@ export default function BetalingenPage() {
                   )}
                   {/* Mark-status menu — werkt op booking-niveau, dus altijd
                       zichtbaar (ongeacht de status van deze payment-row). */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setMarkPaidConfirm(markPaidConfirm === payment.id ? null : payment.id)}
-                      disabled={markingPaid === payment.id}
-                      className="inline-flex items-center gap-1 text-[10px] text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-lg cursor-pointer disabled:opacity-50"
-                      title="Markeer status"
-                      aria-haspopup="menu"
-                      aria-expanded={markPaidConfirm === payment.id}
-                    >
-                      {markingPaid === payment.id ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
-                      <span>Markeer</span>
-                    </button>
-                    {markPaidConfirm === payment.id && (
-                      <>
-                        {/* Click-outside catcher */}
-                        <button
-                          aria-label="Sluit menu"
-                          onClick={() => setMarkPaidConfirm(null)}
-                          className="fixed inset-0 z-40 cursor-default"
-                          tabIndex={-1}
-                        />
-                        <div
-                          role="menu"
-                          className="absolute right-0 top-full mt-1 z-50 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 min-w-[200px] text-left"
-                        >
-                          <button
-                            role="menuitem"
-                            onClick={() => handleMarkAction(payment.id, payment.booking_id, 'mark-deposit')}
-                            className="w-full text-left px-3 py-2 text-xs hover:bg-green-50 text-green-700 flex items-center gap-2"
-                          >
-                            <CheckCircle2 size={12} /> Aanbetaling ontvangen
-                          </button>
-                          <button
-                            role="menuitem"
-                            onClick={() => handleMarkAction(payment.id, payment.booking_id, 'mark-fully-paid')}
-                            className="w-full text-left px-3 py-2 text-xs hover:bg-green-50 text-green-700 flex items-center gap-2"
-                          >
-                            <CheckCircle2 size={12} /> Volledig betaald
-                          </button>
-                          <div className="border-t border-gray-100 my-1" />
-                          <button
-                            role="menuitem"
-                            onClick={() => handleMarkAction(payment.id, payment.booking_id, 'mark-borg-paid')}
-                            className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2"
-                          >
-                            <CheckCircle2 size={12} /> Borg ontvangen
-                          </button>
-                          <button
-                            role="menuitem"
-                            onClick={() => handleMarkAction(payment.id, payment.booking_id, 'mark-borg-returned')}
-                            className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2"
-                          >
-                            <CheckCircle2 size={12} /> Borg retour gedaan
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <button
+                    onClick={(e) => openMarkMenu(e, payment.id)}
+                    disabled={markingPaid === payment.id}
+                    className="inline-flex items-center gap-1 text-[10px] text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-lg cursor-pointer disabled:opacity-50"
+                    title="Markeer status"
+                    aria-haspopup="menu"
+                    aria-expanded={markPaidConfirm === payment.id}
+                  >
+                    {markingPaid === payment.id ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+                    <span>Markeer</span>
+                  </button>
                   {payment.status === 'BETAALD' && (
                     refundConfirm === payment.id ? (
                       <div className="flex items-center gap-1">
@@ -533,6 +513,42 @@ export default function BetalingenPage() {
           <button onClick={() => setCurrentPage(totalPages)} disabled={safePage >= totalPages} className="px-2 py-1.5 text-sm rounded-lg bg-white text-foreground hover:bg-surface transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-default">»</button>
         </div>
       )}
+
+      {/* Floating mark-menu — fixed-positioned so it escapes any parent
+          overflow:hidden / clipping. Anchored under the trigger button. */}
+      {markPaidConfirm && menuAnchor && (() => {
+        const target = payments.find(p => p.id === markPaidConfirm);
+        if (!target) return null;
+        return (
+          <>
+            <button
+              aria-label="Sluit menu"
+              onClick={() => { setMarkPaidConfirm(null); setMenuAnchor(null); }}
+              className="fixed inset-0 z-40 cursor-default"
+              tabIndex={-1}
+            />
+            <div
+              role="menu"
+              style={{ position: 'fixed', top: menuAnchor.top, right: menuAnchor.right }}
+              className="z-50 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 min-w-[200px] text-left"
+            >
+              <button role="menuitem" onClick={() => handleMarkAction(target.id, target.booking_id, 'mark-deposit')} className="w-full text-left px-3 py-2 text-xs hover:bg-green-50 text-green-700 flex items-center gap-2">
+                <CheckCircle2 size={12} /> Aanbetaling ontvangen
+              </button>
+              <button role="menuitem" onClick={() => handleMarkAction(target.id, target.booking_id, 'mark-fully-paid')} className="w-full text-left px-3 py-2 text-xs hover:bg-green-50 text-green-700 flex items-center gap-2">
+                <CheckCircle2 size={12} /> Volledig betaald
+              </button>
+              <div className="border-t border-gray-100 my-1" />
+              <button role="menuitem" onClick={() => handleMarkAction(target.id, target.booking_id, 'mark-borg-paid')} className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2">
+                <CheckCircle2 size={12} /> Borg ontvangen
+              </button>
+              <button role="menuitem" onClick={() => handleMarkAction(target.id, target.booking_id, 'mark-borg-returned')} className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2">
+                <CheckCircle2 size={12} /> Borg retour gedaan
+              </button>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
