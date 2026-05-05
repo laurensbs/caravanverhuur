@@ -48,6 +48,7 @@ import {
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
+import { holdedProformaAppUrl } from '@/lib/holded-urls';
 
 const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
@@ -505,7 +506,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
           const holdedSent = depositPayment?.holded_status === 'IN_HOLDED' && !!depositPayment.holded_invoice_id;
           const invoiceId = depositPayment?.holded_invoice_id;
           const holdedHref = invoiceId
-            ? (invoiceId.startsWith('http') ? invoiceId : `https://app.holded.com/invoicing/documents/proforms/${invoiceId}`)
+            ? (invoiceId.startsWith('http') ? invoiceId : holdedProformaAppUrl(invoiceId))
             : null;
           const paymentLinkMail = emails.find(e =>
             /betaal|payment|factuur|invoice|aanbetaling|deposit/i.test(e.subject),
@@ -610,7 +611,7 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${holdedBadge.cls}`}>{holdedBadge.label}</span>
                       {p.holded_invoice_id && (
                         <a
-                          href={p.holded_invoice_id.startsWith('http') ? p.holded_invoice_id : `https://app.holded.com/invoicing/documents/proforms/${p.holded_invoice_id}`}
+                          href={p.holded_invoice_id.startsWith('http') ? p.holded_invoice_id : holdedProformaAppUrl(p.holded_invoice_id)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"

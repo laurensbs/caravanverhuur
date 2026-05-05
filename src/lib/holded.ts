@@ -255,11 +255,17 @@ export async function getHoldedInvoicePdf(invoiceId: string): Promise<Buffer> {
   return Buffer.from(b64, 'base64');
 }
 
-// Build the public-facing pay/share URL for a proforma. Used to construct deep links into
-// the Holded online-document widget for the team's reference.
-export function buildHoldedInvoicePublicUrl(invoiceId: string): string {
-  return `${HOLDED_API_BASE}/documents/${DOC_TYPE}/${invoiceId}/pay`;
+// Deep link into the Holded admin app to open a specific proforma.
+// Format confirmed against Holded's actual UI:
+//   https://app.holded.com/sales/proforms#open:proform-<id>
+// (NOT the api.holded.com endpoint — that's the backend API). This URL
+// only works for logged-in Holded users; it's an internal team-link.
+export function buildHoldedAppUrl(invoiceId: string): string {
+  return `https://app.holded.com/sales/proforms#open:proform-${invoiceId}`;
 }
+
+// Backwards-compatible alias for older call sites.
+export const buildHoldedInvoicePublicUrl = buildHoldedAppUrl;
 
 // Backwards-compat alias — async for call sites that use await.
 export async function getHoldedInvoicePublicUrl(invoiceId: string): Promise<string | undefined> {

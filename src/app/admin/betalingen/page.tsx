@@ -18,6 +18,7 @@ import {
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
+import { holdedProformaAppUrl } from '@/lib/holded-urls';
 import {
   formatDateTime,
   formatCurrency,
@@ -377,7 +378,7 @@ export default function BetalingenPage() {
                     <a
                       href={payment.holded_invoice_id.startsWith('http')
                         ? payment.holded_invoice_id
-                        : `https://app.holded.com/invoicing/documents/proforms/${payment.holded_invoice_id}`}
+                        : holdedProformaAppUrl(payment.holded_invoice_id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
