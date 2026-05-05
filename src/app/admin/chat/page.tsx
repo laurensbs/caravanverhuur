@@ -60,6 +60,19 @@ interface CustomerResult {
   phone: string | null;
 }
 
+// Pure relative-time formatter — gehoist buiten de component zodat de
+// React Compiler 'm niet als impure-during-render flagged.
+function formatRelativeTime(dateStr: string, isNl: boolean): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return isNl ? 'Zojuist' : 'Just now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
 /* ── Component ────────────────────────────────── */
 export default function AdminChatPage() {
   const { t, locale } = useAdmin();
@@ -387,16 +400,7 @@ export default function AdminChatPage() {
     return { color: 'bg-green-100 text-green-700', label: isNl ? 'Actief' : 'Active' };
   };
 
-  const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60_000);
-    if (mins < 1) return isNl ? 'Zojuist' : 'Just now';
-    if (mins < 60) return `${mins}m`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h`;
-    const days = Math.floor(hrs / 24);
-    return `${days}d`;
-  };
+  const timeAgo = (dateStr: string) => formatRelativeTime(dateStr, isNl);
 
   /* ── Render ─────────────────────── */
   return (

@@ -23,14 +23,27 @@ interface Props {
 export default function DestinationDetailContent({ destination, nearbyCampings, otherDestinations }: Props) {
   const { t } = useLanguage();
   const { destinations: ctxDestinations, campings: dbCampings } = useData();
-  const [trails, setTrails] = useState<any[]>([]);
+  type TrailLite = {
+    id?: string;
+    name?: string;
+    tags?: string[];
+    location?: string;
+    photos?: string[];
+    difficulty?: string;
+    distanceKm?: number;
+    durationMinutes?: number;
+    description?: string;
+    alltrailsUrl?: string;
+    googleMapsUrl?: string;
+  };
+  const [trails, setTrails] = useState<TrailLite[]>([]);
 
   useEffect(() => {
     fetch('/api/trails').then(r => r.json())
-      .then(data => {
+      .then((data: { trails?: TrailLite[] }) => {
         const all = data.trails || [];
         const slug = destination.slug;
-        const nearby = all.filter((t: any) =>
+        const nearby = all.filter((t) =>
           t.tags?.includes(slug) ||
           t.location?.toLowerCase() === destination.name.toLowerCase()
         );

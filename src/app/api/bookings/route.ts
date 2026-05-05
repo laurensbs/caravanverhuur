@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // SERVER-SIDE PRICE CALCULATION — base rate €550/week, seasonal adjustments via pricing rules
     const serverNights = calcNights;
     const BASE_WEEKLY_RATE = 550;
-    let basePrice = Math.round(serverNights * BASE_WEEKLY_RATE / 7);
+    const basePrice = Math.round(serverNights * BASE_WEEKLY_RATE / 7);
 
     // Apply pricing rules (seizoen/vroegboek/lastminute)
     let adjustedPrice = basePrice;

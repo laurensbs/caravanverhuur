@@ -140,8 +140,11 @@ export default function ActivityPage() {
     return labels[locale]?.[action] || action.replace(/_/g, ' ');
   }, [locale]);
 
+  // Houd actuele page bij in een ref zodat fetchLog (geheugen-stabiel via
+  // useCallback met lege deps) niet hoeft te re-renderen bij page-changes.
+  // Mutatie via useEffect — direct in render-body geeft Compiler-warning.
   const pageRef = useRef(page);
-  pageRef.current = page;
+  useEffect(() => { pageRef.current = page; }, [page]);
 
   const fetchLog = useCallback(() => {
     setLoading(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { translations, createT, type AdminLocale, type AdminRole } from './admin-translations';
 
 interface AdminContextType {
@@ -54,7 +54,9 @@ export function AdminProvider({ children, role, username = '', displayName = '' 
     }
   }, [username]);
 
-  const t = useCallback(createT(locale), [locale]);
+  // useMemo hier ipv useCallback — useCallback eist een inline function-
+  // expression als eerste arg; createT(locale) retourneert al een functie.
+  const t = useMemo(() => createT(locale), [locale]);
 
   const ts = useCallback(
     (status: string): string => {

@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest) {
     if (shouldSendEmail && status === 'DONE' && bookingId && (taskType === 'CHECKIN' || taskType === 'PICKUP')) {
       try {
         const borgType = taskType === 'CHECKIN' ? 'INCHECKEN' : 'UITCHECKEN';
-        let borgChecklists = await getBorgChecklistsByBooking(bookingId);
+        const borgChecklists = await getBorgChecklistsByBooking(bookingId);
         let checklist = borgChecklists.find((bc: Record<string, unknown>) => bc.type === borgType);
 
         // Create borg checklist if it doesn't exist

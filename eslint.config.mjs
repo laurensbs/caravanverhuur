@@ -13,6 +13,18 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // React Compiler optimization-hints op 'warn' i.p.v. 'error': deze regels
+  // signaleren waarom de Compiler bepaalde components niet kan optimaliseren
+  // (setState-in-effect, memoization-skip). Code is functioneel correct.
+  // Echte fouten (no-explicit-any, prefer-const, refs-during-render, etc.)
+  // blijven 'error' en blokkeren de CI vanaf nu.
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/static-components": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -146,7 +146,7 @@ export default function WandelroutesPage() {
 
   const handleSave = async (trailId: string) => {
     if (!isLoggedIn) {
-      window.location.href = '/account?redirect=/wandelroutes';
+      window.location.assign('/account?redirect=/wandelroutes');
       return;
     }
     setSavingId(trailId);

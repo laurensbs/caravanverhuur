@@ -53,14 +53,27 @@ interface Props {
 export default function CampingDetailContent({ camping, nearbyDestinations, otherCampings }: Props) {
   const { t } = useLanguage();
   const { campings: dbCampings } = useData();
-  const [trails, setTrails] = useState<any[]>([]);
+  type TrailLite = {
+    id?: string;
+    name?: string;
+    tags?: string[];
+    location?: string;
+    photos?: string[];
+    difficulty?: string;
+    distanceKm?: number;
+    durationMinutes?: number;
+    description?: string;
+    alltrailsUrl?: string;
+    googleMapsUrl?: string;
+  };
+  const [trails, setTrails] = useState<TrailLite[]>([]);
 
   useEffect(() => {
     const loc = camping.location.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     fetch('/api/trails').then(r => r.json())
-      .then(data => {
+      .then((data: { trails?: TrailLite[] }) => {
         const all = data.trails || [];
-        const nearby = all.filter((t: any) =>
+        const nearby = all.filter((t) =>
           t.tags?.includes(loc) ||
           t.location?.toLowerCase() === camping.location.toLowerCase()
         );
