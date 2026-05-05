@@ -1343,6 +1343,7 @@ function AdminLayoutInner({
             if (data.contacts > 0) map['nav.messages'] = data.contacts;
             if (data.chats > 0) map['nav.chat'] = data.chats;
             if (data.payments > 0) map['nav.payments'] = data.payments;
+            if (data.borg > 0) map['nav.deposit'] = data.borg;
 
             // Detect increases and send notifications
             if (notifEnabled && !initialBadgeLoadRef.current) {

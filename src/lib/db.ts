@@ -2517,17 +2517,21 @@ export async function verifyEmailToken(token: string) {
 // ===== BADGE COUNTS =====
 
 export async function getBadgeCounts() {
-  const [bookings, contacts, chats, payments] = await Promise.all([
+  const [bookings, contacts, chats, payments, borg] = await Promise.all([
     sql`SELECT COUNT(*) as count FROM bookings WHERE status = 'NIEUW'`,
     sql`SELECT COUNT(*) as count FROM contacts WHERE status = 'NIEUW'`,
     sql`SELECT COUNT(*) as count FROM chat_conversations WHERE (status IN ('ACTIVE', 'active', 'waiting') OR needs_human = true) AND status != 'CLOSED'`.catch(() => ({ rows: [{ count: '0' }] })),
     sql`SELECT COUNT(*) as count FROM payments WHERE status = 'OPENSTAAND'`,
+    // Borg-checklists die actie van admin nodig hebben: open of in
+    // behandeling, of klant heeft bezwaar gemaakt en wacht op besluit.
+    sql`SELECT COUNT(*) as count FROM borg_checklists WHERE status IN ('OPEN', 'IN_BEHANDELING', 'KLANT_BEZWAAR')`.catch(() => ({ rows: [{ count: '0' }] })),
   ]);
   return {
     bookings: parseInt(bookings.rows[0].count as string) || 0,
     contacts: parseInt(contacts.rows[0].count as string) || 0,
     chats: parseInt(chats.rows[0].count as string) || 0,
     payments: parseInt(payments.rows[0].count as string) || 0,
+    borg: parseInt(borg.rows[0].count as string) || 0,
   };
 }
 

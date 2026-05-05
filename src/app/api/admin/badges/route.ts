@@ -7,6 +7,6 @@ export async function GET() {
     return NextResponse.json(counts);
   } catch (error) {
     console.error('GET /api/admin/badges error:', error);
-    return NextResponse.json({ bookings: 0, contacts: 0, chats: 0, payments: 0 });
+    return NextResponse.json({ bookings: 0, contacts: 0, chats: 0, payments: 0, borg: 0 });
   }
 }
