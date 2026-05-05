@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from '@/i18n/context';
-import { dictionaries } from '@/i18n/translations';
 import { DataProvider } from '@/lib/data-context';
 import dynamic from 'next/dynamic';
 
@@ -52,7 +51,7 @@ export function LayoutWrapper({
   // Borg pages: need LanguageProvider for translations, but no header/footer
   if (isBorg) {
     return (
-      <LanguageProvider dictionaries={dictionaries}>
+      <LanguageProvider>
         <HtmlLangSync />
         {children}
       </LanguageProvider>
@@ -60,7 +59,7 @@ export function LayoutWrapper({
   }
 
   return (
-    <LanguageProvider dictionaries={dictionaries}>
+    <LanguageProvider>
       <DataProvider>
         <HtmlLangSync />
         {header}
