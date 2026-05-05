@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken, updatePaymentLink, updatePaymentReminderSent, getPaymentById, logActivity } from '@/lib/db';
+import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken, updatePaymentLink, updatePaymentReminderSent, getPaymentById, logActivity, updateBookingStatus } from '@/lib/db';
 import { sendPaymentConfirmationEmail, sendPaymentReminderEmail } from '@/lib/email';
 import { markPaymentPaid } from '@/lib/payment-flow';
 import { getSessionFromHeaders } from '@/lib/admin-auth';
@@ -126,9 +126,18 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, action, paymentLink } = body;
+    const { id, action, paymentLink, bookingId } = body;
 
-    if (!id) return NextResponse.json({ error: 'Missing payment id' }, { status: 400 });
+    // Booking-level actions take bookingId; payment-level actions take id.
+    const isBookingAction = action === 'mark-deposit' || action === 'mark-fully-paid'
+      || action === 'mark-borg-paid' || action === 'mark-borg-returned';
+
+    if (!isBookingAction && !id) {
+      return NextResponse.json({ error: 'Missing payment id' }, { status: 400 });
+    }
+    if (isBookingAction && !bookingId) {
+      return NextResponse.json({ error: 'Missing bookingId' }, { status: 400 });
+    }
 
     if (action === 'update-link') {
       await updatePaymentLink(id, paymentLink || '');
@@ -189,6 +198,81 @@ export async function PUT(request: NextRequest) {
 
       await updatePaymentReminderSent(id);
       return NextResponse.json({ success: true, reminderSentAt: new Date().toISOString() });
+    }
+
+    // ── Booking-level mark actions ─────────────────────────────────────
+    // Operate on a booking and its payments collectively. Each is
+    // idempotent: re-running won't cause double-mailing or double-marks.
+
+    if (isBookingAction) {
+      const booking = await getBookingById(bookingId);
+      if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+      const allPayments = await getPaymentsByBookingId(bookingId);
+      const session = getSessionFromHeaders(request);
+      const skipEmail = body?.skipEmail === true;
+
+      // Helper: ensure a payment of given type exists, return id.
+      const ensurePayment = async (type: string, amount: number): Promise<string> => {
+        const existing = allPayments.find((p: Record<string, unknown>) => p.type === type);
+        if (existing) return existing.id as string;
+        const created = await createPayment({ bookingId, type, amount, status: 'OPENSTAAND', method: 'bank' });
+        return created.id;
+      };
+
+      try {
+        if (action === 'mark-deposit') {
+          const depositId = await ensurePayment('AANBETALING', Number(booking.deposit_amount || booking.total_price * 0.25));
+          const result = await markPaymentPaid({ paymentId: depositId, source: 'admin', skipEmail });
+          await logActivity({ actor: session.user, role: session.role, action: 'booking.mark-deposit', entityType: 'booking', entityId: bookingId, entityLabel: booking.reference, details: result.alreadyPaid ? 'already paid' : `email=${result.emailSent ? 'sent' : 'skipped/failed'}` });
+          return NextResponse.json({ success: true, ...result });
+        }
+
+        if (action === 'mark-fully-paid') {
+          // Mark deposit + remaining as paid. Booking → VOLLEDIG_BETAALD.
+          const depositId = await ensurePayment('AANBETALING', Number(booking.deposit_amount || booking.total_price * 0.25));
+          const remainingAmount = Number(booking.remaining_amount || (booking.total_price - (booking.deposit_amount || booking.total_price * 0.25)));
+          const remainingId = await ensurePayment('RESTBETALING', remainingAmount);
+
+          // Deposit through the full mark-paid flow (Holded + email + auto-account).
+          // Remaining: just status update — typically paid offline at the camping,
+          // no separate Holded proforma, no email needed.
+          const depositResult = await markPaymentPaid({ paymentId: depositId, source: 'admin', skipEmail });
+          const remainingPayment = await getPaymentById(remainingId);
+          if (remainingPayment && remainingPayment.status !== 'BETAALD') {
+            await updatePaymentStatus(remainingId, 'BETAALD', new Date().toISOString());
+          }
+          await updateBookingStatus(bookingId, 'VOLLEDIG_BETAALD');
+
+          await logActivity({ actor: session.user, role: session.role, action: 'booking.mark-fully-paid', entityType: 'booking', entityId: bookingId, entityLabel: booking.reference });
+          return NextResponse.json({ success: true, depositResult });
+        }
+
+        if (action === 'mark-borg-paid') {
+          const borgId = await ensurePayment('BORG', Number(booking.borg_amount || 300));
+          const borgPayment = await getPaymentById(borgId);
+          if (borgPayment && borgPayment.status !== 'BETAALD') {
+            await updatePaymentStatus(borgId, 'BETAALD', new Date().toISOString());
+          }
+          await logActivity({ actor: session.user, role: session.role, action: 'booking.mark-borg-paid', entityType: 'booking', entityId: bookingId, entityLabel: booking.reference });
+          return NextResponse.json({ success: true });
+        }
+
+        if (action === 'mark-borg-returned') {
+          // Add a BORG_RETOUR record (negative entry) marking refund completed.
+          await createPayment({
+            bookingId,
+            type: 'BORG_RETOUR',
+            amount: Number(booking.borg_amount || 300),
+            status: 'BETAALD',
+            method: 'bank',
+          });
+          await logActivity({ actor: session.user, role: session.role, action: 'booking.mark-borg-returned', entityType: 'booking', entityId: bookingId, entityLabel: booking.reference });
+          return NextResponse.json({ success: true });
+        }
+      } catch (err) {
+        console.error(`[booking-action:${action}] err:`, err);
+        return NextResponse.json({ error: err instanceof Error ? err.message : 'Action failed' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
