@@ -180,10 +180,10 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
           <p className="text-[11px] text-white/30 order-2 sm:order-none">&copy; {new Date().getFullYear()} Caravanverhuur Costa Brava</p>
           <div className="flex items-center gap-3 sm:gap-5 flex-wrap justify-center order-1 sm:order-none">
-            <img src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" className="h-5 object-contain opacity-50" />
-            <img src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" className="h-5 object-contain opacity-50" />
-            <img src="/images/badges/red-es.svg" alt="Red.es" className="h-4 object-contain opacity-50" />
-            <img src="/images/badges/kit-digital.svg" alt="Kit Digital" className="h-5 object-contain opacity-50" />
+            <Image src="/images/badges/eu-flag.png" alt="Financiado por la Unión Europea – NextGenerationEU" width={40} height={20} className="h-5 w-auto object-contain opacity-50" />
+            <Image src="/images/badges/gobierno-espana.svg" alt="Gobierno de España" width={80} height={20} className="h-5 w-auto object-contain opacity-50" unoptimized />
+            <Image src="/images/badges/red-es.svg" alt="Red.es" width={60} height={16} className="h-4 w-auto object-contain opacity-50" unoptimized />
+            <Image src="/images/badges/kit-digital.svg" alt="Kit Digital" width={80} height={20} className="h-5 w-auto object-contain opacity-50" unoptimized />
           </div>
         </div>
       </div>

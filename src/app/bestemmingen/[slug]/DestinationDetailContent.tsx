@@ -233,8 +233,14 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                     <div key={b.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                       {b.photo && b.photo.startsWith('http') && (
                         <div className="relative w-full aspect-[16/9] bg-gray-100">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={b.photo} alt={b.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                          <Image
+                            src={b.photo}
+                            alt={b.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, 50vw"
+                            unoptimized
+                          />
                         </div>
                       )}
                       <div className="p-4 sm:p-5">
@@ -329,18 +335,14 @@ export default function DestinationDetailContent({ destination, nearbyCampings, 
                       href={`/bestemmingen/${dest.slug}`}
                       className="group relative aspect-[3/4] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
                     >
-                      {otherHero.startsWith('http') ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={otherHero} alt={`${dest.name} — ${dest.region}, Costa Brava`} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      ) : (
-                        <Image
-                          src={otherHero}
-                          alt={`${dest.name} — ${dest.region}, Costa Brava`}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          sizes="(max-width: 640px) 50vw, 33vw"
-                        />
-                      )}
+                      <Image
+                        src={otherHero}
+                        alt={`${dest.name} — ${dest.region}, Costa Brava`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        sizes="(max-width: 640px) 50vw, 33vw"
+                        unoptimized={otherHero.startsWith('http')}
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                         <h3 className="text-sm sm:text-base font-bold text-white">{dest.name}</h3>

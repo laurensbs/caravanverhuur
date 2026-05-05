@@ -1468,8 +1468,15 @@ function MijnAccountContent() {
                         <div key={trail.id} className="bg-white rounded-2xl overflow-hidden">
                           <div className="flex flex-col sm:flex-row">
                             {trail.photos?.[0] && (
-                              <div className="sm:w-40 h-32 sm:h-auto shrink-0">
-                                <img src={trail.photos[0]} alt={trail.name} className="w-full h-full object-cover" />
+                              <div className="sm:w-40 h-32 sm:h-auto shrink-0 relative">
+                                <Image
+                                  src={trail.photos[0]}
+                                  alt={trail.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 640px) 100vw, 160px"
+                                  unoptimized={trail.photos[0].startsWith('http')}
+                                />
                               </div>
                             )}
                             <div className="p-4 flex-1 min-w-0">

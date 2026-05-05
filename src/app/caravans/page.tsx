@@ -368,12 +368,14 @@ export default function CaravansPage() {
                 >
                   <Link href={`/bestemmingen/${c.slug}`} className="group block">
                     <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-2.5 shadow-sm">
-                      {(c.photos?.[0] || '').startsWith('http') ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.photos![0]} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      ) : (
-                        <Image src={c.photos?.[0] || '/og-image.jpg'} alt={c.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 640px) 75vw, (max-width: 1024px) 50vw, 25vw" />
-                      )}
+                      <Image
+                        src={c.photos?.[0] || '/og-image.jpg'}
+                        alt={c.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        sizes="(max-width: 640px) 75vw, (max-width: 1024px) 50vw, 25vw"
+                        unoptimized={(c.photos?.[0] || '').startsWith('http')}
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                       <span className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-foreground shadow-sm">
                         {c.region}
