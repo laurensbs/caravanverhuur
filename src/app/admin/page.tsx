@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { useAdmin } from '@/i18n/admin-context';
+import ActivityFeed from '@/components/admin/ActivityFeed';
 import {
   getBookingCaravan,
   getBookingCamping,
@@ -527,6 +528,9 @@ export default function AdminDashboard() {
                   <div className="shrink-0">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(b.status)}`} > {ts(b.status)} </span> </div> </div> ); })} </div> )} </motion.div>
+
+      {/* Recente activiteit — admin-acties van de laatste tijd */}
+      <ActivityFeed limit={10} />
 
       {/* Export all data — admin only */}
       {role === 'admin' && (
