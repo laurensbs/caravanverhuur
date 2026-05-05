@@ -119,7 +119,22 @@ export default function PrivacyPage() {
       icon: Cookie,
       title: t('privacyPage.s6Title'),
       content: (
-        <p className="text-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.s6P1') }} />
+        <div className="space-y-3">
+          <p className="text-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPage.s6P1') }} />
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                localStorage.removeItem('cookie-consent-v2');
+                localStorage.removeItem('cookie-consent');
+              } catch {}
+              window.location.reload();
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
+          >
+            {t('privacyPage.cookieReset') || 'Cookie-voorkeuren opnieuw kiezen'}
+          </button>
+        </div>
       ),
     },
     {
