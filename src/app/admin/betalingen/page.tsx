@@ -28,7 +28,7 @@ import {
 } from '@/data/admin';
 
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['OPENSTAAND', 'BETAALD', 'TERUGBETAALD', 'MISLUKT'];
-const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'HUUR', 'BORG', 'BORG_RETOUR'];
+const PAYMENT_TYPE_OPTIONS: PaymentType[] = ['AANBETALING', 'RESTBETALING', 'HUUR', 'BORG', 'BORG_RETOUR', 'REFUND'];
 
 // Big visual badge — same color set as /admin/boekingen list view.
 function paymentStatusBadge(status: PaymentStatus): { label: string; cls: string } {
@@ -101,11 +101,16 @@ export default function BetalingenPage() {
     fetchPayments();
   }, [fetchPayments]);
 
+  type RefundMode = 'full' | 'partial' | 'policy';
+  const [refundMode, setRefundMode] = useState<RefundMode>('full');
+  const [refundAmount, setRefundAmount] = useState('');
   const [refundNote, setRefundNote] = useState('');
   const [refundNotify, setRefundNotify] = useState(true);
 
   const openRefundDialog = (paymentId: string) => {
     setRefundConfirm(paymentId);
+    setRefundMode('full');
+    setRefundAmount('');
     setRefundNote('');
     setRefundNotify(true);
   };
@@ -113,24 +118,38 @@ export default function BetalingenPage() {
   const handleRefund = async (paymentId: string) => {
     setRefundingId(paymentId);
     try {
+      const body: Record<string, unknown> = {
+        paymentId,
+        note: refundNote.trim() || undefined,
+        notifyCustomer: refundNotify,
+      };
+      if (refundMode === 'partial') {
+        const n = parseFloat(refundAmount.replace(',', '.'));
+        if (!Number.isFinite(n) || n <= 0) {
+          toast('Vul een geldig bedrag in', 'error');
+          setRefundingId(null);
+          return;
+        }
+        body.amount = n;
+      } else if (refundMode === 'policy') {
+        body.applyPolicy = true;
+      }
       const res = await fetch('/api/admin/refund', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId, note: refundNote.trim() || undefined, notifyCustomer: refundNotify }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setPayments(prev =>
-          prev.map(p =>
-            p.id === paymentId
-              ? { ...p, status: 'TERUGBETAALD' as PaymentStatus }
-              : p
-          )
-        );
+        // Refresh om eventueel nieuwe REFUND-row (partial) te tonen.
+        fetchPayments();
+        const summary = data.partial
+          ? `€${Number(data.refundAmount).toFixed(2)} terugbetaald (gedeeltelijk)`
+          : 'Volledig terugbetaald';
         toast(
           refundNotify
-            ? (data.mailSent ? 'Terugbetaald — klant heeft een bevestigingsmail' : 'Terugbetaald — let op: e-mail mislukt')
-            : 'Terugbetaald (zonder klantmail)',
+            ? `${summary} — ${data.mailSent ? 'klant heeft een bevestigingsmail' : 'let op: e-mail mislukt'}`
+            : `${summary} (zonder klantmail)`,
           refundNotify && !data.mailSent ? 'error' : 'success',
         );
       } else {
@@ -142,6 +161,7 @@ export default function BetalingenPage() {
     setRefundingId(null);
     setRefundConfirm(null);
     setRefundNote('');
+    setRefundAmount('');
   };
 
   // Booking-level mark actions. The dropdown on each row lets admin pick
@@ -559,13 +579,52 @@ export default function BetalingenPage() {
               onClick={() => { setRefundConfirm(null); setRefundNote(''); }}
               className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-default"
             />
-            <div role="dialog" aria-modal="true" aria-labelledby="refund-title" className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[min(92vw,440px)] bg-white rounded-2xl shadow-2xl p-5 sm:p-6">
+            <div role="dialog" aria-modal="true" aria-labelledby="refund-title" className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[min(92vw,480px)] bg-white rounded-2xl shadow-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
               <h3 id="refund-title" className="text-base font-semibold text-foreground mb-1">Markeer als terugbetaald</h3>
               <p className="text-xs text-muted mb-4">
-                Bedrag <strong className="text-foreground">{formatCurrency(Number(target.amount))}</strong>
+                Origineel bedrag <strong className="text-foreground">{formatCurrency(Number(target.amount))}</strong>
                 {target.booking_ref && <> — boeking <strong className="text-foreground">{target.booking_ref}</strong></>}.
                 Verwerk de daadwerkelijke refund handmatig in Holded/Stripe.
               </p>
+
+              {/* Mode-keuze */}
+              <fieldset className="mb-4 space-y-1.5">
+                <legend className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1">Type terugbetaling</legend>
+                <label className="flex items-start gap-2 text-xs cursor-pointer p-2 rounded-lg hover:bg-surface">
+                  <input type="radio" name="refund-mode" checked={refundMode === 'full'} onChange={() => setRefundMode('full')} className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-foreground">Volledig — {formatCurrency(Number(target.amount))}</div>
+                    <div className="text-muted">Het hele bedrag wordt teruggeboekt.</div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 text-xs cursor-pointer p-2 rounded-lg hover:bg-surface">
+                  <input type="radio" name="refund-mode" checked={refundMode === 'policy'} onChange={() => setRefundMode('policy')} className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-foreground">Volgens algemene voorwaarden</div>
+                    <div className="text-muted">Server berekent: &gt;30d 100%, 14-30d 50%, &lt;14d geen restitutie.</div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 text-xs cursor-pointer p-2 rounded-lg hover:bg-surface">
+                  <input type="radio" name="refund-mode" checked={refundMode === 'partial'} onChange={() => setRefundMode('partial')} className="mt-0.5" />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">Gedeeltelijk — eigen bedrag</div>
+                    <div className="text-muted mb-1.5">Maakt een aparte tegenboeking.</div>
+                    {refundMode === 'partial' && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-foreground-light">€</span>
+                        <input
+                          type="text" inputMode="decimal" value={refundAmount}
+                          onChange={(e) => setRefundAmount(e.target.value)}
+                          placeholder={Number(target.amount).toFixed(2)}
+                          className="w-28 px-2 py-1 text-sm bg-surface rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                        />
+                        <span className="text-[10px] text-muted">van {formatCurrency(Number(target.amount))}</span>
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </fieldset>
+
               <label htmlFor="refund-note" className="block text-xs font-semibold text-foreground-light mb-1.5">
                 Notitie voor de klant <span className="text-muted font-normal">(optioneel)</span>
               </label>
