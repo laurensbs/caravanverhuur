@@ -101,15 +101,25 @@ export default function BetalingenPage() {
     fetchPayments();
   }, [fetchPayments]);
 
+  const [refundNote, setRefundNote] = useState('');
+  const [refundNotify, setRefundNotify] = useState(true);
+
+  const openRefundDialog = (paymentId: string) => {
+    setRefundConfirm(paymentId);
+    setRefundNote('');
+    setRefundNotify(true);
+  };
+
   const handleRefund = async (paymentId: string) => {
     setRefundingId(paymentId);
     try {
       const res = await fetch('/api/admin/refund', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
+        body: JSON.stringify({ paymentId, note: refundNote.trim() || undefined, notifyCustomer: refundNotify }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setPayments(prev =>
           prev.map(p =>
             p.id === paymentId
@@ -117,15 +127,21 @@ export default function BetalingenPage() {
               : p
           )
         );
-        toast(t('payments.refunded'), 'success');
+        toast(
+          refundNotify
+            ? (data.mailSent ? 'Terugbetaald — klant heeft een bevestigingsmail' : 'Terugbetaald — let op: e-mail mislukt')
+            : 'Terugbetaald (zonder klantmail)',
+          refundNotify && !data.mailSent ? 'error' : 'success',
+        );
       } else {
-        toast(t('common.actionFailed'), 'error');
+        toast(data?.error || t('common.actionFailed'), 'error');
       }
     } catch {
       toast(t('common.actionFailed'), 'error');
     }
     setRefundingId(null);
     setRefundConfirm(null);
+    setRefundNote('');
   };
 
   // Booking-level mark actions. The dropdown on each row lets admin pick
@@ -450,30 +466,12 @@ export default function BetalingenPage() {
                     <span>Markeer</span>
                   </button>
                   {payment.status === 'BETAALD' && (
-                    refundConfirm === payment.id ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleRefund(payment.id)}
-                          disabled={refundingId === payment.id}
-                          className="text-[10px] text-red-700 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer disabled:opacity-50"
-                        >
-                          {refundingId === payment.id ? '...' : 'OK'}
-                        </button>
-                        <button
-                          onClick={() => setRefundConfirm(null)}
-                          className="text-[10px] text-muted px-1"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setRefundConfirm(payment.id)}
-                        className="text-[10px] text-red-600 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer"
-                      >
-                        Refund
-                      </button>
-                    )
+                    <button
+                      onClick={() => openRefundDialog(payment.id)}
+                      className="text-[10px] text-red-600 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer"
+                    >
+                      Refund
+                    </button>
                   )}
                 </div>
               </div>
@@ -545,6 +543,65 @@ export default function BetalingenPage() {
               <button role="menuitem" onClick={() => handleMarkAction(target.id, target.booking_id, 'mark-borg-returned')} className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 text-blue-700 flex items-center gap-2">
                 <CheckCircle2 size={12} /> Borg retour gedaan
               </button>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Refund-dialog — centraal modal met optionele notitie + opt-in mail */}
+      {refundConfirm && (() => {
+        const target = payments.find(p => p.id === refundConfirm);
+        if (!target) return null;
+        return (
+          <>
+            <button
+              aria-label="Sluit"
+              onClick={() => { setRefundConfirm(null); setRefundNote(''); }}
+              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm cursor-default"
+            />
+            <div role="dialog" aria-modal="true" aria-labelledby="refund-title" className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[min(92vw,440px)] bg-white rounded-2xl shadow-2xl p-5 sm:p-6">
+              <h3 id="refund-title" className="text-base font-semibold text-foreground mb-1">Markeer als terugbetaald</h3>
+              <p className="text-xs text-muted mb-4">
+                Bedrag <strong className="text-foreground">{formatCurrency(Number(target.amount))}</strong>
+                {target.booking_ref && <> — boeking <strong className="text-foreground">{target.booking_ref}</strong></>}.
+                Verwerk de daadwerkelijke refund handmatig in Holded/Stripe.
+              </p>
+              <label htmlFor="refund-note" className="block text-xs font-semibold text-foreground-light mb-1.5">
+                Notitie voor de klant <span className="text-muted font-normal">(optioneel)</span>
+              </label>
+              <textarea
+                id="refund-note"
+                value={refundNote}
+                onChange={(e) => setRefundNote(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Bijv. 'Reden van terugbetaling: annulering 14 dagen voor aankomst.'"
+                className="w-full px-3 py-2 text-sm bg-surface rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none"
+              />
+              <p className="mt-1 text-[10px] text-muted text-right">{refundNote.length}/500</p>
+              <label className="flex items-center gap-2 mt-3 text-xs text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={refundNotify}
+                  onChange={(e) => setRefundNotify(e.target.checked)}
+                />
+                Stuur bevestigingsmail naar klant
+              </label>
+              <div className="flex items-center gap-2 mt-5">
+                <button
+                  onClick={() => handleRefund(refundConfirm)}
+                  disabled={refundingId === refundConfirm}
+                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50"
+                >
+                  {refundingId === refundConfirm ? 'Bezig…' : 'Bevestig terugbetaling'}
+                </button>
+                <button
+                  onClick={() => { setRefundConfirm(null); setRefundNote(''); }}
+                  className="px-4 py-2.5 bg-surface hover:bg-surface-alt text-foreground text-sm font-semibold rounded-xl border border-border"
+                >
+                  Annuleer
+                </button>
+              </div>
             </div>
           </>
         );

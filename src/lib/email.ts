@@ -794,6 +794,56 @@ export async function sendPaymentFailedEmail(to: string, data: {
   });
 }
 
+// Refund confirmation — sent when admin marks (part of) a payment as
+// refunded. Stripe/Holded refund itself is processed manually; this mail
+// confirms the customer-facing fact + amount. Note is optional free text
+// for context (e.g. "vanwege annulering binnen 14 dagen").
+export async function sendRefundConfirmationEmail(to: string, data: {
+  guestName: string;
+  reference: string;
+  amount: number;
+  note?: string;
+  partial?: boolean;
+}, locale?: string) {
+  const firstName = data.guestName.split(' ')[0];
+  const subject = locale === 'es'
+    ? `Reembolso procesado — ${data.reference}`
+    : locale === 'en'
+    ? `Refund processed — ${data.reference}`
+    : `Terugbetaling verwerkt — ${data.reference}`;
+  const heading_ = locale === 'es' ? 'Reembolso procesado' : locale === 'en' ? 'Refund processed' : 'Terugbetaling verwerkt';
+  const intro = locale === 'es'
+    ? `Hola ${firstName}, hemos procesado un reembolso${data.partial ? ' parcial' : ''} para tu reserva <strong>${data.reference}</strong>.`
+    : locale === 'en'
+    ? `Hi ${firstName}, we have processed a${data.partial ? ' partial' : ''} refund for your booking <strong>${data.reference}</strong>.`
+    : `Hoi ${firstName}, we hebben een${data.partial ? ' gedeeltelijke' : ''} terugbetaling verwerkt voor je boeking <strong>${data.reference}</strong>.`;
+  const tip = locale === 'es'
+    ? 'El importe se devolverá a tu método de pago original en un plazo de 5-10 días hábiles.'
+    : locale === 'en'
+    ? 'The amount will be returned to your original payment method within 5-10 business days.'
+    : 'Het bedrag wordt binnen 5-10 werkdagen teruggestort op je oorspronkelijke betaalmethode.';
+
+  return sendEmail({
+    to,
+    subject,
+    html: emailWrapper(`
+      ${badge('↩︎', heading_)}
+      ${heading(heading_)}
+      ${subtext(intro)}
+
+      <!-- Amount display -->
+      <div style="background:linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);border:1px solid #BFDBFE;border-radius:16px;padding:28px;text-align:center;margin:0 0 28px;">
+        <p style="margin:0 0 4px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${data.partial ? (locale === 'en' ? 'Partial refund' : locale === 'es' ? 'Reembolso parcial' : 'Gedeeltelijke terugbetaling') : (locale === 'en' ? 'Refund' : locale === 'es' ? 'Reembolso' : 'Terugbetaling')}</p>
+        <p style="margin:0;color:#2563EB;font-weight:800;font-size:36px;letter-spacing:-0.5px;">${formatPrice(data.amount)}</p>
+      </div>
+
+      ${data.note ? `<div style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:10px;padding:14px 18px;margin:0 0 28px;"><p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;"><strong style="color:#0F172A;">${locale === 'en' ? 'Note' : locale === 'es' ? 'Nota' : 'Notitie'}:</strong> ${data.note}</p></div>` : ''}
+
+      ${highlight(`<p style="margin:0;color:#64748B;font-size:13px;line-height:1.6;">${tip}</p>`)}
+    `, subject, locale),
+  });
+}
+
 export async function sendExtrasAddedEmail(to: string, data: {
   guestName: string;
   reference: string;
