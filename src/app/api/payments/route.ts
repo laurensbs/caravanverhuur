@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken, updatePaymentLink, updatePaymentReminderSent, getPaymentById } from '@/lib/db';
+import { getAllPayments, updatePaymentStatus, createPayment, getPaymentsByBookingId, getBookingById, getCustomerByEmail, getCustomerBySessionToken, updatePaymentLink, updatePaymentReminderSent, getPaymentById, logActivity } from '@/lib/db';
 import { sendPaymentConfirmationEmail, sendPaymentReminderEmail } from '@/lib/email';
+import { markPaymentPaid } from '@/lib/payment-flow';
+import { getSessionFromHeaders } from '@/lib/admin-auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -131,6 +133,37 @@ export async function PUT(request: NextRequest) {
     if (action === 'update-link') {
       await updatePaymentLink(id, paymentLink || '');
       return NextResponse.json({ success: true });
+    }
+
+    if (action === 'mark-paid') {
+      // Admin marks an OPENSTAAND payment as BETAALD without going through
+      // Stripe. Used when payment came in offline (bank transfer, manual
+      // tikkie) or when a Stripe webhook silently dropped.
+      const skipEmail = body?.skipEmail === true;
+      try {
+        const result = await markPaymentPaid({
+          paymentId: id,
+          source: 'admin',
+          skipEmail,
+        });
+        try {
+          const session = getSessionFromHeaders(request);
+          await logActivity({
+            actor: session.user,
+            role: session.role,
+            action: 'payment.mark-paid',
+            entityType: 'payment',
+            entityId: id,
+            details: result.alreadyPaid
+              ? 'no-op (already BETAALD)'
+              : `email=${result.emailSent ? 'sent' : (skipEmail ? 'skipped' : 'failed')}`,
+          });
+        } catch (logErr) { console.error('[mark-paid] activity log err:', logErr); }
+        return NextResponse.json({ success: true, ...result });
+      } catch (err) {
+        console.error('[mark-paid] err:', err);
+        return NextResponse.json({ error: err instanceof Error ? err.message : 'mark-paid failed' }, { status: 500 });
+      }
     }
 
     if (action === 'send-reminder') {

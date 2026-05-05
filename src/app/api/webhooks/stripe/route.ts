@@ -1,30 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { getStripe } from '@/lib/stripe';
-import { updatePaymentStatus, updatePaymentStripeId, getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updateBookingStatus, createCustomer, getAllCampings, getAllCustomCaravans } from '@/lib/db';
-import { sendBookingConfirmationEmail, sendPaymentFailedEmail } from '@/lib/email';
-import { markHoldedInvoicePaid } from '@/lib/holded';
-import { hashPassword, generateTemporaryPassword } from '@/lib/password';
-import { caravans as staticCaravans } from '@/data/caravans';
-import { campings as staticCampings } from '@/data/campings';
-
-async function resolveCaravanName(caravanId: string): Promise<string> {
-  const fromStatic = staticCaravans.find(c => c.id === caravanId)?.name;
-  if (fromStatic) return fromStatic;
-  try {
-    const custom = await getAllCustomCaravans();
-    return (custom.find((c: Record<string, unknown>) => c.id === caravanId)?.name as string) || caravanId;
-  } catch { return caravanId; }
-}
-
-async function resolveCampingName(campingId: string): Promise<string> {
-  try {
-    const dbCampings = await getAllCampings();
-    const found = dbCampings.find((c: Record<string, unknown>) => c.id === campingId);
-    if (found) return found.name as string;
-  } catch {}
-  return staticCampings.find(c => c.id === campingId)?.name || campingId;
-}
+import { getPaymentById, getBookingById, getPaymentByStripeId, getCustomerByEmail, updatePaymentStatus } from '@/lib/db';
+import { sendPaymentFailedEmail } from '@/lib/email';
+import { markPaymentPaid } from '@/lib/payment-flow';
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -64,88 +43,17 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        const existingPayment = await getPaymentById(paymentId).catch((e) => { console.error('[webhook] getPaymentById err:', e); return null; });
-        const wasAlreadyPaid = existingPayment?.status === 'BETAALD';
-
-        // 1) Status updates — elk in eigen try/catch zodat één fout de mail niet blokkeert
-        if (!wasAlreadyPaid) {
-          const paidAt = new Date().toISOString();
-          try { await updatePaymentStatus(paymentId, 'BETAALD', paidAt); } catch (e) { console.error('[webhook] updatePaymentStatus err:', e); }
-          if (session.payment_intent) {
-            try { await updatePaymentStripeId(paymentId, String(session.payment_intent)); } catch (e) { console.error('[webhook] updatePaymentStripeId err:', e); }
-          }
-          if (existingPayment?.type === 'AANBETALING') {
-            try { await updateBookingStatus(existingPayment.booking_id, 'AANBETAALD'); } catch (e) { console.error('[webhook] updateBookingStatus err:', e); }
-          }
-        }
-
-        // 2) Holded mark-paid (best effort)
-        const holdedInvoiceId = session.metadata?.holdedInvoiceId;
-        if (holdedInvoiceId && !wasAlreadyPaid) {
-          try { await markHoldedInvoicePaid(holdedInvoiceId); } catch (e) { console.error('[webhook] markHoldedInvoicePaid err:', e); }
-        }
-
-        // 3) Bevestigingsmail — alleen sturen als deze webhook de transitie deed.
-        //    Bij een retry (wasAlreadyPaid) niet opnieuw sturen om dubbel te voorkomen.
-        if (wasAlreadyPaid) {
-          console.log(`[webhook] Payment ${paymentId} already BETAALD — geen mail (idempotent)`);
-          break;
-        }
-
         try {
-          const payment = existingPayment || await getPaymentById(paymentId);
-          if (!payment) { console.warn('[webhook] payment not found after update'); break; }
-          const booking = await getBookingById(payment.booking_id);
-          if (!booking) { console.warn('[webhook] booking not found'); break; }
-
-          const normalizedEmail = booking.guest_email.toLowerCase().trim();
-          let whCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-          let temporaryPasswordPlain: string | undefined;
-          if (!whCustomer) {
-            try {
-              temporaryPasswordPlain = generateTemporaryPassword();
-              const hash = await hashPassword(temporaryPasswordPlain);
-              await createCustomer({
-                email: normalizedEmail,
-                passwordHash: hash,
-                name: booking.guest_name,
-                phone: booking.guest_phone,
-                locale: 'nl',
-                mustChangePassword: true,
-                emailVerified: true,
-              });
-              whCustomer = await getCustomerByEmail(normalizedEmail).catch(() => null);
-              console.log(`[webhook] Created customer for ${normalizedEmail}, tempPwd generated`);
-            } catch (createErr) {
-              console.error('[webhook] createCustomer err:', createErr);
-            }
-          }
-
-          const caravanName = await resolveCaravanName(booking.caravan_id).catch(() => booking.caravan_id);
-          const campingName = await resolveCampingName(booking.camping_id).catch(() => booking.camping_id);
-
-          const mailRes = await sendBookingConfirmationEmail(booking.guest_email, {
-            guestName: booking.guest_name,
-            reference: booking.reference,
-            caravanName,
-            campingName,
-            checkIn: booking.check_in,
-            checkOut: booking.check_out,
-            nights: booking.nights,
-            adults: booking.adults,
-            children: booking.children,
-            totalPrice: parseFloat(booking.total_price),
-            paymentDeadline: 'nu',
-            immediatePayment: true,
-            spotNumber: booking.spot_number || undefined,
-            borgAmount: parseFloat(booking.borg_amount),
-            hasBedlinnen: !!booking.special_requests && /bedlinnen/i.test(booking.special_requests),
-            alreadyPaid: true,
-            temporaryPassword: temporaryPasswordPlain,
-          }, whCustomer?.locale || 'nl');
-          console.log(`[webhook] sendBookingConfirmationEmail → success=${mailRes.success}, err=${mailRes.error || 'none'}`);
-        } catch (emailErr) {
-          console.error('[webhook] confirmation mail block err:', emailErr);
+          const result = await markPaymentPaid({
+            paymentId,
+            source: 'stripe',
+            stripePaymentIntent: session.payment_intent ? String(session.payment_intent) : undefined,
+            holdedInvoiceId: session.metadata?.holdedInvoiceId,
+          });
+          console.log(`[webhook] markPaymentPaid → alreadyPaid=${result.alreadyPaid}, emailSent=${result.emailSent}, err=${result.emailError || 'none'}`);
+        } catch (err) {
+          console.error('[webhook] markPaymentPaid err:', err);
+          Sentry.captureException(err, { tags: { integration: 'stripe', stage: 'mark-paid' }, extra: { paymentId } });
         }
         break;
       }

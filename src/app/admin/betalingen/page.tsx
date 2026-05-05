@@ -58,6 +58,8 @@ export default function BetalingenPage() {
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [markingPaid, setMarkingPaid] = useState<string | null>(null);
+  const [markPaidConfirm, setMarkPaidConfirm] = useState<string | null>(null);
 
   const fetchPayments = useCallback(() => {
     setLoading(true);
@@ -97,6 +99,40 @@ export default function BetalingenPage() {
     }
     setRefundingId(null);
     setRefundConfirm(null);
+  };
+
+  // Manual mark-paid: same flow as the Stripe webhook (DB → booking-status →
+  // Holded mark-paid → confirmation email). Used for offline payments or
+  // when a webhook silently dropped.
+  const handleMarkPaid = async (paymentId: string) => {
+    setMarkingPaid(paymentId);
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: paymentId, action: 'mark-paid' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPayments(prev => prev.map(p =>
+          p.id === paymentId
+            ? { ...p, status: 'BETAALD' as PaymentStatus, paid_at: new Date().toISOString() }
+            : p,
+        ));
+        toast(
+          data.alreadyPaid ? 'Was al betaald'
+            : data.emailSent ? 'Op betaald gezet — bevestigingsmail verzonden'
+            : 'Op betaald gezet — let op: e-mail mislukt',
+          data.emailSent === false && !data.alreadyPaid ? 'error' : 'success',
+        );
+      } else {
+        toast(data?.error || t('common.actionFailed'), 'error');
+      }
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    }
+    setMarkingPaid(null);
+    setMarkPaidConfirm(null);
   };
 
   const handleSendReminder = async (paymentId: string) => {
@@ -361,14 +397,45 @@ export default function BetalingenPage() {
 
                 <div className="col-span-1 flex items-center justify-end gap-1.5">
                   {payment.status === 'OPENSTAAND' && (
-                    <button
-                      onClick={() => handleSendReminder(payment.id)}
-                      disabled={sendingReminder === payment.id}
-                      className="inline-flex items-center gap-1 text-[10px] text-white bg-amber-600 hover:bg-amber-700 px-2 py-1 rounded-lg disabled:opacity-50 cursor-pointer"
-                      title={t('payments.sendReminder')}
-                    >
-                      {sendingReminder === payment.id ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleSendReminder(payment.id)}
+                        disabled={sendingReminder === payment.id}
+                        className="inline-flex items-center gap-1 text-[10px] text-white bg-amber-600 hover:bg-amber-700 px-2 py-1 rounded-lg disabled:opacity-50 cursor-pointer"
+                        title={t('payments.sendReminder')}
+                        aria-label={t('payments.sendReminder')}
+                      >
+                        {sendingReminder === payment.id ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                      </button>
+                      {markPaidConfirm === payment.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleMarkPaid(payment.id)}
+                            disabled={markingPaid === payment.id}
+                            className="text-[10px] text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded-lg cursor-pointer disabled:opacity-50"
+                          >
+                            {markingPaid === payment.id ? '...' : 'Bevestig'}
+                          </button>
+                          <button
+                            onClick={() => setMarkPaidConfirm(null)}
+                            className="text-[10px] text-muted px-1"
+                            aria-label="Annuleren"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setMarkPaidConfirm(payment.id)}
+                          className="inline-flex items-center gap-1 text-[10px] text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-lg cursor-pointer"
+                          title="Markeer als betaald (zonder Stripe)"
+                          aria-label="Markeer als betaald"
+                        >
+                          <CheckCircle2 size={10} />
+                          <span>Op groen</span>
+                        </button>
+                      )}
+                    </>
                   )}
                   {payment.status === 'BETAALD' && (
                     refundConfirm === payment.id ? (
