@@ -119,6 +119,20 @@ export default function AdminBorgPage() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useUrlState('filter', 'all');
+  // Departure-prep widget — admin kan 'm inklappen om scroll-ruimte te
+  // winnen, met name op mobile. Voorkeur in localStorage zodat keuze
+  // bewaard blijft tussen sessies.
+  const [departurePrepCollapsed, setDeparturePrepCollapsed] = useState(false);
+  useEffect(() => {
+    setDeparturePrepCollapsed(localStorage.getItem('borg-prep-collapsed') === '1');
+  }, []);
+  const toggleDeparturePrep = () => {
+    setDeparturePrepCollapsed((v) => {
+      const next = !v;
+      try { localStorage.setItem('borg-prep-collapsed', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
   const [newItemCategory, setNewItemCategory] = useState('');
@@ -388,22 +402,35 @@ export default function AdminBorgPage() {
 
         return (
           <div className="bg-white rounded-xl p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
+            <button
+              type="button"
+              onClick={toggleDeparturePrep}
+              className="w-full flex items-center justify-between gap-2 text-left cursor-pointer"
+              aria-expanded={!departurePrepCollapsed}
+            >
+              <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-foreground flex items-center gap-2 text-sm sm:text-base">
-                  <Truck className="w-4 h-4 text-primary" />
+                  <Truck className="w-4 h-4 text-primary shrink-0" />
                   {t('deposit.departurePrep')}
+                  <span className="text-xs font-normal text-muted">({departures.length})</span>
                 </h3>
-                <p className="text-xs text-muted mt-0.5">{t('deposit.departurePrepDesc')}</p>
+                {!departurePrepCollapsed && (
+                  <p className="text-xs text-muted mt-0.5">{t('deposit.departurePrepDesc')}</p>
+                )}
               </div>
-              {cashDepartures.length > 0 && (
-                <div className="bg-amber-100 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 animate-pulse">
-                  <CreditCard size={14} />
-                  {t('deposit.bringPinDevice')}
-                </div>
-              )}
-            </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {cashDepartures.length > 0 && (
+                  <div className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                    <CreditCard size={14} />
+                    <span className="hidden sm:inline">{t('deposit.bringPinDevice')}</span>
+                    <span className="sm:hidden">{cashDepartures.length}</span>
+                  </div>
+                )}
+                {departurePrepCollapsed ? <ChevronDown size={18} className="text-muted" /> : <ChevronUp size={18} className="text-muted" />}
+              </div>
+            </button>
 
+            {!departurePrepCollapsed && (
             <div className="space-y-2">
               {departures.map(dep => {
                 const borgAmount = dep.borg_amount ? parseFloat(dep.borg_amount) : 400;
@@ -477,6 +504,7 @@ export default function AdminBorgPage() {
                 );
               })}
             </div>
+            )}
           </div>
         );
       })()}

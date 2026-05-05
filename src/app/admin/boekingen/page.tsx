@@ -754,31 +754,35 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
       <div className="p-3 sm:p-4 border-t border-gray-100 space-y-3">
         <div>
           <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark" placeholder={t('bookings.notesPlaceholder')} />
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full px-3 py-2 bg-white rounded-lg text-sm resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary-dark" placeholder={t('bookings.notesPlaceholder')} />
         </div>
 
-        {/* Action row: save, discount, extras, delete */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Action row: save, discount, extras, delete.
+            Mobile (<sm): Save full-width prominent boven de andere acties zodat
+            'ie altijd direct bereikbaar is. Tap-targets ≥44px hoog. */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:flex-wrap">
           {notes !== (booking.admin_notes || '') && (
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-dark text-white rounded-lg text-xs font-medium hover:bg-[#1E40AF] cursor-pointer disabled:opacity-50">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            <button onClick={handleSave} disabled={saving} className="flex items-center justify-center gap-2 px-4 py-2.5 sm:py-1.5 bg-primary-dark text-white rounded-lg text-sm sm:text-xs font-medium hover:bg-[#1E40AF] cursor-pointer disabled:opacity-50 w-full sm:w-auto min-h-[44px] sm:min-h-0">
+              {saving ? <Loader2 className="w-4 h-4 sm:w-3.5 sm:h-3.5 animate-spin" /> : <Save className="w-4 h-4 sm:w-3.5 sm:h-3.5" />}
               {t('common.save')}
             </button>
           )}
-          <button onClick={() => { setShowDiscount(!showDiscount); setDiscountError(''); setDiscountSuccess(false); }} className="flex items-center gap-1.5 text-xs font-medium text-primary cursor-pointer px-2 py-1.5 rounded-lg hover:bg-primary/5">
-            <Tag className="w-3.5 h-3.5" />
-            {t('bookings.applyDiscount')}
-          </button>
-          <button onClick={() => { setShowExtras(!showExtras); setExtrasSuccess(false); }} className="flex items-center gap-1.5 text-xs font-medium text-amber-700 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-amber-50">
-            <Plus className="w-3.5 h-3.5" />
-            Extra&apos;s
-          </button>
-          {role === 'admin' && (
-            <button onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }} className="flex items-center gap-1.5 px-2 py-1.5 text-red-500 rounded-lg text-xs font-medium hover:bg-red-50 cursor-pointer ml-auto">
-              <Trash2 className="w-3.5 h-3.5" />
-              {t('bookings.deleteBooking')}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => { setShowDiscount(!showDiscount); setDiscountError(''); setDiscountSuccess(false); }} className="flex items-center gap-1.5 text-sm sm:text-xs font-medium text-primary cursor-pointer px-3 py-2 sm:px-2 sm:py-1.5 rounded-lg hover:bg-primary/5 min-h-[44px] sm:min-h-0">
+              <Tag className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              {t('bookings.applyDiscount')}
             </button>
-          )}
+            <button onClick={() => { setShowExtras(!showExtras); setExtrasSuccess(false); }} className="flex items-center gap-1.5 text-sm sm:text-xs font-medium text-amber-700 cursor-pointer px-3 py-2 sm:px-2 sm:py-1.5 rounded-lg hover:bg-amber-50 min-h-[44px] sm:min-h-0">
+              <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              Extra&apos;s
+            </button>
+            {role === 'admin' && (
+              <button onClick={() => { setShowDeleteConfirm(true); setDeletePassword(''); setDeleteError(''); }} className="flex items-center gap-1.5 px-3 py-2 sm:px-2 sm:py-1.5 text-red-500 rounded-lg text-sm sm:text-xs font-medium hover:bg-red-50 cursor-pointer sm:ml-auto min-h-[44px] sm:min-h-0">
+                <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                {t('bookings.deleteBooking')}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Discount panel */}
