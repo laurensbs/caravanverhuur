@@ -6,12 +6,27 @@ import { sendPaymentFailedEmail } from '@/lib/email';
 import { markPaymentPaid } from '@/lib/payment-flow';
 
 export async function POST(request: NextRequest) {
-  const stripe = getStripe();
+  // Boot-time env-var checks must NOT throw — Stripe will retry forever on
+  // 5xx and we lose visibility. Return a structured error instead.
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
   if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET is not set');
+    console.error('[webhook] STRIPE_WEBHOOK_SECRET is not set');
+    Sentry.captureMessage('STRIPE_WEBHOOK_SECRET missing', { level: 'error', tags: { integration: 'stripe' } });
     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+  }
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('[webhook] STRIPE_SECRET_KEY is not set');
+    Sentry.captureMessage('STRIPE_SECRET_KEY missing', { level: 'error', tags: { integration: 'stripe' } });
+    return NextResponse.json({ error: 'Stripe key not configured' }, { status: 500 });
+  }
+
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    console.error('[webhook] getStripe failed:', err);
+    Sentry.captureException(err, { tags: { integration: 'stripe', stage: 'init' } });
+    return NextResponse.json({ error: 'Stripe init failed' }, { status: 500 });
   }
 
   const body = await request.text();
