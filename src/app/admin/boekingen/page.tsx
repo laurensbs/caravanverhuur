@@ -245,14 +245,8 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (newStatus !== booking.status) {
-        await fetch('/api/bookings', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: booking.id, status: newStatus }),
-        });
-        onStatusChange(booking.id, newStatus);
-      }
+      // Status wordt niet meer hier opgeslagen — alleen via Markeer-acties
+      // op /admin/betalingen. Save-knop is alleen voor notes-changes.
       if (notes !== (booking.admin_notes || '')) {
         await fetch('/api/bookings', {
           method: 'PATCH',
@@ -686,27 +680,16 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
         )}
       </SectionToggle>
 
-      {/* STATUS + NOTES + ACTIONS */}
+      {/* NOTES + ACTIONS — status wordt nu geregeld via 'Markeer'-acties op /admin/betalingen */}
       <div className="p-3 sm:p-4 border-t border-gray-100 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{t('bookings.changeStatus')}</label>
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getStatusColor(newStatus).split(' ').filter(c => c.startsWith('bg-')).join(' ')}`} />
-              <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as BookingStatus)} className="flex-1 px-2 py-1.5 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-dark">
-                {STATUS_OPTIONS.map((s) => (<option key={s} value={s}>{s.replace('_', ' ')}</option>))}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark" placeholder={t('bookings.notesPlaceholder')} />
-          </div>
+        <div>
+          <label className="text-[10px] font-semibold text-muted uppercase tracking-wider block mb-1">{role === 'admin' ? t('bookings.adminNotes') : t('bookings.staffNotes')}</label>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-dark" placeholder={t('bookings.notesPlaceholder')} />
         </div>
 
         {/* Action row: save, discount, extras, delete */}
         <div className="flex items-center gap-2 flex-wrap">
-          {(newStatus !== booking.status || notes !== (booking.admin_notes || '')) && (
+          {notes !== (booking.admin_notes || '') && (
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-dark text-white rounded-lg text-xs font-medium hover:bg-[#1E40AF] cursor-pointer disabled:opacity-50">
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               {t('common.save')}
