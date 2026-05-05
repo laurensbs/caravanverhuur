@@ -49,6 +49,7 @@ import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { campings as staticCampings } from '@/data/campings';
 import { holdedProformaAppUrl } from '@/lib/holded-urls';
+import { useUrlState } from '@/lib/use-url-state';
 
 const STATUS_OPTIONS: BookingStatus[] = [
   'NIEUW', 'BEVESTIGD', 'AANBETAALD', 'VOLLEDIG_BETAALD', 'ACTIEF', 'AFGEROND', 'GEANNULEERD',
@@ -969,10 +970,12 @@ export default function BookingenPage() {
   const { t, ts, dateLocale } = useAdmin();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALLE'>('ALLE');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  // Filter/search state in URL — overleeft refresh, bookmark-baar.
+  const [search, setSearch] = useUrlState('q', '');
+  const [statusFilterRaw, setStatusFilter] = useUrlState('status', 'ALLE');
+  const statusFilter = statusFilterRaw as BookingStatus | 'ALLE';
+  const [dateFrom, setDateFrom] = useUrlState('from', '');
+  const [dateTo, setDateTo] = useUrlState('to', '');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [customCaravans, setCustomCaravans] = useState<Caravan[]>([]);

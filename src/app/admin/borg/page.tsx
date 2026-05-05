@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
+import { useUrlState } from '@/lib/use-url-state';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardCheck,
@@ -117,7 +118,7 @@ export default function AdminBorgPage() {
   const [newStaffName, setNewStaffName] = useState('');
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useUrlState('filter', 'all');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
   const [newItemCategory, setNewItemCategory] = useState('');

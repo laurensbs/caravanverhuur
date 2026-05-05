@@ -19,6 +19,7 @@ import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
 import { holdedProformaAppUrl } from '@/lib/holded-urls';
+import { useUrlState } from '@/lib/use-url-state';
 import {
   formatDateTime,
   formatCurrency,
@@ -51,11 +52,14 @@ export default function BetalingenPage() {
   const { toast } = useToast();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'ALLE'>('ALLE');
-  const [typeFilter, setTypeFilter] = useState<PaymentType | 'ALLE'>('ALLE');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  // Filter/search state in de URL — overleeft refresh, bookmark-baar, back-knop herstelt vorige stand.
+  const [search, setSearch] = useUrlState('q', '');
+  const [statusFilterRaw, setStatusFilter] = useUrlState('status', 'ALLE');
+  const statusFilter = statusFilterRaw as PaymentStatus | 'ALLE';
+  const [typeFilterRaw, setTypeFilter] = useUrlState('type', 'ALLE');
+  const typeFilter = typeFilterRaw as PaymentType | 'ALLE';
+  const [dateFrom, setDateFrom] = useUrlState('from', '');
+  const [dateTo, setDateTo] = useUrlState('to', '');
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [refundConfirm, setRefundConfirm] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);

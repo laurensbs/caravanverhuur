@@ -30,6 +30,7 @@ import { useAdmin } from '@/i18n/admin-context';
 import { useToast } from '@/components/AdminToast';
 import { usePageActions } from '@/app/admin/layout';
 import { useLastActivity, LastEditedBadge } from '@/components/LastEditedBy';
+import { useUrlState } from '@/lib/use-url-state';
 
 interface Customer {
   id: string;
@@ -67,7 +68,7 @@ export default function AdminKlanten() {
   const isNl = locale === 'nl';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useUrlState('q', '');
 
   // Modal state
   const [modal, setModal] = useState<ModalType>(null);
