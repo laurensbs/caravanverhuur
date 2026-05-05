@@ -5,7 +5,7 @@ import { passwordResetLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const rl = passwordResetLimiter.check(ip);
+  const rl = await passwordResetLimiter.check(ip);
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Te veel pogingen. Probeer het later opnieuw.' },

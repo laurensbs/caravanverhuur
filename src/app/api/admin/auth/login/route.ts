@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await setupDatabase();
 
     const ip = getClientIp(request);
-    const rl = adminLoginLimiter.check(ip);
+    const rl = await adminLoginLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Te veel pogingen. Probeer opnieuw over ${rl.retryAfter} seconden.` },

@@ -12,7 +12,7 @@ const CheckoutSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const rl = checkoutLimiter.check(ip);
+    const rl = await checkoutLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Too many requests. Retry after ${rl.retryAfter} seconds.` },

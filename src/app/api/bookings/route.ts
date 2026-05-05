@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const rl = bookingLimiter.check(ip);
+    const rl = await bookingLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Too many requests. Retry after ${rl.retryAfter} seconds.` },

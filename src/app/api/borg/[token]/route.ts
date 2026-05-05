@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const ip = getClientIp(request);
-    const rl = borgLimiter.check(ip);
+    const rl = await borgLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }

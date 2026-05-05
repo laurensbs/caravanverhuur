@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request);
-    const rl = registerLimiter.check(ip);
+    const rl = await registerLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Te veel registratiepogingen. Probeer het over ${rl.retryAfter} seconden opnieuw.` },

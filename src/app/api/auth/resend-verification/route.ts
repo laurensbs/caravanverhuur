@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting (reuse login limiter)
     const ip = getClientIp(request);
-    const rl = loginLimiter.check(ip);
+    const rl = await loginLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Te veel pogingen. Probeer het over ${rl.retryAfter} seconden opnieuw.` },

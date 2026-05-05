@@ -1,64 +1,119 @@
 /**
- * Simple in-memory rate limiter for serverless.
- * Each instance tracks requests per IP within a sliding window.
- * Note: In multi-instance deployments, limits are per-instance.
- * For stricter enforcement, use Redis-backed rate limiting.
+ * Rate limiter met dual-mode:
+ *   - Upstash Redis (sliding-window, shared state over alle Vercel instances)
+ *     wanneer UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN gezet zijn.
+ *   - In-memory fallback per instance voor lokale dev en als safety-net.
+ *
+ * Alle limiters retourneren `Promise<{ success, remaining, retryAfter? }>`.
+ * Callers gebruiken `await limiter.check(ip)`.
+ *
+ * Migration-pad: zet de twee env-vars in Vercel (gratis tier van Upstash
+ * is ruim genoeg) en alle limits worden meteen multi-instance-correct.
+ * Zonder env-vars werkt alles als voorheen.
  */
+
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 interface RateLimitEntry {
   count: number;
   resetAt: number;
 }
 
-const stores = new Map<string, Map<string, RateLimitEntry>>();
+const memStores = new Map<string, Map<string, RateLimitEntry>>();
 
-// Cleanup old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const store of stores.values()) {
-    for (const [key, entry] of store) {
-      if (entry.resetAt < now) store.delete(key);
+// Cleanup verouderde entries elke 5 minuten (alleen in-memory mode).
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const store of memStores.values()) {
+      for (const [key, entry] of store) {
+        if (entry.resetAt < now) store.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  }, 5 * 60 * 1000);
+}
+
+// Lazy Redis-client: één instance gedeeld door alle limiters.
+let _redis: Redis | null = null;
+function getRedis(): Redis | null {
+  if (_redis) return _redis;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  _redis = new Redis({ url, token });
+  return _redis;
+}
+
+export interface CheckResult {
+  success: boolean;
+  remaining: number;
+  retryAfter?: number;
+}
 
 export function rateLimit(options: {
-  /** Unique name for this limiter (e.g. 'login', 'contact') */
+  /** Unique name (gebruikt als Redis-prefix + memory-key). */
   name: string;
-  /** Max number of requests in the window */
+  /** Max requests in window. */
   maxRequests: number;
-  /** Window size in seconds */
+  /** Window in seconden. */
   windowSeconds: number;
 }) {
   const { name, maxRequests, windowSeconds } = options;
 
-  if (!stores.has(name)) {
-    stores.set(name, new Map());
+  // Bouw Upstash-limiter lazy zodat tests/dev-mode zonder env-vars werken.
+  let _upstash: Ratelimit | null = null;
+  function getUpstash(): Ratelimit | null {
+    if (_upstash) return _upstash;
+    const redis = getRedis();
+    if (!redis) return null;
+    _upstash = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(maxRequests, `${windowSeconds} s`),
+      prefix: `rl:${name}`,
+      analytics: false,
+    });
+    return _upstash;
   }
-  const store = stores.get(name)!;
+
+  function memCheck(key: string): CheckResult {
+    if (!memStores.has(name)) memStores.set(name, new Map());
+    const store = memStores.get(name)!;
+    const now = Date.now();
+    const entry = store.get(key);
+    if (!entry || entry.resetAt < now) {
+      store.set(key, { count: 1, resetAt: now + windowSeconds * 1000 });
+      return { success: true, remaining: maxRequests - 1 };
+    }
+    if (entry.count >= maxRequests) {
+      return { success: false, remaining: 0, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+    }
+    entry.count++;
+    return { success: true, remaining: maxRequests - entry.count };
+  }
 
   return {
     /**
-     * Check if the given key (typically IP) is rate limited.
-     * Returns { success: true } if allowed, { success: false, retryAfter } if blocked.
+     * Check of `key` (typisch IP) onder de limit zit. Geeft success=false
+     * + retryAfter als het rate-limit is bereikt.
+     *
+     * Redis-failure → fallt back naar in-memory zodat een Upstash-outage
+     * geen rate-limiting completely uitschakelt of users blokkeert.
      */
-    check(key: string): { success: boolean; remaining: number; retryAfter?: number } {
-      const now = Date.now();
-      const entry = store.get(key);
-
-      if (!entry || entry.resetAt < now) {
-        // New window
-        store.set(key, { count: 1, resetAt: now + windowSeconds * 1000 });
-        return { success: true, remaining: maxRequests - 1 };
-      }
-
-      if (entry.count >= maxRequests) {
-        const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+    async check(key: string): Promise<CheckResult> {
+      const limiter = getUpstash();
+      if (!limiter) return memCheck(key);
+      try {
+        const res = await limiter.limit(key);
+        if (res.success) {
+          return { success: true, remaining: res.remaining };
+        }
+        const retryAfter = Math.max(1, Math.ceil((res.reset - Date.now()) / 1000));
         return { success: false, remaining: 0, retryAfter };
+      } catch (err) {
+        console.error(`[rate-limit:${name}] Upstash error, falling back to in-memory:`, err);
+        return memCheck(key);
       }
-
-      entry.count++;
-      return { success: true, remaining: maxRequests - entry.count };
     },
   };
 }

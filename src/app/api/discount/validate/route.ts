@@ -6,7 +6,7 @@ const discountLimiter = rateLimit({ name: 'discount-validate', maxRequests: 10, 
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const rl = discountLimiter.check(ip);
+  const rl = await discountLimiter.check(ip);
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Te veel pogingen. Probeer het later opnieuw.' },

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request);
-    const rl = chatLimiter.check(ip);
+    const rl = await chatLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Te veel berichten. Probeer het over ${rl.retryAfter} seconden opnieuw.` },

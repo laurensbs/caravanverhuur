@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request);
-    const rl = passwordResetLimiter.check(ip);
+    const rl = await passwordResetLimiter.check(ip);
     if (!rl.success) {
       return NextResponse.json(
         { error: `Te veel verzoeken. Probeer het over ${rl.retryAfter} seconden opnieuw.` },
