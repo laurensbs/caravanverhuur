@@ -124,3 +124,23 @@ export async function verifyAdminRequest(request: NextRequest): Promise<{ user: 
 export function unauthorizedResponse() {
   return NextResponse.json({ error: 'Niet geautoriseerd' }, { status: 401 });
 }
+
+/* ── Role-based access ────────────────────────────
+   Routes die admin-only zijn (refund, customer-delete, password-reset)
+   gebruiken requireRole. Returnt null als toegang ok, anders een 403-response
+   die de caller direct kan returnen.
+
+   Gebruik:
+     const denial = requireRole(request, ['admin']);
+     if (denial) return denial;
+*/
+export function requireRole(request: NextRequest, allowed: AdminRole[]): NextResponse | null {
+  const { role } = getSessionFromHeaders(request);
+  if (!allowed.includes(role)) {
+    return NextResponse.json(
+      { error: 'Onvoldoende rechten — alleen admins mogen deze actie uitvoeren' },
+      { status: 403 },
+    );
+  }
+  return null;
+}

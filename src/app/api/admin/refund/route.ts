@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPaymentById, updatePaymentStatus, getBookingById, logActivity, getCustomerByEmail, createPayment } from '@/lib/db';
-import { getSessionFromHeaders } from '@/lib/admin-auth';
+import { getSessionFromHeaders, requireRole } from '@/lib/admin-auth';
 import { parseJson } from '@/lib/validate';
 import { sendRefundConfirmationEmail } from '@/lib/email';
 import { computeRefundPolicy, computeRefundAmount } from '@/lib/refund-policy';
@@ -24,6 +24,9 @@ const RefundSchema = z.object({
 // alleen onze DB-status en stuurt de bevestigingsmail.
 export async function POST(request: NextRequest) {
   try {
+    const denial = requireRole(request, ['admin']);
+    if (denial) return denial;
+
     const parsed = await parseJson(request, RefundSchema);
     if (!parsed.ok) return parsed.response;
     const { paymentId, note, notifyCustomer, amount: requestedAmount, applyPolicy } = parsed.data;

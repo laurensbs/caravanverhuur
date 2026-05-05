@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerByEmail, updateCustomerPassword } from '@/lib/db';
 import { hashPassword, generateTemporaryPassword } from '@/lib/password';
 import { sql } from '@vercel/postgres';
+import { requireRole } from '@/lib/admin-auth';
 
 // POST /api/admin/reset-customer-password { email }
 // Genereert een nieuw tijdelijk wachtwoord, slaat de hash op, zet must_change_password=true,
@@ -9,6 +10,9 @@ import { sql } from '@vercel/postgres';
 export async function POST(request: NextRequest) {
   const cookie = request.cookies.get('admin_session')?.value;
   if (!cookie) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const denial = requireRole(request, ['admin']);
+  if (denial) return denial;
 
   try {
     const body = await request.json();

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCustomers, createCustomer, getCustomerByEmail, updateCustomerByAdmin, deleteCustomer, getChatConversationsByCustomerId, logActivity } from '@/lib/db';
 import { hashPassword } from '@/lib/password';
-import { getSessionFromHeaders } from '@/lib/admin-auth';
+import { getSessionFromHeaders, requireRole } from '@/lib/admin-auth';
 
 // GET - List all customers or get chats for a specific customer
 export async function GET(request: NextRequest) {
@@ -90,9 +90,12 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE - Delete customer (admin-only, protected by middleware)
+// DELETE - Delete customer (admin-only — staff geblokkeerd)
 export async function DELETE(request: NextRequest) {
   try {
+    const denial = requireRole(request, ['admin']);
+    if (denial) return denial;
+
     const body = await request.json();
     const { id } = body;
 
@@ -100,7 +103,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Klant-ID is verplicht' }, { status: 400 });
     }
 
-    // Note: Admin auth already verified by middleware for /api/admin/* routes
     await deleteCustomer(id);
 
     logActivity({ actor: getSessionFromHeaders(request).user, role: getSessionFromHeaders(request).role, action: 'customer_deleted', entityType: 'customer', entityId: id, details: 'Klant verwijderd' }).catch(() => {});

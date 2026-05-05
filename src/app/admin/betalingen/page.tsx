@@ -47,7 +47,7 @@ function paymentStatusBadge(status: PaymentStatus): { label: string; cls: string
 }
 
 export default function BetalingenPage() {
-  const { t, ts } = useAdmin();
+  const { t, ts, role } = useAdmin();
   const { toast } = useToast();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -485,7 +485,7 @@ export default function BetalingenPage() {
                     {markingPaid === payment.id ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
                     <span>Markeer</span>
                   </button>
-                  {payment.status === 'BETAALD' && (
+                  {payment.status === 'BETAALD' && role === 'admin' && (
                     <button
                       onClick={() => openRefundDialog(payment.id)}
                       className="text-[10px] text-red-600 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-lg cursor-pointer"
