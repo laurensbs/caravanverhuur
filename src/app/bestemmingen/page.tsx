@@ -11,6 +11,7 @@ import {
   Dumbbell, Star, UtensilsCrossed, Mountain, Clock, ExternalLink,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd, itemListJsonLd } from '@/lib/structured-data';
 import { motion, AnimatePresence } from 'framer-motion';
 import BookingCTA from '@/components/BookingCTA';
 import { useData } from '@/lib/data-context';
@@ -279,8 +280,22 @@ export default function BestemmingenPage() {
     },
   ];
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Bestemmingen', href: '/bestemmingen' },
+  ]);
+  const destList = itemListJsonLd(
+    staticDestinations.slice(0, 20).map((d) => ({
+      name: d.name,
+      href: `/bestemmingen/${d.slug}`,
+      image: d.heroImage,
+    })),
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(destList) }} />
       {/* ═══ PAGE HEADER ═══ */}
       <div className="bg-background border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 pt-6 sm:pt-8 pb-4 sm:pb-6">

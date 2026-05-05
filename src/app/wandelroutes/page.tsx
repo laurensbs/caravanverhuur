@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
 import BookingCTA from '@/components/BookingCTA';
 
 interface Trail {
@@ -171,8 +172,14 @@ export default function WandelroutesPage() {
 
   const getDiffLabel = (d: string) => difficultyConfig[d]?.[locale] || d;
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Wandelroutes', href: '/wandelroutes' },
+  ]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       {/* Hero */}
       <section className="relative bg-foreground text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-foreground to-foreground" />

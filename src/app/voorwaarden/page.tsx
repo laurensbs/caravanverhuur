@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { AlertTriangle, CreditCard, Clock, Shield, Info, Bike } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
 
 export default function VoorwaardenPage() {
   const { t } = useLanguage();
@@ -29,8 +30,14 @@ export default function VoorwaardenPage() {
     { key: 'a19', highlight: false },
   ];
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Voorwaarden', href: '/voorwaarden' },
+  ]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       {/* Quick nav */}
       <section className="bg-white sticky top-[80px] sm:top-[96px] z-30 border-b border-gray-100 pt-8 sm:pt-10">
         <div className="max-w-4xl mx-auto px-4">

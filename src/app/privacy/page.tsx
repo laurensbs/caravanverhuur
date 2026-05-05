@@ -6,6 +6,7 @@ import {
   Lock, Share2, Mail, ChevronRight, Shield,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
 
 export default function PrivacyPage() {
   const { t } = useLanguage();
@@ -196,8 +197,14 @@ export default function PrivacyPage() {
     },
   ];
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Privacy', href: '/privacy' },
+  ]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       {/* Quick nav */}
       <section className="bg-white sticky top-[80px] sm:top-[96px] z-30 border-b border-gray-100 pt-8 sm:pt-10">
         <div className="max-w-4xl mx-auto px-4">

@@ -9,6 +9,7 @@ import { CheckCircle, Tent, Package, ArrowRight, Info, Bed, Mountain, Refrigerat
 import { caravans as staticCaravans } from '@/data/caravans';
 import type { Caravan } from '@/data/caravans';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd, itemListJsonLd } from '@/lib/structured-data';
 import { useData } from '@/lib/data-context';
 
 /* ------------------------------------------------------------------ */
@@ -183,8 +184,22 @@ export default function CaravansPage() {
   const amenities = staticCaravans[0]?.amenities || [];
   const allPhotos = useMemo(() => caravans.flatMap(c => c.photos).filter(p => p && p.startsWith('http')), [caravans]);
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Caravans', href: '/caravans' },
+  ]);
+  const caravanList = itemListJsonLd(
+    caravans.slice(0, 20).map((c) => ({
+      name: c.name,
+      href: `/caravans/${c.id}`,
+      image: c.photos?.[0],
+    })),
+  );
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(caravanList) }} />
       {/* ===== CINEMATIC HERO ===== */}
       <section className="relative bg-foreground text-white overflow-hidden">
         <div className="absolute inset-0">

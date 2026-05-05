@@ -10,6 +10,7 @@ import { Mail, Phone, MapPin, ExternalLink, Send, CheckCircle, Clock, MessageCir
 import { INSTAGRAM_URL } from '@/lib/constants';
 import { useLanguage } from '@/i18n/context';
 import { Email, Phone as PhoneSchema } from '@/lib/validate-shared';
+import { breadcrumbJsonLd, contactPageJsonLd } from '@/lib/structured-data';
 
 // Mirrors server schema in /api/contacts. Phone is optional; honeypot
 // `website` is registered but not validated — bots fill it, server-side
@@ -71,8 +72,16 @@ export default function ContactPage() {
     );
   }
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Contact', href: '/contact' },
+  ]);
+  const contactSchema = contactPageJsonLd();
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }} />
       {/* Hero banner with background image */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">

@@ -21,6 +21,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -47,8 +48,14 @@ const stagger = {
 export default function OverOnsPage() {
   const { t } = useLanguage();
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'Over ons', href: '/over-ons' },
+  ]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       {/* ===== ONS VERHAAL ===== */}
       <section className="py-14 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">

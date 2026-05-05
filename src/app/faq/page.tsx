@@ -6,6 +6,7 @@ import { ChevronDown, HelpCircle, ArrowRight, Search, Sparkles, MessageCircle } 
 import BookingCTA from '@/components/BookingCTA';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/i18n/context';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
 
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
@@ -96,11 +97,20 @@ export default function FAQPage() {
     ),
   };
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: 'Home', href: '/' },
+    { name: 'FAQ', href: '/faq' },
+  ]);
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       <section className="pt-8 sm:pt-12 pb-10 sm:pb-16">
         {/* Hero — centered, full width */}
