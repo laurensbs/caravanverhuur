@@ -90,6 +90,8 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [newStatus, setNewStatus] = useState(booking.status);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [notes, setNotes] = useState(booking.admin_notes || '');
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -168,6 +170,30 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
   }, [booking.id, toast, fetchEmails]);
 
   const depositAlreadyPaid = payments.some(p => p.type === 'AANBETALING' && p.status === 'BETAALD');
+
+  // Direct status-mutatie via klik op de status-badge. Idempotent — geen
+  // payment-records aangemaakt; dat hoort bij /admin/betalingen Markeer-acties.
+  // Voor de meeste gevallen is dit alleen een correctie/sync van een status.
+  const handleQuickStatusChange = async (next: BookingStatus) => {
+    if (next === booking.status) { setStatusMenuOpen(false); return; }
+    setStatusUpdating(true);
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: booking.id, status: next }),
+      });
+      if (!res.ok) { toast(t('common.actionFailed'), 'error'); return; }
+      onStatusChange(booking.id, next);
+      setNewStatus(next);
+      toast(t('common.saved'), 'success');
+    } catch {
+      toast(t('common.actionFailed'), 'error');
+    } finally {
+      setStatusUpdating(false);
+      setStatusMenuOpen(false);
+    }
+  };
 
   const handleConfirmDeposit = async () => {
     setDepositConfirming(true);
@@ -266,6 +292,49 @@ function BookingDetail({ booking, onStatusChange, onNotesChange, onDelete, allCa
     <div className="bg-surface rounded-2xl mt-2 overflow-hidden">
       {/* ── Compact Summary (always visible) ── */}
       <div className="p-3 sm:p-4 space-y-2">
+        {/* Klikbare status-badge — wijzigt booking.status direct */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">{t('bookings.status') || 'Status'}</span>
+          <div className="relative">
+            <button
+              onClick={() => setStatusMenuOpen(o => !o)}
+              disabled={statusUpdating}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(newStatus)} hover:ring-2 hover:ring-primary/30 cursor-pointer disabled:opacity-50`}
+              title="Klik om status te wijzigen"
+              aria-haspopup="menu"
+              aria-expanded={statusMenuOpen}
+            >
+              {statusUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />}
+              {ts(newStatus)}
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {statusMenuOpen && (
+              <>
+                <button
+                  aria-label="Sluit menu"
+                  onClick={() => setStatusMenuOpen(false)}
+                  className="fixed inset-0 z-40 cursor-default"
+                  tabIndex={-1}
+                />
+                <div role="menu" className="absolute left-0 top-full mt-1 z-50 bg-white rounded-lg shadow-xl ring-1 ring-black/5 py-1 min-w-[180px]">
+                  {STATUS_OPTIONS.map(s => (
+                    <button
+                      key={s}
+                      role="menuitemradio"
+                      aria-checked={newStatus === s}
+                      onClick={() => handleQuickStatusChange(s)}
+                      className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 ${newStatus === s ? 'font-semibold' : ''}`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${getStatusColor(s).split(' ').filter(c => c.startsWith('bg-')).join(' ')}`} />
+                      <span className="flex-1">{ts(s)}</span>
+                      {newStatus === s && <span className="text-primary">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
         <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
           <div className="flex items-center gap-2 min-w-0">
             <User className="w-3.5 h-3.5 text-muted shrink-0" />
